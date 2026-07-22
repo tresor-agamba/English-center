@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title }) %>
+
+<section class="card login-card">
+  <h1>Connexion</h1>
+  <p>Connectez-vous avec votre numéro de téléphone.</p>
+
+  <% if (error) { %>
+    <p class="form-error" role="alert"><%= error %></p>
+  <% } %>
+
+  <form action="/login" method="post">
+    <label for="phoneNumber">Numéro de téléphone</label>
+    <input
+      id="phoneNumber"
+      name="phoneNumber"
+      type="tel"
+      inputmode="tel"
+      autocomplete="tel"
+      placeholder="+243812345678"
+      value="<%= phoneNumber %>"
+      required
+    />
+
+    <label for="password">Mot de passe</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+    <button class="button" type="submit">Se connecter</button>
+  </form>
+</section>
+
+<%- include('../partials/footer') %>

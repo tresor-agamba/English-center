@@ -1,0 +1,30 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="page-heading">
+  <div><p class="eyebrow">Administration</p><h1>Sessions de formation</h1></div>
+  <a class="button" href="/admin/sessions/new">Créer une session</a>
+</div>
+
+<% if (!sessions.length) { %>
+  <div class="card">Aucune session n’a encore été créée.</div>
+<% } else { %>
+  <div class="table-wrapper">
+    <table>
+      <thead><tr><th>Session</th><th>Formation</th><th>Début</th><th>Places</th><th>Statut</th><th></th></tr></thead>
+      <tbody>
+        <% sessions.forEach((session) => { %>
+          <tr>
+            <td><strong><%= session.name %></strong></td>
+            <td><%= session.course.title %></td>
+            <td><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(session.startDate) %></td>
+            <td><%= session._count.enrollments %> / <%= session.capacity %></td>
+            <td><span class="status status-<%= session.status.toLowerCase() %>"><%= session.status %></span></td>
+            <td><a href="/admin/sessions/<%= session.id %>">Consulter</a></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('../../partials/footer') %>

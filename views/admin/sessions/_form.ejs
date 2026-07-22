@@ -1,0 +1,41 @@
+<form action="<%= action %>" method="post" class="session-form">
+  <label for="name">Nom de la session</label>
+  <input id="name" name="name" value="<%= session?.name || '' %>" required />
+
+  <label for="courseId">Formation</label>
+  <select id="courseId" name="courseId" required>
+    <option value="">Sélectionner une formation</option>
+    <% courses.forEach((course) => { %>
+      <option value="<%= course.id %>" <%= session?.courseId === course.id ? 'selected' : '' %>><%= course.title %></option>
+    <% }) %>
+  </select>
+
+  <div class="form-grid">
+    <div>
+      <label for="startDate">Date de début</label>
+      <input id="startDate" name="startDate" type="datetime-local" value="<%= formatInputDate(session?.startDate) %>" required />
+    </div>
+    <div>
+      <label for="endDate">Date de fin</label>
+      <input id="endDate" name="endDate" type="datetime-local" value="<%= formatInputDate(session?.endDate) %>" required />
+    </div>
+  </div>
+
+  <label for="registrationDeadline">Date limite d’inscription</label>
+  <input id="registrationDeadline" name="registrationDeadline" type="datetime-local" value="<%= formatInputDate(session?.registrationDeadline) %>" required />
+
+  <label for="capacity">Nombre maximum de places</label>
+  <input id="capacity" name="capacity" type="number" min="1" value="<%= session?.capacity || '' %>" required />
+
+  <label for="status">Statut</label>
+  <select id="status" name="status" required>
+    <% statuses.forEach((status) => { %>
+      <option value="<%= status %>" <%= (session?.status || 'DRAFT') === status ? 'selected' : '' %>><%= status %></option>
+    <% }) %>
+  </select>
+
+  <div class="form-actions">
+    <button class="button" type="submit"><%= submitLabel %></button>
+    <a href="<%= session ? `/admin/sessions/${session.id}` : '/admin/sessions' %>">Annuler</a>
+  </div>
+</form>

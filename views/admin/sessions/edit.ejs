@@ -1,0 +1,13 @@
+<%- include('../../partials/header', { title }) %>
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p><h1>Modifier la session</h1>
+  <%- include('_form', {
+    action: `/admin/sessions/${session.id}`,
+    session,
+    courses,
+    statuses,
+    submitLabel: 'Enregistrer',
+    formatInputDate: (date) => date ? new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16) : ''
+  }) %>
+</section>
+<%- include('../../partials/footer') %>

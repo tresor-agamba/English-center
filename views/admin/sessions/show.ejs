@@ -1,0 +1,42 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow"><%= session.course.title %></p><h1><%= session.name %></h1>
+    <span class="status status-<%= session.status.toLowerCase() %>"><%= session.status %></span>
+  </div>
+  <div class="heading-actions">
+    <a class="button" href="/admin/sessions/<%= session.id %>/edit">Modifier</a>
+    <% if (session.status !== 'CANCELLED') { %>
+      <form action="/admin/sessions/<%= session.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette session ?')">
+        <button class="button button-danger" type="submit">Annuler la session</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="details-grid">
+  <div class="card"><strong>Début</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(session.startDate) %></span></div>
+  <div class="card"><strong>Fin</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(session.endDate) %></span></div>
+  <div class="card"><strong>Limite d’inscription</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(session.registrationDeadline) %></span></div>
+  <div class="card"><strong>Places</strong><span><%= session.enrollments.length %> / <%= session.capacity %></span></div>
+</div>
+
+<section class="section-block">
+  <h2>Étudiants inscrits</h2>
+  <% if (!session.enrollments.length) { %>
+    <p>Aucun étudiant n’est inscrit à cette session.</p>
+  <% } else { %>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>Étudiant</th><th>Téléphone</th><th>Inscription</th></tr></thead>
+      <tbody><% session.enrollments.forEach((enrollment) => { %><tr>
+        <td><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></td>
+        <td><%= enrollment.user.phoneNumber %></td>
+        <td><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.enrolledAt) %></td>
+      </tr><% }) %></tbody>
+    </table></div>
+  <% } %>
+</section>
+
+<p><a href="/admin/sessions">← Retour aux sessions</a></p>
+<%- include('../../partials/footer') %>

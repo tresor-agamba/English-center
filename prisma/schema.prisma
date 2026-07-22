@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum TrainingSessionStatus {
+  DRAFT
+  OPEN
+  FULL
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  firstName        String            @map("first_name")
+  lastName         String            @map("last_name")
+  phoneNumber      String            @unique @map("phone_number")
+  passwordHash     String            @map("password_hash")
+  role             Role              @default(STUDENT)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  trainingSessions TrainingSession[]
+  progress         Progress[]
+  enrollments      Enrollment[]
+
+  @@map("users")
+}
+
+model TrainingSession {
+  id                   Int                   @id @default(autoincrement())
+  name                 String
+  courseId             Int                   @map("course_id")
+  startDate            DateTime              @map("start_date")
+  endDate              DateTime              @map("end_date")
+  registrationDeadline DateTime              @map("registration_deadline")
+  capacity             Int
+  status               TrainingSessionStatus @default(DRAFT)
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  course               Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollments          Enrollment[]
+  user                 User?                 @relation(fields: [userId], references: [id])
+  userId               Int?
+
+  @@index([courseId])
+  @@index([status])
+  @@map("training_sessions")
+}
+
+model Course {
+  id               Int               @id @default(autoincrement())
+  title            String
+  description      String?
+  isPublished      Boolean           @default(false) @map("is_published")
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  lessons          Lesson[]
+  enrollments      Enrollment[]
+  schedules        Schedule[]
+  documents        Document[]
+  trainingSessions TrainingSession[]
+
+  @@map("courses")
+}
+
+model Lesson {
+  id        Int        @id @default(autoincrement())
+  courseId  Int        @map("course_id")
+  title     String
+  content   String?
+  position  Int        @default(0)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress  Progress[]
+  documents Document[]
+
+  @@index([courseId])
+  @@map("lessons")
+}
+
+model Enrollment {
+  id                Int             @id @default(autoincrement())
+  userId            Int             @map("user_id")
+  trainingSessionId Int             @map("training_session_id")
+  enrolledAt        DateTime        @default(now()) @map("enrolled_at")
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  course            Course?         @relation(fields: [courseId], references: [id])
+  courseId          Int?
+
+  @@unique([userId, trainingSessionId])
+  @@index([trainingSessionId])
+  @@map("enrollments")
+}
+
+model Schedule {
+  id         Int      @id @default(autoincrement())
+  courseId   Int      @map("course_id")
+  title      String
+  startsAt   DateTime @map("starts_at")
+  endsAt     DateTime @map("ends_at")
+  meetingUrl String?  @map("meeting_url")
+  createdAt  DateTime @default(now()) @map("created_at")
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@map("schedules")
+}
+
+model Progress {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @map("user_id")
+  lessonId    Int       @map("lesson_id")
+  percentage  Int       @default(0)
+  completedAt DateTime? @map("completed_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@index([lessonId])
+  @@map("progress")
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  courseId  Int      @map("course_id")
+  lessonId  Int?     @map("lesson_id")
+  title     String
+  fileName  String   @map("file_name")
+  filePath  String   @map("file_path")
+  mimeType  String?  @map("mime_type")
+  createdAt DateTime @default(now()) @map("created_at")
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+
+  @@index([courseId])
+  @@index([lessonId])
+  @@map("documents")
+}
