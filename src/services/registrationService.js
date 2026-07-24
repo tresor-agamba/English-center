@@ -2,7 +2,7 @@ const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 
 const OCCUPYING_STATUSES = ['PENDING_PAYMENT', 'CONFIRMED'];
-const MAX_TRANSACTION_ATTEMPTS = 3;
+const MAX_TRANSACTION_ATTEMPTS = 8;
 
 class RegistrationError extends Error {
   constructor(code, message, statusCode = 400) {
@@ -11,6 +11,10 @@ class RegistrationError extends Error {
     this.code = code;
     this.statusCode = statusCode;
   }
+}
+
+function retryDelay(attempt) {
+  return new Promise((resolve) => setTimeout(resolve, attempt * 20));
 }
 
 const messages = {
@@ -186,11 +190,12 @@ async function createRegistration(data) {
       return await runRegistrationTransaction(data);
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
+      if (error?.code === 'P2002') {
           throw new RegistrationError('ACCOUNT_EXISTS', messages.ACCOUNT_EXISTS);
-        }
-        if (error.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) continue;
+      }
+      if (error?.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) {
+        await retryDelay(attempt);
+        continue;
       }
       throw error;
     }
@@ -242,12 +247,13 @@ async function enrollExistingStudent(data) {
       return await runExistingStudentTransaction(data);
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
+      if (error?.code === 'P2002') {
           const existing = await findUserEnrollment(prisma, data.userId, parseSessionId(data.sessionId));
           if (existing) return { enrollment: existing, reused: true, reactivated: false };
-        }
-        if (error.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) continue;
+      }
+      if (error?.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) {
+        await retryDelay(attempt);
+        continue;
       }
       throw error;
     }
@@ -279,6 +285,20 @@ function findEnrollmentForViewer(enrollmentId) {
               trainingMode: true,
             },
           },
+        },
+      },
+      payments: {
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: {
+          reference: true,
+          amount: true,
+          currency: true,
+          status: true,
+          failureReason: true,
+          paidAt: true,
+          expiresAt: true,
+          createdAt: true,
         },
       },
     },

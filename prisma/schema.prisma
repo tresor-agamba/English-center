@@ -28,6 +28,16 @@ enum EnrollmentStatus {
   PAYMENT_FAILED
 }
 
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
 model User {
   id               Int               @id @default(autoincrement())
   firstName        String            @map("first_name")
@@ -120,10 +130,33 @@ model Enrollment {
   trainingSession   TrainingSession  @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
   course            Course?          @relation(fields: [courseId], references: [id])
   courseId          Int?
+  payments          Payment[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
   @@map("enrollments")
+}
+
+model Payment {
+  id                Int           @id @default(autoincrement())
+  reference         String        @unique
+  provider          String
+  providerReference String?       @map("provider_reference")
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String
+  status            PaymentStatus @default(PENDING)
+  failureReason     String?       @map("failure_reason")
+  paidAt            DateTime?     @map("paid_at")
+  expiresAt         DateTime?     @map("expires_at")
+  metadata          Json?
+  enrollmentId      Int           @map("enrollment_id")
+  enrollment        Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  @@index([enrollmentId])
+  @@index([status])
+  @@map("payments")
 }
 
 model Schedule {

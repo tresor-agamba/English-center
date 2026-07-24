@@ -1,0 +1,47 @@
+<%- include('../../partials/header', { title }) %>
+
+<section class="payment-page">
+  <div class="payment-heading">
+    <div>
+      <p class="eyebrow">Paiement sécurisé</p>
+      <h1><%= payment.enrollment.trainingSession.course.title %></h1>
+      <p><%= payment.enrollment.trainingSession.name %></p>
+    </div>
+    <span class="status payment-status payment-status-<%= payment.status.toLowerCase() %>"><%= payment.status %></span>
+  </div>
+
+  <div class="online-banner">
+    <strong>Formation 100 % en ligne</strong>
+    <span>Cette page utilise actuellement le simulateur de paiement English Center.</span>
+  </div>
+
+  <dl class="payment-details">
+    <div><dt>Référence</dt><dd><code><%= payment.reference %></code></dd></div>
+    <div><dt>Montant</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></dd></div>
+    <div><dt>Créé le</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.createdAt) %></dd></div>
+    <div><dt>Expiration</dt><dd><%= payment.expiresAt ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.expiresAt) : 'Aucune' %></dd></div>
+  </dl>
+
+  <% if (payment.failureReason) { %>
+    <p class="form-error" role="alert"><%= payment.failureReason %></p>
+  <% } %>
+
+  <% if (simulationEnabled && ['PENDING', 'PROCESSING'].includes(payment.status)) { %>
+    <section class="simulation-panel">
+      <h2>Simulation de développement</h2>
+      <p>Ces actions seront désactivées en production.</p>
+      <div class="simulation-actions">
+        <form action="/payments/<%= payment.reference %>/simulate-success" method="post">
+          <button class="button" type="submit">Simuler un paiement réussi</button>
+        </form>
+        <form action="/payments/<%= payment.reference %>/simulate-failure" method="post">
+          <button class="button button-danger" type="submit">Simuler un paiement échoué</button>
+        </form>
+      </div>
+    </section>
+  <% } %>
+
+  <p><a href="/registration/success/<%= payment.enrollmentId %>">← Retour à l’inscription</a></p>
+</section>
+
+<%- include('../../partials/footer') %>

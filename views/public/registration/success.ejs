@@ -7,10 +7,13 @@
     CANCELLED: { label: 'Inscription annulée', className: 'status-inactive' },
     PAYMENT_FAILED: { label: 'Paiement échoué', className: 'status-inactive' }
   }[enrollment.status] || { label: enrollment.status, className: '' }; %>
+  <% const latestPayment = enrollment.payments[0] || null; %>
+  <% const successfulPayment = enrollment.payments.find((payment) => payment.status === 'SUCCESS') || null; %>
+
   <div class="success-icon" aria-hidden="true">✓</div>
   <p class="eyebrow">Inscription enregistrée</p>
-  <h1>Votre place est réservée</h1>
-  <p>Bienvenue, <strong><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></strong>. Votre inscription attend maintenant le paiement.</p>
+  <h1><%= enrollment.status === 'CONFIRMED' ? 'Votre inscription est confirmée' : 'Votre place est réservée' %></h1>
+  <p>Bienvenue, <strong><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></strong>.</p>
 
   <div class="success-summary">
     <div><span>Formation</span><strong><%= enrollment.trainingSession.course.title %></strong></div>
@@ -21,9 +24,30 @@
     <div><span>Statut</span><strong class="status <%= statusDisplay.className %>"><%= statusDisplay.label %></strong></div>
   </div>
 
+  <% if (successfulPayment) { %>
+    <div class="payment-notice payment-notice-success">
+      <strong>Paiement confirmé</strong>
+      <span>Référence : <%= successfulPayment.reference %></span>
+      <% if (successfulPayment.paidAt) { %><span>Payé le <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(successfulPayment.paidAt) %></span><% } %>
+    </div>
+  <% } else if (latestPayment && latestPayment.status === 'FAILED') { %>
+    <div class="payment-notice payment-notice-failed">
+      <strong>La dernière tentative de paiement a échoué.</strong>
+      <span>Vous pouvez créer une nouvelle tentative.</span>
+    </div>
+  <% } else if (latestPayment && ['PENDING', 'PROCESSING'].includes(latestPayment.status)) { %>
+    <div class="payment-notice">
+      <strong>Une tentative de paiement est en attente.</strong>
+      <a href="/payments/<%= latestPayment.reference %>">Reprendre le paiement</a>
+    </div>
+  <% } %>
+
   <div class="success-actions">
     <% if (enrollment.status === 'PENDING_PAYMENT') { %>
-      <span class="button button-disabled" aria-disabled="true">Payer maintenant — bientôt disponible</span>
+      <form action="/payments" method="post">
+        <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>" />
+        <button class="button" type="submit"><%= latestPayment && latestPayment.status === 'FAILED' ? 'Réessayer le paiement' : 'Payer maintenant' %></button>
+      </form>
     <% } %>
     <span class="future-link" aria-disabled="true">Espace étudiant — bientôt disponible</span>
     <a href="/">Retour à l’accueil</a>
