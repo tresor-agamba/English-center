@@ -1,6 +1,12 @@
 <%- include('../../partials/header', { title }) %>
 
 <section class="registration-success">
+  <% const statusDisplay = {
+    PENDING_PAYMENT: { label: 'En attente de paiement', className: 'status-pending' },
+    CONFIRMED: { label: 'Inscription confirmée', className: 'status-active' },
+    CANCELLED: { label: 'Inscription annulée', className: 'status-inactive' },
+    PAYMENT_FAILED: { label: 'Paiement échoué', className: 'status-inactive' }
+  }[enrollment.status] || { label: enrollment.status, className: '' }; %>
   <div class="success-icon" aria-hidden="true">✓</div>
   <p class="eyebrow">Inscription enregistrée</p>
   <h1>Votre place est réservée</h1>
@@ -12,11 +18,13 @@
     <div><span>Dates</span><strong><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.endDate) %></strong></div>
     <div><span>Horaires</span><strong><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(enrollment.trainingSession.endDate) %></strong></div>
     <div><span>Prix</span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
-    <div><span>Statut</span><strong class="status status-pending">En attente de paiement</strong></div>
+    <div><span>Statut</span><strong class="status <%= statusDisplay.className %>"><%= statusDisplay.label %></strong></div>
   </div>
 
   <div class="success-actions">
-    <span class="button button-disabled" aria-disabled="true">Payer maintenant — bientôt disponible</span>
+    <% if (enrollment.status === 'PENDING_PAYMENT') { %>
+      <span class="button button-disabled" aria-disabled="true">Payer maintenant — bientôt disponible</span>
+    <% } %>
     <span class="future-link" aria-disabled="true">Espace étudiant — bientôt disponible</span>
     <a href="/">Retour à l’accueil</a>
   </div>

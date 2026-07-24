@@ -1,0 +1,36 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="enrollment-confirm">
+  <section>
+    <p class="eyebrow">Dernière étape</p>
+    <h1>Confirmer mon inscription</h1>
+    <p>Vérifiez les informations de la session avant de réserver votre place.</p>
+    <div class="online-banner">
+      <strong>Formation 100 % en ligne</strong>
+      <span>Aucun lien privé de cours n’est affiché à cette étape.</span>
+    </div>
+    <form action="/enroll" method="post">
+      <input type="hidden" name="sessionId" value="<%= session.id %>" />
+      <button class="button" type="submit">Confirmer mon inscription</button>
+      <a href="/formations/<%= session.course.slug %>">Annuler</a>
+    </form>
+  </section>
+
+  <aside class="registration-summary">
+    <span class="status status-active"><%= session.status %></span>
+    <h2><%= session.course.title %></h2>
+    <p><%= session.course.shortDescription || 'Formation proposée par English Center.' %></p>
+    <dl class="session-facts">
+      <div><dt>Session</dt><dd><%= session.name %></dd></div>
+      <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
+      <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
+      <div><dt>Horaires</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.endDate) %></dd></div>
+      <div><dt>Plateforme</dt><dd><%= session.platform || session.course.trainingMode || 'En ligne' %></dd></div>
+      <div><dt>Fuseau horaire</dt><dd><%= session.timezone %></dd></div>
+      <div><dt>Prix</dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>
+      <div><dt>Places</dt><dd><%= session.remainingPlaces %> restante<%= session.remainingPlaces > 1 ? 's' : '' %></dd></div>
+    </dl>
+  </aside>
+</div>
+
+<%- include('../../partials/footer') %>

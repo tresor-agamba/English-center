@@ -43,6 +43,7 @@
           </dl>
           <% if (session.registrationOpen) { %>
             <a class="button session-register-button" href="/register?session=<%= session.id %>">S’inscrire</a>
+            <a class="existing-account-link" href="/login?session=<%= session.id %>">Déjà un compte ? Se connecter</a>
           <% } else { %>
             <span class="button session-register-button button-disabled" aria-disabled="true">Inscriptions closes</span>
           <% } %>

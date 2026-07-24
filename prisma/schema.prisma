@@ -53,6 +53,8 @@ model TrainingSession {
   endDate              DateTime              @map("end_date")
   registrationDeadline DateTime              @map("registration_deadline")
   capacity             Int
+  platform             String?
+  timezone             String                @default("Africa/Kinshasa")
   status               TrainingSessionStatus @default(DRAFT)
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")

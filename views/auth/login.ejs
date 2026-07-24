@@ -2,13 +2,19 @@
 
 <section class="card login-card">
   <h1>Connexion</h1>
-  <p>Connectez-vous avec votre numéro de téléphone.</p>
+  <% if (sessionId) { %>
+    <p>Connectez-vous pour continuer votre inscription à la session choisie.</p>
+  <% } else { %>
+    <p>Connectez-vous avec votre numéro de téléphone.</p>
+  <% } %>
 
   <% if (error) { %>
     <p class="form-error" role="alert"><%= error %></p>
   <% } %>
 
   <form action="/login" method="post">
+    <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>" /><% } %>
+
     <label for="phoneNumber">Numéro de téléphone</label>
     <input
       id="phoneNumber"
@@ -26,6 +32,10 @@
 
     <button class="button" type="submit">Se connecter</button>
   </form>
+
+  <% if (sessionId) { %>
+    <p class="auth-alternative">Pas encore de compte ? <a href="/register?session=<%= sessionId %>">Créer mon compte</a></p>
+  <% } %>
 </section>
 
 <%- include('../partials/footer') %>

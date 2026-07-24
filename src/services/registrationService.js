@@ -37,14 +37,17 @@ function sessionSelect(now) {
     name: true,
     startDate: true,
     endDate: true,
-    registrationDeadline: true,
-    capacity: true,
-    status: true,
+      registrationDeadline: true,
+      capacity: true,
+      platform: true,
+      timezone: true,
+      status: true,
     course: {
       select: {
         id: true,
         slug: true,
         title: true,
+        shortDescription: true,
         price: true,
         currency: true,
         trainingMode: true,
@@ -59,7 +62,8 @@ function sessionSelect(now) {
   };
 }
 
-function validateSession(session, now = new Date()) {
+function validateSession(session, now = new Date(), options = {}) {
+  const { checkCapacity = true } = options;
   if (!session || !session.course.isPublished) {
     throw new RegistrationError('SESSION_NOT_FOUND', messages.SESSION_NOT_FOUND, 404);
   }
@@ -70,20 +74,52 @@ function validateSession(session, now = new Date()) {
     throw new RegistrationError('REGISTRATION_CLOSED', messages.REGISTRATION_CLOSED);
   }
   const remainingPlaces = Math.max(0, session.capacity - session._count.enrollments);
-  if (remainingPlaces < 1) {
+  if (checkCapacity && remainingPlaces < 1) {
     throw new RegistrationError('SESSION_FULL', messages.SESSION_FULL);
   }
   return { ...session, remainingPlaces };
 }
 
-async function getSessionForRegistration(rawSessionId, client = prisma) {
+async function getSessionSnapshot(rawSessionId, client = prisma) {
   const sessionId = parseSessionId(rawSessionId);
   const now = new Date();
   const session = await client.trainingSession.findUnique({
     where: { id: sessionId },
     select: sessionSelect(now),
   });
+  return { session, now };
+}
+
+async function getSessionForRegistration(rawSessionId, client = prisma) {
+  const { session, now } = await getSessionSnapshot(rawSessionId, client);
   return validateSession(session, now);
+}
+
+function findUserEnrollment(client, userId, trainingSessionId) {
+  return client.enrollment.findUnique({
+    where: { userId_trainingSessionId: { userId, trainingSessionId } },
+    select: { id: true, status: true },
+  });
+}
+
+async function getActiveStudent(userId, client = prisma) {
+  const user = await client.user.findFirst({
+    where: { id: userId, role: 'STUDENT', isActive: true },
+    select: { id: true, firstName: true, lastName: true, role: true, isActive: true },
+  });
+  if (!user) throw new RegistrationError('STUDENT_UNAVAILABLE', 'Votre compte ne permet pas cette inscription.', 403);
+  return user;
+}
+
+async function getEnrollmentIntent(userId, rawSessionId) {
+  await getActiveStudent(userId);
+  const sessionId = parseSessionId(rawSessionId);
+  const existingEnrollment = await findUserEnrollment(prisma, userId, sessionId);
+  if (existingEnrollment && OCCUPYING_STATUSES.includes(existingEnrollment.status)) {
+    return { existingEnrollment, session: null };
+  }
+  const session = await getSessionForRegistration(sessionId);
+  return { existingEnrollment, session };
 }
 
 async function runRegistrationTransaction({ sessionId, firstName, lastName, phoneNumber, passwordHash }) {
@@ -162,6 +198,63 @@ async function createRegistration(data) {
   throw new RegistrationError('SESSION_UNAVAILABLE', messages.SESSION_UNAVAILABLE);
 }
 
+async function runExistingStudentTransaction({ userId, sessionId }) {
+  return prisma.$transaction(
+    async (tx) => {
+      const user = await getActiveStudent(userId, tx);
+
+      const parsedSessionId = parseSessionId(sessionId);
+      const { session, now } = await getSessionSnapshot(parsedSessionId, tx);
+      const existingEnrollment = await findUserEnrollment(tx, user.id, parsedSessionId);
+
+      if (existingEnrollment && OCCUPYING_STATUSES.includes(existingEnrollment.status)) {
+        validateSession(session, now, { checkCapacity: false });
+        return { enrollment: existingEnrollment, reused: true, reactivated: false };
+      }
+
+      const availableSession = validateSession(session, now);
+      if (existingEnrollment) {
+        const enrollment = await tx.enrollment.update({
+          where: { id: existingEnrollment.id },
+          data: { status: 'PENDING_PAYMENT', enrolledAt: new Date() },
+          select: { id: true, status: true },
+        });
+        return { enrollment, reused: true, reactivated: true };
+      }
+
+      const enrollment = await tx.enrollment.create({
+        data: {
+          userId: user.id,
+          trainingSessionId: availableSession.id,
+          status: 'PENDING_PAYMENT',
+        },
+        select: { id: true, status: true },
+      });
+      return { enrollment, reused: false, reactivated: false };
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
+  );
+}
+
+async function enrollExistingStudent(data) {
+  for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
+    try {
+      return await runExistingStudentTransaction(data);
+    } catch (error) {
+      if (error instanceof RegistrationError) throw error;
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          const existing = await findUserEnrollment(prisma, data.userId, parseSessionId(data.sessionId));
+          if (existing) return { enrollment: existing, reused: true, reactivated: false };
+        }
+        if (error.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) continue;
+      }
+      throw error;
+    }
+  }
+  throw new RegistrationError('SESSION_UNAVAILABLE', messages.SESSION_UNAVAILABLE);
+}
+
 function findEnrollmentForViewer(enrollmentId) {
   return prisma.enrollment.findUnique({
     where: { id: enrollmentId },
@@ -199,6 +292,8 @@ module.exports = {
   parseSessionId,
   validateSession,
   getSessionForRegistration,
+  getEnrollmentIntent,
   createRegistration,
+  enrollExistingStudent,
   findEnrollmentForViewer,
 };

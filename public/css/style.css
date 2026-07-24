@@ -433,6 +433,61 @@ a {
   color: var(--muted);
 }
 
+.existing-account-link {
+  display: block;
+  margin-top: 0.75rem;
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.auth-alternative {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.enrollment-confirm {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  align-items: start;
+  gap: 2rem;
+}
+
+.enrollment-confirm > section > p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.enrollment-confirm form {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.enrollment-confirm form .button {
+  margin: 0;
+}
+
+.online-banner {
+  display: grid;
+  gap: 0.2rem;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #b2ccff;
+  border-radius: 0.65rem;
+  color: var(--primary-dark);
+  background: #eff4ff;
+}
+
+.online-banner span {
+  font-size: 0.9rem;
+}
+
+.enrollment-unavailable {
+  text-align: center;
+}
+
 .eyebrow {
   color: var(--primary);
   font-weight: 700;
@@ -914,6 +969,15 @@ tr:last-child td { border-bottom: 0; }
     align-items: stretch;
     flex-direction: column;
   }
+
+  .enrollment-confirm {
+    grid-template-columns: 1fr;
+  }
+
+  .enrollment-confirm form {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (min-width: 521px) and (max-width: 860px) {
@@ -922,4 +986,5 @@ tr:last-child td { border-bottom: 0; }
   .detail-info-grid { grid-template-columns: 1fr; }
   .registration-layout { grid-template-columns: 1fr; }
   .registration-summary { position: static; }
+  .enrollment-confirm { grid-template-columns: 1fr; }
 }
