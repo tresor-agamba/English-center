@@ -1,0 +1,17 @@
+<%- include('../../partials/header', { title }) %>
+
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p>
+  <h1>Modifier l’étudiant</h1>
+  <p class="heading-copy">Le rôle et le mot de passe ne sont pas modifiables depuis ce formulaire.</p>
+  <%- include('_form', {
+    action: `/admin/students/${student.id}`,
+    form,
+    error,
+    includePassword: false,
+    submitLabel: 'Enregistrer',
+    cancelUrl: `/admin/students/${student.id}`
+  }) %>
+</section>
+
+<%- include('../../partials/footer') %>

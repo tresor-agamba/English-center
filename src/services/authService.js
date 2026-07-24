@@ -9,7 +9,7 @@ async function authenticate(rawPhoneNumber, password) {
   const user = await prisma.user.findUnique({ where: { phoneNumber } });
   const passwordMatches = await bcrypt.compare(password, user?.passwordHash || DUMMY_PASSWORD_HASH);
 
-  if (!user || !passwordMatches) return null;
+  if (!user || !user.isActive || !passwordMatches) return null;
 
   return {
     id: user.id,

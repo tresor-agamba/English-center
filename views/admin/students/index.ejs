@@ -1,0 +1,61 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Administration</p>
+    <h1>Étudiants</h1>
+    <p class="heading-copy"><%= total %> compte<%= total > 1 ? 's' : '' %> étudiant<%= total > 1 ? 's' : '' %></p>
+  </div>
+  <a class="button" href="/admin/students/new">Ajouter un étudiant</a>
+</div>
+
+<% if (success) { %>
+  <p class="success-message" role="status">L’opération a été effectuée avec succès.</p>
+<% } %>
+
+<form class="search-form" action="/admin/students" method="get" role="search">
+  <label class="sr-only" for="student-search">Rechercher un étudiant</label>
+  <input id="student-search" name="search" type="search" value="<%= search %>" placeholder="Prénom, nom ou téléphone" />
+  <button class="button button-small" type="submit">Rechercher</button>
+  <% if (search) { %><a href="/admin/students">Effacer</a><% } %>
+</form>
+
+<% if (!students.length) { %>
+  <div class="empty-state">
+    <strong><%= search ? 'Aucun résultat' : 'Aucun étudiant' %></strong>
+    <p><%= search ? 'Essayez une autre recherche.' : 'Ajoutez votre premier étudiant pour commencer.' %></p>
+    <% if (!search) { %><a class="button button-small" href="/admin/students/new">Ajouter un étudiant</a><% } %>
+  </div>
+<% } else { %>
+  <div class="table-wrapper responsive-table">
+    <table>
+      <thead>
+        <tr><th>Étudiant</th><th>Téléphone</th><th>Statut</th><th>Création</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <% students.forEach((student) => { %>
+          <tr>
+            <td data-label="Étudiant"><strong><%= student.firstName %> <%= student.lastName %></strong></td>
+            <td data-label="Téléphone"><%= student.phoneNumber %></td>
+            <td data-label="Statut"><span class="status <%= student.isActive ? 'status-active' : 'status-inactive' %>"><%= student.isActive ? 'Actif' : 'Désactivé' %></span></td>
+            <td data-label="Création"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(student.createdAt) %></td>
+            <td data-label="Actions" class="table-actions">
+              <a href="/admin/students/<%= student.id %>">Consulter</a>
+              <a href="/admin/students/<%= student.id %>/edit">Modifier</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if (totalPages > 1) { %>
+    <nav class="pagination" aria-label="Pagination">
+      <% if (page > 1) { %><a href="/admin/students?search=<%= encodeURIComponent(search) %>&page=<%= page - 1 %>">← Précédent</a><% } %>
+      <span>Page <%= page %> sur <%= totalPages %></span>
+      <% if (page < totalPages) { %><a href="/admin/students?search=<%= encodeURIComponent(search) %>&page=<%= page + 1 %>">Suivant →</a><% } %>
+    </nav>
+  <% } %>
+<% } %>
+
+<%- include('../../partials/footer') %>

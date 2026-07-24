@@ -1,0 +1,82 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">Profil étudiant</p>
+    <h1><%= student.firstName %> <%= student.lastName %></h1>
+    <span class="status <%= student.isActive ? 'status-active' : 'status-inactive' %>"><%= student.isActive ? 'Actif' : 'Désactivé' %></span>
+  </div>
+  <div class="heading-actions">
+    <a class="button" href="/admin/students/<%= student.id %>/edit">Modifier</a>
+    <form action="/admin/students/<%= student.id %>/toggle-status" method="post" onsubmit="return confirm('<%= student.isActive ? 'Désactiver' : 'Réactiver' %> ce compte étudiant ?')">
+      <button class="button <%= student.isActive ? 'button-danger' : '' %>" type="submit"><%= student.isActive ? 'Désactiver' : 'Réactiver' %></button>
+    </form>
+  </div>
+</div>
+
+<% const successMessages = {
+  created: 'Le compte étudiant a été créé.',
+  updated: 'Le profil étudiant a été mis à jour.',
+  disabled: 'Le compte étudiant a été désactivé.',
+  enabled: 'Le compte étudiant a été réactivé.',
+  password: 'Le mot de passe temporaire a été réinitialisé.'
+}; %>
+<% if (successMessages[success]) { %><p class="success-message" role="status"><%= successMessages[success] %></p><% } %>
+
+<div class="details-grid student-details">
+  <div class="card"><strong>Téléphone</strong><span><%= student.phoneNumber %></span></div>
+  <div class="card"><strong>Statut</strong><span><%= student.isActive ? 'Compte actif' : 'Compte désactivé' %></span></div>
+  <div class="card"><strong>Créé le</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(student.createdAt) %></span></div>
+  <div class="card"><strong>Dernière modification</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(student.updatedAt) %></span></div>
+</div>
+
+<section class="section-block">
+  <h2>Inscriptions</h2>
+  <% if (!student.enrollments.length) { %>
+    <div class="empty-state"><strong>Aucune inscription</strong><p>Cet étudiant n’est inscrit à aucune session.</p></div>
+  <% } else { %>
+    <div class="table-wrapper responsive-table"><table>
+      <thead><tr><th>Formation</th><th>Session</th><th>Début</th><th>Statut</th></tr></thead>
+      <tbody><% student.enrollments.forEach((enrollment) => { const session = enrollment.trainingSession; %>
+        <tr>
+          <td data-label="Formation"><%= session.course.title %></td>
+          <td data-label="Session"><a href="/admin/sessions/<%= session.id %>"><%= session.name %></a></td>
+          <td data-label="Début"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(session.startDate) %></td>
+          <td data-label="Statut"><span class="status status-<%= session.status.toLowerCase() %>"><%= session.status %></span></td>
+        </tr>
+      <% }) %></tbody>
+    </table></div>
+  <% } %>
+</section>
+
+<section class="section-block">
+  <h2>Progression</h2>
+  <% if (!student.progress.length) { %>
+    <div class="empty-state"><strong>Aucune progression disponible</strong><p>La progression apparaîtra après le début des cours.</p></div>
+  <% } else { %>
+    <div class="progress-list">
+      <% student.progress.forEach((item) => { %>
+        <article>
+          <div><strong><%= item.lesson.title %></strong><span><%= item.lesson.course.title %></span></div>
+          <span><%= item.percentage %>%</span>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<section class="card wide-card reset-card">
+  <h2>Réinitialiser le mot de passe</h2>
+  <p>Définissez un nouveau mot de passe temporaire d’au moins 8 caractères.</p>
+  <% if (resetError) { %><p class="form-error" role="alert"><%= resetError %></p><% } %>
+  <form action="/admin/students/<%= student.id %>/reset-password" method="post">
+    <div class="form-grid">
+      <div><label for="password">Nouveau mot de passe</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required /></div>
+      <div><label for="passwordConfirmation">Confirmation</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required /></div>
+    </div>
+    <button class="button" type="submit">Réinitialiser</button>
+  </form>
+</section>
+
+<p><a href="/admin/students">← Retour aux étudiants</a></p>
+<%- include('../../partials/footer') %>

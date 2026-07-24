@@ -28,6 +28,7 @@ model User {
   phoneNumber      String            @unique @map("phone_number")
   passwordHash     String            @map("password_hash")
   role             Role              @default(STUDENT)
+  isActive         Boolean           @default(true) @map("is_active")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   trainingSessions TrainingSession[]
@@ -61,7 +62,17 @@ model TrainingSession {
 model Course {
   id               Int               @id @default(autoincrement())
   title            String
+  slug             String            @unique
   description      String?
+  shortDescription String?           @map("short_description")
+  level            String?
+  duration         String?
+  objectives       String?
+  targetAudience   String?           @map("target_audience")
+  prerequisites    String?
+  price            Decimal?          @db.Decimal(10, 2)
+  currency         String            @default("USD")
+  trainingMode     String?           @map("training_mode")
   isPublished      Boolean           @default(false) @map("is_published")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")

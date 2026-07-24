@@ -1,0 +1,55 @@
+<%- include('../../partials/header', { title }) %>
+
+<p class="back-link"><a href="/formations">← Toutes les formations</a></p>
+
+<section class="course-detail-hero">
+  <p class="eyebrow"><%= course.level || 'Formation d’anglais' %></p>
+  <h1><%= course.title %></h1>
+  <p class="course-lead"><%= course.shortDescription || course.description || '' %></p>
+  <div class="course-facts">
+    <span><strong>Durée</strong><%= course.duration || 'À préciser' %></span>
+    <span><strong>Mode</strong><%= course.trainingMode || 'À préciser' %></span>
+    <span><strong>Prix indicatif</strong><%= course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) : 'Sur demande' %></span>
+  </div>
+</section>
+
+<main class="course-detail-grid">
+  <section class="content-section">
+    <h2>À propos de la formation</h2>
+    <p class="formatted-copy"><%= course.description || 'Les informations détaillées seront bientôt disponibles.' %></p>
+  </section>
+  <section class="content-section detail-info-grid">
+    <article><h2>Objectifs</h2><p class="formatted-copy"><%= course.objectives || 'À préciser.' %></p></article>
+    <article><h2>Public cible</h2><p class="formatted-copy"><%= course.targetAudience || 'Toute personne souhaitant améliorer son anglais.' %></p></article>
+    <article><h2>Prérequis</h2><p class="formatted-copy"><%= course.prerequisites || 'Aucun prérequis particulier.' %></p></article>
+  </section>
+</main>
+
+<section class="section-block public-sessions" aria-labelledby="sessions-title">
+  <div class="section-heading"><div><p class="eyebrow">Calendrier</p><h2 id="sessions-title">Prochaines sessions</h2></div></div>
+  <% if (!course.trainingSessions.length) { %>
+    <div class="empty-state"><strong>Aucune session programmée</strong><p>De nouvelles dates seront publiées prochainement.</p></div>
+  <% } else { %>
+    <div class="public-session-grid">
+      <% course.trainingSessions.forEach((session) => { %>
+        <article class="public-session-card">
+          <span class="status <%= session.registrationOpen ? 'status-active' : 'status-inactive' %>"><%= session.registrationOpen ? 'Inscriptions ouvertes' : 'Inscriptions closes' %></span>
+          <h3><%= session.name %></h3>
+          <dl class="session-facts">
+            <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
+            <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
+            <div><dt>Horaires</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.endDate) %></dd></div>
+            <div><dt>Places</dt><dd><%= session.remainingPlaces %> restante<%= session.remainingPlaces > 1 ? 's' : '' %> sur <%= session.capacity %></dd></div>
+          </dl>
+          <% if (session.registrationOpen) { %>
+            <a class="button session-register-button" href="/register?session=<%= session.id %>">S’inscrire</a>
+          <% } else { %>
+            <span class="button session-register-button button-disabled" aria-disabled="true">Inscriptions closes</span>
+          <% } %>
+        </article>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<%- include('../../partials/footer') %>

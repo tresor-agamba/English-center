@@ -1,0 +1,42 @@
+<%- include('../../partials/header', { title }) %>
+
+<section class="catalog-hero">
+  <p class="eyebrow">English Center</p>
+  <h1>Nos formations</h1>
+  <p>Choisissez la formation qui correspond à votre niveau et à vos objectifs.</p>
+</section>
+
+<% if (!courses.length) { %>
+  <div class="empty-state catalog-empty">
+    <strong>Aucune formation disponible</strong>
+    <p>Notre nouveau catalogue sera bientôt disponible. Revenez prochainement.</p>
+  </div>
+<% } else { %>
+  <section class="course-grid" aria-label="Catalogue des formations">
+    <% courses.forEach((course) => { %>
+      <article class="course-card">
+        <div class="course-card-content">
+          <div class="course-meta">
+            <% if (course.level) { %><span><%= course.level %></span><% } %>
+            <% if (course.duration) { %><span><%= course.duration %></span><% } %>
+          </div>
+          <h2><%= course.title %></h2>
+          <p><%= course.shortDescription || course.description || 'Découvrez cette formation proposée par English Center.' %></p>
+        </div>
+        <div class="course-card-footer">
+          <div>
+            <% if (course.price !== null) { %>
+              <strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></strong>
+            <% } else { %>
+              <span>Prix sur demande</span>
+            <% } %>
+            <small><%= course.upcomingSessionCount %> session<%= course.upcomingSessionCount > 1 ? 's' : '' %> disponible<%= course.upcomingSessionCount > 1 ? 's' : '' %></small>
+          </div>
+          <a class="button button-small" href="/formations/<%= course.slug %>">Voir la formation</a>
+        </div>
+      </article>
+    <% }) %>
+  </section>
+<% } %>
+
+<%- include('../../partials/footer') %>

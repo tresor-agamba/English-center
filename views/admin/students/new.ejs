@@ -1,0 +1,17 @@
+<%- include('../../partials/header', { title }) %>
+
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p>
+  <h1>Ajouter un étudiant</h1>
+  <p class="heading-copy">Créez un compte étudiant avec un mot de passe temporaire.</p>
+  <%- include('_form', {
+    action: '/admin/students',
+    form,
+    error,
+    includePassword: true,
+    submitLabel: 'Créer le compte',
+    cancelUrl: '/admin/students'
+  }) %>
+</section>
+
+<%- include('../../partials/footer') %>

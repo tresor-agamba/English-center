@@ -1,0 +1,38 @@
+<form action="<%= action %>" method="post" class="student-form">
+  <% if (error) { %>
+    <p class="form-error" role="alert"><%= error %></p>
+  <% } %>
+
+  <div class="form-grid">
+    <div>
+      <label for="firstName">Prénom</label>
+      <input id="firstName" name="firstName" value="<%= form.firstName %>" autocomplete="given-name" maxlength="100" required />
+    </div>
+    <div>
+      <label for="lastName">Nom</label>
+      <input id="lastName" name="lastName" value="<%= form.lastName %>" autocomplete="family-name" maxlength="100" required />
+    </div>
+  </div>
+
+  <label for="phoneNumber">Numéro de téléphone</label>
+  <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="+243812345678" required />
+
+  <% if (includePassword) { %>
+    <div class="form-grid">
+      <div>
+        <label for="password">Mot de passe temporaire</label>
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+      </div>
+      <div>
+        <label for="passwordConfirmation">Confirmation</label>
+        <input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required />
+      </div>
+    </div>
+    <p class="form-hint">Le mot de passe doit contenir au moins 8 caractères.</p>
+  <% } %>
+
+  <div class="form-actions">
+    <button class="button" type="submit"><%= submitLabel %></button>
+    <a href="<%= cancelUrl %>">Annuler</a>
+  </div>
+</form>
