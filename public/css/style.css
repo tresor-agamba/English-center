@@ -561,6 +561,57 @@ a {
 .payment-notice-failed { color: #b42318; background: #fee4e2; }
 .success-actions form, .success-actions form .button { margin: 0; }
 
+.trial-notice {
+  display: grid;
+  gap: 0.2rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.65rem;
+  text-align: left;
+}
+
+.trial-notice-active {
+  color: #175cd3;
+  background: #eff4ff;
+}
+
+.trial-notice-blocked {
+  color: #b54708;
+  background: #fef0c7;
+}
+
+.trial-notice-confirmed {
+  color: #067647;
+  background: #dcfae6;
+}
+
+.meeting-list {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.meeting-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.meeting-list article div {
+  display: grid;
+}
+
+.meeting-list article div span {
+  color: var(--muted);
+}
+
+.meeting-list .button {
+  flex: 0 0 auto;
+  margin: 0;
+}
+
 .eyebrow {
   color: var(--primary);
   font-weight: 700;
@@ -1066,6 +1117,11 @@ tr:last-child td { border-bottom: 0; }
     border-bottom: 1px solid var(--border);
   }
   .payment-details div:last-child { border-bottom: 0; }
+
+  .meeting-list article {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (min-width: 521px) and (max-width: 860px) {

@@ -164,12 +164,12 @@ test('inscription autonome à une session', async (t) => {
       const enrollment = await prisma.enrollment.findUnique({ where: { id: enrollmentId } });
       assert.equal(enrollment.userId, user.id);
       assert.equal(enrollment.trainingSessionId, validSessionId);
-      assert.equal(enrollment.status, 'PENDING_PAYMENT');
+      assert.equal(enrollment.status, 'TRIAL_ACTIVE');
 
       const success = await fetch(`${baseUrl}${location}`, { headers: { Cookie: authCookie } });
       assert.equal(success.status, 200);
       const successHtml = await success.text();
-      assert.match(successHtml, /En attente de paiement/);
+      assert.match(successHtml, /Inscription gratuite active/);
       assert.doesNotMatch(successHtml, new RegExp(user.passwordHash.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
     });
 
@@ -190,7 +190,7 @@ test('inscription autonome à une session', async (t) => {
       assert.equal(anonymous.headers.get('location'), '/login');
 
       const otherEnrollment = await prisma.enrollment.create({
-        data: { userId: otherUserId, trainingSessionId: validSessionId, status: 'PENDING_PAYMENT' },
+        data: { userId: otherUserId, trainingSessionId: validSessionId, status: 'TRIAL_ACTIVE' },
       });
       const forbidden = await fetch(`${baseUrl}/registration/success/${otherEnrollment.id}`, {
         headers: { Cookie: authCookie },

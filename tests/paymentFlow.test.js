@@ -49,7 +49,7 @@ test('architecture interne des paiements', async (t) => {
       },
     });
     return prisma.enrollment.create({
-      data: { userId, trainingSessionId: session.id, status: 'PENDING_PAYMENT' },
+      data: { userId, trainingSessionId: session.id, status: 'TRIAL_ACTIVE' },
     });
   }
 
@@ -202,7 +202,7 @@ test('architecture interne des paiements', async (t) => {
       const unchangedEnrollment = await prisma.enrollment.findUnique({ where: { id: enrollment.id } });
       assert.equal(failed.status, 'FAILED');
       assert.equal(failed.failureReason, 'Simulation de paiement échoué');
-      assert.equal(unchangedEnrollment.status, 'PENDING_PAYMENT');
+      assert.equal(unchangedEnrollment.status, 'TRIAL_ACTIVE');
 
       const retry = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: enrollment.id });
       assert.notEqual(retry.paymentReference, attempt.paymentReference);
@@ -227,7 +227,7 @@ test('architecture interne des paiements', async (t) => {
       );
       const expired = await prisma.payment.findUnique({ where: { reference: attempt.paymentReference } });
       assert.equal(expired.status, 'EXPIRED');
-      assert.equal((await prisma.enrollment.findUnique({ where: { id: enrollment.id } })).status, 'PENDING_PAYMENT');
+      assert.equal((await prisma.enrollment.findUnique({ where: { id: enrollment.id } })).status, 'TRIAL_ACTIVE');
       const retry = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: enrollment.id });
       assert.notEqual(retry.paymentReference, attempt.paymentReference);
     });

@@ -22,10 +22,34 @@ enum TrainingSessionStatus {
 }
 
 enum EnrollmentStatus {
-  PENDING_PAYMENT
+  TRIAL_ACTIVE
+  PAYMENT_REQUIRED
   CONFIRMED
   CANCELLED
   PAYMENT_FAILED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+}
+
+enum CourseType {
+  GENERAL_ENGLISH
+  BUSINESS_ENGLISH
+  ENGLISH_FOR_BANKERS
+  CONVERSATION
+  IELTS_PREPARATION
+  BEGINNER_ENGLISH
+  OTHER
+}
+
+enum DurationUnit {
+  HOURS
+  DAYS
+  WEEKS
+  MONTHS
 }
 
 enum PaymentStatus {
@@ -63,6 +87,9 @@ model TrainingSession {
   endDate              DateTime              @map("end_date")
   registrationDeadline DateTime              @map("registration_deadline")
   capacity             Int
+  weekDays            String[]              @default([]) @map("week_days")
+  startTime           String                @default("00:00") @map("start_time")
+  endTime             String                @default("00:00") @map("end_time")
   platform             String?
   timezone             String                @default("Africa/Kinshasa")
   status               TrainingSessionStatus @default(DRAFT)
@@ -70,6 +97,7 @@ model TrainingSession {
   updatedAt            DateTime              @updatedAt @map("updated_at")
   course               Course                @relation(fields: [courseId], references: [id], onDelete: Cascade)
   enrollments          Enrollment[]
+  classMeetings        ClassMeeting[]
   user                 User?                 @relation(fields: [userId], references: [id])
   userId               Int?
 
@@ -84,8 +112,11 @@ model Course {
   slug             String            @unique
   description      String?
   shortDescription String?           @map("short_description")
+  courseType       CourseType        @default(OTHER) @map("course_type")
   level            String?
   duration         String?
+  durationValue    Int?              @map("duration_value")
+  durationUnit     DurationUnit?     @map("duration_unit")
   objectives       String?
   targetAudience   String?           @map("target_audience")
   prerequisites    String?
@@ -124,17 +155,49 @@ model Enrollment {
   id                Int              @id @default(autoincrement())
   userId            Int              @map("user_id")
   trainingSessionId Int              @map("training_session_id")
-  status            EnrollmentStatus @default(PENDING_PAYMENT)
+  status            EnrollmentStatus @default(TRIAL_ACTIVE)
   enrolledAt        DateTime         @default(now()) @map("enrolled_at")
   user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   trainingSession   TrainingSession  @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
   course            Course?          @relation(fields: [courseId], references: [id])
   courseId          Int?
   payments          Payment[]
+  attendances       Attendance[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
   @@map("enrollments")
+}
+
+model ClassMeeting {
+  id                Int             @id @default(autoincrement())
+  title             String?
+  startsAt          DateTime        @map("starts_at")
+  endsAt            DateTime        @map("ends_at")
+  privateMeetingUrl String          @map("private_meeting_url")
+  trainingSessionId Int             @map("training_session_id")
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  attendances       Attendance[]
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@index([trainingSessionId])
+  @@map("class_meetings")
+}
+
+model Attendance {
+  id             Int              @id @default(autoincrement())
+  enrollmentId   Int              @map("enrollment_id")
+  classMeetingId Int              @map("class_meeting_id")
+  status         AttendanceStatus
+  enrollment     Enrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  classMeeting   ClassMeeting     @relation(fields: [classMeetingId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([enrollmentId, classMeetingId])
+  @@index([classMeetingId])
+  @@map("attendances")
 }
 
 model Payment {

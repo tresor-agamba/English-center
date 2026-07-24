@@ -8,6 +8,8 @@ const publicCourseRoutes = require('./routes/publicCourseRoutes');
 const registrationRoutes = require('./routes/registrationRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const classMeetingRoutes = require('./routes/classMeetingRoutes');
+const adminAttendanceRoutes = require('./routes/adminAttendanceRoutes');
 const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminStudentRoutes = require('./routes/adminStudentRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
@@ -43,9 +45,11 @@ app.use('/formations', publicCourseRoutes);
 app.use(registrationRoutes);
 app.use(enrollmentRoutes);
 app.use(paymentRoutes);
+app.use(classMeetingRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);
+app.use('/admin/attendances', requireAdmin, adminAttendanceRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', {

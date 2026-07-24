@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const registrationService = require('../services/registrationService');
+const trialAccessService = require('../services/trialAccessService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
 
 const PASSWORD_COST = 12;
@@ -134,9 +135,13 @@ async function success(req, res) {
     throw error;
   }
 
+  const learningOverview = await trialAccessService.getLearningOverview(enrollment.id);
+  enrollment.status = learningOverview.trialAccess.enrollmentStatus;
   return res.render('public/registration/success', {
     title: 'Inscription enregistrée',
     enrollment,
+    trialAccess: learningOverview.trialAccess,
+    classMeetings: learningOverview.classMeetings,
   });
 }
 

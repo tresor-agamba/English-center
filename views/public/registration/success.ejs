@@ -2,7 +2,8 @@
 
 <section class="registration-success">
   <% const statusDisplay = {
-    PENDING_PAYMENT: { label: 'En attente de paiement', className: 'status-pending' },
+    TRIAL_ACTIVE: { label: 'Inscription gratuite active', className: 'status-active' },
+    PAYMENT_REQUIRED: { label: 'Paiement requis', className: 'status-pending' },
     CONFIRMED: { label: 'Inscription confirmée', className: 'status-active' },
     CANCELLED: { label: 'Inscription annulée', className: 'status-inactive' },
     PAYMENT_FAILED: { label: 'Paiement échoué', className: 'status-inactive' }
@@ -24,6 +25,24 @@
     <div><span>Statut</span><strong class="status <%= statusDisplay.className %>"><%= statusDisplay.label %></strong></div>
   </div>
 
+  <% if (enrollment.status === 'TRIAL_ACTIVE') { %>
+    <div class="trial-notice trial-notice-active">
+      <strong>Votre essai gratuit est actif.</strong>
+      <span>Séances suivies : <%= trialAccess.trialAttendanceCount %> sur <%= trialAccess.trialLimit %></span>
+      <span>Séances gratuites restantes : <%= trialAccess.remainingTrialAttendances %></span>
+    </div>
+  <% } else if (enrollment.status === 'PAYMENT_REQUIRED') { %>
+    <div class="trial-notice trial-notice-blocked">
+      <strong>Vos trois séances gratuites sont terminées.</strong>
+      <span>Payez la formation pour continuer à accéder aux cours.</span>
+    </div>
+  <% } else if (enrollment.status === 'CONFIRMED') { %>
+    <div class="trial-notice trial-notice-confirmed">
+      <strong>Accès complet à la formation</strong>
+      <span>Votre paiement est confirmé et la limite d’essai ne s’applique plus.</span>
+    </div>
+  <% } %>
+
   <% if (successfulPayment) { %>
     <div class="payment-notice payment-notice-success">
       <strong>Paiement confirmé</strong>
@@ -43,7 +62,7 @@
   <% } %>
 
   <div class="success-actions">
-    <% if (enrollment.status === 'PENDING_PAYMENT') { %>
+    <% if (['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) { %>
       <form action="/payments" method="post">
         <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>" />
         <button class="button" type="submit"><%= latestPayment && latestPayment.status === 'FAILED' ? 'Réessayer le paiement' : 'Payer maintenant' %></button>
@@ -52,6 +71,25 @@
     <span class="future-link" aria-disabled="true">Espace étudiant — bientôt disponible</span>
     <a href="/">Retour à l’accueil</a>
   </div>
+
+  <% if (classMeetings.length) { %>
+    <section class="meeting-list">
+      <h2>Séances de formation</h2>
+      <% classMeetings.forEach((meeting) => { %>
+        <article>
+          <div>
+            <strong><%= meeting.title || 'Séance de formation' %></strong>
+            <span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(meeting.startsAt) %></span>
+          </div>
+          <% if (trialAccess.hasCourseAccess) { %>
+            <a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Accéder au cours</a>
+          <% } else { %>
+            <span class="status status-inactive">Accès bloqué</span>
+          <% } %>
+        </article>
+      <% }) %>
+    </section>
+  <% } %>
 </section>
 
 <%- include('../../partials/footer') %>

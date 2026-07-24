@@ -1,7 +1,7 @@
 const prisma = require('../utils/prisma');
+const { OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
 
 const PUBLIC_SESSION_STATUSES = ['OPEN', 'FULL'];
-const OCCUPYING_ENROLLMENT_STATUSES = ['PENDING_PAYMENT', 'CONFIRMED'];
 
 function futureSessionWhere(now) {
   return {

@@ -1,7 +1,8 @@
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
+const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
 
-const OCCUPYING_STATUSES = ['PENDING_PAYMENT', 'CONFIRMED'];
+const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
 
 class RegistrationError extends Error {
@@ -173,7 +174,7 @@ async function runRegistrationTransaction({ sessionId, firstName, lastName, phon
         data: {
           userId: user.id,
           trainingSessionId: session.id,
-          status: 'PENDING_PAYMENT',
+          status: 'TRIAL_ACTIVE',
         },
         select: { id: true, status: true },
       });
@@ -219,9 +220,16 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
 
       const availableSession = validateSession(session, now);
       if (existingEnrollment) {
+        const presentCount = await tx.attendance.count({
+          where: { enrollmentId: existingEnrollment.id, status: 'PRESENT' },
+        });
+        const reactivatedStatus =
+          existingEnrollment.status === 'PAYMENT_FAILED' && presentCount >= TRIAL_LIMIT
+            ? 'PAYMENT_REQUIRED'
+            : 'TRIAL_ACTIVE';
         const enrollment = await tx.enrollment.update({
           where: { id: existingEnrollment.id },
-          data: { status: 'PENDING_PAYMENT', enrolledAt: new Date() },
+          data: { status: reactivatedStatus, enrolledAt: new Date() },
           select: { id: true, status: true },
         });
         return { enrollment, reused: true, reactivated: true };
@@ -231,7 +239,7 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
         data: {
           userId: user.id,
           trainingSessionId: availableSession.id,
-          status: 'PENDING_PAYMENT',
+          status: 'TRIAL_ACTIVE',
         },
         select: { id: true, status: true },
       });

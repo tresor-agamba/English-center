@@ -94,7 +94,7 @@ test('inscription d’un étudiant existant', async (t) => {
 
     await prisma.enrollment.createMany({
       data: [
-        { userId: student.id, trainingSessionId: pendingSession.id, status: 'PENDING_PAYMENT' },
+        { userId: student.id, trainingSessionId: pendingSession.id, status: 'TRIAL_ACTIVE' },
         { userId: student.id, trainingSessionId: confirmedSession.id, status: 'CONFIRMED' },
         { userId: student.id, trainingSessionId: cancelledEnrollmentSession.id, status: 'CANCELLED' },
         { userId: student.id, trainingSessionId: failedEnrollmentSession.id, status: 'PAYMENT_FAILED' },
@@ -154,7 +154,7 @@ test('inscription d’un étudiant existant', async (t) => {
       });
       assert.ok(createdEnrollment);
       assert.equal(createdEnrollment.userId, student.id);
-      assert.equal(createdEnrollment.status, 'PENDING_PAYMENT');
+      assert.equal(createdEnrollment.status, 'TRIAL_ACTIVE');
       assert.equal(
         await prisma.enrollment.count({ where: { userId: secondStudent.id, trainingSessionId: validSession.id } }),
         0
@@ -163,7 +163,7 @@ test('inscription d’un étudiant existant', async (t) => {
 
     await t.test('redirige les inscriptions en attente ou confirmées vers leur récapitulatif', async () => {
       for (const [session, expectedLabel] of [
-        [pendingSession, 'En attente de paiement'],
+        [pendingSession, 'Inscription gratuite active'],
         [confirmedSession, 'Inscription confirmée'],
       ]) {
         const enrollment = await prisma.enrollment.findUnique({
@@ -192,7 +192,7 @@ test('inscription d’un étudiant existant', async (t) => {
         const after = await prisma.enrollment.findUnique({ where: { id: before.id } });
         assert.equal(result.reactivated, true);
         assert.equal(after.id, before.id);
-        assert.equal(after.status, 'PENDING_PAYMENT');
+        assert.equal(after.status, 'TRIAL_ACTIVE');
         assert.equal(
           await prisma.enrollment.count({ where: { userId: student.id, trainingSessionId: session.id } }),
           1

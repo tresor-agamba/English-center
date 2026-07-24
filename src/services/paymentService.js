@@ -89,6 +89,7 @@ async function loadEnrollmentForPayment(client, enrollmentId, userId) {
           id: true,
           status: true,
           startDate: true,
+          endDate: true,
           registrationDeadline: true,
           course: {
             select: {
@@ -114,15 +115,12 @@ function validatePayableEnrollment(enrollment, now) {
   if (enrollment.status === 'CONFIRMED') {
     throw new PaymentError('ENROLLMENT_CONFIRMED', 'Cette inscription est déjà confirmée.');
   }
-  if (enrollment.status !== 'PENDING_PAYMENT') {
+  if (!['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) {
     throw new PaymentError('ENROLLMENT_NOT_PAYABLE', 'Cette inscription ne peut pas être payée.');
   }
   const session = enrollment.trainingSession;
-  if (!session.course.isPublished || session.startDate < now || !['OPEN', 'FULL'].includes(session.status)) {
+  if (!session.course.isPublished || session.endDate < now || !['OPEN', 'FULL', 'ONGOING'].includes(session.status)) {
     throw new PaymentError('SESSION_UNAVAILABLE', 'Cette session n’est plus disponible.');
-  }
-  if (session.registrationDeadline < now) {
-    throw new PaymentError('REGISTRATION_CLOSED', 'La date limite d’inscription est dépassée.');
   }
   if (session.course.price === null || Number(session.course.price) < 0) {
     throw new PaymentError('PRICE_UNAVAILABLE', 'Le prix de cette formation n’est pas disponible.');
