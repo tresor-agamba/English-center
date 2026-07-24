@@ -1,0 +1,62 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="registration-layout">
+  <section class="card registration-form-card">
+    <p class="eyebrow">Créer mon compte</p>
+    <h1>S’inscrire à la session</h1>
+    <p>Vos informations serviront à créer votre compte étudiant.</p>
+
+    <% if (error) { %>
+      <div class="form-error" role="alert">
+        <p><%= error %></p>
+        <% if (accountExists) { %>
+          <a href="/login?session=<%= session.id %>">Se connecter pour continuer</a>
+        <% } %>
+      </div>
+    <% } %>
+
+    <form action="/register" method="post">
+      <input type="hidden" name="sessionId" value="<%= session.id %>" />
+      <div class="form-grid">
+        <div>
+          <label for="firstName">Prénom</label>
+          <input id="firstName" name="firstName" value="<%= form.firstName %>" autocomplete="given-name" maxlength="100" required />
+        </div>
+        <div>
+          <label for="lastName">Nom</label>
+          <input id="lastName" name="lastName" value="<%= form.lastName %>" autocomplete="family-name" maxlength="100" required />
+        </div>
+      </div>
+      <label for="phoneNumber">Numéro de téléphone</label>
+      <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="+243812345678" required />
+      <div class="form-grid">
+        <div>
+          <label for="password">Mot de passe</label>
+          <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+        </div>
+        <div>
+          <label for="passwordConfirmation">Confirmation</label>
+          <input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required />
+        </div>
+      </div>
+      <p class="form-hint">Utilisez au moins 8 caractères. Votre mot de passe ne sera jamais affiché.</p>
+      <button class="button" type="submit">Créer mon compte et réserver ma place</button>
+    </form>
+  </section>
+
+  <aside class="registration-summary" aria-label="Session sélectionnée">
+    <p class="eyebrow">Votre choix</p>
+    <h2><%= session.course.title %></h2>
+    <h3><%= session.name %></h3>
+    <dl class="session-facts">
+      <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
+      <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
+      <div><dt>Horaires</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.endDate) %></dd></div>
+      <div><dt>Mode</dt><dd><%= session.course.trainingMode || 'À préciser' %></dd></div>
+      <div><dt>Prix</dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>
+      <div><dt>Disponibilité</dt><dd><%= session.remainingPlaces %> place<%= session.remainingPlaces > 1 ? 's' : '' %> restante<%= session.remainingPlaces > 1 ? 's' : '' %></dd></div>
+    </dl>
+  </aside>
+</div>
+
+<%- include('../../partials/footer') %>

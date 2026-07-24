@@ -21,6 +21,13 @@ enum TrainingSessionStatus {
   CANCELLED
 }
 
+enum EnrollmentStatus {
+  PENDING_PAYMENT
+  CONFIRMED
+  CANCELLED
+  PAYMENT_FAILED
+}
+
 model User {
   id               Int               @id @default(autoincrement())
   firstName        String            @map("first_name")
@@ -102,13 +109,14 @@ model Lesson {
 }
 
 model Enrollment {
-  id                Int             @id @default(autoincrement())
-  userId            Int             @map("user_id")
-  trainingSessionId Int             @map("training_session_id")
-  enrolledAt        DateTime        @default(now()) @map("enrolled_at")
-  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
-  course            Course?         @relation(fields: [courseId], references: [id])
+  id                Int              @id @default(autoincrement())
+  userId            Int              @map("user_id")
+  trainingSessionId Int              @map("training_session_id")
+  status            EnrollmentStatus @default(PENDING_PAYMENT)
+  enrolledAt        DateTime         @default(now()) @map("enrolled_at")
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainingSession   TrainingSession  @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  course            Course?          @relation(fields: [courseId], references: [id])
   courseId          Int?
 
   @@unique([userId, trainingSessionId])

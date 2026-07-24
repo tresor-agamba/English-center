@@ -289,6 +289,150 @@ a {
   opacity: 0.55;
 }
 
+.registration-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.registration-form-card {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.registration-form-card h1 {
+  margin-bottom: 0.25rem;
+}
+
+.registration-form-card > p:not(.eyebrow) {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.registration-form-card .form-error p {
+  margin: 0 0 0.35rem;
+}
+
+.registration-form-card .form-error a {
+  color: #912018;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.registration-summary {
+  position: sticky;
+  top: 1rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  background: var(--surface);
+  box-shadow: 0 10px 30px rgb(23 32 51 / 5%);
+}
+
+.registration-summary .eyebrow {
+  margin: 0;
+}
+
+.registration-summary h2 {
+  margin: 0.2rem 0 0;
+}
+
+.registration-summary h3 {
+  margin: 0.25rem 0 1.25rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+.registration-summary .session-facts {
+  grid-template-columns: 1fr;
+}
+
+.registration-success {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  box-shadow: 0 16px 45px rgb(23 32 51 / 7%);
+  text-align: center;
+}
+
+.registration-success h1 {
+  margin: 0.2rem 0 0.75rem;
+}
+
+.registration-success > p:not(.eyebrow) {
+  color: var(--muted);
+}
+
+.success-icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  place-items: center;
+  color: #067647;
+  background: #dcfae6;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.success-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 2rem 0;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  text-align: left;
+}
+
+.success-summary > div {
+  display: grid;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.success-summary > div:nth-child(odd) {
+  border-right: 1px solid var(--border);
+}
+
+.success-summary > div:nth-last-child(-n + 2) {
+  border-bottom: 0;
+}
+
+.success-summary span:not(.status) {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.status-pending {
+  width: fit-content;
+  color: #b54708;
+  background: #fef0c7;
+}
+
+.success-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.success-actions .button {
+  margin: 0;
+}
+
+.future-link {
+  color: var(--muted);
+}
+
 .eyebrow {
   color: var(--primary);
   font-weight: 700;
@@ -745,10 +889,37 @@ tr:last-child td { border-bottom: 0; }
   .course-detail-hero {
     padding: 1.5rem;
   }
+
+  .registration-layout,
+  .success-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .registration-summary {
+    position: static;
+  }
+
+  .success-summary > div,
+  .success-summary > div:nth-child(odd),
+  .success-summary > div:nth-last-child(-n + 2) {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .success-summary > div:last-child {
+    border-bottom: 0;
+  }
+
+  .success-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (min-width: 521px) and (max-width: 860px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-grid { grid-template-columns: 1fr; }
   .detail-info-grid { grid-template-columns: 1fr; }
+  .registration-layout { grid-template-columns: 1fr; }
+  .registration-summary { position: static; }
 }

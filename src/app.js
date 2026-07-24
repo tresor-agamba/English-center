@@ -5,6 +5,7 @@ const session = require('express-session');
 const webRoutes = require('./routes/webRoutes');
 const authRoutes = require('./routes/authRoutes');
 const publicCourseRoutes = require('./routes/publicCourseRoutes');
+const registrationRoutes = require('./routes/registrationRoutes');
 const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminStudentRoutes = require('./routes/adminStudentRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
@@ -37,6 +38,7 @@ app.use(
 app.use(webRoutes);
 app.use(authRoutes);
 app.use('/formations', publicCourseRoutes);
+app.use(registrationRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);

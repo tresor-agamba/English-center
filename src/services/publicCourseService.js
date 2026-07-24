@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 
 const PUBLIC_SESSION_STATUSES = ['OPEN', 'FULL'];
+const OCCUPYING_ENROLLMENT_STATUSES = ['PENDING_PAYMENT', 'CONFIRMED'];
 
 function futureSessionWhere(now) {
   return {
@@ -30,7 +31,11 @@ async function listPublished() {
           capacity: true,
           status: true,
           registrationDeadline: true,
-          _count: { select: { enrollments: true } },
+          _count: {
+            select: {
+              enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },
+            },
+          },
         },
       },
     },
@@ -76,7 +81,11 @@ async function findPublishedBySlug(slug) {
           registrationDeadline: true,
           capacity: true,
           status: true,
-          _count: { select: { enrollments: true } },
+          _count: {
+            select: {
+              enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },
+            },
+          },
         },
       },
     },
