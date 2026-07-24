@@ -33,7 +33,7 @@ async function login(req, res, next) {
     req.session.user = user;
     return req.session.save((saveError) => {
       if (saveError) return next(saveError);
-      return res.redirect(user.role === 'ADMIN' ? '/admin/sessions' : '/');
+      return res.redirect(user.role === 'ADMIN' ? '/admin/dashboard' : '/');
     });
   });
 }

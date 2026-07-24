@@ -1,0 +1,99 @@
+<%- include('../partials/header', { title }) %>
+
+<div class="page-heading dashboard-heading">
+  <div>
+    <p class="eyebrow">Administration</p>
+    <h1>Tableau de bord</h1>
+    <p class="heading-copy">Vue d’ensemble de l’activité d’English Center.</p>
+  </div>
+</div>
+
+<section class="stats-grid" aria-label="Statistiques principales">
+  <article class="stat-card">
+    <span class="stat-label">Étudiants</span>
+    <strong class="stat-value"><%= stats.students %></strong>
+    <a href="/admin/students">Gérer les étudiants</a>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Formations</span>
+    <strong class="stat-value"><%= stats.courses %></strong>
+    <a href="/admin/courses">Gérer les formations</a>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Sessions</span>
+    <strong class="stat-value"><%= stats.sessions %></strong>
+    <a href="/admin/sessions">Gérer les sessions</a>
+  </article>
+  <article class="stat-card">
+    <span class="stat-label">Inscriptions</span>
+    <strong class="stat-value"><%= stats.enrollments %></strong>
+    <a href="/admin/enrollments">Gérer les inscriptions</a>
+  </article>
+</section>
+
+<div class="dashboard-grid">
+  <section class="dashboard-panel" aria-labelledby="upcoming-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Calendrier</p>
+        <h2 id="upcoming-title">Prochaines sessions</h2>
+      </div>
+      <a href="/admin/sessions">Tout voir</a>
+    </div>
+
+    <% if (!upcomingSessions.length) { %>
+      <div class="empty-state">
+        <strong>Aucune session à venir</strong>
+        <p>Les prochaines sessions apparaîtront ici dès leur création.</p>
+        <a class="button button-small" href="/admin/sessions/new">Créer une session</a>
+      </div>
+    <% } else { %>
+      <ul class="dashboard-list">
+        <% upcomingSessions.forEach((session) => { %>
+          <li>
+            <div>
+              <strong><%= session.name %></strong>
+              <span><%= session.course.title %></span>
+            </div>
+            <time datetime="<%= session.startDate.toISOString() %>">
+              <%= new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(session.startDate) %>
+            </time>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+
+  <section class="dashboard-panel" aria-labelledby="students-title">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Communauté</p>
+        <h2 id="students-title">Nouveaux étudiants</h2>
+      </div>
+      <a href="/admin/students">Tout voir</a>
+    </div>
+
+    <% if (!recentStudents.length) { %>
+      <div class="empty-state">
+        <strong>Aucun étudiant</strong>
+        <p>Les nouveaux étudiants apparaîtront ici après leur inscription.</p>
+      </div>
+    <% } else { %>
+      <ul class="dashboard-list student-list">
+        <% recentStudents.forEach((student) => { %>
+          <li>
+            <div>
+              <strong><%= student.firstName %> <%= student.lastName %></strong>
+              <span><%= student.phoneNumber %></span>
+            </div>
+            <time datetime="<%= student.createdAt.toISOString() %>">
+              <%= new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: 'short' }).format(student.createdAt) %>
+            </time>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+  </section>
+</div>
+
+<%- include('../partials/footer') %>

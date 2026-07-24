@@ -4,6 +4,7 @@ const session = require('express-session');
 
 const webRoutes = require('./routes/webRoutes');
 const authRoutes = require('./routes/authRoutes');
+const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
 const requireAdmin = require('./middlewares/requireAdmin');
 const errorHandler = require('./middlewares/errorHandler');
@@ -33,6 +34,7 @@ app.use(
 
 app.use(webRoutes);
 app.use(authRoutes);
+app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);
 
 app.use((req, res) => {

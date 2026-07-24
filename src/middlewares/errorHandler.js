@@ -7,9 +7,9 @@ function errorHandler(error, req, res, next) {
 
   const statusCode = error.statusCode || 500;
   const message =
-    process.env.NODE_ENV === 'production'
-      ? 'Une erreur interne est survenue.'
-      : error.message || 'Une erreur interne est survenue.';
+    statusCode >= 500
+      ? 'Une erreur interne est survenue. Veuillez réessayer plus tard.'
+      : error.message || 'Une erreur est survenue.';
 
   return res.status(statusCode).render('error', {
     title: 'Erreur',
