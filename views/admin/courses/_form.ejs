@@ -1,0 +1,71 @@
+<form action="<%= action %>" method="post" class="course-admin-form">
+  <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
+
+  <label for="title">Titre</label>
+  <input id="title" name="title" value="<%= form.title || '' %>" maxlength="160" required />
+
+  <div class="form-grid">
+    <div>
+      <label for="courseType">Type de formation</label>
+      <select id="courseType" name="courseType" required>
+        <% Object.entries(courseTypes).forEach(([value, label]) => { %>
+          <option value="<%= value %>" <%= (form.courseType || 'OTHER') === value ? 'selected' : '' %>><%= label %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div>
+      <label for="level">Niveau</label>
+      <input id="level" name="level" value="<%= form.level || '' %>" placeholder="Débutant, intermédiaire…" maxlength="100" required />
+    </div>
+  </div>
+
+  <div class="form-grid">
+    <div>
+      <label for="durationValue">Durée</label>
+      <input id="durationValue" name="durationValue" type="number" min="1" value="<%= form.durationValue || '' %>" required />
+    </div>
+    <div>
+      <label for="durationUnit">Unité</label>
+      <select id="durationUnit" name="durationUnit" required>
+        <% Object.keys(durationUnits).forEach((value) => { %>
+          <option value="<%= value %>" <%= form.durationUnit === value ? 'selected' : '' %>><%= durationUnits[value][1] %></option>
+        <% }) %>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-grid">
+    <div>
+      <label for="price">Prix</label>
+      <input id="price" name="price" type="number" min="0" step="0.01" value="<%= form.price !== undefined && form.price !== null ? form.price : '' %>" required />
+    </div>
+    <div>
+      <label for="currency">Devise</label>
+      <select id="currency" name="currency" required>
+        <% currencies.forEach((currency) => { %><option value="<%= currency %>" <%= (form.currency || 'USD') === currency ? 'selected' : '' %>><%= currency %></option><% }) %>
+      </select>
+    </div>
+  </div>
+
+  <label for="shortDescription">Courte description</label>
+  <textarea id="shortDescription" name="shortDescription" rows="3"><%= form.shortDescription || '' %></textarea>
+  <label for="description">Description complète</label>
+  <textarea id="description" name="description" rows="6"><%= form.description || '' %></textarea>
+  <label for="objectives">Objectifs</label>
+  <textarea id="objectives" name="objectives" rows="4"><%= form.objectives || '' %></textarea>
+  <label for="targetAudience">Public cible</label>
+  <textarea id="targetAudience" name="targetAudience" rows="3"><%= form.targetAudience || '' %></textarea>
+  <label for="prerequisites">Prérequis</label>
+  <textarea id="prerequisites" name="prerequisites" rows="3"><%= form.prerequisites || '' %></textarea>
+
+  <label class="checkbox-label">
+    <input name="isPublished" type="checkbox" <%= form.isPublished === true || form.isPublished === 'on' ? 'checked' : '' %> />
+    Publier cette formation
+  </label>
+  <p class="form-hint">Mode imposé : formation 100 % en ligne. Le slug est généré automatiquement.</p>
+
+  <div class="form-actions">
+    <button class="button" type="submit"><%= submitLabel %></button>
+    <a href="/admin/courses">Annuler</a>
+  </div>
+</form>

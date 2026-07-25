@@ -24,7 +24,7 @@
       <div><dt>Session</dt><dd><%= session.name %></dd></div>
       <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
       <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
-      <div><dt>Horaires</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.endDate) %></dd></div>
+      <div><dt>Horaires</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
       <div><dt>Plateforme</dt><dd><%= session.platform || session.course.trainingMode || 'En ligne' %></dd></div>
       <div><dt>Fuseau horaire</dt><dd><%= session.timezone %></dd></div>
       <div><dt>Prix</dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>

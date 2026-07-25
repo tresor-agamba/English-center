@@ -1,10 +1,13 @@
 const publicCourseService = require('../services/publicCourseService');
+const { formatCourseType, formatDuration, formatWeekDays } = require('../utils/catalogFormat.util');
 
 async function index(req, res) {
   const courses = await publicCourseService.listPublished();
   return res.render('public/courses/index', {
     title: 'Nos formations',
     courses,
+    formatCourseType,
+    formatDuration,
   });
 }
 
@@ -28,6 +31,9 @@ async function show(req, res) {
   return res.render('public/courses/show', {
     title: course.title,
     course,
+    formatCourseType,
+    formatDuration,
+    formatWeekDays,
   });
 }
 

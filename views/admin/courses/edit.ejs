@@ -1,0 +1,12 @@
+<%- include('../../partials/header', { title }) %>
+<section class="card wide-card">
+  <div class="page-heading compact-heading">
+    <div><p class="eyebrow">Administration</p><h1>Modifier la formation</h1><p class="heading-copy">/<%= course.slug %></p></div>
+    <form action="/admin/courses/<%= course.id %>/toggle-published" method="post">
+      <button class="button button-small <%= course.isPublished ? 'button-danger' : '' %>" type="submit"><%= course.isPublished ? 'Dépublier' : 'Publier' %></button>
+    </form>
+  </div>
+  <% if (success) { %><p class="success-message">La formation a été enregistrée.</p><% } %>
+  <%- include('_form', { action: `/admin/courses/${course.id}`, form, error, courseTypes, durationUnits, currencies, submitLabel: 'Enregistrer' }) %>
+</section>
+<%- include('../../partials/footer') %>

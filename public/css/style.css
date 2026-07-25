@@ -680,12 +680,79 @@ label {
   background: #ecfdf3;
 }
 
-input {
+input,
+textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--border);
   border-radius: 0.4rem;
   font: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.checkbox-label input {
+  width: auto;
+}
+
+.weekday-fieldset {
+  margin: 0.75rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+}
+
+.weekday-fieldset legend {
+  padding: 0 0.4rem;
+  font-weight: 700;
+}
+
+.weekday-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.course-admin-form {
+  margin-top: 1.25rem;
+}
+
+.compact-heading {
+  margin-bottom: 1rem;
+}
+
+.compact-heading form,
+.compact-heading .button {
+  margin: 0;
+}
+
+.status-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.status-actions form,
+.status-actions .button {
+  margin: 0;
+}
+
+.online-course-label {
+  margin: 0;
+  padding: 0.65rem 1.5rem;
+  color: var(--primary-dark);
+  background: #eff4ff;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 select {
@@ -1121,6 +1188,10 @@ tr:last-child td { border-bottom: 0; }
   .meeting-list article {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .weekday-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

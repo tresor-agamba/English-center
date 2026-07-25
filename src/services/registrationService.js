@@ -42,11 +42,14 @@ function sessionSelect(now) {
     name: true,
     startDate: true,
     endDate: true,
-      registrationDeadline: true,
-      capacity: true,
-      platform: true,
-      timezone: true,
-      status: true,
+    registrationDeadline: true,
+    capacity: true,
+    weekDays: true,
+    startTime: true,
+    endTime: true,
+    platform: true,
+    timezone: true,
+    status: true,
     course: {
       select: {
         id: true,
@@ -284,6 +287,8 @@ function findEnrollmentForViewer(enrollmentId) {
           name: true,
           startDate: true,
           endDate: true,
+          startTime: true,
+          endTime: true,
           course: {
             select: {
               title: true,

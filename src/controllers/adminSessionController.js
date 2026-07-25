@@ -1,6 +1,16 @@
 const sessionService = require('../services/trainingSessionService');
 
 const statuses = ['DRAFT', 'OPEN', 'FULL', 'ONGOING', 'COMPLETED', 'CANCELLED'];
+const weekDays = {
+  MONDAY: 'Lundi',
+  TUESDAY: 'Mardi',
+  WEDNESDAY: 'Mercredi',
+  THURSDAY: 'Jeudi',
+  FRIDAY: 'Vendredi',
+  SATURDAY: 'Samedi',
+  SUNDAY: 'Dimanche',
+};
+const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
 function validationError(message) {
   const error = new Error(message);
@@ -15,13 +25,27 @@ function parseId(value) {
 }
 
 function parseForm(body) {
+  const selectedWeekDays = Array.isArray(body.weekDays)
+    ? body.weekDays
+    : body.weekDays
+      ? [body.weekDays]
+      : [];
+  const startTime = body.startTime?.trim() || '';
+  const endTime = body.endTime?.trim() || '';
+  const startDate = new Date(`${body.startDate}T${startTime || '00:00'}:00`);
+  const endDate = new Date(`${body.endDate}T${endTime || '00:00'}:00`);
   const data = {
     name: body.name?.trim(),
     courseId: Number(body.courseId),
-    startDate: new Date(body.startDate),
-    endDate: new Date(body.endDate),
+    startDate,
+    endDate,
     registrationDeadline: new Date(body.registrationDeadline),
     capacity: Number(body.capacity),
+    weekDays: selectedWeekDays,
+    startTime,
+    endTime,
+    timezone: body.timezone?.trim(),
+    platform: body.platform?.trim() || null,
     status: body.status,
   };
 
@@ -30,6 +54,13 @@ function parseForm(body) {
   if ([data.startDate, data.endDate, data.registrationDeadline].some((date) => Number.isNaN(date.getTime()))) {
     throw validationError('Toutes les dates sont obligatoires.');
   }
+  if (!data.weekDays.length || data.weekDays.some((day) => !Object.hasOwn(weekDays, day))) {
+    throw validationError('Sélectionnez au moins un jour de cours valide.');
+  }
+  if (!timePattern.test(data.startTime) || !timePattern.test(data.endTime) || data.endTime <= data.startTime) {
+    throw validationError("L'heure de fin doit être postérieure à l'heure de début.");
+  }
+  if (!data.timezone) throw validationError('Le fuseau horaire est obligatoire.');
   if (data.endDate <= data.startDate) throw validationError('La date de fin doit être postérieure à la date de début.');
   if (data.registrationDeadline > data.startDate) {
     throw validationError("La date limite d’inscription doit précéder le début de la session.");
@@ -38,7 +69,14 @@ function parseForm(body) {
     throw validationError('La capacité doit être un nombre entier supérieur à zéro.');
   }
   if (!statuses.includes(data.status)) throw validationError('Le statut est invalide.');
+  if (['OPEN', 'FULL', 'ONGOING'].includes(data.status) && !data.platform) {
+    throw validationError('La plateforme est obligatoire pour une session ouverte ou en cours.');
+  }
   return data;
+}
+
+async function ensureCourseExists(courseId) {
+  if (!(await sessionService.findCourse(courseId))) throw validationError('La formation sélectionnée est introuvable.');
 }
 
 async function getSession(value) {
@@ -58,12 +96,24 @@ async function index(req, res) {
 
 async function newForm(req, res) {
   const courses = await sessionService.listCourses();
-  res.render('admin/sessions/new', { title: 'Nouvelle session', courses, statuses });
+  res.render('admin/sessions/new', { title: 'Nouvelle session', courses, statuses, weekDays, error: null, form: {} });
 }
 
 async function create(req, res) {
-  const session = await sessionService.create(parseForm(req.body));
-  res.redirect(`/admin/sessions/${session.id}`);
+  const courses = await sessionService.listCourses();
+  try {
+    const data = parseForm(req.body);
+    await ensureCourseExists(data.courseId);
+    const session = await sessionService.create(data);
+    return res.redirect(`/admin/sessions/${session.id}`);
+  } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).render('admin/sessions/new', {
+        title: 'Nouvelle session', courses, statuses, weekDays, error: error.message, form: req.body,
+      });
+    }
+    throw error;
+  }
 }
 
 async function show(req, res) {
@@ -73,13 +123,25 @@ async function show(req, res) {
 
 async function editForm(req, res) {
   const [session, courses] = await Promise.all([getSession(req.params.id), sessionService.listCourses()]);
-  res.render('admin/sessions/edit', { title: `Modifier ${session.name}`, session, courses, statuses });
+  res.render('admin/sessions/edit', { title: `Modifier ${session.name}`, session, form: session, courses, statuses, weekDays, error: null });
 }
 
 async function update(req, res) {
   const id = parseId(req.params.id);
-  await sessionService.update(id, parseForm(req.body));
-  res.redirect(`/admin/sessions/${id}`);
+  const [session, courses] = await Promise.all([getSession(id), sessionService.listCourses()]);
+  try {
+    const data = parseForm(req.body);
+    await ensureCourseExists(data.courseId);
+    await sessionService.update(id, data);
+    return res.redirect(`/admin/sessions/${id}`);
+  } catch (error) {
+    if (error.statusCode === 400) {
+      return res.status(400).render('admin/sessions/edit', {
+        title: `Modifier ${session.name}`, session, form: req.body, courses, statuses, weekDays, error: error.message,
+      });
+    }
+    throw error;
+  }
 }
 
 async function cancel(req, res) {
@@ -88,4 +150,15 @@ async function cancel(req, res) {
   res.redirect(`/admin/sessions/${id}`);
 }
 
-module.exports = { index, newForm, create, show, editForm, update, cancel };
+async function toggleStatus(req, res) {
+  const session = await getSession(req.params.id);
+  const status = req.body.status;
+  if (!statuses.includes(status)) throw validationError('Le statut est invalide.');
+  if (['OPEN', 'FULL', 'ONGOING'].includes(status) && !session.platform) {
+    throw validationError('La plateforme est obligatoire pour publier cette session.');
+  }
+  await sessionService.update(session.id, { status });
+  return res.redirect(`/admin/sessions/${session.id}`);
+}
+
+module.exports = { index, newForm, create, show, editForm, update, cancel, toggleStatus, parseForm, weekDays };

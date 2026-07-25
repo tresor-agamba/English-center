@@ -17,8 +17,9 @@
       <article class="course-card">
         <div class="course-card-content">
           <div class="course-meta">
+            <span><%= formatCourseType(course.courseType) %></span>
             <% if (course.level) { %><span><%= course.level %></span><% } %>
-            <% if (course.duration) { %><span><%= course.duration %></span><% } %>
+            <span><%= formatDuration(course) %></span>
           </div>
           <h2><%= course.title %></h2>
           <p><%= course.shortDescription || course.description || 'Découvrez cette formation proposée par English Center.' %></p>
@@ -34,6 +35,7 @@
           </div>
           <a class="button button-small" href="/formations/<%= course.slug %>">Voir la formation</a>
         </div>
+        <p class="online-course-label">Formation 100 % en ligne</p>
       </article>
     <% }) %>
   </section>

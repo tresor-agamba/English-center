@@ -1,0 +1,24 @@
+<%- include('../../partials/header', { title }) %>
+
+<div class="page-heading">
+  <div><p class="eyebrow">Administration</p><h1>Formations</h1></div>
+  <a class="button" href="/admin/courses/new">Créer une formation</a>
+</div>
+
+<% if (!courses.length) { %>
+  <div class="empty-state"><strong>Aucune formation</strong><p>Créez votre première formation pour alimenter le catalogue.</p></div>
+<% } else { %>
+  <div class="table-wrapper responsive-table"><table>
+    <thead><tr><th>Formation</th><th>Type</th><th>Prix</th><th>Sessions</th><th>Publication</th><th></th></tr></thead>
+    <tbody><% courses.forEach((course) => { %><tr>
+      <td data-label="Formation"><strong><%= course.title %></strong><br /><small>/<%= course.slug %></small></td>
+      <td data-label="Type"><%= typeLabels[course.courseType] %></td>
+      <td data-label="Prix"><%= course.price !== null ? `${course.price} ${course.currency}` : 'À définir' %></td>
+      <td data-label="Sessions"><%= course._count.trainingSessions %></td>
+      <td data-label="Publication"><span class="status <%= course.isPublished ? 'status-active' : 'status-inactive' %>"><%= course.isPublished ? 'Publiée' : 'Brouillon' %></span></td>
+      <td data-label="Actions"><a href="/admin/courses/<%= course.id %>/edit">Modifier</a></td>
+    </tr><% }) %></tbody>
+  </table></div>
+<% } %>
+
+<%- include('../../partials/footer') %>

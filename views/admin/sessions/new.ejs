@@ -1,6 +1,11 @@
 <%- include('../../partials/header', { title }) %>
 <section class="card wide-card">
   <p class="eyebrow">Administration</p><h1>Créer une session</h1>
-  <%- include('_form', { action: '/admin/sessions', session: null, courses, statuses, submitLabel: 'Créer la session', formatInputDate: () => '' }) %>
+  <%- include('_form', {
+    action: '/admin/sessions', session: null, form, courses, statuses, weekDays, error,
+    submitLabel: 'Créer la session',
+    formatDate: (value) => typeof value === 'string' ? value.slice(0, 10) : '',
+    formatDateTime: (value) => typeof value === 'string' ? value.slice(0, 16) : ''
+  }) %>
 </section>
 <%- include('../../partials/footer') %>

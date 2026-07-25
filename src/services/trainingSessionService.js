@@ -27,6 +27,10 @@ function listCourses() {
   return prisma.course.findMany({ orderBy: { title: 'asc' } });
 }
 
+function findCourse(id) {
+  return prisma.course.findUnique({ where: { id }, select: { id: true } });
+}
+
 function create(data) {
   return prisma.trainingSession.create({ data });
 }
@@ -42,4 +46,4 @@ function cancel(id) {
   });
 }
 
-module.exports = { list, findById, listCourses, create, update, cancel };
+module.exports = { list, findById, listCourses, findCourse, create, update, cancel };

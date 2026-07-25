@@ -3,12 +3,13 @@
 <p class="back-link"><a href="/formations">← Toutes les formations</a></p>
 
 <section class="course-detail-hero">
-  <p class="eyebrow"><%= course.level || 'Formation d’anglais' %></p>
+  <p class="eyebrow"><%= formatCourseType(course.courseType) %></p>
   <h1><%= course.title %></h1>
   <p class="course-lead"><%= course.shortDescription || course.description || '' %></p>
   <div class="course-facts">
-    <span><strong>Durée</strong><%= course.duration || 'À préciser' %></span>
-    <span><strong>Mode</strong><%= course.trainingMode || 'À préciser' %></span>
+    <span><strong>Niveau</strong><%= course.level || 'À préciser' %></span>
+    <span><strong>Durée</strong><%= formatDuration(course) %></span>
+    <span><strong>Mode</strong>Formation 100 % en ligne</span>
     <span><strong>Prix indicatif</strong><%= course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) : 'Sur demande' %></span>
   </div>
 </section>
@@ -38,8 +39,11 @@
           <dl class="session-facts">
             <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
             <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
-            <div><dt>Horaires</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(session.endDate) %></dd></div>
             <div><dt>Places</dt><dd><%= session.remainingPlaces %> restante<%= session.remainingPlaces > 1 ? 's' : '' %> sur <%= session.capacity %></dd></div>
+            <div><dt>Jours</dt><dd><%= formatWeekDays(session.weekDays) %></dd></div>
+            <div><dt>Horaires</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
+            <div><dt>Fuseau horaire</dt><dd><%= session.timezone %></dd></div>
+            <div><dt>Plateforme</dt><dd><%= session.platform || 'En ligne' %></dd></div>
           </dl>
           <% if (session.registrationOpen) { %>
             <a class="button session-register-button" href="/register?session=<%= session.id %>">S’inscrire</a>

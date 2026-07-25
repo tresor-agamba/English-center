@@ -1,0 +1,6 @@
+<%- include('../../partials/header', { title }) %>
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p><h1>Créer une formation</h1>
+  <%- include('_form', { action: '/admin/courses', form, error, courseTypes, durationUnits, currencies, submitLabel: 'Créer la formation' }) %>
+</section>
+<%- include('../../partials/footer') %>

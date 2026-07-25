@@ -20,7 +20,24 @@
   <div class="card"><strong>Fin</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(session.endDate) %></span></div>
   <div class="card"><strong>Limite d’inscription</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(session.registrationDeadline) %></span></div>
   <div class="card"><strong>Places</strong><span><%= session.enrollments.length %> / <%= session.capacity %></span></div>
+  <div class="card"><strong>Jours</strong><span><%= session.weekDays.map((day) => ({ MONDAY: 'Lundi', TUESDAY: 'Mardi', WEDNESDAY: 'Mercredi', THURSDAY: 'Jeudi', FRIDAY: 'Vendredi', SATURDAY: 'Samedi', SUNDAY: 'Dimanche' }[day])).filter(Boolean).join(', ') || 'Non définis' %></span></div>
+  <div class="card"><strong>Horaires</strong><span><%= session.startTime %> – <%= session.endTime %> (<%= session.timezone %>)</span></div>
+  <div class="card"><strong>Plateforme</strong><span><%= session.platform || 'Non définie' %></span></div>
 </div>
+
+<section class="section-block">
+  <h2>Changer le statut</h2>
+  <div class="status-actions">
+    <% ['DRAFT', 'OPEN', 'FULL', 'ONGOING', 'COMPLETED', 'CANCELLED'].forEach((status) => { %>
+      <% if (status !== session.status) { %>
+        <form action="/admin/sessions/<%= session.id %>/toggle-status" method="post">
+          <input type="hidden" name="status" value="<%= status %>" />
+          <button class="button button-small" type="submit"><%= status %></button>
+        </form>
+      <% } %>
+    <% }) %>
+  </div>
+</section>
 
 <section class="section-block">
   <h2>Étudiants inscrits</h2>

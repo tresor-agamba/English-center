@@ -20,7 +20,7 @@
     <div><span>Formation</span><strong><%= enrollment.trainingSession.course.title %></strong></div>
     <div><span>Session</span><strong><%= enrollment.trainingSession.name %></strong></div>
     <div><span>Dates</span><strong><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.endDate) %></strong></div>
-    <div><span>Horaires</span><strong><%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit' }).format(enrollment.trainingSession.endDate) %></strong></div>
+    <div><span>Horaires</span><strong><%= enrollment.trainingSession.startTime %> – <%= enrollment.trainingSession.endTime %></strong></div>
     <div><span>Prix</span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
     <div><span>Statut</span><strong class="status <%= statusDisplay.className %>"><%= statusDisplay.label %></strong></div>
   </div>

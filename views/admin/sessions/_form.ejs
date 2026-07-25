@@ -1,38 +1,54 @@
+<% const selectedDays = Array.isArray(form.weekDays) ? form.weekDays : form.weekDays ? [form.weekDays] : []; %>
 <form action="<%= action %>" method="post" class="session-form">
+  <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
+
   <label for="name">Nom de la session</label>
-  <input id="name" name="name" value="<%= session?.name || '' %>" required />
+  <input id="name" name="name" value="<%= form.name || '' %>" required />
 
   <label for="courseId">Formation</label>
   <select id="courseId" name="courseId" required>
     <option value="">Sélectionner une formation</option>
     <% courses.forEach((course) => { %>
-      <option value="<%= course.id %>" <%= session?.courseId === course.id ? 'selected' : '' %>><%= course.title %></option>
+      <option value="<%= course.id %>" <%= String(form.courseId || '') === String(course.id) ? 'selected' : '' %>><%= course.title %></option>
     <% }) %>
   </select>
 
   <div class="form-grid">
-    <div>
-      <label for="startDate">Date de début</label>
-      <input id="startDate" name="startDate" type="datetime-local" value="<%= formatInputDate(session?.startDate) %>" required />
+    <div><label for="startDate">Date de début</label><input id="startDate" name="startDate" type="date" value="<%= formatDate(form.startDate) %>" required /></div>
+    <div><label for="endDate">Date de fin</label><input id="endDate" name="endDate" type="date" value="<%= formatDate(form.endDate) %>" required /></div>
+  </div>
+
+  <fieldset class="weekday-fieldset">
+    <legend>Jours de cours</legend>
+    <div class="weekday-grid">
+      <% Object.entries(weekDays).forEach(([value, label]) => { %>
+        <label class="checkbox-label"><input type="checkbox" name="weekDays" value="<%= value %>" <%= selectedDays.includes(value) ? 'checked' : '' %> /><%= label %></label>
+      <% }) %>
     </div>
-    <div>
-      <label for="endDate">Date de fin</label>
-      <input id="endDate" name="endDate" type="datetime-local" value="<%= formatInputDate(session?.endDate) %>" required />
-    </div>
+  </fieldset>
+
+  <div class="form-grid">
+    <div><label for="startTime">Heure de début</label><input id="startTime" name="startTime" type="time" value="<%= form.startTime || '' %>" required /></div>
+    <div><label for="endTime">Heure de fin</label><input id="endTime" name="endTime" type="time" value="<%= form.endTime || '' %>" required /></div>
+  </div>
+
+  <div class="form-grid">
+    <div><label for="timezone">Fuseau horaire</label><input id="timezone" name="timezone" value="<%= form.timezone || 'Africa/Kinshasa' %>" required /></div>
+    <div><label for="platform">Plateforme</label><input id="platform" name="platform" value="<%= form.platform || '' %>" placeholder="Zoom, Google Meet…" /></div>
   </div>
 
   <label for="registrationDeadline">Date limite d’inscription</label>
-  <input id="registrationDeadline" name="registrationDeadline" type="datetime-local" value="<%= formatInputDate(session?.registrationDeadline) %>" required />
+  <input id="registrationDeadline" name="registrationDeadline" type="datetime-local" value="<%= formatDateTime(form.registrationDeadline) %>" required />
 
-  <label for="capacity">Nombre maximum de places</label>
-  <input id="capacity" name="capacity" type="number" min="1" value="<%= session?.capacity || '' %>" required />
-
-  <label for="status">Statut</label>
-  <select id="status" name="status" required>
-    <% statuses.forEach((status) => { %>
-      <option value="<%= status %>" <%= (session?.status || 'DRAFT') === status ? 'selected' : '' %>><%= status %></option>
-    <% }) %>
-  </select>
+  <div class="form-grid">
+    <div><label for="capacity">Nombre maximum de places</label><input id="capacity" name="capacity" type="number" min="1" value="<%= form.capacity || '' %>" required /></div>
+    <div>
+      <label for="status">Statut</label>
+      <select id="status" name="status" required>
+        <% statuses.forEach((status) => { %><option value="<%= status %>" <%= (form.status || 'DRAFT') === status ? 'selected' : '' %>><%= status %></option><% }) %>
+      </select>
+    </div>
+  </div>
 
   <div class="form-actions">
     <button class="button" type="submit"><%= submitLabel %></button>
