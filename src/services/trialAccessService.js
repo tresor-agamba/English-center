@@ -1,6 +1,8 @@
 const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT } = require('./enrollmentPolicy');
 
+const CLASS_JOIN_EARLY_MINUTES = 30;
+
 class TrialAccessError extends Error {
   constructor(code, message, statusCode = 400) {
     super(message);
@@ -16,7 +18,10 @@ async function calculateTrialAccess(enrollmentId, client = prisma) {
     select: {
       id: true,
       status: true,
-      attendances: { where: { status: 'PRESENT' }, select: { id: true } },
+      attendances: {
+        where: { status: 'PRESENT', classMeeting: { status: { not: 'CANCELLED' } } },
+        select: { id: true },
+      },
       payments: { where: { status: 'SUCCESS' }, take: 1, select: { id: true } },
     },
   });
@@ -90,14 +95,26 @@ async function canAccessClassMeeting(userId, enrollmentId, classMeetingId) {
       startsAt: true,
       endsAt: true,
       privateMeetingUrl: true,
+      status: true,
     },
   });
   if (!meeting || meeting.trainingSessionId !== enrollment.trainingSessionId) {
     throw new TrialAccessError('MEETING_NOT_FOUND', 'Cette séance est introuvable.', 404);
   }
+  if (meeting.status !== 'SCHEDULED') {
+    throw new TrialAccessError('MEETING_UNAVAILABLE', 'Cette séance n’est pas accessible.', 403);
+  }
 
   const trialAccess = await calculateTrialAccess(enrollment.id);
   if (!trialAccess.hasCourseAccess) return { allowed: false, trialAccess };
+  const now = new Date();
+  const opensAt = new Date(meeting.startsAt.getTime() - CLASS_JOIN_EARLY_MINUTES * 60 * 1000);
+  if (now < opensAt) {
+    throw new TrialAccessError('MEETING_TOO_EARLY', `L’accès ouvre ${CLASS_JOIN_EARLY_MINUTES} minutes avant la séance.`, 403);
+  }
+  if (now > meeting.endsAt) {
+    throw new TrialAccessError('MEETING_ENDED', 'Cette séance est terminée.', 403);
+  }
   return {
     allowed: true,
     trialAccess,
@@ -111,6 +128,7 @@ async function canAccessClassMeeting(userId, enrollmentId, classMeetingId) {
 }
 
 module.exports = {
+  CLASS_JOIN_EARLY_MINUTES,
   TrialAccessError,
   calculateTrialAccess,
   getLearningOverview,

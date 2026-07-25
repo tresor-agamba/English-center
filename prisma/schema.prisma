@@ -52,6 +52,12 @@ enum DurationUnit {
   MONTHS
 }
 
+enum ClassMeetingStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
 enum PaymentStatus {
   PENDING
   PROCESSING
@@ -170,17 +176,19 @@ model Enrollment {
 }
 
 model ClassMeeting {
-  id                Int             @id @default(autoincrement())
+  id                Int                @id @default(autoincrement())
   title             String?
-  startsAt          DateTime        @map("starts_at")
-  endsAt            DateTime        @map("ends_at")
-  privateMeetingUrl String          @map("private_meeting_url")
-  trainingSessionId Int             @map("training_session_id")
-  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  startsAt          DateTime           @map("starts_at")
+  endsAt            DateTime           @map("ends_at")
+  privateMeetingUrl String             @map("private_meeting_url")
+  status            ClassMeetingStatus @default(SCHEDULED)
+  trainingSessionId Int                @map("training_session_id")
+  trainingSession   TrainingSession    @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
   attendances       Attendance[]
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+  createdAt         DateTime           @default(now()) @map("created_at")
+  updatedAt         DateTime           @updatedAt @map("updated_at")
 
+  @@unique([trainingSessionId, startsAt])
   @@index([trainingSessionId])
   @@map("class_meetings")
 }

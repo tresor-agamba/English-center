@@ -1,0 +1,45 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<% const enrollmentLabels = { TRIAL_ACTIVE: 'Essai actif', PAYMENT_REQUIRED: 'Paiement requis', CONFIRMED: 'Confirmé' }; %>
+<% const attendanceLabels = { PRESENT: 'Présent', ABSENT: 'Absent', EXCUSED: 'Excusé' }; %>
+
+<div class="page-heading">
+  <div><p class="eyebrow"><%= meeting.trainingSession.course.title %> — <%= meeting.trainingSession.name %></p><h1>Feuille de présence</h1><p class="heading-copy"><%= meeting.title || 'Séance' %></p></div>
+  <a href="/admin/class-meetings/<%= meeting.id %>">Retour à la séance</a>
+</div>
+
+<% if (success) { %><p class="success-message">Les présences ont été enregistrées et les essais recalculés.</p><% } %>
+<% if (meeting.status === 'CANCELLED') { %>
+  <p class="form-error">Cette séance est annulée. Les présences ne peuvent plus être modifiées et ne comptent pas dans l’essai.</p>
+<% } %>
+
+<% if (!rows.length) { %>
+  <div class="empty-state"><strong>Aucun étudiant</strong><p>Aucune inscription active n’appartient à cette session.</p></div>
+<% } else { %>
+  <form action="/admin/class-meetings/<%= meeting.id %>/attendance" method="post">
+    <div class="attendance-cards">
+      <% rows.forEach((row) => { %>
+        <article class="attendance-card">
+          <div class="attendance-student">
+            <strong><%= row.user.firstName %> <%= row.user.lastName %></strong>
+            <span><%= row.user.phoneNumber %></span>
+            <span class="status enrollment-status-<%= row.status.toLowerCase() %>"><%= enrollmentLabels[row.status] %></span>
+          </div>
+          <div class="trial-counter">
+            <span>Présences d’essai : <strong><%= row.trialAccess.trialAttendanceCount %> / <%= row.trialAccess.trialLimit %></strong></span>
+            <span>Restantes : <strong><%= row.trialAccess.remainingTrialAttendances %></strong></span>
+          </div>
+          <fieldset class="attendance-options" <%= meeting.status === 'CANCELLED' ? 'disabled' : '' %>>
+            <legend>Présence</legend>
+            <% attendanceStatuses.forEach((status) => { %>
+              <label><input type="radio" name="attendance[<%= row.id %>]" value="<%= status %>" <%= row.currentAttendanceStatus === status ? 'checked' : '' %> required /><%= attendanceLabels[status] %></label>
+            <% }) %>
+          </fieldset>
+        </article>
+      <% }) %>
+    </div>
+    <% if (meeting.status !== 'CANCELLED') { %><button class="button" type="submit">Enregistrer toutes les présences</button><% } %>
+  </form>
+<% } %>
+
+<%- include('../../partials/footer') %>

@@ -1,0 +1,7 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p><h1>Modifier la séance</h1>
+  <%- include('_form', { action: `/admin/class-meetings/${meeting.id}`, meeting, form, sessions, statuses, error, submitLabel: 'Enregistrer' }) %>
+</section>
+<%- include('../../partials/footer') %>

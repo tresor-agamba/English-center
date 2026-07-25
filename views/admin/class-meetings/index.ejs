@@ -1,0 +1,35 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+
+<div class="page-heading">
+  <div><p class="eyebrow">Administration</p><h1>Séances individuelles</h1></div>
+  <a class="button" href="/admin/class-meetings/new">Créer une séance</a>
+</div>
+
+<form class="meeting-filters" action="/admin/class-meetings" method="get">
+  <select name="course"><option value="">Toutes les formations</option><% courses.forEach((course) => { %><option value="<%= course.id %>" <%= filters.courseId === course.id ? 'selected' : '' %>><%= course.title %></option><% }) %></select>
+  <select name="session"><option value="">Toutes les sessions</option><% sessions.forEach((session) => { %><option value="<%= session.id %>" <%= filters.trainingSessionId === session.id ? 'selected' : '' %>><%= session.name %></option><% }) %></select>
+  <input type="date" name="date" value="<%= filters.date %>" aria-label="Date" />
+  <select name="status"><option value="">Tous les statuts</option><% statuses.forEach((status) => { %><option value="<%= status %>" <%= filters.status === status ? 'selected' : '' %>><%= status %></option><% }) %></select>
+  <button class="button button-small" type="submit">Filtrer</button>
+</form>
+
+<% const statusLabels = { SCHEDULED: 'Programmée', COMPLETED: 'Terminée', CANCELLED: 'Annulée' }; %>
+<% if (!meetings.length) { %>
+  <div class="empty-state"><strong>Aucune séance</strong><p>Aucune séance ne correspond aux critères sélectionnés.</p></div>
+<% } else { %>
+  <div class="table-wrapper responsive-table"><table>
+    <thead><tr><th>Date</th><th>Formation</th><th>Session</th><th>Séance</th><th>Statut</th><th>Présences</th><th></th></tr></thead>
+    <tbody><% meetings.forEach((meeting) => { %><tr>
+      <td data-label="Date"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.startsAt) %></td>
+      <td data-label="Formation"><%= meeting.trainingSession.course.title %></td>
+      <td data-label="Session"><%= meeting.trainingSession.name %></td>
+      <td data-label="Séance"><%= meeting.title || 'Sans titre' %></td>
+      <td data-label="Statut"><span class="status meeting-status-<%= meeting.status.toLowerCase() %>"><%= statusLabels[meeting.status] %></span></td>
+      <td data-label="Présences"><%= meeting._count.attendances %></td>
+      <td data-label="Actions"><a href="/admin/class-meetings/<%= meeting.id %>">Consulter</a></td>
+    </tr><% }) %></tbody>
+  </table></div>
+<% } %>
+
+<%- include('../../partials/footer') %>

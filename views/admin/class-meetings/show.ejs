@@ -1,0 +1,38 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<% const statusLabels = { SCHEDULED: 'Programmée', COMPLETED: 'Terminée', CANCELLED: 'Annulée' }; %>
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow"><%= meeting.trainingSession.course.title %></p>
+    <h1><%= meeting.title || 'Séance sans titre' %></h1>
+    <span class="status meeting-status-<%= meeting.status.toLowerCase() %>"><%= statusLabels[meeting.status] %></span>
+  </div>
+  <div class="heading-actions">
+    <a class="button" href="/admin/class-meetings/<%= meeting.id %>/attendance">Gérer les présences</a>
+    <a class="button" href="/admin/class-meetings/<%= meeting.id %>/edit">Modifier</a>
+    <% if (meeting.status !== 'CANCELLED') { %>
+      <form action="/admin/class-meetings/<%= meeting.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette séance ?')">
+        <button class="button button-danger" type="submit">Annuler</button>
+      </form>
+    <% } %>
+  </div>
+</div>
+
+<div class="details-grid">
+  <div class="card"><strong>Session</strong><span><%= meeting.trainingSession.name %></span></div>
+  <div class="card"><strong>Date et horaires</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.startsAt) %> – <%= new Intl.DateTimeFormat('fr-FR', { timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.endsAt) %></span></div>
+  <div class="card"><strong>Plateforme</strong><span><%= meeting.trainingSession.platform || 'En ligne' %></span></div>
+  <div class="card"><strong>Lien privé</strong><span><%= meetingHost %> — masqué</span></div>
+</div>
+
+<section class="meeting-stats">
+  <article><strong><%= enrollmentCount %></strong><span>Étudiants</span></article>
+  <article><strong><%= counts.PRESENT %></strong><span>Présents</span></article>
+  <article><strong><%= counts.ABSENT %></strong><span>Absents</span></article>
+  <article><strong><%= counts.EXCUSED %></strong><span>Excusés</span></article>
+  <article><strong><%= missingCount %></strong><span>Non saisis</span></article>
+</section>
+
+<p><a href="/admin/class-meetings">← Retour aux séances</a></p>
+<%- include('../../partials/footer') %>

@@ -755,6 +755,130 @@ textarea {
   font-weight: 700;
 }
 
+.admin-nav {
+  display: flex;
+  gap: 0.35rem;
+  margin: -2rem 0 2rem;
+  padding: 0.4rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+}
+
+.admin-nav a {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.admin-nav a:hover {
+  background: #eff4ff;
+}
+
+.meeting-form {
+  margin-top: 1.25rem;
+}
+
+.meeting-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+
+.meeting-filters .button {
+  margin: 0;
+}
+
+.meeting-status-scheduled { color: #175cd3; background: #eff4ff; }
+.meeting-status-completed { color: #067647; background: #dcfae6; }
+.meeting-status-cancelled { color: #b42318; background: #fee4e2; }
+
+.meeting-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 2rem 0;
+}
+
+.meeting-stats article {
+  display: grid;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  text-align: center;
+}
+
+.meeting-stats strong {
+  font-size: 1.65rem;
+}
+
+.meeting-stats span,
+.attendance-student > span:not(.status) {
+  color: var(--muted);
+}
+
+.attendance-cards {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.attendance-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(180px, 0.7fr) minmax(300px, 1.3fr);
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: var(--surface);
+}
+
+.attendance-student,
+.trial-counter {
+  display: grid;
+}
+
+.attendance-student .status {
+  width: fit-content;
+  margin-top: 0.25rem;
+}
+
+.enrollment-status-trial_active { color: #175cd3; background: #eff4ff; }
+.enrollment-status-payment_required { color: #b54708; background: #fef0c7; }
+.enrollment-status-confirmed { color: #067647; background: #dcfae6; }
+
+.attendance-options {
+  display: flex;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+
+.attendance-options legend {
+  padding: 0 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.attendance-options label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.attendance-options input {
+  width: auto;
+}
+
 select {
   width: 100%;
   padding: 0.75rem;
@@ -1193,6 +1317,20 @@ tr:last-child td { border-bottom: 0; }
   .weekday-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .meeting-filters,
+  .meeting-stats,
+  .attendance-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-nav {
+    margin-top: -1rem;
+  }
+
+  .attendance-options {
+    flex-wrap: wrap;
+  }
 }
 
 @media (min-width: 521px) and (max-width: 860px) {
@@ -1202,4 +1340,7 @@ tr:last-child td { border-bottom: 0; }
   .registration-layout { grid-template-columns: 1fr; }
   .registration-summary { position: static; }
   .enrollment-confirm { grid-template-columns: 1fr; }
+  .meeting-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .meeting-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .attendance-card { grid-template-columns: 1fr; }
 }

@@ -1,0 +1,7 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<section class="card wide-card">
+  <p class="eyebrow">Administration</p><h1>Créer une séance</h1>
+  <%- include('_form', { action: '/admin/class-meetings', meeting: null, form, sessions, statuses, error, submitLabel: 'Créer la séance' }) %>
+</section>
+<%- include('../../partials/footer') %>

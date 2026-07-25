@@ -186,6 +186,13 @@ test('essai gratuit limité à trois présences', async (t) => {
         1
       );
 
+      await prisma.classMeeting.update({
+        where: { id: meetings[3].id },
+        data: {
+          startsAt: new Date(Date.now() + 10 * 60 * 1000),
+          endsAt: new Date(Date.now() + 70 * 60 * 1000),
+        },
+      });
       const allowed = await trialAccessService.canAccessClassMeeting(student.id, enrollment.id, meetings[3].id);
       assert.equal(allowed.allowed, true);
       assert.equal(allowed.meeting.privateMeetingUrl, meetings[3].privateMeetingUrl);
