@@ -16,6 +16,8 @@ const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminStudentRoutes = require('./routes/adminStudentRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
 const requireAdmin = require('./middlewares/requireAdmin');
+const requireStudent = require('./middlewares/requireStudent');
+const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
@@ -48,6 +50,7 @@ app.use(registrationRoutes);
 app.use(enrollmentRoutes);
 app.use(paymentRoutes);
 app.use(classMeetingRoutes);
+app.use('/student', requireStudent, studentRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);

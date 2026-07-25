@@ -778,6 +778,63 @@ textarea {
   background: #eff4ff;
 }
 
+.student-nav {
+  display: flex;
+  gap: 0.35rem;
+  margin: -2rem 0 2rem;
+  padding: 0.4rem;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+}
+
+.student-nav a,
+.student-nav button {
+  display: block;
+  width: max-content;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: 0.4rem;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.student-nav form { display: block; margin-left: auto; }
+.student-nav a:hover, .student-nav button:hover { background: #eff4ff; }
+.student-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+.next-access-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; padding: 1.2rem; border: 1px solid #b2ccff; border-radius: .8rem; background: #eff4ff; }
+.next-access-card > div { display: grid; }
+.next-access-card small { color: var(--muted); }
+.next-access-card .button { flex: 0 0 auto; margin: 0; }
+.student-course-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+.student-course-card { padding: 1.4rem; border: 1px solid var(--border); border-radius: 0.85rem; background: var(--surface); box-shadow: 0 10px 30px rgb(23 32 51 / 5%); }
+.student-course-card h2 { margin: 0.65rem 0 0.2rem; }
+.student-course-card > div > p { margin-top: 0; color: var(--muted); }
+.student-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.8rem; }
+.student-facts div { display: grid; }
+.student-facts dt { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+.student-facts dd { margin: 0; }
+.student-meeting-list article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border); }
+.student-meeting-list article:last-child { border-bottom: 0; }
+.student-meeting-list article > div { display: grid; min-width: 0; }
+.student-meeting-list span, .student-meeting-list small { color: var(--muted); }
+.student-meeting-list .button { flex: 0 0 auto; margin: 0; }
+.student-course-summary { margin-bottom: 1.5rem; }
+.student-payment-action { margin: 1.5rem 0; }
+.student-payment-action form, .student-payment-action .button { margin: 0; }
+.student-filters { display: grid; grid-template-columns: minmax(180px, 1fr) minmax(160px, .7fr) auto; gap: .75rem; margin-bottom: 2rem; }
+.student-filters .button { margin: 0; }
+.schedule-day { margin: 2rem 0; padding: 0 1.25rem; border: 1px solid var(--border); border-radius: .8rem; background: var(--surface); }
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 1.5rem; }
+.profile-grid .card { width: 100%; margin: 0; }
+.generic-failure { display: block; margin-top: .25rem; color: var(--muted); }
+.enrollment-status-cancelled, .enrollment-status-payment_failed { color: #b42318; background: #fee4e2; }
+
 .meeting-form {
   margin-top: 1.25rem;
 }
@@ -1328,6 +1385,11 @@ tr:last-child td { border-bottom: 0; }
     margin-top: -1rem;
   }
 
+  .student-nav { margin-top: -1rem; }
+  .student-stats, .student-course-grid, .student-facts, .profile-grid, .student-filters { grid-template-columns: 1fr; }
+  .student-meeting-list article { align-items: stretch; flex-direction: column; }
+  .next-access-card { align-items: stretch; flex-direction: column; }
+
   .attendance-options {
     flex-wrap: wrap;
   }
@@ -1343,4 +1405,6 @@ tr:last-child td { border-bottom: 0; }
   .meeting-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .meeting-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .attendance-card { grid-template-columns: 1fr; }
+  .student-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .student-course-grid, .profile-grid { grid-template-columns: 1fr; }
 }

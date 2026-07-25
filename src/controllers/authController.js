@@ -41,7 +41,7 @@ async function login(req, res, next) {
     return req.session.save((saveError) => {
       if (saveError) return next(saveError);
       if (user.role === 'ADMIN') return res.redirect('/admin/dashboard');
-      return res.redirect(sessionId ? `/enroll?session=${sessionId}` : '/');
+      return res.redirect(sessionId ? `/enroll?session=${sessionId}` : '/student');
     });
   });
 }

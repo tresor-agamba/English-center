@@ -1,13 +1,13 @@
 const express = require('express');
 const controller = require('../controllers/paymentController');
 const asyncHandler = require('../middlewares/asyncHandler');
-const requireAuthenticated = require('../middlewares/requireAuthenticated');
+const requireStudent = require('../middlewares/requireStudent');
 
 const router = express.Router();
 
-router.post('/payments', requireAuthenticated, asyncHandler(controller.create));
-router.get('/payments/:reference', requireAuthenticated, asyncHandler(controller.show));
-router.post('/payments/:reference/simulate-success', requireAuthenticated, asyncHandler(controller.simulateSuccess));
-router.post('/payments/:reference/simulate-failure', requireAuthenticated, asyncHandler(controller.simulateFailure));
+router.post('/payments', requireStudent, asyncHandler(controller.create));
+router.get('/payments/:reference', requireStudent, asyncHandler(controller.show));
+router.post('/payments/:reference/simulate-success', requireStudent, asyncHandler(controller.simulateSuccess));
+router.post('/payments/:reference/simulate-failure', requireStudent, asyncHandler(controller.simulateFailure));
 
 module.exports = router;

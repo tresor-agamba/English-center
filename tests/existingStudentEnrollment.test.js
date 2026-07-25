@@ -257,7 +257,7 @@ test('inscription d’un étudiant existant', async (t) => {
       });
       const response = await fetch(`${baseUrl}/login`, { method: 'POST', body, redirect: 'manual' });
       assert.equal(response.status, 302);
-      assert.equal(response.headers.get('location'), '/');
+      assert.equal(response.headers.get('location'), '/student');
     });
   } finally {
     if (server) await new Promise((resolve) => server.close(resolve));

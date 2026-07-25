@@ -14,7 +14,7 @@ async function create(req, res) {
       enrollmentId: req.body.enrollmentId,
     });
     if (result.redirectToEnrollment) {
-      return res.redirect(`/registration/success/${result.enrollmentId}`);
+      return res.redirect(`/student/courses/${result.enrollmentId}`);
     }
     return res.redirect(`/payments/${result.paymentReference}`);
   } catch (error) {
@@ -40,7 +40,7 @@ async function show(req, res) {
 async function simulateSuccess(req, res) {
   try {
     const result = await paymentService.simulateSuccess(req.params.reference, req.session.user.id);
-    return res.redirect(`/registration/success/${result.enrollmentId}`);
+    return res.redirect(`/student/courses/${result.enrollmentId}`);
   } catch (error) {
     if (error instanceof paymentService.PaymentError) return renderPaymentError(res, error);
     throw error;
@@ -50,7 +50,7 @@ async function simulateSuccess(req, res) {
 async function simulateFailure(req, res) {
   try {
     const result = await paymentService.simulateFailure(req.params.reference, req.session.user.id);
-    return res.redirect(`/registration/success/${result.enrollmentId}`);
+    return res.redirect(`/student/courses/${result.enrollmentId}`);
   } catch (error) {
     if (error instanceof paymentService.PaymentError) return renderPaymentError(res, error);
     throw error;

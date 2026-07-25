@@ -1,0 +1,21 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<header class="page-heading"><div><p class="eyebrow">Mon parcours</p><h1>Mes formations</h1></div></header>
+<% const labels = { TRIAL_ACTIVE:'Essai gratuit actif', PAYMENT_REQUIRED:'Paiement requis', CONFIRMED:'Accès complet', CANCELLED:'Annulée', PAYMENT_FAILED:'Paiement échoué' }; %>
+<% if (!enrollments.length) { %><div class="empty-state"><strong>Aucune formation</strong><p>Vous n’êtes inscrit à aucune formation pour le moment.</p><a class="button" href="/formations">Voir les formations</a></div><% } else { %>
+<section class="student-course-grid">
+  <% enrollments.forEach(item => { const course = item.trainingSession.course; %><article class="student-course-card">
+    <div><span class="status enrollment-status-<%= item.trialAccess.enrollmentStatus.toLowerCase() %>"><%= labels[item.trialAccess.enrollmentStatus] %></span><h2><%= course.title %></h2><p><%= course.courseType.replaceAll('_', ' ') %> · <%= course.level || 'Tous niveaux' %></p></div>
+    <dl class="student-facts">
+      <div><dt>Session</dt><dd><%= item.trainingSession.name %></dd></div>
+      <div><dt>Durée</dt><dd><%= course.duration || (course.durationValue ? `${course.durationValue} ${course.durationUnit}` : 'À préciser') %></dd></div>
+      <div><dt>Jours</dt><dd><%= item.trainingSession.weekDays.join(', ') || 'À préciser' %></dd></div>
+      <div><dt>Horaires</dt><dd><%= item.trainingSession.startTime %>–<%= item.trainingSession.endTime %></dd></div>
+      <div><dt>Plateforme</dt><dd><%= item.trainingSession.platform || 'En ligne' %></dd></div>
+      <div><dt>Essai</dt><dd><%= item.trialAccess.trialAttendanceCount %>/3 · <%= item.trialAccess.remainingTrialAttendances %> restante(s)</dd></div>
+      <div><dt>Début</dt><dd><%= item.trainingSession.startDate.toLocaleDateString('fr-FR') %></dd></div>
+      <div><dt>Fin</dt><dd><%= item.trainingSession.endDate.toLocaleDateString('fr-FR') %></dd></div>
+    </dl><a class="button" href="/student/courses/<%= item.id %>">Voir le détail</a>
+  </article><% }) %>
+</section><% } %>
+<%- include('../../partials/footer') %>
