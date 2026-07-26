@@ -71,6 +71,13 @@ async function resolveLinks(courseId, moduleValue, lessonValue, client = prisma)
 }
 
 async function formData(courseId, body) {
+  const trainingSessionId = body.trainingSessionId ? parseId(body.trainingSessionId, 'session') : null;
+  if (trainingSessionId) {
+    const session = await prisma.trainingSession.findUnique({ where: { id: trainingSessionId }, select: { courseId: true } });
+    if (!session || session.courseId !== parseId(courseId, 'formation')) {
+      throw new AssignmentError('SESSION_COURSE_MISMATCH', 'La session n’appartient pas à cette formation.');
+    }
+  }
   return {
     ...(await resolveLinks(courseId, body.courseModuleId, body.lessonId)),
     title: requiredText(body.title, 'Le titre', 200),
@@ -79,6 +86,7 @@ async function formData(courseId, body) {
     dueAt: parseDueAt(body.dueAt),
     isPublished: body.isPublished === 'on' || body.isPublished === 'true',
     allowLateSubmission: body.allowLateSubmission === 'on' || body.allowLateSubmission === 'true',
+    trainingSessionId,
   };
 }
 
@@ -87,6 +95,7 @@ function assignmentInclude() {
     course: { select: { id: true, title: true } },
     courseModule: { select: { id: true, title: true } },
     lesson: { select: { id: true, title: true } },
+    trainingSession: { select: { id: true, name: true } },
     submissions: {
       select: { id: true, status: true, score: true, feedbackPublishedAt: true },
     },
@@ -142,7 +151,11 @@ async function deleteAssignment(assignmentId) {
 async function submissionRows(assignmentId) {
   const assignment = await getAssignment(assignmentId);
   const enrollments = await prisma.enrollment.findMany({
-    where: { trainingSession: { courseId: assignment.courseId }, status: { in: ELIGIBLE_STATUSES } },
+    where: {
+      trainingSession: { courseId: assignment.courseId },
+      ...(assignment.trainingSessionId ? { trainingSessionId: assignment.trainingSessionId } : {}),
+      status: { in: ELIGIBLE_STATUSES },
+    },
     orderBy: [{ user: { lastName: 'asc' } }, { user: { firstName: 'asc' } }],
     select: {
       id: true, status: true,

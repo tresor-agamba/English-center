@@ -8,7 +8,7 @@ async function enrollment(value, userId) {
     where: { id: assignmentService.parseId(value, 'inscription'), userId },
     select: {
       id: true, status: true,
-      trainingSession: { select: { course: { select: { id: true, title: true } } } },
+      trainingSession: { select: { id: true, course: { select: { id: true, title: true } } } },
     },
   });
   if (!item) throw new assignmentService.AssignmentError('ENROLLMENT_NOT_FOUND', 'Inscription introuvable.', 404);
@@ -38,7 +38,10 @@ async function listForEnrollment(userId, enrollmentId, { allowOutline = true } =
     throw new assignmentService.AssignmentError('ASSIGNMENT_ACCESS_BLOCKED', 'Accès aux devoirs bloqué.', 403);
   }
   const assignments = await prisma.assignment.findMany({
-    where: { courseId: item.trainingSession.course.id, isPublished: true },
+    where: {
+      courseId: item.trainingSession.course.id, isPublished: true,
+      OR: [{ trainingSessionId: null }, { trainingSessionId: item.trainingSession.id }],
+    },
     orderBy: [{ dueAt: 'asc' }, { createdAt: 'desc' }],
     select: {
       id: true, title: true, maxScore: true, dueAt: true, allowLateSubmission: true,
@@ -75,6 +78,7 @@ async function getForStudent(userId, enrollmentId, assignmentId) {
       id: assignmentService.parseId(assignmentId, 'devoir'),
       courseId: item.trainingSession.course.id,
       isPublished: true,
+      OR: [{ trainingSessionId: null }, { trainingSessionId: item.trainingSession.id }],
     },
     select: {
       id: true, title: true, instructions: true, maxScore: true, dueAt: true, allowLateSubmission: true,

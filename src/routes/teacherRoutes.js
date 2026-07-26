@@ -1,0 +1,17 @@
+const router = require('express').Router();
+const c = require('../controllers/teacherController');
+const a = require('../middlewares/asyncHandler');
+router.get('/', a(c.dashboard));
+router.get('/sessions', a(c.sessions));
+router.get('/sessions/:id', a(c.session));
+router.get('/sessions/:id/meetings/new', a(c.meetingNew));
+router.post('/sessions/:id/meetings', a(c.meetingCreate));
+router.post('/sessions/:id/assignments', a(c.createAssignment));
+router.get('/meetings/:id', a(c.meeting));
+router.post('/meetings/:id/attendance', a(c.saveAttendance));
+router.post('/meetings/:id/cancel', a(c.cancelMeeting));
+router.get('/assignments/:id/submissions', a(c.submissions));
+router.post('/assignments/:id/submissions/:submissionId/grade', a(c.grade));
+router.get('/profile', a(c.profile));
+router.post('/profile', a(c.updateProfile));
+module.exports = router;

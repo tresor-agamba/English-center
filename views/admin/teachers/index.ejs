@@ -1,0 +1,7 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<section class="page-heading"><div><p class="eyebrow">Administration</p><h1>Enseignants</h1></div><a class="button" href="/admin/teachers/new">Ajouter</a></section>
+<form class="filters" method="get"><input name="search" value="<%= search %>" placeholder="Nom ou téléphone"><button class="button button-small">Rechercher</button></form>
+<div class="card-grid"><% teachers.forEach(t => { %><article class="card"><h2><%= t.firstName %> <%= t.lastName %></h2><p><%= t.phoneNumber %></p><p><%= t.isActive ? 'Actif' : 'Inactif' %></p><a href="/admin/teachers/<%= t.id %>">Voir la fiche</a></article><% }) %></div>
+<% if (!teachers.length) { %><div class="empty-state"><h2>Aucun enseignant</h2><p>Ajoutez le premier compte enseignant.</p></div><% } %>
+<%- include('../../partials/footer') %>
