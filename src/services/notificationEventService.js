@@ -31,6 +31,33 @@ async function scheduleMeeting(meeting, client = prisma) {
   }
   return Promise.all(jobs);
 }
+async function scheduleMeetingForUser(meeting, userId, client = prisma) {
+  if (meeting.status !== 'SCHEDULED' || meeting.startsAt <= new Date()) return [];
+  const session = await client.trainingSession.findUnique({ where: { id: meeting.trainingSessionId }, select: { name: true } });
+  const jobs = [];
+  for (const [label, offset] of [['24H', 24 * 3600000], ['30M', 30 * 60000]]) {
+    const scheduledFor = new Date(meeting.startsAt.getTime() - offset);
+    if (scheduledFor <= new Date()) continue;
+    jobs.push(reminders.createReminder({
+      userId, type: 'LIVE_CLASS_REMINDER', priority: label === '30M' ? 'HIGH' : 'NORMAL',
+      title: 'Rappel de séance', message: `Votre séance « ${meeting.title || session.name} » commence bientôt.`,
+      actionUrl: `/student/class-meetings/${meeting.id}`, relatedEntity: 'CLASS_MEETING', relatedId: meeting.id,
+      scheduledFor, deduplicationKey: `LIVE_CLASS_REMINDER:meeting-${meeting.id}:user-${userId}:${label}`,
+    }, client));
+  }
+  return Promise.all(jobs);
+}
+async function scheduleAssignmentForUser(assignment, userId, client = prisma) {
+  if (!assignment.isPublished || !assignment.dueAt) return null;
+  const scheduledFor = new Date(assignment.dueAt.getTime() - 24 * 3600000);
+  if (scheduledFor <= new Date()) return null;
+  return reminders.createReminder({
+    userId, type: 'ASSIGNMENT_DEADLINE_REMINDER', priority: 'HIGH', title: 'Échéance de devoir',
+    message: `Le devoir « ${assignment.title} » arrive bientôt à échéance.`, actionUrl: '/student/assignments',
+    relatedEntity: 'ASSIGNMENT', relatedId: assignment.id, scheduledFor,
+    deduplicationKey: `ASSIGNMENT_DEADLINE:assignment-${assignment.id}:user-${userId}:24H`,
+  }, client);
+}
 async function meetingCreated(meeting) { return scheduleMeeting(meeting); }
 async function meetingRescheduled(before, after) {
   const changed = ['startsAt','endsAt','status','platform','lessonId'].some(k => String(before[k]) !== String(after[k]));
@@ -81,4 +108,4 @@ async function feedbackPublished(assignmentId, submissionId) {
 async function paymentRequired(enrollmentId, userId) { return notifications.createNotification({ userId, type: 'PAYMENT_REQUIRED', priority: 'HIGH', title: 'Paiement requis', message: 'Votre période d’essai est terminée. Un paiement est requis pour continuer les cours.', actionUrl: `/student/payments`, relatedEntity: 'ENROLLMENT', relatedId: enrollmentId, deduplicationKey: `PAYMENT_REQUIRED:enrollment-${enrollmentId}` }); }
 async function paymentConfirmed(enrollmentId, paymentId, userId) { return notifications.createNotification({ userId, type: 'PAYMENT_CONFIRMED', title: 'Paiement confirmé', message: 'Votre paiement a été confirmé. Votre accès aux cours est réactivé.', actionUrl: '/student/payments', relatedEntity: 'PAYMENT', relatedId: paymentId, deduplicationKey: `PAYMENT_CONFIRMED:payment-${paymentId}` }); }
 async function teacherAssigned(teacherId, session, lead) { return notifications.createNotification({ userId: teacherId, type: 'TEACHER_ASSIGNED', title: 'Nouvelle affectation', message: `Vous avez été affecté${lead ? ' comme formateur principal' : ''} à la cohorte ${session.name}.`, actionUrl: `/teacher/sessions/${session.id}`, relatedEntity: 'TRAINING_SESSION', relatedId: session.id, deduplicationKey: `TEACHER_ASSIGNED:session-${session.id}:teacher-${teacherId}:${lead}` }); }
-module.exports = { sessionAudience, scheduleMeeting, meetingCreated, meetingRescheduled, meetingCancelled, assignmentPublished, feedbackPublished, paymentRequired, paymentConfirmed, teacherAssigned };
+module.exports = { sessionAudience, scheduleMeeting, scheduleMeetingForUser, scheduleAssignmentForUser, meetingCreated, meetingRescheduled, meetingCancelled, assignmentPublished, feedbackPublished, paymentRequired, paymentConfirmed, teacherAssigned };

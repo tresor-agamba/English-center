@@ -1,6 +1,7 @@
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
+const enrollmentReminders = require('./enrollmentReminderService');
 
 const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
@@ -191,7 +192,9 @@ async function runRegistrationTransaction({ sessionId, firstName, lastName, phon
 async function createRegistration(data) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
-      return await runRegistrationTransaction(data);
+      const result = await runRegistrationTransaction(data);
+      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
+      return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
       if (error?.code === 'P2002') {
@@ -255,12 +258,17 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
 async function enrollExistingStudent(data) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
-      return await runExistingStudentTransaction(data);
+      const result = await runExistingStudentTransaction(data);
+      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
+      return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
       if (error?.code === 'P2002') {
           const existing = await findUserEnrollment(prisma, data.userId, parseSessionId(data.sessionId));
-          if (existing) return { enrollment: existing, reused: true, reactivated: false };
+          if (existing) {
+            await enrollmentReminders.synchronizeEnrollmentReminders(existing.id).catch((syncError) => console.error('Synchronisation rappels inscription:', syncError.message));
+            return { enrollment: existing, reused: true, reactivated: false };
+          }
       }
       if (error?.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) {
         await retryDelay(attempt);

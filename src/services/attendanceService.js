@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 const trialAccessService = require('./trialAccessService');
 const notificationEvents = require('./notificationEventService');
+const enrollmentReminders = require('./enrollmentReminderService');
 
 const ATTENDANCE_STATUSES = ['PRESENT', 'ABSENT', 'EXCUSED'];
 
@@ -26,11 +27,17 @@ async function recordAttendance({ enrollmentId: rawEnrollmentId, classMeetingId:
     throw new AttendanceError('INVALID_STATUS', 'Statut de présence invalide.');
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const result = await recordOne(tx, { enrollmentId, classMeetingId, status });
     const trialAccess = await trialAccessService.calculateTrialAccess(enrollmentId, tx);
     return { ...result, trialAccess };
   });
+  if (result.trialAccess.enrollmentStatus === 'PAYMENT_REQUIRED') {
+    const owner = await prisma.enrollment.findUnique({ where: { id: enrollmentId }, select: { userId: true } });
+    await notificationEvents.paymentRequired(enrollmentId, owner.userId).catch((error) => console.error('Notification essai:', error.message));
+  }
+  await enrollmentReminders.synchronizeEnrollmentReminders(enrollmentId).catch((error) => console.error('Synchronisation rappels présence:', error.message));
+  return result;
 }
 
 async function recordOne(tx, { enrollmentId, classMeetingId, status }) {
@@ -83,11 +90,12 @@ async function recordAttendanceBatch(classMeetingIdValue, entries) {
     return { attendances: results.map((result) => result.attendance), summaries };
   });
   for (let index = 0; index < result.summaries.length; index += 1) {
+    const enrollmentId = normalized[index].enrollmentId;
     if (result.summaries[index].enrollmentStatus === 'PAYMENT_REQUIRED') {
-      const enrollmentId = normalized[index].enrollmentId;
       const owner = await prisma.enrollment.findUnique({ where: { id: enrollmentId }, select: { userId: true } });
       await notificationEvents.paymentRequired(enrollmentId, owner.userId).catch((error) => console.error('Notification essai:', error.message));
     }
+    await enrollmentReminders.synchronizeEnrollmentReminders(enrollmentId).catch((error) => console.error('Synchronisation rappels présence:', error.message));
   }
   return result;
 }

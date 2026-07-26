@@ -2,7 +2,9 @@ const prisma = require('../utils/prisma');
 const notificationService = require('./notificationService');
 const MAX_ATTEMPTS = 3;
 
-function createReminder(data, client = prisma) {
+async function createReminder(data, client = prisma) {
+  const existing = await client.scheduledReminder.findUnique({ where: { deduplicationKey: data.deduplicationKey }, select: { id: true, status: true } });
+  if (existing?.status === 'SENT') return client.scheduledReminder.findUnique({ where: { id: existing.id } });
   return client.scheduledReminder.upsert({
     where: { deduplicationKey: data.deduplicationKey },
     create: data,
@@ -24,14 +26,20 @@ async function recoverAbandoned(now = new Date(), client = prisma) {
 }
 async function isStillRelevant(reminder, client) {
   if (reminder.relatedEntity === 'CLASS_MEETING') {
-    const meeting = await client.classMeeting.findUnique({ where: { id: reminder.relatedId }, select: { status: true, startsAt: true } });
-    return meeting?.status === 'SCHEDULED' && meeting.startsAt > new Date();
+    const meeting = await client.classMeeting.findUnique({ where: { id: reminder.relatedId }, select: { status: true, startsAt: true, trainingSessionId: true } });
+    if (!meeting || meeting.status !== 'SCHEDULED' || meeting.startsAt <= new Date()) return false;
+    return Boolean(await client.enrollment.findFirst({ where: { userId: reminder.userId, trainingSessionId: meeting.trainingSessionId, status: { in: ['TRIAL_ACTIVE','CONFIRMED'] } }, select: { id: true } }));
   }
   if (reminder.relatedEntity === 'ASSIGNMENT') {
     const assignment = await client.assignment.findUnique({
-      where: { id: reminder.relatedId }, select: { isPublished: true, dueAt: true, submissions: { where: { enrollment: { userId: reminder.userId } }, take: 1, select: { id: true } } },
+      where: { id: reminder.relatedId }, select: { courseId: true, trainingSessionId: true, isPublished: true, dueAt: true, submissions: { where: { enrollment: { userId: reminder.userId } }, take: 1, select: { id: true } } },
     });
-    return Boolean(assignment?.isPublished && assignment.dueAt && assignment.dueAt > new Date() && !assignment.submissions.length);
+    if (!assignment?.isPublished || !assignment.dueAt || assignment.dueAt <= new Date() || assignment.submissions.length) return false;
+    return Boolean(await client.enrollment.findFirst({ where: {
+      userId: reminder.userId, status: { in: ['TRIAL_ACTIVE','CONFIRMED'] },
+      trainingSession: { courseId: assignment.courseId },
+      ...(assignment.trainingSessionId ? { trainingSessionId: assignment.trainingSessionId } : {}),
+    }, select: { id: true } }));
   }
   return true;
 }

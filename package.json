@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
-    "notifications:process": "node src/jobs/processScheduledReminders.js"
+    "notifications:process": "node src/jobs/processScheduledReminders.js",
+    "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js"
   },
   "keywords": [
     "english",
