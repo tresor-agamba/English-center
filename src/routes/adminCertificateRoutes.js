@@ -1,0 +1,12 @@
+const router = require('express').Router();
+const c = require('../controllers/adminCertificateController');
+const a = require('../middlewares/asyncHandler');
+router.get('/', a(c.index));
+router.post('/config', a(c.config));
+router.post('/courses/:id/fee', a(c.courseFee));
+router.post('/sessions/:id/fee', a(c.sessionFee));
+router.post('/enrollments/:enrollmentId/confirm-payment', a(c.payment));
+router.post('/enrollments/:enrollmentId/waive', a(c.waive));
+router.post('/enrollments/:enrollmentId/issue', a(c.issue));
+router.post('/:id/revoke', a(c.revoke));
+module.exports = router;

@@ -106,6 +106,24 @@ enum NotificationType {
   TEACHER_ASSIGNED
   TEACHER_UNASSIGNED
   GENERAL_ANNOUNCEMENT
+  CERTIFICATE_AVAILABLE
+  CERTIFICATE_PAYMENT_REQUIRED
+  CERTIFICATE_PAYMENT_CONFIRMED
+  CERTIFICATE_FEE_WAIVED
+  CERTIFICATE_ISSUED
+  CERTIFICATE_REVOKED
+}
+
+enum CertificatePaymentStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum CertificateStatus {
+  ISSUED
+  REVOKED
 }
 
 enum NotificationPriority {
@@ -139,24 +157,29 @@ enum WhatsAppDeliveryStatus {
 }
 
 model User {
-  id                   Int                      @id @default(autoincrement())
-  firstName            String                   @map("first_name")
-  lastName             String                   @map("last_name")
-  phoneNumber          String                   @unique @map("phone_number")
-  passwordHash         String                   @map("password_hash")
-  role                 Role                     @default(STUDENT)
-  isActive             Boolean                  @default(true) @map("is_active")
-  createdAt            DateTime                 @default(now()) @map("created_at")
-  updatedAt            DateTime                 @updatedAt @map("updated_at")
-  trainingSessions     TrainingSession[]
-  progress             Progress[]
-  enrollments          Enrollment[]
-  teachingAssignments  TrainingSessionTeacher[]
-  notifications        Notification[]
-  scheduledReminders   ScheduledReminder[]
-  createdAnnouncements Announcement[]           @relation("AnnouncementCreator")
-  whatsappPreference   WhatsAppPreference?
-  whatsappDeliveries   WhatsAppDelivery[]
+  id                           Int                      @id @default(autoincrement())
+  firstName                    String                   @map("first_name")
+  lastName                     String                   @map("last_name")
+  phoneNumber                  String                   @unique @map("phone_number")
+  passwordHash                 String                   @map("password_hash")
+  role                         Role                     @default(STUDENT)
+  isActive                     Boolean                  @default(true) @map("is_active")
+  createdAt                    DateTime                 @default(now()) @map("created_at")
+  updatedAt                    DateTime                 @updatedAt @map("updated_at")
+  trainingSessions             TrainingSession[]
+  progress                     Progress[]
+  enrollments                  Enrollment[]
+  teachingAssignments          TrainingSessionTeacher[]
+  notifications                Notification[]
+  scheduledReminders           ScheduledReminder[]
+  createdAnnouncements         Announcement[]           @relation("AnnouncementCreator")
+  whatsappPreference           WhatsAppPreference?
+  whatsappDeliveries           WhatsAppDelivery[]
+  certificatePayments          CertificatePayment[]     @relation("CertificateStudent")
+  confirmedCertificatePayments CertificatePayment[]     @relation("CertificatePaymentConfirmer")
+  waivedCertificateFees        CertificateRequest[]     @relation("CertificateFeeWaiverAdmin")
+  issuedCertificates           Certificate[]            @relation("CertificateIssuer")
+  revokedCertificates          Certificate[]            @relation("CertificateRevoker")
 
   @@map("users")
 }
@@ -302,6 +325,7 @@ model TrainingSession {
   userId               Int?
   teachers             TrainingSessionTeacher[]
   assignments          Assignment[]
+  certificateFee       Decimal?                 @map("certificate_fee") @db.Decimal(10, 2)
 
   @@index([courseId])
   @@index([status])
@@ -334,6 +358,7 @@ model Course {
   documents        Document[]
   trainingSessions TrainingSession[]
   assignments      Assignment[]
+  certificateFee   Decimal?          @map("certificate_fee") @db.Decimal(10, 2)
 
   @@map("courses")
 }
@@ -410,10 +435,80 @@ model Enrollment {
   attendances           Attendance[]
   lessonProgress        LessonProgress[]
   assignmentSubmissions AssignmentSubmission[]
+  certificateRequest    CertificateRequest?
+  certificatePayments   CertificatePayment[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
   @@map("enrollments")
+}
+
+model CertificateSettings {
+  id               Int      @id @default(1)
+  certificatesPaid Boolean  @default(false) @map("certificates_paid")
+  generalAmount    Decimal  @default(0) @map("general_amount") @db.Decimal(10, 2)
+  currency         String   @default("USD")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("certificate_settings")
+}
+
+model CertificateRequest {
+  id                 Int          @id @default(autoincrement())
+  enrollmentId       Int          @unique @map("enrollment_id")
+  isFeeWaived        Boolean      @default(false) @map("is_fee_waived")
+  feeWaivedByAdminId Int?         @map("fee_waived_by_admin_id")
+  feeWaivedAt        DateTime?    @map("fee_waived_at")
+  feeWaiverReason    String?      @map("fee_waiver_reason")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
+  enrollment         Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  feeWaivedByAdmin   User?        @relation("CertificateFeeWaiverAdmin", fields: [feeWaivedByAdminId], references: [id], onDelete: SetNull)
+  certificate        Certificate?
+
+  @@index([feeWaivedByAdminId])
+  @@map("certificate_requests")
+}
+
+model CertificatePayment {
+  id                 Int                      @id @default(autoincrement())
+  studentId          Int                      @map("student_id")
+  enrollmentId       Int                      @map("enrollment_id")
+  amount             Decimal                  @db.Decimal(10, 2)
+  currency           String
+  status             CertificatePaymentStatus @default(PENDING)
+  paymentMethod      String                   @map("payment_method")
+  reference          String                   @unique
+  confirmedAt        DateTime?                @map("confirmed_at")
+  confirmedByAdminId Int?                     @map("confirmed_by_admin_id")
+  createdAt          DateTime                 @default(now()) @map("created_at")
+  updatedAt          DateTime                 @updatedAt @map("updated_at")
+  student            User                     @relation("CertificateStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  enrollment         Enrollment               @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  confirmedByAdmin   User?                    @relation("CertificatePaymentConfirmer", fields: [confirmedByAdminId], references: [id], onDelete: SetNull)
+
+  @@unique([enrollmentId])
+  @@index([enrollmentId, status])
+  @@index([studentId])
+  @@map("certificate_payments")
+}
+
+model Certificate {
+  id                   Int                @id @default(autoincrement())
+  certificateRequestId Int                @unique @map("certificate_request_id")
+  serialNumber         String             @unique @map("serial_number")
+  status               CertificateStatus  @default(ISSUED)
+  issuedAt             DateTime           @default(now()) @map("issued_at")
+  issuedByAdminId      Int                @map("issued_by_admin_id")
+  revokedAt            DateTime?          @map("revoked_at")
+  revokedByAdminId     Int?               @map("revoked_by_admin_id")
+  revocationReason     String?            @map("revocation_reason")
+  certificateRequest   CertificateRequest @relation(fields: [certificateRequestId], references: [id], onDelete: Restrict)
+  issuedByAdmin        User               @relation("CertificateIssuer", fields: [issuedByAdminId], references: [id], onDelete: Restrict)
+  revokedByAdmin       User?              @relation("CertificateRevoker", fields: [revokedByAdminId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("certificates")
 }
 
 model Assignment {
