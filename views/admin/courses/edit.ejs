@@ -7,7 +7,12 @@
     </form>
   </div>
   <% if (success) { %><p class="success-message">La formation a été enregistrée.</p><% } %>
-  <p><a class="button" href="/admin/courses/<%= course.id %>/modules">Gérer le contenu pédagogique</a></p>
+  <nav class="course-management-actions" aria-label="Gestion de la formation">
+    <a class="button" href="/admin/sessions">Gérer les sessions</a>
+    <a class="button" href="/admin/class-meetings?course=<%= course.id %>">Gérer les séances live</a>
+    <a class="button" href="/admin/courses/<%= course.id %>/modules">Gérer le contenu pédagogique</a>
+    <a class="button" href="/admin/courses/<%= course.id %>/assignments">Gérer les devoirs</a>
+  </nav>
   <%- include('_form', { action: `/admin/courses/${course.id}`, form, error, courseTypes, durationUnits, currencies, submitLabel: 'Enregistrer' }) %>
 </section>
 <%- include('../../partials/footer') %>

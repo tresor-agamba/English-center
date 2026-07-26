@@ -16,6 +16,8 @@ const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminStudentRoutes = require('./routes/adminStudentRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
 const adminLearningRoutes = require('./routes/adminLearningRoutes');
+const adminAssignmentRoutes = require('./routes/adminAssignmentRoutes');
+const studentAssignmentRoutes = require('./routes/studentAssignmentRoutes');
 const requireAdmin = require('./middlewares/requireAdmin');
 const requireStudent = require('./middlewares/requireStudent');
 const studentRoutes = require('./routes/studentRoutes');
@@ -52,6 +54,7 @@ app.use(enrollmentRoutes);
 app.use(paymentRoutes);
 app.use(classMeetingRoutes);
 app.use('/student', requireStudent, studentRoutes);
+app.use('/student', requireStudent, studentAssignmentRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);
@@ -59,6 +62,7 @@ app.use('/admin/attendances', requireAdmin, adminAttendanceRoutes);
 app.use('/admin/courses', requireAdmin, adminCourseRoutes);
 app.use('/admin/class-meetings', requireAdmin, adminClassMeetingRoutes);
 app.use('/admin', requireAdmin, adminLearningRoutes);
+app.use('/admin', requireAdmin, adminAssignmentRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', {

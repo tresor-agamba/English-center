@@ -4,6 +4,7 @@ const studentScheduleService = require('../services/studentScheduleService');
 const studentPaymentService = require('../services/studentPaymentService');
 const studentProfileService = require('../services/studentProfileService');
 const learningAccessService = require('../services/learningAccessService');
+const studentClassMeetingService = require('../services/studentClassMeetingService');
 
 async function dashboard(req, res) {
   const data = await studentDashboardService.getDashboard(req.student.id);
@@ -137,9 +138,24 @@ async function setLessonCompletion(req, res, completed) {
   }
 }
 
+async function classMeeting(req, res) {
+  try {
+    const data = await studentClassMeetingService.getMeetingDetails(req.student.id, req.params.id);
+    return res.render('student/class-meetings/show', { title: data.meeting.title || 'Cours en direct', ...data });
+  } catch (error) {
+    if (error instanceof studentClassMeetingService.StudentClassMeetingError) {
+      return res.status(error.statusCode).render('student/enrollment/unavailable', {
+        title: 'Séance indisponible', message: error.message,
+      });
+    }
+    throw error;
+  }
+}
+
 module.exports = {
   dashboard, courses, course, schedule, payments, profile, updateProfile, updatePassword,
   learn, lesson,
+  classMeeting,
   completeLesson: (req, res) => setLessonCompletion(req, res, true),
   uncompleteLesson: (req, res) => setLessonCompletion(req, res, false),
 };

@@ -16,6 +16,7 @@
   <article class="card"><strong>Plateforme</strong><span><%= enrollment.trainingSession.platform || 'En ligne' %></span></article>
 </section>
 <a class="button" href="/student/courses/<%= enrollment.id %>/learn">Accéder au contenu pédagogique</a>
+<a class="button" href="/student/courses/<%= enrollment.id %>/assignments">Voir les devoirs</a>
 <% if (['TRIAL_ACTIVE','PAYMENT_REQUIRED','PAYMENT_FAILED'].includes(enrollment.status)) { %>
 <section class="student-payment-action">
   <% if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
@@ -24,7 +25,7 @@
 </section><% } %>
 <section class="section-block"><h2>Séances</h2>
   <% if (!enrollment.meetings.length) { %><div class="empty-state">Aucune séance programmée.</div><% } else { %><div class="student-meeting-list">
-  <% enrollment.meetings.forEach(meeting => { %><article><div><strong><%= meeting.title || 'Séance de formation' %></strong><span><%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: enrollment.trainingSession.timezone }) %></span><small>Présence : <%= meeting.attendance || 'Non enregistrée' %> · <%= meeting.access.label %></small></div>
+  <% enrollment.meetings.forEach(meeting => { %><article><div><strong><%= meeting.lesson?.title || meeting.title || 'Séance générale' %></strong><span><%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: enrollment.trainingSession.timezone }) %></span><small><%= meeting.platform.replaceAll('_', ' ') %> · Présence : <%= meeting.attendance || 'Non enregistrée' %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div>
     <% if (meeting.access.canJoin && enrollment.status !== 'CANCELLED') { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Accéder au cours</a><% } %>
   </article><% }) %></div><% } %>
 </section>

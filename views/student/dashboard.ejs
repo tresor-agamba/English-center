@@ -16,7 +16,7 @@
   <div>
     <span class="stat-label">Prochain cours accessible</span>
     <% if (nextAccessibleMeeting) { %>
-      <strong><%= nextAccessibleMeeting.course.title %> — <%= nextAccessibleMeeting.title || nextAccessibleMeeting.session.name %></strong>
+      <strong><%= nextAccessibleMeeting.course.title %> — <%= nextAccessibleMeeting.lesson?.title || nextAccessibleMeeting.title || 'Séance générale' %></strong>
       <small>La fenêtre d’accès est ouverte maintenant.</small>
     <% } else { %>
       <strong>Aucun accès ouvert actuellement</strong>
@@ -24,7 +24,7 @@
     <% } %>
   </div>
   <% if (nextAccessibleMeeting) { %>
-    <a class="button button-small" href="/class-meetings/<%= nextAccessibleMeeting.id %>/join?enrollment=<%= nextAccessibleMeeting.enrollmentId %>">Accéder au cours</a>
+    <a class="button button-small" href="/class-meetings/<%= nextAccessibleMeeting.id %>/join?enrollment=<%= nextAccessibleMeeting.enrollmentId %>">Rejoindre le cours</a>
   <% } %>
 </section>
 <section class="dashboard-panel">
@@ -32,7 +32,7 @@
   <% if (!upcomingMeetings.length) { %><div class="empty-state"><strong>Aucune séance à venir</strong><p>Vos prochaines séances apparaîtront ici.</p></div><% } else { %>
     <div class="student-meeting-list">
       <% upcomingMeetings.forEach(meeting => { %><article>
-        <div><strong><%= meeting.course.title %></strong><span><%= meeting.title || meeting.session.name %> · <%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: meeting.session.timezone }) %></span><small><%= meeting.session.platform || 'En ligne' %> · <%= meeting.access.label %></small></div>
+        <div><strong><%= meeting.course.title %></strong><span><%= meeting.lesson?.title || meeting.title || 'Séance générale' %> · <%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: meeting.session.timezone }) %></span><small><%= meeting.session.name %> · <%= meeting.session.platform.replaceAll('_', ' ') %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div>
         <% if (meeting.access.canJoin) { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= meeting.enrollmentId %>">Accéder</a><% } %>
       </article><% }) %>
     </div>

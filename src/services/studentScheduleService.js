@@ -4,18 +4,7 @@ const trialAccessService = require('./trialAccessService');
 const ACTIVE_ENROLLMENT_STATUSES = ['TRIAL_ACTIVE', 'PAYMENT_REQUIRED', 'CONFIRMED', 'PAYMENT_FAILED'];
 
 function accessPresentation(meeting, trialAccess, now = new Date()) {
-  if (meeting.status === 'CANCELLED') return { code: 'CANCELLED', label: 'Annulée', canJoin: false };
-  if (meeting.endsAt < now) return { code: 'ENDED', label: 'Terminée', canJoin: false };
-  if (!trialAccess.hasCourseAccess) {
-    return { code: 'PAYMENT_REQUIRED', label: 'Accès bloqué — paiement requis', canJoin: false };
-  }
-  const opensAt = new Date(meeting.startsAt.getTime() - trialAccessService.CLASS_JOIN_EARLY_MINUTES * 60000);
-  if (now >= opensAt && now <= meeting.endsAt) {
-    return { code: 'OPEN', label: 'Accès ouvert', canJoin: true };
-  }
-  const minutes = Math.max(1, Math.ceil((opensAt.getTime() - now.getTime()) / 60000));
-  if (minutes <= 120) return { code: 'SOON', label: `Accessible dans ${minutes} minutes`, canJoin: false };
-  return { code: 'UPCOMING', label: 'À venir', canJoin: false };
+  return trialAccessService.evaluateMeetingAccess(meeting, trialAccess, now);
 }
 
 async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, period = 'all', limit } = {}) {
@@ -41,7 +30,10 @@ async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, pe
           classMeetings: {
             where: { status: 'SCHEDULED', endsAt: { gte: now } },
             orderBy: { startsAt: 'asc' },
-            select: { id: true, title: true, startsAt: true, endsAt: true, status: true },
+            select: {
+              id: true, title: true, startsAt: true, endsAt: true, status: true, platform: true,
+              lesson: { select: { id: true, title: true } },
+            },
           },
         },
       },
@@ -60,10 +52,11 @@ async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, pe
       session: {
         id: enrollment.trainingSession.id,
         name: enrollment.trainingSession.name,
-        platform: enrollment.trainingSession.platform,
+        platform: meeting.platform,
         timezone: enrollment.trainingSession.timezone,
       },
       course: enrollment.trainingSession.course,
+      lesson: meeting.lesson,
       access: accessPresentation(meeting, accessByEnrollment.get(enrollment.id), now),
     }))
   );

@@ -45,18 +45,26 @@ async function index(req, res) {
 }
 
 async function newForm(req, res) {
-  const sessions = await classMeetingService.listSessions();
+  const [sessions, lessons] = await Promise.all([
+    classMeetingService.listSessions(),
+    classMeetingService.listLessonsCatalog(),
+  ]);
   return res.render('admin/class-meetings/new', {
     title: 'Nouvelle séance',
     sessions,
     statuses: classMeetingService.MEETING_STATUSES,
-    form: { trainingSessionId: req.query.session || '', status: 'SCHEDULED' },
+    platforms: classMeetingService.MEETING_PLATFORMS,
+    lessons,
+    form: { trainingSessionId: req.query.session || '', status: 'SCHEDULED', platform: 'OTHER' },
     error: null,
   });
 }
 
 async function create(req, res) {
-  const sessions = await classMeetingService.listSessions();
+  const [sessions, lessons] = await Promise.all([
+    classMeetingService.listSessions(),
+    classMeetingService.listLessonsCatalog(),
+  ]);
   try {
     const data = await classMeetingService.buildMeetingData(req.body);
     const meeting = await classMeetingService.create(data);
@@ -67,6 +75,8 @@ async function create(req, res) {
         title: 'Nouvelle séance',
         sessions,
         statuses: classMeetingService.MEETING_STATUSES,
+        platforms: classMeetingService.MEETING_PLATFORMS,
+        lessons,
         form: req.body,
         error: error?.code === 'P2002' ? 'Une séance existe déjà à cette date et cette heure.' : error.message,
       });
@@ -98,7 +108,11 @@ async function show(req, res) {
 }
 
 async function editForm(req, res) {
-  const [meeting, sessions] = await Promise.all([getMeeting(req.params.id), classMeetingService.listSessions()]);
+  const meeting = await getMeeting(req.params.id);
+  const [sessions, lessons] = await Promise.all([
+    classMeetingService.listSessions(),
+    classMeetingService.listLessonsCatalog(),
+  ]);
   const start = inputPartsInZone(meeting.startsAt, meeting.trainingSession.timezone);
   const end = inputPartsInZone(meeting.endsAt, meeting.trainingSession.timezone);
   return res.render('admin/class-meetings/edit', {
@@ -106,6 +120,8 @@ async function editForm(req, res) {
     meeting,
     sessions,
     statuses: classMeetingService.MEETING_STATUSES,
+    platforms: classMeetingService.MEETING_PLATFORMS,
+    lessons,
     form: {
       ...meeting,
       date: start.date,
@@ -117,7 +133,11 @@ async function editForm(req, res) {
 }
 
 async function update(req, res) {
-  const [meeting, sessions] = await Promise.all([getMeeting(req.params.id), classMeetingService.listSessions()]);
+  const meeting = await getMeeting(req.params.id);
+  const [sessions, lessons] = await Promise.all([
+    classMeetingService.listSessions(),
+    classMeetingService.listLessonsCatalog(),
+  ]);
   try {
     const data = await classMeetingService.buildMeetingData(req.body, meeting);
     await classMeetingService.update(meeting.id, data);
@@ -129,6 +149,8 @@ async function update(req, res) {
         meeting,
         sessions,
         statuses: classMeetingService.MEETING_STATUSES,
+        platforms: classMeetingService.MEETING_PLATFORMS,
+        lessons,
         form: req.body,
         error: error?.code === 'P2002' ? 'Une séance existe déjà à cette date et cette heure.' : error.message,
       });

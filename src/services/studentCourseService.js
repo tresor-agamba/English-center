@@ -65,7 +65,8 @@ async function getStudentCourse(userId, enrollmentId) {
           classMeetings: {
             orderBy: { startsAt: 'asc' },
             select: {
-              id: true, title: true, startsAt: true, endsAt: true, status: true,
+              id: true, title: true, startsAt: true, endsAt: true, status: true, platform: true,
+              lesson: { select: { id: true, title: true } },
               attendances: {
                 where: { enrollmentId: id },
                 select: { status: true },

@@ -6,6 +6,7 @@ const router = express.Router();
 router.get('/', asyncHandler(controller.dashboard));
 router.get('/courses', asyncHandler(controller.courses));
 router.get('/courses/:enrollmentId', asyncHandler(controller.course));
+router.get('/class-meetings/:id', asyncHandler(controller.classMeeting));
 router.get('/courses/:enrollmentId/learn', asyncHandler(controller.learn));
 router.get('/courses/:enrollmentId/lessons/:lessonId', asyncHandler(controller.lesson));
 router.post('/courses/:enrollmentId/lessons/:lessonId/complete', asyncHandler(controller.completeLesson));

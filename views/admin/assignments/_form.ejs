@@ -1,0 +1,14 @@
+<% if(error){%><p class="form-error"><%= error %></p><%}%>
+<form method="post" action="<%= action %>" class="assignment-form">
+  <label>Titre<input name="title" maxlength="200" required value="<%= form.title || '' %>"></label>
+  <label>Consignes<textarea name="instructions" maxlength="20000" rows="12" required><%= form.instructions || '' %></textarea></label>
+  <div class="form-grid">
+    <label>Module<select name="courseModuleId"><option value="">Formation entière</option><% course.modules.forEach(module=>{%><option value="<%= module.id %>" <%= Number(form.courseModuleId)===module.id?'selected':'' %>><%= module.title %></option><%})%></select></label>
+    <label>Leçon<select name="lessonId"><option value="">Aucune leçon</option><% course.modules.forEach(module=>module.lessons.forEach(lesson=>{%><option value="<%= lesson.id %>" <%= Number(form.lessonId)===lesson.id?'selected':'' %>><%= module.title %> — <%= lesson.title %></option><%}))%></select></label>
+    <label>Note maximale<input name="maxScore" inputmode="decimal" required value="<%= form.maxScore ?? '' %>"></label>
+    <label>Date limite<input name="dueAt" type="datetime-local" value="<%= form.dueAt ? new Date(form.dueAt).toISOString().slice(0,16) : '' %>"></label>
+  </div>
+  <label class="checkbox-label"><input name="allowLateSubmission" type="checkbox" <%= form.allowLateSubmission?'checked':'' %>> Autoriser les soumissions tardives</label>
+  <label class="checkbox-label"><input name="isPublished" type="checkbox" <%= form.isPublished?'checked':'' %>> Devoir publié</label>
+  <button class="button" type="submit"><%= submitLabel %></button>
+</form>

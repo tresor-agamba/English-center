@@ -22,7 +22,8 @@
 <div class="details-grid">
   <div class="card"><strong>Session</strong><span><%= meeting.trainingSession.name %></span></div>
   <div class="card"><strong>Date et horaires</strong><span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.startsAt) %> – <%= new Intl.DateTimeFormat('fr-FR', { timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.endsAt) %></span></div>
-  <div class="card"><strong>Plateforme</strong><span><%= meeting.trainingSession.platform || 'En ligne' %></span></div>
+  <div class="card"><strong>Leçon associée</strong><span><%= meeting.lesson?.title || 'Séance générale' %></span></div>
+  <div class="card"><strong>Plateforme</strong><span><%= meeting.platform.replaceAll('_', ' ') %></span></div>
   <div class="card"><strong>Lien privé</strong><span><%= meetingHost %> — masqué</span></div>
 </div>
 

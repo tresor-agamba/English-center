@@ -5,9 +5,17 @@
   <select id="trainingSessionId" name="trainingSessionId" required>
     <option value="">Sélectionner une session</option>
     <% sessions.forEach((session) => { %>
-      <option value="<%= session.id %>" <%= String(form.trainingSessionId || '') === String(session.id) ? 'selected' : '' %>>
+      <option value="<%= session.id %>" data-course-id="<%= session.course.id %>" <%= String(form.trainingSessionId || '') === String(session.id) ? 'selected' : '' %>>
         <%= session.course.title %> — <%= session.name %> (<%= session.timezone %>)
       </option>
+    <% }) %>
+  </select>
+
+  <label for="lessonId">Leçon pédagogique associée (facultative)</label>
+  <select id="lessonId" name="lessonId">
+    <option value="">Séance générale — aucune leçon</option>
+    <% lessons.forEach((lesson) => { %>
+      <option value="<%= lesson.id %>" data-course-id="<%= lesson.courseModule.courseId %>" <%= String(form.lessonId || '') === String(lesson.id) ? 'selected' : '' %>><%= lesson.courseModule.title %> — <%= lesson.title %></option>
     <% }) %>
   </select>
 
@@ -24,6 +32,12 @@
     </div>
   </div>
 
+  <label for="platform">Plateforme live</label>
+  <select id="platform" name="platform" required>
+    <% const platformLabels = { GOOGLE_MEET:'Google Meet', ZOOM:'Zoom', MICROSOFT_TEAMS:'Microsoft Teams', OTHER:'Autre' }; %>
+    <% platforms.forEach((platform) => { %><option value="<%= platform %>" <%= (form.platform || 'OTHER') === platform ? 'selected' : '' %>><%= platformLabels[platform] %></option><% }) %>
+  </select>
+
   <div class="form-grid">
     <div><label for="startTime">Heure de début</label><input id="startTime" name="startTime" type="time" value="<%= form.startTime || '' %>" required /></div>
     <div><label for="endTime">Heure de fin</label><input id="endTime" name="endTime" type="time" value="<%= form.endTime || '' %>" required /></div>
@@ -38,3 +52,4 @@
     <a href="<%= meeting ? `/admin/class-meetings/${meeting.id}` : '/admin/class-meetings' %>">Annuler</a>
   </div>
 </form>
+<script src="/js/admin-meetings.js" defer></script>

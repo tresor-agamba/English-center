@@ -3,6 +3,21 @@ const { TRIAL_LIMIT } = require('./enrollmentPolicy');
 
 const CLASS_JOIN_EARLY_MINUTES = 30;
 
+function evaluateMeetingAccess(meeting, trialAccess, now = new Date()) {
+  if (meeting.status === 'CANCELLED') return { code: 'CANCELLED', label: 'Cours annulé', canJoin: false };
+  if (meeting.status !== 'SCHEDULED' || now > meeting.endsAt) {
+    return { code: 'ENDED', label: 'Cours terminé', canJoin: false };
+  }
+  if (!trialAccess.hasCourseAccess) {
+    return { code: 'PAYMENT_REQUIRED', label: 'Paiement requis', canJoin: false };
+  }
+  const opensAt = new Date(meeting.startsAt.getTime() - CLASS_JOIN_EARLY_MINUTES * 60000);
+  if (now < opensAt) {
+    return { code: 'UPCOMING', label: 'Disponible bientôt', canJoin: false, opensAt };
+  }
+  return { code: 'OPEN', label: 'Accès ouvert', canJoin: true, opensAt };
+}
+
 class TrialAccessError extends Error {
   constructor(code, message, statusCode = 400) {
     super(message);
@@ -115,6 +130,15 @@ async function canAccessClassMeeting(userId, enrollmentId, classMeetingId) {
   if (now > meeting.endsAt) {
     throw new TrialAccessError('MEETING_ENDED', 'Cette séance est terminée.', 403);
   }
+  let meetingUrl;
+  try {
+    meetingUrl = new URL(meeting.privateMeetingUrl);
+  } catch {
+    throw new TrialAccessError('MEETING_URL_INVALID', 'Le lien de cette séance est indisponible.', 403);
+  }
+  if (meetingUrl.protocol !== 'https:') {
+    throw new TrialAccessError('MEETING_URL_INVALID', 'Le lien de cette séance est indisponible.', 403);
+  }
   return {
     allowed: true,
     trialAccess,
@@ -129,6 +153,7 @@ async function canAccessClassMeeting(userId, enrollmentId, classMeetingId) {
 
 module.exports = {
   CLASS_JOIN_EARLY_MINUTES,
+  evaluateMeetingAccess,
   TrialAccessError,
   calculateTrialAccess,
   getLearningOverview,

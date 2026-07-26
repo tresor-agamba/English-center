@@ -4,6 +4,7 @@ const trialAccessService = require('./trialAccessService');
 const { zonedDateTimeToUtc, dateKeyInZone } = require('../utils/timezone.util');
 
 const MEETING_STATUSES = ['SCHEDULED', 'COMPLETED', 'CANCELLED'];
+const MEETING_PLATFORMS = ['GOOGLE_MEET', 'ZOOM', 'MICROSOFT_TEAMS', 'OTHER'];
 const JS_DAY_TO_WEEKDAY = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 class ClassMeetingError extends Error {
@@ -24,10 +25,18 @@ function parseId(value, label = 'Séance') {
 function validateMeetingUrl(value) {
   try {
     const url = new URL(value);
-    return ['http:', 'https:'].includes(url.protocol);
+    return url.protocol === 'https:';
   } catch {
     return false;
   }
+}
+
+function normalizeMeetingPlatform(value) {
+  const normalized = String(value || '').trim().toUpperCase().replaceAll(' ', '_');
+  if (normalized.includes('GOOGLE')) return 'GOOGLE_MEET';
+  if (normalized.includes('ZOOM')) return 'ZOOM';
+  if (normalized.includes('TEAMS') || normalized.includes('MICROSOFT')) return 'MICROSOFT_TEAMS';
+  return MEETING_PLATFORMS.includes(normalized) ? normalized : 'OTHER';
 }
 
 async function buildMeetingData(body, existingMeeting = null) {
@@ -40,9 +49,22 @@ async function buildMeetingData(body, existingMeeting = null) {
       endDate: true,
       weekDays: true,
       timezone: true,
+      courseId: true,
+      platform: true,
     },
   });
   if (!session) throw new ClassMeetingError('SESSION_NOT_FOUND', 'Session de formation introuvable.', 404);
+
+  const lessonId = body.lessonId ? parseId(body.lessonId, 'Leçon') : null;
+  if (lessonId) {
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { courseModule: { select: { courseId: true } } },
+    });
+    if (!lesson || lesson.courseModule.courseId !== session.courseId) {
+      throw new ClassMeetingError('LESSON_COURSE_MISMATCH', 'La leçon n’appartient pas à la formation de cette session.');
+    }
+  }
 
   const date = body.date?.trim() || '';
   const startTime = body.startTime?.trim() || '';
@@ -66,6 +88,10 @@ async function buildMeetingData(body, existingMeeting = null) {
   if (!validateMeetingUrl(privateMeetingUrl)) {
     throw new ClassMeetingError('INVALID_URL', 'Le lien de réunion doit être une URL HTTP ou HTTPS valide.');
   }
+  const platform = body.platform
+    ? String(body.platform).trim().toUpperCase().replaceAll(' ', '_')
+    : normalizeMeetingPlatform(session.platform);
+  if (!MEETING_PLATFORMS.includes(platform)) throw new ClassMeetingError('INVALID_PLATFORM', 'Plateforme de réunion invalide.');
   const status = body.status;
   if (!MEETING_STATUSES.includes(status)) throw new ClassMeetingError('INVALID_STATUS', 'Statut de séance invalide.');
 
@@ -98,6 +124,8 @@ async function buildMeetingData(body, existingMeeting = null) {
     startsAt,
     endsAt,
     privateMeetingUrl,
+    platform,
+    lessonId,
     status,
   };
 }
@@ -114,7 +142,11 @@ function list(filters = {}) {
   return prisma.classMeeting.findMany({
     where,
     orderBy: { startsAt: 'asc' },
-    include: { trainingSession: { include: { course: true } }, _count: { select: { attendances: true } } },
+    include: {
+      trainingSession: { include: { course: true } },
+      lesson: { select: { id: true, title: true } },
+      _count: { select: { attendances: true } },
+    },
   });
 }
 
@@ -129,11 +161,36 @@ function listCourses() {
   return prisma.course.findMany({ orderBy: { title: 'asc' }, select: { id: true, title: true } });
 }
 
+async function listLessonsForSession(value) {
+  if (!value) return [];
+  const sessionId = parseId(value, 'Session');
+  const session = await prisma.trainingSession.findUnique({ where: { id: sessionId }, select: { courseId: true } });
+  if (!session) return [];
+  return prisma.lesson.findMany({
+    where: { courseModule: { courseId: session.courseId } },
+    orderBy: [{ courseModule: { position: 'asc' } }, { position: 'asc' }],
+    select: { id: true, title: true, courseModule: { select: { title: true } } },
+  });
+}
+
+function listLessonsCatalog() {
+  return prisma.lesson.findMany({
+    orderBy: [{ courseModule: { position: 'asc' } }, { position: 'asc' }],
+    select: { id: true, title: true, courseModule: { select: { title: true, courseId: true } } },
+  });
+}
+
 function findById(id) {
   return prisma.classMeeting.findUnique({
     where: { id },
     include: {
       trainingSession: { include: { course: true }, },
+      lesson: {
+        include: {
+          courseModule: true,
+          resources: { orderBy: { position: 'asc' } },
+        },
+      },
       attendances: { select: { status: true } },
       _count: { select: { attendances: true } },
     },
@@ -190,13 +247,17 @@ function cancel(id) {
 
 module.exports = {
   MEETING_STATUSES,
+  MEETING_PLATFORMS,
   ClassMeetingError,
   parseId,
   validateMeetingUrl,
+  normalizeMeetingPlatform,
   buildMeetingData,
   list,
   listSessions,
   listCourses,
+  listLessonsForSession,
+  listLessonsCatalog,
   findById,
   getAttendanceSheet,
   create,

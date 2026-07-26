@@ -24,7 +24,7 @@
       <td data-label="Date"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short', timeZone: meeting.trainingSession.timezone }).format(meeting.startsAt) %></td>
       <td data-label="Formation"><%= meeting.trainingSession.course.title %></td>
       <td data-label="Session"><%= meeting.trainingSession.name %></td>
-      <td data-label="Séance"><%= meeting.title || 'Sans titre' %></td>
+      <td data-label="Séance"><%= meeting.lesson?.title || meeting.title || 'Séance générale' %><br><small><%= meeting.platform.replaceAll('_', ' ') %></small></td>
       <td data-label="Statut"><span class="status meeting-status-<%= meeting.status.toLowerCase() %>"><%= statusLabels[meeting.status] %></span></td>
       <td data-label="Présences"><%= meeting._count.attendances %></td>
       <td data-label="Actions"><a href="/admin/class-meetings/<%= meeting.id %>">Consulter</a></td>

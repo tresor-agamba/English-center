@@ -1,6 +1,6 @@
 <%- include('../../partials/header', { title }) %>
 <%- include('../_nav') %>
-<header class="page-heading"><div><p class="eyebrow">Contenu pédagogique</p><h1><%= course.title %></h1></div><a class="button" href="/admin/courses/<%= course.id %>/modules/new">Ajouter un module</a></header>
+<header class="page-heading"><div><p class="eyebrow">Contenu pédagogique</p><h1><%= course.title %></h1></div><div class="heading-actions"><a class="button" href="/admin/courses/<%= course.id %>/assignments">Gérer les devoirs</a><a class="button" href="/admin/courses/<%= course.id %>/modules/new">Ajouter un module</a></div></header>
 <% if (!course.modules.length) { %><div class="empty-state"><strong>Aucun module</strong><p>Structurez cette formation avec un premier module.</p></div><% } %>
 <div class="learning-admin-list">
 <% course.modules.forEach(module => { const minutes=module.lessons.reduce((sum, lesson) => sum + (lesson.estimatedMinutes || 0), 0); %>

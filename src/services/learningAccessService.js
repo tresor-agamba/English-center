@@ -21,6 +21,9 @@ async function enrollmentForLearning(userId, enrollmentId) {
       id: true, status: true,
       trainingSession: {
         select: {
+          id: true,
+          name: true,
+          timezone: true,
           course: {
             select: {
               id: true, title: true,
@@ -35,6 +38,11 @@ async function enrollmentForLearning(userId, enrollmentId) {
                     select: {
                       id: true, title: true, description: true, position: true, estimatedMinutes: true,
                       lessonProgress: { where: { enrollmentId: id }, select: { completedAt: true }, take: 1 },
+                      classMeetings: {
+                        where: { trainingSession: { enrollments: { some: { id } } } },
+                        orderBy: { startsAt: 'asc' },
+                        select: { id: true, startsAt: true, endsAt: true, status: true, platform: true },
+                      },
                     },
                   },
                 },

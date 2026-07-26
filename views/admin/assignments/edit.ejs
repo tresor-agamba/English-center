@@ -1,0 +1,1 @@
+<%- include('../../partials/header',{title}) %><%- include('../_nav') %><section class="card wide-card"><p class="eyebrow"><%= course.title %></p><h1>Modifier le devoir</h1><%- include('_form',{action:`/admin/assignments/${assignment.id}`,course,form,error,submitLabel:'Enregistrer'}) %></section><%- include('../../partials/footer') %>

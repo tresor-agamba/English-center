@@ -1,0 +1,13 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<header class="live-detail-hero"><div><p class="eyebrow">Cours en direct</p><h1><%= meeting.title || lesson?.title || 'Séance générale' %></h1><p><%= course.title %> — <%= session.name %></p></div><span class="status meeting-status-<%= meeting.status.toLowerCase() %>"><%= meeting.status %></span></header>
+<section class="details-grid">
+  <article class="card"><strong>Date</strong><span><%= meeting.startsAt.toLocaleDateString('fr-FR', { timeZone: session.timezone }) %></span></article>
+  <article class="card"><strong>Heure</strong><span><%= meeting.startsAt.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', timeZone:session.timezone }) %>–<%= meeting.endsAt.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', timeZone:session.timezone }) %></span></article>
+  <article class="card"><strong>Fuseau horaire</strong><span><%= session.timezone %></span></article>
+  <article class="card"><strong>Plateforme</strong><span><%= meeting.platform.replaceAll('_', ' ') %></span></article>
+  <article class="card"><strong>Leçon associée</strong><span><%= lesson?.title || 'Séance générale' %></span></article>
+  <article class="card"><strong>Accès</strong><span><%= access.label %></span></article>
+</section>
+<% if(lesson){%><section class="section-block"><h2>Objectifs et support pédagogique</h2><p><%= lesson.description || 'Les objectifs seront présentés pendant le cours.' %></p><ul class="lesson-resources"><% lesson.resources.forEach(resource=>{%><li><a href="<%= resource.url %>" target="_blank" rel="noopener noreferrer"><%= resource.title %></a> <span><%= resource.type %></span></li><%})%></ul></section><%}%>
+<section class="live-join-panel"><strong><%= access.label %></strong><% if(access.canJoin){%><a class="button" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Rejoindre le cours</a><%}else{%><button class="button" disabled><%= access.label %></button><%}%></section>
+<%- include('../../partials/footer') %>
