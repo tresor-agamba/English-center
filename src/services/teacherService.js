@@ -16,7 +16,7 @@ function list(search = '') {
 }
 function find(id) {
   return prisma.user.findFirst({
-    where: { id, role: 'TEACHER' }, select: { ...select, teachingAssignments: {
+    where: { id, role: 'TEACHER' }, select: { ...select, whatsappPreference: true, teachingAssignments: {
       include: { trainingSession: { include: { course: true } } }, orderBy: { createdAt: 'desc' },
     } },
   });

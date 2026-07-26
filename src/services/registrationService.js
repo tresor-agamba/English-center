@@ -2,6 +2,7 @@ const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
 const enrollmentReminders = require('./enrollmentReminderService');
+const whatsappPreferences = require('./whatsappPreferenceService');
 
 const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
@@ -194,6 +195,7 @@ async function createRegistration(data) {
     try {
       const result = await runRegistrationTransaction(data);
       await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
+      if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => console.error('Consentement WhatsApp:', error.message));
       return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;

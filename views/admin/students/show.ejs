@@ -79,4 +79,5 @@
 </section>
 
 <p><a href="/admin/students">← Retour aux étudiants</a></p>
+<section class="card"><h2>Notifications WhatsApp</h2><p><%= student.whatsappPreference?.hasOptedIn ? 'Consentement actif' : 'Aucun consentement actif' %></p><% if (student.whatsappPreference?.hasOptedIn) { %><form method="post" action="/admin/whatsapp/users/<%= student.id %>/disable"><button class="button button-secondary">Désactiver WhatsApp</button></form><% } else { %><form method="post" action="/admin/whatsapp/users/<%= student.id %>/enable"><input type="hidden" name="source" value="ADMIN_RECORDED"><label>Numéro communiqué avec consentement</label><input name="phoneNumber" value="<%= student.phoneNumber %>" required><button class="button">Enregistrer le consentement</button></form><% } %></section>
 <%- include('../../partials/footer') %>

@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const whatsappDeliveryService = require('./whatsappDeliveryService');
 
 class NotificationError extends Error {
   constructor(message, statusCode = 400) { super(message); this.statusCode = statusCode; }
@@ -19,11 +20,14 @@ function clean(data) {
 }
 async function createNotification(data, client = prisma) {
   const normalized = clean(data);
-  if (!normalized.deduplicationKey) return client.notification.create({ data: normalized });
-  return client.notification.upsert({
+  const notification = !normalized.deduplicationKey
+    ? await client.notification.create({ data: normalized })
+    : await client.notification.upsert({
     where: { deduplicationKey: normalized.deduplicationKey },
     create: normalized, update: {},
   });
+  await whatsappDeliveryService.createDeliveryFromNotification(notification.id, client).catch((error) => console.error('Préparation WhatsApp impossible:', error.message));
+  return notification;
 }
 async function createNotificationsForUsers(userIds, data, keyPrefix, client = prisma) {
   const validIds = [...new Set(userIds.map(Number).filter(Number.isInteger))];

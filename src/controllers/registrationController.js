@@ -78,6 +78,7 @@ async function create(req, res) {
     firstName: req.body.firstName?.trim() || '',
     lastName: req.body.lastName?.trim() || '',
     phoneNumber: req.body.phoneNumber?.trim() || '',
+    whatsappConsent: req.body.whatsappConsent === 'yes',
   };
   try {
     session = await registrationService.getSessionForRegistration(req.body.sessionId);
@@ -88,6 +89,7 @@ async function create(req, res) {
       sessionId: session.id,
       ...form,
       passwordHash,
+      whatsappConsent: req.body.whatsappConsent === 'yes',
     });
     await establishSession(req, result.user);
     return res.redirect(`/registration/success/${result.enrollment.id}`);

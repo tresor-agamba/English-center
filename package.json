@@ -11,7 +11,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "notifications:process": "node src/jobs/processScheduledReminders.js",
-    "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js"
+    "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js",
+    "whatsapp:process": "node src/jobs/processWhatsAppDeliveries.js"
   },
   "keywords": [
     "english",

@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 const notifications = require('./notificationService');
 const reminders = require('./reminderService');
+const whatsappDeliveries = require('./whatsappDeliveryService');
 
 async function sessionAudience(trainingSessionId, client = prisma) {
   const session = await client.trainingSession.findUnique({
@@ -63,6 +64,7 @@ async function meetingRescheduled(before, after) {
   const changed = ['startsAt','endsAt','status','platform','lessonId'].some(k => String(before[k]) !== String(after[k]));
   if (!changed) return;
   await reminders.cancelForEntity('CLASS_MEETING', after.id);
+  await whatsappDeliveries.cancelPendingForEntity('CLASS_MEETING', after.id);
   const audience = await sessionAudience(after.trainingSessionId);
   await notifications.createNotificationsForUsers([...audience.studentIds, ...audience.teacherIds], {
     type: 'LIVE_CLASS_RESCHEDULED', priority: 'HIGH', title: 'Séance modifiée',
@@ -73,6 +75,7 @@ async function meetingRescheduled(before, after) {
 }
 async function meetingCancelled(meeting) {
   await reminders.cancelForEntity('CLASS_MEETING', meeting.id);
+  await whatsappDeliveries.cancelPendingForEntity('CLASS_MEETING', meeting.id);
   const audience = await sessionAudience(meeting.trainingSessionId);
   return notifications.createNotificationsForUsers([...audience.studentIds, ...audience.teacherIds], {
     type: 'LIVE_CLASS_CANCELLED', priority: 'HIGH', title: 'Séance annulée',

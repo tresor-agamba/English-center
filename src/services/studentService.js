@@ -80,6 +80,7 @@ function findById(id) {
           },
         },
       },
+      whatsappPreference: true,
     },
   });
 }

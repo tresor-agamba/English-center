@@ -22,6 +22,8 @@ const adminTeacherRoutes = require('./routes/adminTeacherRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const adminNotificationRoutes = require('./routes/adminNotificationRoutes');
+const whatsappWebhookRoutes = require('./routes/whatsappWebhookRoutes');
+const adminWhatsAppRoutes = require('./routes/adminWhatsAppRoutes');
 const requireAdmin = require('./middlewares/requireAdmin');
 const requireStudent = require('./middlewares/requireStudent');
 const requireTeacher = require('./middlewares/requireTeacher');
@@ -36,7 +38,9 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({ verify: (req, res, buffer) => {
+  if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
+} }));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use(
@@ -54,6 +58,7 @@ app.use(
 );
 app.use(notificationLocals);
 
+app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
 app.use(webRoutes);
 app.use(authRoutes);
 app.use('/formations', publicCourseRoutes);
@@ -69,6 +74,7 @@ app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/teachers', requireAdmin, adminTeacherRoutes);
 app.use('/admin/notifications', requireAdmin, adminNotificationRoutes);
+app.use('/admin/whatsapp', requireAdmin, adminWhatsAppRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);
 app.use('/admin/attendances', requireAdmin, adminAttendanceRoutes);
 app.use('/admin/courses', requireAdmin, adminCourseRoutes);

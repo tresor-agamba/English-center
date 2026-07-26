@@ -127,6 +127,17 @@ enum ReminderStatus {
   FAILED
 }
 
+enum WhatsAppDeliveryStatus {
+  PENDING
+  PROCESSING
+  ACCEPTED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}
+
 model User {
   id                   Int                      @id @default(autoincrement())
   firstName            String                   @map("first_name")
@@ -144,32 +155,86 @@ model User {
   notifications        Notification[]
   scheduledReminders   ScheduledReminder[]
   createdAnnouncements Announcement[]           @relation("AnnouncementCreator")
+  whatsappPreference   WhatsAppPreference?
+  whatsappDeliveries   WhatsAppDelivery[]
 
   @@map("users")
 }
 
 model Notification {
-  id               Int                  @id @default(autoincrement())
-  userId           Int                  @map("user_id")
-  type             NotificationType
-  priority         NotificationPriority @default(NORMAL)
-  channel          NotificationChannel  @default(IN_APP)
-  title            String
-  message          String
-  actionUrl        String?              @map("action_url")
-  relatedEntity    String?              @map("related_entity")
-  relatedId        Int?                 @map("related_id")
-  deduplicationKey String?              @unique @map("deduplication_key")
-  readAt           DateTime?            @map("read_at")
-  deletedAt        DateTime?            @map("deleted_at")
-  createdAt        DateTime             @default(now()) @map("created_at")
-  updatedAt        DateTime             @updatedAt @map("updated_at")
-  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 Int                  @id @default(autoincrement())
+  userId             Int                  @map("user_id")
+  type               NotificationType
+  priority           NotificationPriority @default(NORMAL)
+  channel            NotificationChannel  @default(IN_APP)
+  title              String
+  message            String
+  actionUrl          String?              @map("action_url")
+  relatedEntity      String?              @map("related_entity")
+  relatedId          Int?                 @map("related_id")
+  deduplicationKey   String?              @unique @map("deduplication_key")
+  readAt             DateTime?            @map("read_at")
+  deletedAt          DateTime?            @map("deleted_at")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  whatsappDeliveries WhatsAppDelivery[]
 
   @@index([userId, readAt])
   @@index([userId, createdAt])
   @@index([type])
   @@map("notifications")
+}
+
+model WhatsAppPreference {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique @map("user_id")
+  phoneNumber String?   @map("phone_number")
+  isEnabled   Boolean   @default(false) @map("is_enabled")
+  hasOptedIn  Boolean   @default(false) @map("has_opted_in")
+  optedInAt   DateTime? @map("opted_in_at")
+  optedOutAt  DateTime? @map("opted_out_at")
+  verifiedAt  DateTime? @map("verified_at")
+  source      String?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("whatsapp_preferences")
+}
+
+model WhatsAppDelivery {
+  id                  Int                    @id @default(autoincrement())
+  notificationId      Int?                   @map("notification_id")
+  userId              Int                    @map("user_id")
+  phoneNumber         String                 @map("phone_number")
+  templateName        String                 @map("template_name")
+  templateLanguage    String                 @map("template_language")
+  templateParameters  Json?                  @map("template_parameters")
+  status              WhatsAppDeliveryStatus @default(PENDING)
+  providerMessageId   String?                @unique @map("provider_message_id")
+  deduplicationKey    String                 @unique @map("deduplication_key")
+  attempts            Int                    @default(0)
+  scheduledFor        DateTime               @default(now()) @map("scheduled_for")
+  processingStartedAt DateTime?              @map("processing_started_at")
+  acceptedAt          DateTime?              @map("accepted_at")
+  sentAt              DateTime?              @map("sent_at")
+  deliveredAt         DateTime?              @map("delivered_at")
+  readAt              DateTime?              @map("read_at")
+  failedAt            DateTime?              @map("failed_at")
+  cancelledAt         DateTime?              @map("cancelled_at")
+  failureCode         String?                @map("failure_code")
+  failureReason       String?                @map("failure_reason")
+  lastAttemptAt       DateTime?              @map("last_attempt_at")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+  notification        Notification?          @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+  user                User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledFor])
+  @@index([userId, createdAt])
+  @@index([notificationId])
+  @@map("whatsapp_deliveries")
 }
 
 model ScheduledReminder {
