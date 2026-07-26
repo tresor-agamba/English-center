@@ -1,0 +1,3 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<section class="card wide-card"><p class="eyebrow"><%= module.course.title %> — <%= module.title %></p><h1>Nouvelle leçon</h1><%- include('_form', { action:`/admin/modules/${module.id}/lessons`, form, error, submitLabel:'Créer la leçon' }) %></section>
+<%- include('../../partials/footer') %>

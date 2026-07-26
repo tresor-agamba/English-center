@@ -1,0 +1,27 @@
+const express = require('express');
+const controller = require('../controllers/adminLearningController');
+const asyncHandler = require('../middlewares/asyncHandler');
+
+const router = express.Router();
+router.get('/courses/:courseId/modules', asyncHandler(controller.modules));
+router.get('/courses/:courseId/modules/new', asyncHandler(controller.newModule));
+router.post('/courses/:courseId/modules', asyncHandler(controller.createModule));
+router.get('/modules/:id/edit', asyncHandler(controller.editModule));
+router.post('/modules/:id', asyncHandler(controller.updateModule));
+router.post('/modules/:id/toggle-published', asyncHandler(controller.toggleModule));
+router.post('/modules/:id/move-up', asyncHandler(controller.moveModuleUp));
+router.post('/modules/:id/move-down', asyncHandler(controller.moveModuleDown));
+router.get('/modules/:moduleId/lessons/new', asyncHandler(controller.newLesson));
+router.post('/modules/:moduleId/lessons', asyncHandler(controller.createLesson));
+router.get('/lessons/:id/edit', asyncHandler(controller.editLesson));
+router.post('/lessons/:id', asyncHandler(controller.updateLesson));
+router.post('/lessons/:id/toggle-published', asyncHandler(controller.toggleLesson));
+router.post('/lessons/:id/move-up', asyncHandler(controller.moveLessonUp));
+router.post('/lessons/:id/move-down', asyncHandler(controller.moveLessonDown));
+router.get('/lessons/:lessonId/resources', asyncHandler(controller.resources));
+router.post('/lessons/:lessonId/resources', asyncHandler(controller.createResource));
+router.post('/resources/:id', asyncHandler(controller.updateResource));
+router.post('/resources/:id/delete', asyncHandler(controller.deleteResource));
+router.post('/resources/:id/move-up', asyncHandler(controller.moveResourceUp));
+router.post('/resources/:id/move-down', asyncHandler(controller.moveResourceDown));
+module.exports = router;

@@ -1,0 +1,15 @@
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<header class="page-heading"><div><p class="eyebrow">Contenu pédagogique</p><h1><%= course.title %></h1></div><a class="button" href="/admin/courses/<%= course.id %>/modules/new">Ajouter un module</a></header>
+<% if (!course.modules.length) { %><div class="empty-state"><strong>Aucun module</strong><p>Structurez cette formation avec un premier module.</p></div><% } %>
+<div class="learning-admin-list">
+<% course.modules.forEach(module => { const minutes=module.lessons.reduce((sum, lesson) => sum + (lesson.estimatedMinutes || 0), 0); %>
+  <article class="learning-admin-card">
+    <div class="learning-order"><strong><%= module.position %></strong><form method="post" action="/admin/modules/<%= module.id %>/move-up"><button title="Monter">↑</button></form><form method="post" action="/admin/modules/<%= module.id %>/move-down"><button title="Descendre">↓</button></form></div>
+    <div class="learning-admin-main"><div class="section-heading"><div><span class="status <%= module.isPublished ? 'status-active' : 'status-inactive' %>"><%= module.isPublished ? 'Publié' : 'Masqué' %></span><h2><%= module.title %></h2><p><%= module.description || 'Sans description' %></p></div><div class="status-actions"><a class="button button-small" href="/admin/modules/<%= module.id %>/edit">Modifier</a><a class="button button-small" href="/admin/modules/<%= module.id %>/lessons/new">Ajouter une leçon</a><form method="post" action="/admin/modules/<%= module.id %>/toggle-published"><button class="button button-small" type="submit"><%= module.isPublished ? 'Masquer' : 'Publier' %></button></form></div></div>
+      <p class="learning-summary"><%= module._count.lessons %> leçon(s) · <%= minutes %> minute(s)</p>
+      <% if (module.lessons.length) { %><ol class="admin-lesson-list"><% module.lessons.forEach(lesson => { %><li><span><strong><%= lesson.title %></strong> · <%= lesson.estimatedMinutes || 0 %> min · <%= lesson._count.resources %> ressource(s) · <%= lesson.isPublished ? 'Publiée' : 'Masquée' %></span><span><form method="post" action="/admin/lessons/<%= lesson.id %>/move-up"><button>↑</button></form><form method="post" action="/admin/lessons/<%= lesson.id %>/move-down"><button>↓</button></form><a href="/admin/lessons/<%= lesson.id %>/edit">Modifier</a><a href="/admin/lessons/<%= lesson.id %>/resources">Ressources</a></span></li><% }) %></ol><% } %>
+    </div>
+  </article>
+<% }) %></div>
+<%- include('../../partials/footer') %>

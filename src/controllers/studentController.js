@@ -3,6 +3,7 @@ const studentCourseService = require('../services/studentCourseService');
 const studentScheduleService = require('../services/studentScheduleService');
 const studentPaymentService = require('../services/studentPaymentService');
 const studentProfileService = require('../services/studentProfileService');
+const learningAccessService = require('../services/learningAccessService');
 
 async function dashboard(req, res) {
   const data = await studentDashboardService.getDashboard(req.student.id);
@@ -94,4 +95,51 @@ async function updatePassword(req, res) {
   }
 }
 
-module.exports = { dashboard, courses, course, schedule, payments, profile, updateProfile, updatePassword };
+async function learn(req, res) {
+  try {
+    const data = await learningAccessService.getLearningPath(req.student.id, req.params.enrollmentId);
+    return res.render('student/learning/index', { title: `Apprendre — ${data.course.title}`, ...data });
+  } catch (error) {
+    if (error instanceof learningAccessService.LearningAccessError) {
+      return res.status(error.statusCode).render('student/enrollment/unavailable', {
+        title: 'Contenu indisponible', message: error.message,
+      });
+    }
+    throw error;
+  }
+}
+
+async function lesson(req, res) {
+  try {
+    const data = await learningAccessService.getLesson(req.student.id, req.params.enrollmentId, req.params.lessonId);
+    return res.render('student/learning/lesson', { title: data.lesson.title, ...data });
+  } catch (error) {
+    if (error instanceof learningAccessService.LearningAccessError) {
+      return res.status(error.statusCode).render('student/enrollment/unavailable', {
+        title: 'Leçon indisponible', message: error.message,
+      });
+    }
+    throw error;
+  }
+}
+
+async function setLessonCompletion(req, res, completed) {
+  try {
+    await learningAccessService.setCompleted(req.student.id, req.params.enrollmentId, req.params.lessonId, completed);
+    return res.redirect(`/student/courses/${req.params.enrollmentId}/lessons/${req.params.lessonId}`);
+  } catch (error) {
+    if (error instanceof learningAccessService.LearningAccessError) {
+      return res.status(error.statusCode).render('student/enrollment/unavailable', {
+        title: 'Progression indisponible', message: error.message,
+      });
+    }
+    throw error;
+  }
+}
+
+module.exports = {
+  dashboard, courses, course, schedule, payments, profile, updateProfile, updatePassword,
+  learn, lesson,
+  completeLesson: (req, res) => setLessonCompletion(req, res, true),
+  uncompleteLesson: (req, res) => setLessonCompletion(req, res, false),
+};

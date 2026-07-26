@@ -1,0 +1,7 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<article class="lesson-page"><p class="eyebrow"><%= course.title %></p><h1><%= lesson.title %></h1><p class="heading-copy"><%= lesson.description || '' %></p><p><strong>Durée estimée :</strong> <%= lesson.estimatedMinutes ? `${lesson.estimatedMinutes} minutes` : 'Non précisée' %></p>
+<div class="lesson-content"><%= lesson.content || 'Aucun contenu texte.' %></div>
+<section class="lesson-resources"><h2>Ressources</h2><% if(!lesson.resources.length){%><p>Aucune ressource.</p><%}%><ul><% lesson.resources.forEach(resource => { %><li><a href="<%= resource.url %>" target="_blank" rel="noopener noreferrer"><%= resource.title %></a> <span><%= resource.type %></span></li><% }) %></ul></section>
+<form method="post" action="/student/courses/<%= enrollment.id %>/lessons/<%= lesson.id %>/<%= lesson.lessonProgress[0]?.completedAt ? 'uncomplete' : 'complete' %>"><button class="button" type="submit"><%= lesson.lessonProgress[0]?.completedAt ? 'Annuler la validation' : 'Marquer comme terminée' %></button></form>
+<nav class="lesson-navigation"><% if(previousLesson){%><a href="/student/courses/<%= enrollment.id %>/lessons/<%= previousLesson.id %>">← <%= previousLesson.title %></a><%}else{%><span></span><%}%><a href="/student/courses/<%= enrollment.id %>/learn">Sommaire</a><% if(nextLesson){%><a href="/student/courses/<%= enrollment.id %>/lessons/<%= nextLesson.id %>"><%= nextLesson.title %> →</a><%}%></nav></article>
+<%- include('../../partials/footer') %>

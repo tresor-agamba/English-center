@@ -1,0 +1,8 @@
+<% if (error) { %><p class="form-error"><%= error %></p><% } %>
+<form method="post" action="<%= action %>" class="learning-form">
+  <label>Titre<input name="title" maxlength="180" required value="<%= form.title || '' %>"></label>
+  <label>Description<textarea name="description" maxlength="2000" rows="5"><%= form.description || '' %></textarea></label>
+  <label>Position<input name="position" type="number" min="1" required value="<%= form.position || 1 %>"></label>
+  <label class="checkbox-label"><input name="isPublished" type="checkbox" <%= form.isPublished ? 'checked' : '' %>> Module publié</label>
+  <button class="button" type="submit"><%= submitLabel %></button>
+</form>

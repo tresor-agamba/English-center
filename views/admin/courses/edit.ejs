@@ -7,6 +7,7 @@
     </form>
   </div>
   <% if (success) { %><p class="success-message">La formation a été enregistrée.</p><% } %>
+  <p><a class="button" href="/admin/courses/<%= course.id %>/modules">Gérer le contenu pédagogique</a></p>
   <%- include('_form', { action: `/admin/courses/${course.id}`, form, error, courseTypes, durationUnits, currencies, submitLabel: 'Enregistrer' }) %>
 </section>
 <%- include('../../partials/footer') %>

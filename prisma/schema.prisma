@@ -68,6 +68,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum LessonResourceType {
+  PDF
+  VIDEO_LINK
+  EXTERNAL_LINK
+  DOCUMENT
+}
+
 model User {
   id               Int               @id @default(autoincrement())
   firstName        String            @map("first_name")
@@ -132,7 +139,7 @@ model Course {
   isPublished      Boolean           @default(false) @map("is_published")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
-  lessons          Lesson[]
+  modules          CourseModule[]
   enrollments      Enrollment[]
   schedules        Schedule[]
   documents        Document[]
@@ -141,20 +148,59 @@ model Course {
   @@map("courses")
 }
 
-model Lesson {
-  id        Int        @id @default(autoincrement())
-  courseId  Int        @map("course_id")
-  title     String
-  content   String?
-  position  Int        @default(0)
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  course    Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progress  Progress[]
-  documents Document[]
+model CourseModule {
+  id          Int      @id @default(autoincrement())
+  courseId    Int      @map("course_id")
+  title       String
+  description String?
+  position    Int
+  isPublished Boolean  @default(false) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons     Lesson[]
 
+  @@unique([courseId, position])
   @@index([courseId])
+  @@map("course_modules")
+}
+
+model Lesson {
+  id               Int              @id @default(autoincrement())
+  courseModuleId   Int              @map("course_module_id")
+  title            String
+  description      String?
+  content          String?
+  position         Int
+  estimatedMinutes Int?             @map("estimated_minutes")
+  isPublished      Boolean          @default(false) @map("is_published")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  courseModule     CourseModule     @relation(fields: [courseModuleId], references: [id], onDelete: Cascade)
+  resources        LessonResource[]
+  lessonProgress   LessonProgress[]
+  progress         Progress[]
+  documents        Document[]
+
+  @@unique([courseModuleId, position])
+  @@index([courseModuleId])
   @@map("lessons")
+}
+
+model LessonResource {
+  id        Int                @id @default(autoincrement())
+  lessonId  Int                @map("lesson_id")
+  title     String
+  type      LessonResourceType
+  url       String
+  position  Int
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+  lesson    Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, position])
+  @@index([lessonId])
+  @@map("lesson_resources")
 }
 
 model Enrollment {
@@ -169,10 +215,27 @@ model Enrollment {
   courseId          Int?
   payments          Payment[]
   attendances       Attendance[]
+  lessonProgress    LessonProgress[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
   @@map("enrollments")
+}
+
+model LessonProgress {
+  id           Int        @id @default(autoincrement())
+  enrollmentId Int        @map("enrollment_id")
+  lessonId     Int        @map("lesson_id")
+  completedAt  DateTime?  @map("completed_at")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([enrollmentId, lessonId])
+  @@index([enrollmentId])
+  @@index([lessonId])
+  @@map("lesson_progress")
 }
 
 model ClassMeeting {

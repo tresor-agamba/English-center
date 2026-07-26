@@ -15,6 +15,7 @@
   <article class="card"><strong>Jours et heures</strong><span><%= enrollment.trainingSession.weekDays.join(', ') || 'À préciser' %> · <%= enrollment.trainingSession.startTime %>–<%= enrollment.trainingSession.endTime %></span></article>
   <article class="card"><strong>Plateforme</strong><span><%= enrollment.trainingSession.platform || 'En ligne' %></span></article>
 </section>
+<a class="button" href="/student/courses/<%= enrollment.id %>/learn">Accéder au contenu pédagogique</a>
 <% if (['TRIAL_ACTIVE','PAYMENT_REQUIRED','PAYMENT_FAILED'].includes(enrollment.status)) { %>
 <section class="student-payment-action">
   <% if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
