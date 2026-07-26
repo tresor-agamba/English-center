@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const developmentProvider = require('./paymentProviders/developmentPaymentProvider');
+const notificationEvents = require('./notificationEventService');
 
 const MAX_TRANSACTION_ATTEMPTS = 8;
 const ACTIVE_STATUSES = ['PENDING', 'PROCESSING'];
@@ -230,6 +231,10 @@ async function simulateSuccess(reference, userId) {
     return { paymentId: payment.id, enrollmentId: payment.enrollmentId, success: true };
   });
   if (result.expired) throw new PaymentError('PAYMENT_EXPIRED', 'Cette tentative de paiement a expiré.');
+  if (result.success) {
+    const enrollment = await prisma.enrollment.findUnique({ where: { id: result.enrollmentId }, select: { userId: true } });
+    await notificationEvents.paymentConfirmed(result.enrollmentId, result.paymentId, enrollment.userId).catch((error) => console.error('Notification paiement:', error.message));
+  }
   return result;
 }
 

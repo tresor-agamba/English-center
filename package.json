@@ -9,7 +9,8 @@
     "test": "node --test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "notifications:process": "node src/jobs/processScheduledReminders.js"
   },
   "keywords": [
     "english",

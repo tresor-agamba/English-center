@@ -1,5 +1,6 @@
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
+const notificationEvents = require('./notificationEventService');
 
 const ELIGIBLE_STATUSES = ['TRIAL_ACTIVE', 'CONFIRMED'];
 
@@ -125,7 +126,9 @@ async function getAssignment(value) {
 }
 
 async function createAssignment(courseId, body) {
-  return prisma.assignment.create({ data: await formData(courseId, body) });
+  const assignment = await prisma.assignment.create({ data: await formData(courseId, body) });
+  if (assignment.isPublished) await notificationEvents.assignmentPublished(assignment).catch((error) => console.error('Notifications devoir:', error.message));
+  return assignment;
 }
 
 async function updateAssignment(assignmentId, body) {
@@ -135,7 +138,9 @@ async function updateAssignment(assignmentId, body) {
 
 async function togglePublished(assignmentId) {
   const assignment = await getAssignment(assignmentId);
-  return prisma.assignment.update({ where: { id: assignment.id }, data: { isPublished: !assignment.isPublished } });
+  const updated = await prisma.assignment.update({ where: { id: assignment.id }, data: { isPublished: !assignment.isPublished } });
+  if (updated.isPublished) await notificationEvents.assignmentPublished(updated).catch((error) => console.error('Notifications devoir:', error.message));
+  return updated;
 }
 
 async function deleteAssignment(assignmentId) {
@@ -232,7 +237,7 @@ async function gradeSubmission(assignmentId, submissionId, body) {
 }
 
 async function setFeedbackPublished(assignmentId, submissionId, published) {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const submission = await tx.assignmentSubmission.findFirst({
       where: { id: parseId(submissionId, 'soumission'), assignmentId: parseId(assignmentId, 'devoir') },
       select: { id: true, score: true, gradedAt: true },
@@ -246,6 +251,8 @@ async function setFeedbackPublished(assignmentId, submissionId, published) {
       data: { feedbackPublishedAt: published ? new Date() : null, status: published ? 'RETURNED' : 'GRADED' },
     });
   });
+  if (published) await notificationEvents.feedbackPublished(parseId(assignmentId, 'devoir'), parseId(submissionId, 'soumission')).catch((error) => console.error('Notification correction:', error.message));
+  return result;
 }
 
 module.exports = {

@@ -2,6 +2,7 @@ const prisma = require('../utils/prisma');
 const { OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
 const trialAccessService = require('./trialAccessService');
 const { zonedDateTimeToUtc, dateKeyInZone } = require('../utils/timezone.util');
+const notificationEvents = require('./notificationEventService');
 
 const MEETING_STATUSES = ['SCHEDULED', 'COMPLETED', 'CANCELLED'];
 const MEETING_PLATFORMS = ['GOOGLE_MEET', 'ZOOM', 'MICROSOFT_TEAMS', 'OTHER'];
@@ -224,16 +225,21 @@ async function getAttendanceSheet(id) {
   return { meeting, rows };
 }
 
-function create(data) {
-  return prisma.classMeeting.create({ data });
+async function create(data) {
+  const meeting = await prisma.classMeeting.create({ data });
+  await notificationEvents.meetingCreated(meeting).catch((error) => console.error('Notifications séance:', error.message));
+  return meeting;
 }
 
-function update(id, data) {
-  return prisma.classMeeting.update({ where: { id }, data });
+async function update(id, data) {
+  const before = await prisma.classMeeting.findUnique({ where: { id } });
+  const meeting = await prisma.classMeeting.update({ where: { id }, data });
+  await notificationEvents.meetingRescheduled(before, meeting).catch((error) => console.error('Notifications séance:', error.message));
+  return meeting;
 }
 
-function cancel(id) {
-  return prisma.$transaction(async (tx) => {
+async function cancel(id) {
+  const result = await prisma.$transaction(async (tx) => {
     const meeting = await tx.classMeeting.update({
       where: { id },
       data: { status: 'CANCELLED' },
@@ -243,6 +249,9 @@ function cancel(id) {
     for (const enrollmentId of enrollmentIds) await trialAccessService.calculateTrialAccess(enrollmentId, tx);
     return meeting;
   });
+  const meeting = await prisma.classMeeting.findUnique({ where: { id } });
+  await notificationEvents.meetingCancelled(meeting).catch((error) => console.error('Notifications séance:', error.message));
+  return result;
 }
 
 module.exports = {

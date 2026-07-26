@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const notificationEvents = require('./notificationEventService');
 
 const select = { id: true, firstName: true, lastName: true, phoneNumber: true, isActive: true, createdAt: true };
 
@@ -31,7 +32,7 @@ async function assign({ teacherId, trainingSessionId, isLeadTeacher }) {
     prisma.trainingSession.findUnique({ where: { id: trainingSessionId }, select: { id: true } }),
   ]);
   if (!teacher || !session) { const error = new Error('Enseignant ou session introuvable.'); error.statusCode = 404; throw error; }
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     if (isLeadTeacher) {
       await tx.trainingSessionTeacher.updateMany({ where: { trainingSessionId, isLeadTeacher: true }, data: { isLeadTeacher: false } });
     }
@@ -41,9 +42,15 @@ async function assign({ teacherId, trainingSessionId, isLeadTeacher }) {
       update: { isLeadTeacher },
     });
   });
+  const details = await prisma.trainingSession.findUnique({ where: { id: trainingSessionId }, select: { id: true, name: true } });
+  await notificationEvents.teacherAssigned(teacherId, details, isLeadTeacher).catch((error) => console.error('Notification affectation:', error.message));
+  return result;
 }
-function unassign(teacherId, trainingSessionId) {
-  return prisma.trainingSessionTeacher.deleteMany({ where: { teacherId, trainingSessionId } });
+async function unassign(teacherId, trainingSessionId) {
+  const result = await prisma.trainingSessionTeacher.deleteMany({ where: { teacherId, trainingSessionId } });
+  const meetings = await prisma.classMeeting.findMany({ where: { trainingSessionId }, select: { id: true } });
+  await prisma.scheduledReminder.updateMany({ where: { userId: teacherId, status: { in: ['PENDING','FAILED'] }, relatedEntity: 'CLASS_MEETING', relatedId: { in: meetings.map(x => x.id) } }, data: { status: 'CANCELLED', processedAt: new Date() } });
+  return result;
 }
 
 module.exports = { list, find, create, update, sessions, assign, unassign };

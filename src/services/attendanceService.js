@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const trialAccessService = require('./trialAccessService');
+const notificationEvents = require('./notificationEventService');
 
 const ATTENDANCE_STATUSES = ['PRESENT', 'ABSENT', 'EXCUSED'];
 
@@ -72,7 +73,7 @@ async function recordAttendanceBatch(classMeetingIdValue, entries) {
     throw new AttendanceError('DUPLICATE_ENROLLMENT', 'Une inscription apparaît plusieurs fois.');
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const results = [];
     for (const entry of normalized) results.push(await recordOne(tx, entry));
     const summaries = [];
@@ -81,6 +82,14 @@ async function recordAttendanceBatch(classMeetingIdValue, entries) {
     }
     return { attendances: results.map((result) => result.attendance), summaries };
   });
+  for (let index = 0; index < result.summaries.length; index += 1) {
+    if (result.summaries[index].enrollmentStatus === 'PAYMENT_REQUIRED') {
+      const enrollmentId = normalized[index].enrollmentId;
+      const owner = await prisma.enrollment.findUnique({ where: { id: enrollmentId }, select: { userId: true } });
+      await notificationEvents.paymentRequired(enrollmentId, owner.userId).catch((error) => console.error('Notification essai:', error.message));
+    }
+  }
+  return result;
 }
 
 module.exports = { ATTENDANCE_STATUSES, AttendanceError, recordAttendance, recordAttendanceBatch };

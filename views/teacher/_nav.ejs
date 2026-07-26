@@ -1,1 +1,6 @@
-<nav class="admin-nav" aria-label="Navigation enseignant"><a href="/teacher">Tableau de bord</a><a href="/teacher/sessions">Mes sessions</a><a href="/teacher/profile">Mon profil</a><form method="post" action="/logout"><button>Déconnexion</button></form></nav>
+<nav class="admin-nav" aria-label="Navigation enseignant">
+  <a href="/teacher">Tableau de bord</a><a href="/teacher/sessions">Mes sessions</a>
+  <a href="/teacher/profile">Mon profil</a>
+  <a href="/notifications">Notifications (<%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %>)</a>
+  <form method="post" action="/logout"><button>Déconnexion</button></form>
+</nav>

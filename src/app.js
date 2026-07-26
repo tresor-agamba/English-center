@@ -20,9 +20,13 @@ const adminAssignmentRoutes = require('./routes/adminAssignmentRoutes');
 const studentAssignmentRoutes = require('./routes/studentAssignmentRoutes');
 const adminTeacherRoutes = require('./routes/adminTeacherRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const adminNotificationRoutes = require('./routes/adminNotificationRoutes');
 const requireAdmin = require('./middlewares/requireAdmin');
 const requireStudent = require('./middlewares/requireStudent');
 const requireTeacher = require('./middlewares/requireTeacher');
+const requireAuthenticated = require('./middlewares/requireAuthenticated');
+const notificationLocals = require('./middlewares/notificationLocals');
 const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 
@@ -48,6 +52,7 @@ app.use(
     },
   })
 );
+app.use(notificationLocals);
 
 app.use(webRoutes);
 app.use(authRoutes);
@@ -59,9 +64,11 @@ app.use(classMeetingRoutes);
 app.use('/student', requireStudent, studentRoutes);
 app.use('/student', requireStudent, studentAssignmentRoutes);
 app.use('/teacher', requireTeacher, teacherRoutes);
+app.use('/notifications', requireAuthenticated, notificationRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
 app.use('/admin/teachers', requireAdmin, adminTeacherRoutes);
+app.use('/admin/notifications', requireAdmin, adminNotificationRoutes);
 app.use('/admin/sessions', requireAdmin, adminSessionRoutes);
 app.use('/admin/attendances', requireAdmin, adminAttendanceRoutes);
 app.use('/admin/courses', requireAdmin, adminCourseRoutes);
