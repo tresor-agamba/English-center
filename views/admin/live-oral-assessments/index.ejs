@@ -1,0 +1,4 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><h1>Évaluations orales en direct</h1><a class="button" href="/admin/live-oral-assessments/new">Créer</a></div>
+<div class="card-grid"><% items.forEach(item => { %><article class="card"><p class="eyebrow"><%= item.status %></p><h2><a href="/admin/live-oral-assessments/<%= item.id %>"><%= item.title %></a></h2><p><%= item.course.title %></p><p><%= item._count.liveOralSessions %> session(s)</p></article><% }) %></div>
+<% if (!items.length) { %><p class="empty-state">Aucune évaluation orale en direct.</p><% } %><%- include('../../partials/footer') %>

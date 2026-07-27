@@ -1,0 +1,10 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<h1><%= title %></h1><form method="post" action="/admin/live-oral-assessments" class="card form-stack">
+<label>Titre<input name="title" required></label>
+<label>Formation<select name="courseId" required><option value="">Choisir</option><% courses.forEach(c => { %><option value="<%= c.id %>"><%= c.title %></option><% }) %></select></label>
+<label>Session (facultatif)<select name="trainingSessionId"><option value="">Toutes</option><% sessions.forEach(s => { %><option value="<%= s.id %>"><%= s.name %></option><% }) %></select></label>
+<label>Instructions<textarea name="instructions" required></textarea></label>
+<label>Total de points<input type="number" name="totalPoints" value="100" min="1" required></label>
+<label>Seuil de réussite<input type="number" name="passingScore" value="50" min="0" required></label>
+<label>Grille JSON<textarea name="criteria" required>[{"code":"FLUENCY","label":"Fluidité","weight":50,"maxScore":20,"position":1},{"code":"ACCURACY","label":"Précision","weight":50,"maxScore":20,"position":2}]</textarea></label>
+<button class="button" type="submit">Enregistrer le brouillon</button></form><%- include('../../partials/footer') %>

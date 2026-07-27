@@ -1,0 +1,10 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<h1><%= title %></h1><form method="post" action="/admin/live-oral-sessions" class="card form-stack">
+<label>Évaluation<select name="assessmentId" required><% assessments.forEach(a => { %><option value="<%= a.id %>"><%= a.title %></option><% }) %></select></label>
+<label>Session de formation<select name="trainingSessionId" required><% trainingSessions.forEach(s => { %><option value="<%= s.id %>"><%= s.course.title %> — <%= s.name %></option><% }) %></select></label>
+<label>Début (UTC)<input type="datetime-local" name="scheduledStartAt" required></label><label>Fin (UTC)<input type="datetime-local" name="scheduledEndAt" required></label>
+<label>Plateforme<select name="meetingPlatform"><option>GOOGLE_MEET</option><option>ZOOM</option><option>MICROSOFT_TEAMS</option><option>JITSI</option><option>OTHER</option></select></label>
+<label>Lien privé HTTPS<input type="url" name="privateMeetingUrl" required></label>
+<label>Participants JSON<textarea name="participants" required>[{"enrollmentId":1,"role":"CANDIDATE"}]</textarea></label>
+<label>Examinateurs JSON<textarea name="examiners" required>[{"teacherId":1,"role":"LEAD"}]</textarea></label>
+<button class="button">Planifier</button></form><%- include('../../partials/footer') %>

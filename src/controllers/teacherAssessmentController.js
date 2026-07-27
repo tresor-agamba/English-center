@@ -1,6 +1,7 @@
 const prisma = require('../utils/prisma');
 const assessments = require('../services/recordedOralAssessmentService');
 const evaluations = require('../services/recordedOralEvaluationService');
+const liveEvaluations = require('../services/liveOralEvaluationService');
 const audioAccess = require('../services/oralAudioAccessService');
 const sendPrivateAudio = require('./helpers/sendPrivateAudio');
 
@@ -52,8 +53,16 @@ async function gradeAttempt(req, res) {
   res.redirect(`/teacher/oral-attempts/${req.params.id}?saved=${evaluation.id}`);
 }
 async function publishEvaluation(req, res) {
+  const source = await prisma.assessmentEvaluation.findUnique({
+    where: { id: Number(req.params.id) },
+    select: { liveOralSessionId: true },
+  });
+  if (source?.liveOralSessionId) {
+    const evaluation = await liveEvaluations.publish(req.teacher.id, req.params.id);
+    return res.redirect(`/teacher/live-oral-sessions/${evaluation.liveOralSessionId}`);
+  }
   const evaluation = await evaluations.publish(req.teacher.id, req.params.id);
-  res.redirect(`/teacher/oral-attempts/${evaluation.assessmentAttemptId}`);
+  return res.redirect(`/teacher/oral-attempts/${evaluation.assessmentAttemptId}`);
 }
 async function audio(req, res) {
   return sendPrivateAudio(req, res, await audioAccess.forStaff(req.teacher.id, req.params.id));

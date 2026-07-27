@@ -1,0 +1,3 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><div><p class="eyebrow"><%= item.status %></p><h1><%= item.title %></h1></div><% if (item.status === 'DRAFT') { %><form method="post" action="/admin/live-oral-assessments/<%= item.id %>/publish"><button class="button">Publier</button></form><% } %></div>
+<article class="card"><p><%= item.course.title %></p><p><%= item.instructions || 'Aucune instruction.' %></p><h2>Grille</h2><ul><% item.criteria.forEach(c => { %><li><%= c.label %> — <%= c.weight %>% (max. <%= c.maxScore %>)</li><% }) %></ul></article><%- include('../../partials/footer') %>

@@ -1,0 +1,4 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><h1>Sessions orales en direct</h1><a class="button" href="/admin/live-oral-sessions/new">Planifier</a></div>
+<div class="card-grid"><% items.forEach(item => { %><article class="card"><p class="eyebrow"><%= item.status %></p><h2><a href="/admin/live-oral-sessions/<%= item.id %>"><%= item.assessment.title %></a></h2><p><%= item.scheduledStartAt.toLocaleString('fr-FR') %></p><p><%= item._count.participants %> participant(s)</p></article><% }) %></div>
+<% if (!items.length) { %><p class="empty-state">Aucune session planifiée.</p><% } %><%- include('../../partials/footer') %>

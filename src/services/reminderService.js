@@ -41,6 +41,23 @@ async function isStillRelevant(reminder, client) {
       ...(assignment.trainingSessionId ? { trainingSessionId: assignment.trainingSessionId } : {}),
     }, select: { id: true } }));
   }
+  if (reminder.relatedEntity === 'LIVE_ORAL_SESSION') {
+    const session = await client.liveOralSession.findUnique({
+      where: { id: reminder.relatedId },
+      select: {
+        status: true,
+        scheduledStartAt: true,
+        participants: { where: { enrollment: { userId: reminder.userId } }, select: { id: true } },
+        examiners: { where: { teacherId: reminder.userId }, select: { id: true } },
+      },
+    });
+    return Boolean(
+      session
+      && ['SCHEDULED', 'READY'].includes(session.status)
+      && session.scheduledStartAt > new Date()
+      && (session.participants.length || session.examiners.length),
+    );
+  }
   return true;
 }
 async function processOne(value) {
