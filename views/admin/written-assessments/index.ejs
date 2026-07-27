@@ -1,0 +1,4 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><h1>Évaluations écrites</h1><a class="button" href="/admin/written-assessments/new">Créer</a></div>
+<div class="card-grid"><% items.forEach(item => { %><article class="card"><p class="eyebrow"><%= item.status %></p><h2><a href="/admin/written-assessments/<%= item.id %>"><%= item.title %></a></h2><p><%= item.course.title %></p><p><%= item._count.questions %> question(s) · <%= item._count.attempts %> tentative(s)</p></article><% }) %></div>
+<% if (!items.length) { %><p class="empty-state">Aucune évaluation écrite.</p><% } %><%- include('../../partials/footer') %>

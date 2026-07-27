@@ -82,8 +82,15 @@ enum AssessmentStatus {
 
 enum AssessmentQuestionType {
   MULTIPLE_CHOICE
+  MULTIPLE_SELECT
+  TRUE_FALSE
   SHORT_TEXT
   LONG_TEXT
+  FILL_IN_THE_BLANK
+  MATCHING
+  ORDERING
+  LISTENING
+  READING
   READING_COMPREHENSION
   LISTENING_COMPREHENSION
   ESSAY
@@ -201,6 +208,9 @@ enum NotificationType {
   LIVE_ORAL_RESCHEDULED
   LIVE_ORAL_CANCELLED
   LIVE_ORAL_RESULT_PUBLISHED
+  WRITTEN_ASSESSMENT_PUBLISHED
+  WRITTEN_ATTEMPT_SUBMITTED
+  WRITTEN_RESULT_PUBLISHED
 }
 
 enum CertificatePaymentStatus {
@@ -650,6 +660,7 @@ model Assessment {
   passingScore        Decimal                @map("passing_score") @db.Decimal(8, 2)
   preparationSeconds  Int                    @default(0) @map("preparation_seconds")
   maxAttempts         Int                    @default(1) @map("max_attempts")
+  timeLimitMinutes    Int?                   @map("time_limit_minutes")
   maxRecordingSeconds Int?                   @map("max_recording_seconds")
   allowPlayback       Boolean                @default(true) @map("allow_playback")
   publishedAt         DateTime?              @map("published_at")
@@ -679,6 +690,8 @@ model AssessmentQuestion {
   prompt             String
   options            Json?
   expectedAnswer     Json?                  @map("expected_answer")
+  explanation        String?
+  parentQuestionId   Int?                   @map("parent_question_id")
   mediaStorageKey    String?                @map("media_storage_key")
   mediaMimeType      String?                @map("media_mime_type")
   preparationSeconds Int?                   @map("preparation_seconds")
@@ -690,28 +703,33 @@ model AssessmentQuestion {
   createdAt          DateTime               @default(now()) @map("created_at")
   updatedAt          DateTime               @updatedAt @map("updated_at")
   assessment         Assessment             @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  parentQuestion     AssessmentQuestion?    @relation("AssessmentQuestionChildren", fields: [parentQuestionId], references: [id], onDelete: Cascade)
+  childQuestions     AssessmentQuestion[]   @relation("AssessmentQuestionChildren")
   responses          AssessmentResponse[]
 
   @@unique([assessmentId, position])
   @@index([assessmentId, type])
+  @@index([parentQuestionId])
   @@map("assessment_questions")
 }
 
 model AssessmentAttempt {
-  id            Int                     @id @default(autoincrement())
-  assessmentId  Int                     @map("assessment_id")
-  enrollmentId  Int                     @map("enrollment_id")
-  attemptNumber Int                     @map("attempt_number")
-  status        AssessmentAttemptStatus @default(DRAFT)
-  startedAt     DateTime                @default(now()) @map("started_at")
-  submittedAt   DateTime?               @map("submitted_at")
-  gradedAt      DateTime?               @map("graded_at")
-  createdAt     DateTime                @default(now()) @map("created_at")
-  updatedAt     DateTime                @updatedAt @map("updated_at")
-  assessment    Assessment              @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
-  enrollment    Enrollment              @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
-  responses     AssessmentResponse[]
-  evaluation    AssessmentEvaluation?
+  id              Int                     @id @default(autoincrement())
+  assessmentId    Int                     @map("assessment_id")
+  enrollmentId    Int                     @map("enrollment_id")
+  attemptNumber   Int                     @map("attempt_number")
+  status          AssessmentAttemptStatus @default(DRAFT)
+  startedAt       DateTime                @default(now()) @map("started_at")
+  expiresAt       DateTime?               @map("expires_at")
+  autoSubmittedAt DateTime?               @map("auto_submitted_at")
+  submittedAt     DateTime?               @map("submitted_at")
+  gradedAt        DateTime?               @map("graded_at")
+  createdAt       DateTime                @default(now()) @map("created_at")
+  updatedAt       DateTime                @updatedAt @map("updated_at")
+  assessment      Assessment              @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  enrollment      Enrollment              @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  responses       AssessmentResponse[]
+  evaluation      AssessmentEvaluation?
 
   @@unique([assessmentId, enrollmentId, attemptNumber])
   @@index([enrollmentId, status])
@@ -725,6 +743,9 @@ model AssessmentResponse {
   assessmentQuestionId  Int                @map("assessment_question_id")
   textResponse          String?            @map("text_response")
   selectedOptions       Json?              @map("selected_options")
+  awardedPoints         Decimal?           @map("awarded_points") @db.Decimal(8, 2)
+  isAutoGraded          Boolean            @default(false) @map("is_auto_graded")
+  gradingFeedback       String?            @map("grading_feedback")
   audioStorageKey       String?            @map("audio_storage_key")
   audioOriginalFileName String?            @map("audio_original_file_name")
   audioMimeType         String?            @map("audio_mime_type")

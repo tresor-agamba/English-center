@@ -1,0 +1,1 @@
+<%- include('../../partials/header', { title }) %><h1><%= title %></h1><%- include('../../shared/written-assessment-form', { action: item ? `/teacher/written-assessments/${item.id}` : '/teacher/written-assessments', courses, sessions, item: item || null }) %><%- include('../../partials/footer') %>
