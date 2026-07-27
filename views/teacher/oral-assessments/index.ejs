@@ -1,0 +1,4 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><h1>Évaluations orales</h1><a class="button" href="/teacher/oral-assessments/new">Créer</a></div>
+<div class="card-grid"><% items.forEach(item => { %><article class="card"><p class="eyebrow"><%= item.status %></p><h2><a href="/teacher/oral-assessments/<%= item.id %>"><%= item.title %></a></h2><p><%= item.course.title %><%= item.trainingSession ? ` — ${item.trainingSession.name}` : '' %></p><p><%= item._count.attempts %> tentative(s)</p></article><% }) %></div>
+<% if (!items.length) { %><p class="empty-state">Aucune évaluation autorisée.</p><% } %><%- include('../../partials/footer') %>

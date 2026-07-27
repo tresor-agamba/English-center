@@ -12,7 +12,8 @@
     "prisma:seed": "node prisma/seed.js",
     "notifications:process": "node src/jobs/processScheduledReminders.js",
     "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js",
-    "whatsapp:process": "node src/jobs/processWhatsAppDeliveries.js"
+    "whatsapp:process": "node src/jobs/processWhatsAppDeliveries.js",
+    "oral-audio:cleanup": "node src/jobs/cleanupOralAudio.js"
   },
   "keywords": [
     "english",
@@ -30,7 +31,9 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
+    "file-type": "^20.5.0",
     "multer": "^2.0.2",
+    "music-metadata": "^11.8.3",
     "pdfkit": "^0.19.1",
     "qrcode": "^1.5.4"
   },

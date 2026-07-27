@@ -1,0 +1,5 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<div class="section-heading"><div><p class="eyebrow"><%= assessment.status %></p><h1><%= assessment.title %></h1></div><% if (assessment.status === 'DRAFT') { %><div><a href="/teacher/oral-assessments/<%= assessment.id %>/edit">Modifier</a><form method="post" action="/teacher/oral-assessments/<%= assessment.id %>/publish"><button class="button">Publier</button></form></div><% } %></div>
+<section class="card"><p><%= assessment.instructions %></p><p><%= assessment.questions.length %> question(s) · <%= assessment.totalPoints %> points</p></section>
+<h2>Soumissions</h2><div class="card-grid"><% submissions.forEach(row => { %><article class="card"><h3><%= row.enrollment.user.firstName %> <%= row.enrollment.user.lastName %></h3><p>Tentative <%= row.attemptNumber %> — <%= row.status %></p><a class="button button-small" href="/teacher/oral-attempts/<%= row.id %>">Écouter et corriger</a></article><% }) %></div>
+<% if (!submissions.length) { %><p class="empty-state">Aucune soumission.</p><% } %><%- include('../../partials/footer') %>

@@ -1,0 +1,54 @@
+<form method="post" action="<%= action %>" class="card assessment-form" id="assessment-form">
+  <label>Titre <input name="title" maxlength="200" required value="<%= assessment?.title || '' %>"></label>
+  <label>Description <textarea name="description" maxlength="5000"><%= assessment?.description || '' %></textarea></label>
+  <label>Formation
+    <select name="courseId" required><option value="">Choisir</option><% courses.forEach(course => { %><option value="<%= course.id %>" <%= assessment?.courseId === course.id ? 'selected' : '' %>><%= course.title %></option><% }) %></select>
+  </label>
+  <label>Session facultative
+    <select name="trainingSessionId"><option value="">Toutes les sessions autorisées</option><% sessions.forEach(session => { %><option value="<%= session.id %>" data-course="<%= session.courseId %>" <%= assessment?.trainingSessionId === session.id ? 'selected' : '' %>><%= session.name %></option><% }) %></select>
+  </label>
+  <div class="assessment-columns">
+    <label>Ouverture <input type="datetime-local" name="openAt" value="<%= assessment?.openAt ? new Date(assessment.openAt.getTime() - assessment.openAt.getTimezoneOffset() * 60000).toISOString().slice(0,16) : '' %>"></label>
+    <label>Fermeture <input type="datetime-local" name="closeAt" value="<%= assessment?.closeAt ? new Date(assessment.closeAt.getTime() - assessment.closeAt.getTimezoneOffset() * 60000).toISOString().slice(0,16) : '' %>"></label>
+    <label>Points totaux <input type="number" min=".01" step=".01" name="totalPoints" required value="<%= assessment?.totalPoints || 20 %>"></label>
+    <label>Seuil de réussite <input type="number" min="0" step=".01" name="passingScore" required value="<%= assessment?.passingScore || 10 %>"></label>
+    <label>Tentatives maximales <input type="number" min="1" max="100" name="maxAttempts" required value="<%= assessment?.maxAttempts || 1 %>"></label>
+    <label>Durée générale maximale (secondes) <input type="number" min="1" max="14400" name="maxRecordingSeconds" required value="<%= assessment?.maxRecordingSeconds || 300 %>"></label>
+  </div>
+  <label><input type="checkbox" name="allowPlayback" <%= assessment?.allowPlayback !== false ? 'checked' : '' %>> Autoriser l’étudiant à écouter sa réponse</label>
+  <label>Consignes générales <textarea name="instructions" maxlength="20000" required><%= assessment?.instructions || '' %></textarea></label>
+
+  <section><div class="section-heading"><h2>Questions orales</h2><button type="button" id="add-question">Ajouter une question</button></div><div id="questions-editor"></div></section>
+  <section><div class="section-heading"><h2>Grille d’évaluation</h2><button type="button" id="add-criterion">Ajouter un critère</button></div><p>Les poids doivent totaliser 100 et les notes maximales le total de l’évaluation.</p><div id="criteria-editor"></div></section>
+  <input type="hidden" name="questions" id="questions-json">
+  <input type="hidden" name="criteria" id="criteria-json">
+  <button class="button" type="submit">Enregistrer le brouillon</button>
+</form>
+<script>
+(() => {
+  const questions = <%- JSON.stringify(assessment?.questions || [{type:'ORAL_QUIZ',prompt:'',preparationSeconds:30,maxResponseSeconds:120,maxAttempts:2,position:1,points:20,isRequired:true}]).replace(/</g, '\\u003c') %>;
+  const criteria = <%- JSON.stringify(assessment?.criteria || [{code:'PRONUNCIATION',label:'Prononciation',weight:50,maxScore:10,position:1},{code:'FLUENCY',label:'Fluidité',weight:50,maxScore:10,position:2}]).replace(/</g, '\\u003c') %>;
+  const qTypes = ['ORAL_QUIZ','RECORDED_PRESENTATION','READ_ALOUD','IMAGE_DESCRIPTION','LISTEN_AND_RESPOND','PRONUNCIATION','PROFESSIONAL_SIMULATION','SHORT_ORAL_RESPONSE','LONG_ORAL_RESPONSE'];
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+  function render() {
+    document.querySelector('#questions-editor').innerHTML = questions.map((q,i) => `<article class="sub-card"><button type="button" data-remove-q="${i}">Retirer</button><label>Type <select data-q="${i}" data-key="type">${qTypes.map(t=>`<option ${q.type===t?'selected':''}>${t}</option>`).join('')}</select></label><label>Consigne <textarea data-q="${i}" data-key="prompt" required>${esc(q.prompt)}</textarea></label><div class="assessment-columns"><label>Préparation (s) <input type="number" min="0" data-q="${i}" data-key="preparationSeconds" value="${q.preparationSeconds ?? 0}"></label><label>Enregistrement max. (s) <input type="number" min="1" data-q="${i}" data-key="maxResponseSeconds" value="${q.maxResponseSeconds ?? 120}"></label><label>Uploads autorisés <input type="number" min="1" data-q="${i}" data-key="maxAttempts" value="${q.maxAttempts ?? 1}"></label><label>Position <input type="number" min="1" data-q="${i}" data-key="position" value="${q.position ?? i+1}"></label><label>Points <input type="number" min=".01" step=".01" data-q="${i}" data-key="points" value="${q.points ?? 1}"></label><label><input type="checkbox" data-q="${i}" data-key="isRequired" ${q.isRequired!==false?'checked':''}> Obligatoire</label></div></article>`).join('');
+    document.querySelector('#criteria-editor').innerHTML = criteria.map((c,i) => `<article class="sub-card"><button type="button" data-remove-c="${i}">Retirer</button><div class="assessment-columns"><label>Code <input data-c="${i}" data-key="code" value="${esc(c.code)}"></label><label>Libellé <input data-c="${i}" data-key="label" value="${esc(c.label)}"></label><label>Poids (%) <input type="number" min=".01" max="100" step=".01" data-c="${i}" data-key="weight" value="${c.weight}"></label><label>Note maximale <input type="number" min=".01" step=".01" data-c="${i}" data-key="maxScore" value="${c.maxScore}"></label><label>Position <input type="number" min="1" data-c="${i}" data-key="position" value="${c.position ?? i+1}"></label></div><label>Description <textarea data-c="${i}" data-key="description">${esc(c.description || '')}</textarea></label></article>`).join('');
+  }
+  document.addEventListener('input', event => {
+    const q = event.target.dataset.q, c = event.target.dataset.c, key = event.target.dataset.key;
+    if (q !== undefined) questions[q][key] = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
+    if (c !== undefined) criteria[c][key] = event.target.value;
+  });
+  document.addEventListener('click', event => {
+    if (event.target.id === 'add-question') { questions.push({type:'ORAL_QUIZ',prompt:'',preparationSeconds:30,maxResponseSeconds:120,maxAttempts:2,position:questions.length+1,points:1,isRequired:true}); render(); }
+    if (event.target.id === 'add-criterion') { criteria.push({code:'CRITERION_'+(criteria.length+1),label:'',weight:1,maxScore:1,position:criteria.length+1}); render(); }
+    if (event.target.dataset.removeQ !== undefined) { questions.splice(Number(event.target.dataset.removeQ),1); render(); }
+    if (event.target.dataset.removeC !== undefined) { criteria.splice(Number(event.target.dataset.removeC),1); render(); }
+  });
+  document.querySelector('#assessment-form').addEventListener('submit', () => {
+    document.querySelector('#questions-json').value = JSON.stringify(questions);
+    document.querySelector('#criteria-json').value = JSON.stringify(criteria);
+  });
+  render();
+})();
+</script>

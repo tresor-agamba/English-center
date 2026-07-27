@@ -34,7 +34,7 @@
 
   <label for="platform">Plateforme live</label>
   <select id="platform" name="platform" required>
-    <% const platformLabels = { GOOGLE_MEET:'Google Meet', ZOOM:'Zoom', MICROSOFT_TEAMS:'Microsoft Teams', OTHER:'Autre' }; %>
+    <% const platformLabels = { GOOGLE_MEET:'Google Meet', ZOOM:'Zoom', MICROSOFT_TEAMS:'Microsoft Teams', JITSI:'Jitsi', OTHER:'Autre' }; %>
     <% platforms.forEach((platform) => { %><option value="<%= platform %>" <%= (form.platform || 'OTHER') === platform ? 'selected' : '' %>><%= platformLabels[platform] %></option><% }) %>
   </select>
 

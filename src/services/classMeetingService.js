@@ -5,7 +5,7 @@ const { zonedDateTimeToUtc, dateKeyInZone } = require('../utils/timezone.util');
 const notificationEvents = require('./notificationEventService');
 
 const MEETING_STATUSES = ['SCHEDULED', 'COMPLETED', 'CANCELLED'];
-const MEETING_PLATFORMS = ['GOOGLE_MEET', 'ZOOM', 'MICROSOFT_TEAMS', 'OTHER'];
+const MEETING_PLATFORMS = ['GOOGLE_MEET', 'ZOOM', 'MICROSOFT_TEAMS', 'JITSI', 'OTHER'];
 const JS_DAY_TO_WEEKDAY = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
 
 class ClassMeetingError extends Error {
@@ -37,6 +37,7 @@ function normalizeMeetingPlatform(value) {
   if (normalized.includes('GOOGLE')) return 'GOOGLE_MEET';
   if (normalized.includes('ZOOM')) return 'ZOOM';
   if (normalized.includes('TEAMS') || normalized.includes('MICROSOFT')) return 'MICROSOFT_TEAMS';
+  if (normalized.includes('JITSI')) return 'JITSI';
   return MEETING_PLATFORMS.includes(normalized) ? normalized : 'OTHER';
 }
 

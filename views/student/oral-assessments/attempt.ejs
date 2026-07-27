@@ -1,0 +1,25 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<h1><%= attempt.assessment.title %></h1><p>Tentative <%= attempt.attemptNumber %> — <strong><%= attempt.status %></strong></p>
+<div id="recorder-message" class="recorder-message" role="status"></div>
+<section class="response-list">
+<% attempt.assessment.questions.forEach(question => { const response = attempt.responses.find(item => item.assessmentQuestionId === question.id); %>
+  <article class="card oral-question" data-question="<%= question.id %>" data-preparation="<%= question.preparationSeconds ?? attempt.assessment.preparationSeconds %>" data-duration="<%= question.maxResponseSeconds %>" data-upload="/student/oral-attempts/<%= attempt.id %>/responses/<%= question.id %>/audio">
+    <p class="eyebrow">Question <%= question.position %> · <%= question.points %> points<%= question.isRequired ? ' · obligatoire' : '' %></p>
+    <h2><%= question.prompt %></h2>
+    <p>Préparation : <%= question.preparationSeconds ?? attempt.assessment.preparationSeconds %> s · Réponse : <%= question.maxResponseSeconds %> s max. · Uploads : <%= question.maxAttempts %></p>
+    <% if (attempt.status === 'DRAFT') { %>
+      <div class="recorder-controls">
+        <button type="button" class="prepare-record">Préparer et enregistrer</button>
+        <button type="button" class="stop-record" disabled>Arrêter</button>
+        <span class="record-timer"></span>
+        <audio class="record-preview" controls hidden></audio>
+        <button type="button" class="upload-record" disabled>Envoyer cette réponse</button>
+      </div>
+      <details><summary>Importer un fichier audio</summary><form method="post" enctype="multipart/form-data" action="/student/oral-attempts/<%= attempt.id %>/responses/<%= question.id %>/audio"><input type="file" name="audio" accept="audio/webm,audio/ogg,audio/mpeg,audio/mp4,audio/wav" required><button>Envoyer</button></form></details>
+    <% } %>
+    <% if (response && attempt.assessment.allowPlayback) { %><div class="saved-response"><p>Réponse enregistrée (<%= response.audioDurationSeconds %> s, remplacement <%= response.replacementCount %>/<%= question.maxAttempts - 1 %>)</p><audio controls preload="metadata" src="/student/oral-responses/<%= response.id %>/audio"></audio></div><% } else if (response) { %><p>Réponse enregistrée.</p><% } %>
+  </article>
+<% }) %>
+</section>
+<% if (attempt.status === 'DRAFT') { %><form method="post" action="/student/oral-attempts/<%= attempt.id %>/submit" onsubmit="return confirm('Soumettre définitivement ? Les réponses ne pourront plus être modifiées.')"><button class="button">Soumettre définitivement</button></form><% } else { %><p class="card">Cette tentative est verrouillée et ne peut plus être modifiée.</p><% } %>
+<script src="/js/recorded-oral.js" defer></script><%- include('../../partials/footer') %>

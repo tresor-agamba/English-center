@@ -1477,6 +1477,24 @@ tr:last-child td { border-bottom: 0; }
   }
 }
 
+.assessment-form { display: grid; gap: 1rem; }
+.assessment-form label { display: grid; gap: .35rem; }
+.assessment-columns { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.section-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.section-heading > div { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.sub-card { padding: 1rem; margin-block: .75rem; border: 1px solid var(--border); border-radius: 12px; background: #f8fafc; }
+.response-list { display: grid; gap: 1rem; }
+.response-list audio { width: 100%; }
+.recorder-controls { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; margin-block: 1rem; }
+.recorder-message { min-height: 1.5rem; padding: .5rem 0; color: #1d4ed8; }
+.error-message { color: #b91c1c; }
+.assessment-score { font-size: clamp(2rem, 6vw, 4rem); font-weight: 800; color: var(--primary); }
+
+@media (max-width: 760px) {
+  .assessment-columns { grid-template-columns: 1fr; }
+  .recorder-controls { align-items: stretch; flex-direction: column; }
+}
+
 @media (min-width: 521px) and (max-width: 860px) {
   .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dashboard-grid { grid-template-columns: 1fr; }

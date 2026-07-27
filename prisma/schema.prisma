@@ -192,6 +192,9 @@ enum NotificationType {
   CERTIFICATE_FEE_WAIVED
   CERTIFICATE_ISSUED
   CERTIFICATE_REVOKED
+  RECORDED_ORAL_PUBLISHED
+  RECORDED_ORAL_SUBMITTED
+  RECORDED_ORAL_RESULT_PUBLISHED
 }
 
 enum CertificatePaymentStatus {
@@ -722,6 +725,7 @@ model AssessmentResponse {
   audioSizeBytes        Int?               @map("audio_size_bytes")
   audioDurationSeconds  Int?               @map("audio_duration_seconds")
   audioChecksum         String?            @map("audio_checksum")
+  replacementCount      Int                @default(0) @map("replacement_count")
   recordedAt            DateTime?          @map("recorded_at")
   createdAt             DateTime           @default(now()) @map("created_at")
   updatedAt             DateTime           @updatedAt @map("updated_at")

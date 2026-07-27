@@ -1,0 +1,18 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<h1>Correction — <%= attempt.assessment.title %></h1>
+<p><strong>Étudiant :</strong> <%= attempt.enrollment.user.firstName %> <%= attempt.enrollment.user.lastName %></p>
+<p>Soumise le <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(attempt.submittedAt) %></p>
+<section class="response-list"><% attempt.assessment.questions.forEach(question => { const response = attempt.responses.find(item => item.assessmentQuestionId === question.id); %><article class="card"><p class="eyebrow">Question <%= question.position %></p><h2><%= question.prompt %></h2><% if (response) { %><audio controls preload="metadata" src="/teacher/oral-responses/<%= response.id %>/audio"></audio><p><%= response.audioDurationSeconds %> secondes</p><% } else { %><p>Aucune réponse.</p><% } %></article><% }) %></section>
+<form method="post" action="/teacher/oral-attempts/<%= attempt.id %>/grade" class="card assessment-form">
+  <h2>Grille</h2>
+  <% attempt.assessment.criteria.forEach((criterion, index) => { const current = attempt.evaluation?.criterionScores.find(item => item.assessmentCriterionId === criterion.id); %>
+    <article class="sub-card"><input type="hidden" name="scores[<%= index %>][criterionId]" value="<%= criterion.id %>"><label><%= criterion.label %> — maximum <%= criterion.maxScore %><input type="number" min="0" max="<%= criterion.maxScore %>" step=".01" name="scores[<%= index %>][score]" value="<%= current?.score ?? '' %>" required></label><label>Commentaire<textarea name="scores[<%= index %>][comment]"><%= current?.comment || '' %></textarea></label></article>
+  <% }) %>
+  <label>Points forts<textarea name="strengths"><%= attempt.evaluation?.strengths || '' %></textarea></label>
+  <label>Axes d’amélioration<textarea name="improvements"><%= attempt.evaluation?.improvements || '' %></textarea></label>
+  <label>Feedback général<textarea name="feedback"><%= attempt.evaluation?.feedback || '' %></textarea></label>
+  <label>Décision<select name="decision"><% ['UNDECIDED','PASSED','FAILED'].forEach(value => { %><option <%= attempt.evaluation?.decision === value ? 'selected' : '' %>><%= value %></option><% }) %></select></label>
+  <button class="button">Enregistrer le brouillon</button>
+</form>
+<% if (attempt.evaluation && attempt.evaluation.status === 'DRAFT') { %><form method="post" action="/teacher/oral-evaluations/<%= attempt.evaluation.id %>/publish"><button class="button">Publier le résultat</button></form><% } %>
+<%- include('../../partials/footer') %>
