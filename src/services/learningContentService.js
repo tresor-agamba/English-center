@@ -1,6 +1,9 @@
 const prisma = require('../utils/prisma');
+const { sanitizeRichText } = require('./lmsSanitizationService');
 
 const RESOURCE_TYPES = ['PDF', 'VIDEO_LINK', 'EXTERNAL_LINK', 'DOCUMENT'];
+const LESSON_TYPES = ['TEXT', 'VIDEO', 'PDF', 'AUDIO', 'LINK', 'DOWNLOAD', 'EMBED', 'LIVE_SESSION'];
+const COMPLETION_RULES = ['IMMEDIATE', 'AFTER_ASSESSMENT_SUBMISSION', 'AFTER_ASSESSMENT_PASS'];
 
 class LearningContentError extends Error {
   constructor(code, message, statusCode = 400) {
@@ -40,12 +43,31 @@ function optionalText(value, max) {
   return parsed;
 }
 
+function optionalDate(value) {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) throw new LearningContentError('INVALID_DATE', 'La date est invalide.');
+  return parsed;
+}
+
+function optionalHttpUrl(value, required = false) {
+  if (!value && !required) return null;
+  let parsed;
+  try { parsed = new URL(value); } catch { throw new LearningContentError('INVALID_URL', 'Le lien est invalide.'); }
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    throw new LearningContentError('INVALID_URL', 'Seuls les protocoles HTTP et HTTPS sont autorisés.');
+  }
+  return parsed.toString();
+}
+
 function moduleData(body) {
   return {
     title: text(body.title, 'Le titre', 180),
     description: optionalText(body.description, 2000),
     position: position(body.position),
     isPublished: body.isPublished === 'on' || body.isPublished === 'true',
+    availableAt: optionalDate(body.availableAt),
+    prerequisiteModuleId: body.prerequisiteModuleId ? id(body.prerequisiteModuleId, 'prérequis') : null,
   };
 }
 
@@ -54,13 +76,21 @@ function lessonData(body) {
   if (estimatedMinutes !== null && (!Number.isInteger(estimatedMinutes) || estimatedMinutes <= 0)) {
     throw new LearningContentError('INVALID_DURATION', 'La durée estimée doit être un entier positif.');
   }
+  const type = LESSON_TYPES.includes(body.type) ? body.type : 'TEXT';
+  const requiresUrl = ['LINK', 'EMBED', 'LIVE_SESSION'].includes(type);
   return {
     title: text(body.title, 'Le titre', 180),
     description: optionalText(body.description, 2000),
-    content: optionalText(body.content, 50000),
+    content: sanitizeRichText(body.content, 100000),
     position: position(body.position),
     estimatedMinutes,
     isPublished: body.isPublished === 'on' || body.isPublished === 'true',
+    type,
+    externalUrl: optionalHttpUrl(body.externalUrl, requiresUrl),
+    courseChapterId: body.courseChapterId ? id(body.courseChapterId, 'chapitre') : null,
+    assessmentId: body.assessmentId ? id(body.assessmentId, 'évaluation') : null,
+    completionRule: COMPLETION_RULES.includes(body.completionRule) ? body.completionRule : 'IMMEDIATE',
+    availableAt: optionalDate(body.availableAt),
   };
 }
 
@@ -92,7 +122,12 @@ async function courseWithModules(courseId) {
       modules: {
         orderBy: { position: 'asc' },
         include: {
+          chapters: {
+            orderBy: { position: 'asc' },
+            include: { lessons: { orderBy: { position: 'asc' }, include: { _count: { select: { resources: true } } } } },
+          },
           lessons: {
+            where: { courseChapterId: null },
             orderBy: { position: 'asc' },
             include: { _count: { select: { resources: true } } },
           },
@@ -106,7 +141,7 @@ async function courseWithModules(courseId) {
 async function getModule(moduleId) {
   return prisma.courseModule.findUnique({
     where: { id: id(moduleId, 'module') },
-    include: { course: true, lessons: { orderBy: { position: 'asc' }, include: { _count: { select: { resources: true } } } } },
+    include: { course: true, chapters: { orderBy: { position: 'asc' } }, lessons: { orderBy: { position: 'asc' }, include: { _count: { select: { resources: true } } } } },
   });
 }
 
@@ -114,7 +149,12 @@ async function createModule(courseId, body) {
   const course = await prisma.course.findUnique({ where: { id: id(courseId, 'formation') }, select: { id: true } });
   if (!course) throw new LearningContentError('COURSE_NOT_FOUND', 'Formation introuvable.', 404);
   try {
-    return await prisma.courseModule.create({ data: { courseId: course.id, ...moduleData(body) } });
+    const data = moduleData(body);
+    if (data.prerequisiteModuleId) {
+      const prerequisite = await prisma.courseModule.findFirst({ where: { id: data.prerequisiteModuleId, courseId: course.id } });
+      if (!prerequisite) throw new LearningContentError('INVALID_PREREQUISITE', 'Prérequis invalide.');
+    }
+    return await prisma.courseModule.create({ data: { courseId: course.id, ...data } });
   } catch (error) {
     if (error.code === 'P2002') throw new LearningContentError('POSITION_TAKEN', 'Cette position est déjà utilisée.');
     throw error;
@@ -125,7 +165,13 @@ async function updateModule(moduleId, body) {
   const current = await getModule(moduleId);
   if (!current) throw new LearningContentError('MODULE_NOT_FOUND', 'Module introuvable.', 404);
   try {
-    return await prisma.courseModule.update({ where: { id: current.id }, data: moduleData(body) });
+    const data = moduleData(body);
+    if (data.prerequisiteModuleId === current.id) throw new LearningContentError('INVALID_PREREQUISITE', 'Un module ne peut pas dépendre de lui-même.');
+    if (data.prerequisiteModuleId) {
+      const prerequisite = await prisma.courseModule.findFirst({ where: { id: data.prerequisiteModuleId, courseId: current.courseId } });
+      if (!prerequisite || prerequisite.prerequisiteModuleId === current.id) throw new LearningContentError('INVALID_PREREQUISITE', 'Prérequis invalide ou cyclique.');
+    }
+    return await prisma.courseModule.update({ where: { id: current.id }, data });
   } catch (error) {
     if (error.code === 'P2002') throw new LearningContentError('POSITION_TAKEN', 'Cette position est déjà utilisée.');
     throw error;
@@ -139,9 +185,9 @@ async function toggleModule(moduleId) {
 }
 
 async function getLesson(lessonId) {
-  return prisma.lesson.findUnique({
+  return prisma.courseLesson.findUnique({
     where: { id: id(lessonId, 'leçon') },
-    include: { courseModule: { include: { course: true } }, resources: { orderBy: { position: 'asc' } } },
+    include: { courseModule: { include: { course: true, chapters: true } }, courseChapter: true, assessment: true, resources: { orderBy: { position: 'asc' } } },
   });
 }
 
@@ -149,7 +195,9 @@ async function createLesson(moduleId, body) {
   const module = await getModule(moduleId);
   if (!module) throw new LearningContentError('MODULE_NOT_FOUND', 'Module introuvable.', 404);
   try {
-    return await prisma.lesson.create({ data: { courseModuleId: module.id, ...lessonData(body) } });
+    const data = lessonData(body);
+    await validateLessonRelations(module, data);
+    return await prisma.courseLesson.create({ data: { courseModuleId: module.id, ...data } });
   } catch (error) {
     if (error.code === 'P2002') throw new LearningContentError('POSITION_TAKEN', 'Cette position est déjà utilisée.');
     throw error;
@@ -160,7 +208,9 @@ async function updateLesson(lessonId, body) {
   const lesson = await getLesson(lessonId);
   if (!lesson) throw new LearningContentError('LESSON_NOT_FOUND', 'Leçon introuvable.', 404);
   try {
-    return await prisma.lesson.update({ where: { id: lesson.id }, data: lessonData(body) });
+    const data = lessonData(body);
+    await validateLessonRelations(lesson.courseModule, data);
+    return await prisma.courseLesson.update({ where: { id: lesson.id }, data });
   } catch (error) {
     if (error.code === 'P2002') throw new LearningContentError('POSITION_TAKEN', 'Cette position est déjà utilisée.');
     throw error;
@@ -170,7 +220,7 @@ async function updateLesson(lessonId, body) {
 async function toggleLesson(lessonId) {
   const lesson = await getLesson(lessonId);
   if (!lesson) throw new LearningContentError('LESSON_NOT_FOUND', 'Leçon introuvable.', 404);
-  return prisma.lesson.update({ where: { id: lesson.id }, data: { isPublished: !lesson.isPublished } });
+  return prisma.courseLesson.update({ where: { id: lesson.id }, data: { isPublished: !lesson.isPublished } });
 }
 
 async function swap(model, currentId, parentField, parentId, direction) {
@@ -200,7 +250,53 @@ async function moveModule(moduleId, direction) {
 async function moveLesson(lessonId, direction) {
   const lesson = await getLesson(lessonId);
   if (!lesson) throw new LearningContentError('LESSON_NOT_FOUND', 'Leçon introuvable.', 404);
-  return swap('lesson', lesson.id, 'courseModuleId', lesson.courseModuleId, direction);
+  return swap('courseLesson', lesson.id, lesson.courseChapterId ? 'courseChapterId' : 'courseModuleId', lesson.courseChapterId || lesson.courseModuleId, direction);
+}
+
+async function validateLessonRelations(module, data) {
+  if (data.courseChapterId && !module.chapters.some(chapter => chapter.id === data.courseChapterId)) {
+    throw new LearningContentError('INVALID_CHAPTER', 'Le chapitre ne correspond pas au module.');
+  }
+  if (data.assessmentId) {
+    const assessment = await prisma.assessment.findFirst({ where: { id: data.assessmentId, courseId: module.courseId } });
+    if (!assessment) throw new LearningContentError('INVALID_ASSESSMENT', 'L’évaluation doit appartenir au même cours.');
+  }
+  if (data.completionRule !== 'IMMEDIATE' && !data.assessmentId) {
+    throw new LearningContentError('ASSESSMENT_REQUIRED', 'Cette règle de complétion exige une évaluation.');
+  }
+}
+
+function chapterData(body) {
+  return {
+    title: text(body.title, 'Le titre', 180),
+    description: optionalText(body.description, 2000),
+    position: position(body.position),
+    isPublished: body.isPublished === 'on' || body.isPublished === 'true',
+    availableAt: optionalDate(body.availableAt),
+  };
+}
+async function getChapter(value) {
+  return prisma.courseChapter.findUnique({ where: { id: id(value, 'chapitre') }, include: { courseModule: { include: { course: true } }, lessons: { orderBy: { position: 'asc' } } } });
+}
+async function createChapter(moduleId, body) {
+  const module = await getModule(moduleId);
+  if (!module) throw new LearningContentError('MODULE_NOT_FOUND', 'Module introuvable.', 404);
+  return prisma.courseChapter.create({ data: { courseModuleId: module.id, ...chapterData(body) } });
+}
+async function updateChapter(value, body) {
+  const chapter = await getChapter(value);
+  if (!chapter) throw new LearningContentError('CHAPTER_NOT_FOUND', 'Chapitre introuvable.', 404);
+  return prisma.courseChapter.update({ where: { id: chapter.id }, data: chapterData(body) });
+}
+async function toggleChapter(value) {
+  const chapter = await getChapter(value);
+  if (!chapter) throw new LearningContentError('CHAPTER_NOT_FOUND', 'Chapitre introuvable.', 404);
+  return prisma.courseChapter.update({ where: { id: chapter.id }, data: { isPublished: !chapter.isPublished } });
+}
+async function moveChapter(value, direction) {
+  const chapter = await getChapter(value);
+  if (!chapter) throw new LearningContentError('CHAPTER_NOT_FOUND', 'Chapitre introuvable.', 404);
+  return swap('courseChapter', chapter.id, 'courseModuleId', chapter.courseModuleId, direction);
 }
 
 async function createResource(lessonId, body) {
@@ -243,8 +339,9 @@ async function moveResource(resourceId, direction) {
 }
 
 module.exports = {
-  RESOURCE_TYPES, LearningContentError, moduleData, lessonData, resourceData,
+  RESOURCE_TYPES, LESSON_TYPES, COMPLETION_RULES, LearningContentError, moduleData, lessonData, resourceData,
   courseWithModules, getModule, createModule, updateModule, toggleModule, moveModule,
+  getChapter, createChapter, updateChapter, toggleChapter, moveChapter,
   getLesson, createLesson, updateLesson, toggleLesson, moveLesson,
   getResource, createResource, updateResource, deleteResource, moveResource,
 };

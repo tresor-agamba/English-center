@@ -38,7 +38,7 @@ async function getMeetingDetails(userId, value) {
   const access = trialAccessService.evaluateMeetingAccess(meeting, trialAccess);
   let lesson = null;
   if (meeting.lessonId && trialAccess.hasCourseAccess) {
-    lesson = await prisma.lesson.findFirst({
+    lesson = await prisma.courseLesson.findFirst({
       where: {
         id: meeting.lessonId, isPublished: true,
         courseModule: { isPublished: true, courseId: meeting.trainingSession.course.id },

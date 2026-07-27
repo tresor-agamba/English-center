@@ -59,7 +59,7 @@ async function buildMeetingData(body, existingMeeting = null) {
 
   const lessonId = body.lessonId ? parseId(body.lessonId, 'Leçon') : null;
   if (lessonId) {
-    const lesson = await prisma.lesson.findUnique({
+    const lesson = await prisma.courseLesson.findUnique({
       where: { id: lessonId },
       select: { courseModule: { select: { courseId: true } } },
     });
@@ -168,7 +168,7 @@ async function listLessonsForSession(value) {
   const sessionId = parseId(value, 'Session');
   const session = await prisma.trainingSession.findUnique({ where: { id: sessionId }, select: { courseId: true } });
   if (!session) return [];
-  return prisma.lesson.findMany({
+  return prisma.courseLesson.findMany({
     where: { courseModule: { courseId: session.courseId } },
     orderBy: [{ courseModule: { position: 'asc' } }, { position: 'asc' }],
     select: { id: true, title: true, courseModule: { select: { title: true } } },
@@ -176,7 +176,7 @@ async function listLessonsForSession(value) {
 }
 
 function listLessonsCatalog() {
-  return prisma.lesson.findMany({
+  return prisma.courseLesson.findMany({
     orderBy: [{ courseModule: { position: 'asc' } }, { position: 'asc' }],
     select: { id: true, title: true, courseModule: { select: { title: true, courseId: true } } },
   });

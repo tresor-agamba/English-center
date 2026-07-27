@@ -50,7 +50,7 @@ async function resolveLinks(courseId, moduleValue, lessonValue, client = prisma)
   let lessonId = lessonValue ? parseId(lessonValue, 'leçon') : null;
   let lesson = null;
   if (lessonId) {
-    lesson = await client.lesson.findUnique({
+    lesson = await client.courseLesson.findUnique({
       where: { id: lessonId },
       select: { id: true, courseModuleId: true, courseModule: { select: { courseId: true } } },
     });

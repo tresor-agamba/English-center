@@ -1,4 +1,6 @@
 const service = require('../services/learningContentService');
+const lmsCourseService = require('../services/lmsCourseService');
+const lmsResourceService = require('../services/lmsResourceService');
 
 function handle(error, res, view, data) {
   if (error instanceof service.LearningContentError) {
@@ -91,6 +93,47 @@ async function lessonAction(req, res, action) {
   res.redirect(`/admin/courses/${lesson.courseModule.courseId}/modules`);
 }
 
+async function newChapter(req, res) {
+  const module = await service.getModule(req.params.moduleId);
+  if (!module) throw new service.LearningContentError('MODULE_NOT_FOUND', 'Module introuvable.', 404);
+  res.render('admin/chapters/form', { title: 'Nouveau chapitre', module, form: { position: module.chapters.length + 1 }, error: null, action: `/admin/modules/${module.id}/chapters`, submitLabel: 'Créer' });
+}
+async function createChapter(req, res) {
+  const chapter = await service.createChapter(req.params.moduleId, req.body);
+  res.redirect(`/admin/courses/${chapter.courseModuleId || (await service.getModule(req.params.moduleId)).courseId}/modules`);
+}
+async function editChapter(req, res) {
+  const chapter = await service.getChapter(req.params.id);
+  if (!chapter) throw new service.LearningContentError('CHAPTER_NOT_FOUND', 'Chapitre introuvable.', 404);
+  res.render('admin/chapters/form', { title: `Modifier ${chapter.title}`, module: chapter.courseModule, form: chapter, error: null, action: `/admin/chapters/${chapter.id}`, submitLabel: 'Enregistrer' });
+}
+async function updateChapter(req, res) {
+  const chapter = await service.updateChapter(req.params.id, req.body);
+  res.redirect(`/admin/courses/${chapter.courseModuleId ? (await service.getModule(chapter.courseModuleId)).courseId : ''}/modules`);
+}
+async function chapterAction(req, res, action) {
+  const chapter = await service.getChapter(req.params.id);
+  if (!chapter) throw new service.LearningContentError('CHAPTER_NOT_FOUND', 'Chapitre introuvable.', 404);
+  await action(chapter.id);
+  res.redirect(`/admin/courses/${chapter.courseModule.courseId}/modules`);
+}
+
+const actorId = (req) => req.session.user.id;
+async function reorderModules(req, res) {
+  await lmsCourseService.reorder('courseModule', 'courseId', req.params.courseId, req.body.orderedIds, actorId(req), req.params.courseId);
+  res.status(204).end();
+}
+async function reorderChapters(req, res) {
+  const module = await service.getModule(req.params.moduleId);
+  await lmsCourseService.reorder('courseChapter', 'courseModuleId', module.id, req.body.orderedIds, actorId(req), module.courseId);
+  res.status(204).end();
+}
+async function reorderLessons(req, res) {
+  const chapter = await service.getChapter(req.params.chapterId);
+  await lmsCourseService.reorder('courseLesson', 'courseChapterId', chapter.id, req.body.orderedIds, actorId(req), chapter.courseModule.courseId);
+  res.status(204).end();
+}
+
 async function resources(req, res) {
   const lesson = await service.getLesson(req.params.lessonId);
   if (!lesson) throw new service.LearningContentError('LESSON_NOT_FOUND', 'Leçon introuvable.', 404);
@@ -110,6 +153,12 @@ async function createResource(req, res) {
       title: `Ressources — ${lesson?.title || ''}`, lesson, resourceTypes: service.RESOURCE_TYPES, form: req.body,
     });
   }
+}
+async function createPrivateResource(req, res) {
+  const lesson = await service.getLesson(req.params.lessonId);
+  if (!lesson) throw new service.LearningContentError('LESSON_NOT_FOUND', 'Leçon introuvable.', 404);
+  await lmsResourceService.persist(req.file, lesson.id, req.body);
+  res.redirect(`/admin/lessons/${lesson.id}/resources`);
 }
 
 async function updateResource(req, res) {
@@ -138,12 +187,17 @@ module.exports = {
   toggleModule: (req, res) => moduleAction(req, res, service.toggleModule),
   moveModuleUp: (req, res) => moduleAction(req, res, (id) => service.moveModule(id, 'up')),
   moveModuleDown: (req, res) => moduleAction(req, res, (id) => service.moveModule(id, 'down')),
+  newChapter, createChapter, editChapter, updateChapter,
+  toggleChapter: (req, res) => chapterAction(req, res, service.toggleChapter),
+  moveChapterUp: (req, res) => chapterAction(req, res, (id) => service.moveChapter(id, 'up')),
+  moveChapterDown: (req, res) => chapterAction(req, res, (id) => service.moveChapter(id, 'down')),
   newLesson, createLesson, editLesson, updateLesson,
   toggleLesson: (req, res) => lessonAction(req, res, service.toggleLesson),
   moveLessonUp: (req, res) => lessonAction(req, res, (id) => service.moveLesson(id, 'up')),
   moveLessonDown: (req, res) => lessonAction(req, res, (id) => service.moveLesson(id, 'down')),
-  resources, createResource, updateResource,
+  resources, createResource, createPrivateResource, updateResource,
   deleteResource: (req, res) => resourceAction(req, res, service.deleteResource),
   moveResourceUp: (req, res) => resourceAction(req, res, (id) => service.moveResource(id, 'up')),
   moveResourceDown: (req, res) => resourceAction(req, res, (id) => service.moveResource(id, 'down')),
+  reorderModules, reorderChapters, reorderLessons,
 };

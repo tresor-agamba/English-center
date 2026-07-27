@@ -70,7 +70,7 @@ test('séances live liées au programme pédagogique', async (t) => {
     const module = await prisma.courseModule.create({
       data: { courseId: mainCourse.id, title: 'Introductions professionnelles', position: 1, isPublished: true },
     });
-    const lesson = await prisma.lesson.create({
+    const lesson = await prisma.courseLesson.create({
       data: {
         courseModuleId: module.id, title: 'Introducing Yourself Professionally',
         description: 'Présenter son rôle et son expérience.', position: 1, isPublished: true,
@@ -79,13 +79,13 @@ test('séances live liées au programme pédagogique', async (t) => {
     await prisma.lessonResource.create({
       data: { lessonId: lesson.id, title: 'Support du cours', type: 'PDF', url: 'https://example.com/support-live.pdf', position: 1 },
     });
-    const disposableLesson = await prisma.lesson.create({
+    const disposableLesson = await prisma.courseLesson.create({
       data: { courseModuleId: module.id, title: 'Leçon supprimable', position: 2, isPublished: true },
     });
     const otherModule = await prisma.courseModule.create({
       data: { courseId: otherCourse.id, title: 'Module externe', position: 1, isPublished: true },
     });
-    const otherLesson = await prisma.lesson.create({
+    const otherLesson = await prisma.courseLesson.create({
       data: { courseModuleId: otherModule.id, title: 'Leçon externe', position: 1, isPublished: true },
     });
     const enrollments = {};
@@ -139,7 +139,7 @@ test('séances live liées au programme pédagogique', async (t) => {
         date: '2027-01-13', lessonId: String(disposableLesson.id), title: 'Séance conservée',
         privateMeetingUrl: `https://teams.example.test/${key}`,
       })));
-      await prisma.lesson.delete({ where: { id: disposableLesson.id } });
+      await prisma.courseLesson.delete({ where: { id: disposableLesson.id } });
       const preserved = await prisma.classMeeting.findUnique({ where: { id: temporary.id } });
       assert.ok(preserved);
       assert.equal(preserved.lessonId, null);

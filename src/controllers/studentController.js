@@ -4,6 +4,7 @@ const studentScheduleService = require('../services/studentScheduleService');
 const studentPaymentService = require('../services/studentPaymentService');
 const studentProfileService = require('../services/studentProfileService');
 const learningAccessService = require('../services/learningAccessService');
+const lmsResourceService = require('../services/lmsResourceService');
 const studentClassMeetingService = require('../services/studentClassMeetingService');
 
 async function dashboard(req, res) {
@@ -152,10 +153,23 @@ async function classMeeting(req, res) {
   }
 }
 
+async function privateLearningResource(req, res) {
+  const file = await lmsResourceService.studentFile(req.student.id, req.params.enrollmentId, req.params.publicId);
+  res.type(file.mimeType);
+  res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(file.downloadName)}`);
+  return res.sendFile(file.absolutePath);
+}
+
+async function lessonActivity(req, res) {
+  await learningAccessService.recordActivity(req.student.id, req.params.enrollmentId, req.params.lessonId, req.body.lastPositionSeconds);
+  return res.status(204).end();
+}
+
 module.exports = {
   dashboard, courses, course, schedule, payments, profile, updateProfile, updatePassword,
   learn, lesson,
   classMeeting,
+  privateLearningResource, lessonActivity,
   completeLesson: (req, res) => setLessonCompletion(req, res, true),
   uncompleteLesson: (req, res) => setLessonCompletion(req, res, false),
 };

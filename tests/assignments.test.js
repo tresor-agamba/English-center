@@ -73,13 +73,13 @@ test('devoirs, soumissions, corrections et notes', async (t) => {
     const module = await prisma.courseModule.create({
       data: { courseId: course.id, title: 'Module principal', position: 1, isPublished: true },
     });
-    const lesson = await prisma.lesson.create({
+    const lesson = await prisma.courseLesson.create({
       data: { courseModuleId: module.id, title: 'Leçon principale', position: 1, isPublished: true },
     });
     const foreignModule = await prisma.courseModule.create({
       data: { courseId: foreignCourse.id, title: 'Module étranger', position: 1, isPublished: true },
     });
-    const foreignLesson = await prisma.lesson.create({
+    const foreignLesson = await prisma.courseLesson.create({
       data: { courseModuleId: foreignModule.id, title: 'Leçon étrangère', position: 1, isPublished: true },
     });
     let assignment;

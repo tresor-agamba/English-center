@@ -1,0 +1,1 @@
+<li><span class="lesson-state"><%= lesson.lessonProgress[0]?.completedAt ? '✓' : lesson.position %></span><div><strong><%= lesson.title %></strong><small><%= lesson.estimatedMinutes ? `${lesson.estimatedMinutes} min` : 'Durée libre' %></small></div><% if(access.canViewContent){%><a href="/student/courses/<%= enrollment.id %>/lessons/<%= lesson.id %>">Ouvrir</a><%}%></li>

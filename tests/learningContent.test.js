@@ -124,7 +124,7 @@ test('gestion pédagogique des formations', async (t) => {
       });
       assert.equal(updated.estimatedMinutes, 35);
       await contentService.moveLesson(secondLesson.id, 'up');
-      const ordered = await prisma.lesson.findMany({ where: { courseModuleId: publishedModule.id }, orderBy: { position: 'asc' } });
+      const ordered = await prisma.courseLesson.findMany({ where: { courseModuleId: publishedModule.id }, orderBy: { position: 'asc' } });
       assert.equal(ordered[0].id, secondLesson.id);
       const toggled = await contentService.toggleLesson(hiddenLesson.id);
       assert.equal(toggled.isPublished, true);

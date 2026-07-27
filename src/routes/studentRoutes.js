@@ -11,6 +11,8 @@ router.get('/courses/:enrollmentId/learn', asyncHandler(controller.learn));
 router.get('/courses/:enrollmentId/lessons/:lessonId', asyncHandler(controller.lesson));
 router.post('/courses/:enrollmentId/lessons/:lessonId/complete', asyncHandler(controller.completeLesson));
 router.post('/courses/:enrollmentId/lessons/:lessonId/uncomplete', asyncHandler(controller.uncompleteLesson));
+router.get('/courses/:enrollmentId/resources/:publicId', asyncHandler(controller.privateLearningResource));
+router.post('/courses/:enrollmentId/lessons/:lessonId/activity', asyncHandler(controller.lessonActivity));
 router.get('/schedule', asyncHandler(controller.schedule));
 router.get('/payments', asyncHandler(controller.payments));
 router.get('/profile', asyncHandler(controller.profile));

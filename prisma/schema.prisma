@@ -170,6 +170,30 @@ enum LessonResourceType {
   DOCUMENT
 }
 
+enum LessonType {
+  TEXT
+  VIDEO
+  PDF
+  AUDIO
+  LINK
+  DOWNLOAD
+  EMBED
+  LIVE_SESSION
+}
+
+enum LmsCourseStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum LessonCompletionRule {
+  IMMEDIATE
+  AFTER_ASSESSMENT_SUBMISSION
+  AFTER_ASSESSMENT_PASS
+}
+
 enum AssignmentSubmissionStatus {
   DRAFT
   SUBMITTED
@@ -211,6 +235,10 @@ enum NotificationType {
   WRITTEN_ASSESSMENT_PUBLISHED
   WRITTEN_ATTEMPT_SUBMITTED
   WRITTEN_RESULT_PUBLISHED
+  COURSE_PUBLISHED
+  COURSE_UPDATED
+  COURSE_ARCHIVED
+  LESSON_AVAILABLE
 }
 
 enum CertificatePaymentStatus {
@@ -287,6 +315,7 @@ model User {
   liveOralExaminerAssignments  LiveOralExaminer[]
   liveOralAttendancesMarked    LiveOralAttendance[]     @relation("LiveOralAttendanceMarker")
   oralSessionEvents            OralSessionEvent[]       @relation("OralSessionEventActor")
+  lmsCoursesCreated            Course[]                 @relation("LmsCourseCreator")
 
   @@map("users")
 }
@@ -459,6 +488,11 @@ model Course {
   currency         String            @default("USD")
   trainingMode     String?           @map("training_mode")
   isPublished      Boolean           @default(false) @map("is_published")
+  lmsStatus        LmsCourseStatus   @default(DRAFT) @map("lms_status")
+  createdById      Int?              @map("created_by_id")
+  publishedAt      DateTime?         @map("published_at")
+  closedAt         DateTime?         @map("closed_at")
+  archivedAt       DateTime?         @map("archived_at")
   createdAt        DateTime          @default(now()) @map("created_at")
   updatedAt        DateTime          @updatedAt @map("updated_at")
   modules          CourseModule[]
@@ -469,40 +503,75 @@ model Course {
   assignments      Assignment[]
   certificateFee   Decimal?          @map("certificate_fee") @db.Decimal(10, 2)
   assessments      Assessment[]
+  createdBy        User?             @relation("LmsCourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
 
   @@map("courses")
+  @@index([lmsStatus])
+  @@index([createdById])
 }
 
 model CourseModule {
-  id          Int          @id @default(autoincrement())
-  courseId    Int          @map("course_id")
-  title       String
-  description String?
-  position    Int
-  isPublished Boolean      @default(false) @map("is_published")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lessons     Lesson[]
-  assignments Assignment[]
+  id                   Int             @id @default(autoincrement())
+  courseId             Int             @map("course_id")
+  title                String
+  description          String?
+  position             Int
+  isPublished          Boolean         @default(false) @map("is_published")
+  availableAt          DateTime?       @map("available_at")
+  prerequisiteModuleId Int?            @map("prerequisite_module_id")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
+  course               Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons              CourseLesson[]
+  assignments          Assignment[]
+  chapters             CourseChapter[]
+  prerequisiteModule   CourseModule?   @relation("CourseModulePrerequisite", fields: [prerequisiteModuleId], references: [id], onDelete: SetNull)
+  dependentModules     CourseModule[]  @relation("CourseModulePrerequisite")
 
   @@unique([courseId, position])
   @@index([courseId])
+  @@index([prerequisiteModuleId])
   @@map("course_modules")
 }
 
-model Lesson {
-  id               Int              @id @default(autoincrement())
-  courseModuleId   Int              @map("course_module_id")
+model CourseChapter {
+  id             Int            @id @default(autoincrement())
+  courseModuleId Int            @map("course_module_id")
+  title          String
+  description    String?
+  position       Int
+  isPublished    Boolean        @default(false) @map("is_published")
+  availableAt    DateTime?      @map("available_at")
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  courseModule   CourseModule   @relation(fields: [courseModuleId], references: [id], onDelete: Cascade)
+  lessons        CourseLesson[]
+
+  @@unique([courseModuleId, position])
+  @@index([courseModuleId])
+  @@map("course_chapters")
+}
+
+model CourseLesson {
+  id               Int                  @id @default(autoincrement())
+  courseModuleId   Int                  @map("course_module_id")
+  courseChapterId  Int?                 @map("course_chapter_id")
+  assessmentId     Int?                 @map("assessment_id")
+  type             LessonType           @default(TEXT)
+  completionRule   LessonCompletionRule @default(IMMEDIATE) @map("completion_rule")
   title            String
   description      String?
   content          String?
+  externalUrl      String?              @map("external_url")
   position         Int
-  estimatedMinutes Int?             @map("estimated_minutes")
-  isPublished      Boolean          @default(false) @map("is_published")
-  createdAt        DateTime         @default(now()) @map("created_at")
-  updatedAt        DateTime         @updatedAt @map("updated_at")
-  courseModule     CourseModule     @relation(fields: [courseModuleId], references: [id], onDelete: Cascade)
+  estimatedMinutes Int?                 @map("estimated_minutes")
+  isPublished      Boolean              @default(false) @map("is_published")
+  availableAt      DateTime?            @map("available_at")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  courseModule     CourseModule         @relation(fields: [courseModuleId], references: [id], onDelete: Cascade)
+  courseChapter    CourseChapter?       @relation(fields: [courseChapterId], references: [id], onDelete: SetNull)
+  assessment       Assessment?          @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
   resources        LessonResource[]
   lessonProgress   LessonProgress[]
   progress         Progress[]
@@ -510,21 +579,29 @@ model Lesson {
   assignments      Assignment[]
   classMeetings    ClassMeeting[]
 
-  @@unique([courseModuleId, position])
+  @@unique([courseChapterId, position])
   @@index([courseModuleId])
+  @@index([courseChapterId])
+  @@index([assessmentId])
   @@map("lessons")
 }
 
 model LessonResource {
-  id        Int                @id @default(autoincrement())
-  lessonId  Int                @map("lesson_id")
-  title     String
-  type      LessonResourceType
-  url       String
-  position  Int
-  createdAt DateTime           @default(now()) @map("created_at")
-  updatedAt DateTime           @updatedAt @map("updated_at")
-  lesson    Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  id               Int                @id @default(autoincrement())
+  publicId         String             @unique @default(uuid()) @map("public_id")
+  lessonId         Int                @map("lesson_id")
+  title            String
+  type             LessonResourceType
+  url              String?
+  storageKey       String?            @map("storage_key")
+  mimeType         String?            @map("mime_type")
+  originalFileName String?            @map("original_file_name")
+  sizeBytes        Int?               @map("size_bytes")
+  isPrivate        Boolean            @default(false) @map("is_private")
+  position         Int
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+  lesson           CourseLesson       @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([lessonId, position])
   @@index([lessonId])
@@ -675,6 +752,7 @@ model Assessment {
   criteria            AssessmentCriterion[]
   evaluations         AssessmentEvaluation[]
   liveOralSessions    LiveOralSession[]
+  lessons             CourseLesson[]
 
   @@index([courseId, status])
   @@index([trainingSessionId, status])
@@ -962,7 +1040,7 @@ model Assignment {
   updatedAt           DateTime               @updatedAt @map("updated_at")
   course              Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
   courseModule        CourseModule?          @relation(fields: [courseModuleId], references: [id], onDelete: SetNull)
-  lesson              Lesson?                @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  lesson              CourseLesson?          @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   trainingSession     TrainingSession?       @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
   submissions         AssignmentSubmission[]
 
@@ -1016,18 +1094,23 @@ model AssignmentSubmission {
 }
 
 model LessonProgress {
-  id           Int        @id @default(autoincrement())
-  enrollmentId Int        @map("enrollment_id")
-  lessonId     Int        @map("lesson_id")
-  completedAt  DateTime?  @map("completed_at")
-  createdAt    DateTime   @default(now()) @map("created_at")
-  updatedAt    DateTime   @updatedAt @map("updated_at")
-  enrollment   Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  lesson       Lesson     @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  id                  Int          @id @default(autoincrement())
+  enrollmentId        Int          @map("enrollment_id")
+  lessonId            Int          @map("lesson_id")
+  completedAt         DateTime?    @map("completed_at")
+  openedAt            DateTime?    @map("opened_at")
+  lastOpenedAt        DateTime?    @map("last_opened_at")
+  timeSpentSeconds    Int          @default(0) @map("time_spent_seconds")
+  lastPositionSeconds Int          @default(0) @map("last_position_seconds")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+  enrollment          Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  lesson              CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([enrollmentId, lessonId])
   @@index([enrollmentId])
   @@index([lessonId])
+  @@index([enrollmentId, completedAt])
   @@map("lesson_progress")
 }
 
@@ -1042,7 +1125,7 @@ model ClassMeeting {
   status            ClassMeetingStatus @default(SCHEDULED)
   trainingSessionId Int                @map("training_session_id")
   trainingSession   TrainingSession    @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
-  lesson            Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  lesson            CourseLesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   attendances       Attendance[]
   createdAt         DateTime           @default(now()) @map("created_at")
   updatedAt         DateTime           @updatedAt @map("updated_at")
@@ -1105,14 +1188,14 @@ model Schedule {
 }
 
 model Progress {
-  id          Int       @id @default(autoincrement())
-  userId      Int       @map("user_id")
-  lessonId    Int       @map("lesson_id")
-  percentage  Int       @default(0)
-  completedAt DateTime? @map("completed_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  id          Int          @id @default(autoincrement())
+  userId      Int          @map("user_id")
+  lessonId    Int          @map("lesson_id")
+  percentage  Int          @default(0)
+  completedAt DateTime?    @map("completed_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      CourseLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
   @@index([lessonId])
@@ -1120,16 +1203,16 @@ model Progress {
 }
 
 model Document {
-  id        Int      @id @default(autoincrement())
-  courseId  Int      @map("course_id")
-  lessonId  Int?     @map("lesson_id")
+  id        Int           @id @default(autoincrement())
+  courseId  Int           @map("course_id")
+  lessonId  Int?          @map("lesson_id")
   title     String
-  fileName  String   @map("file_name")
-  filePath  String   @map("file_path")
-  mimeType  String?  @map("mime_type")
-  createdAt DateTime @default(now()) @map("created_at")
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  fileName  String        @map("file_name")
+  filePath  String        @map("file_path")
+  mimeType  String?       @map("mime_type")
+  createdAt DateTime      @default(now()) @map("created_at")
+  course    Course        @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson    CourseLesson? @relation(fields: [lessonId], references: [id], onDelete: SetNull)
 
   @@index([courseId])
   @@index([lessonId])
