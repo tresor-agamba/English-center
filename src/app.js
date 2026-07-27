@@ -31,6 +31,9 @@ const teacherAssessmentRoutes = require('./routes/teacherAssessmentRoutes');
 const adminAssessmentRoutes = require('./routes/adminAssessmentRoutes');
 const adminLiveOralRoutes = require('./routes/adminLiveOralRoutes');
 const adminWrittenAssessmentRoutes = require('./routes/adminWrittenAssessmentRoutes');
+const adminAcademicRoutes = require('./routes/adminAcademicRoutes');
+const teacherAcademicRoutes = require('./routes/teacherAcademicRoutes');
+const studentAcademicRoutes = require('./routes/studentAcademicRoutes');
 const teacherWrittenAssessmentRoutes = require('./routes/teacherWrittenAssessmentRoutes');
 const studentWrittenAssessmentRoutes = require('./routes/studentWrittenAssessmentRoutes');
 const studentLiveOralRoutes = require('./routes/studentLiveOralRoutes');
@@ -85,10 +88,12 @@ app.use('/student', requireStudent, studentCertificateRoutes);
 app.use('/student', requireStudent, studentAssessmentRoutes);
 app.use('/student', requireStudent, studentLiveOralRoutes);
 app.use('/student', requireStudent, studentWrittenAssessmentRoutes);
+app.use('/student', requireStudent, studentAcademicRoutes);
 app.use('/teacher', requireTeacher, teacherRoutes);
 app.use('/teacher', requireTeacher, teacherAssessmentRoutes);
 app.use('/teacher', requireTeacher, teacherLiveOralRoutes);
 app.use('/teacher', requireTeacher, teacherWrittenAssessmentRoutes);
+app.use('/teacher', requireTeacher, teacherAcademicRoutes);
 app.use('/notifications', requireAuthenticated, notificationRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
@@ -105,6 +110,7 @@ app.use('/admin/courses', requireAdmin, adminCourseRoutes);
 app.use('/admin/class-meetings', requireAdmin, adminClassMeetingRoutes);
 app.use('/admin', requireAdmin, adminLearningRoutes);
 app.use('/admin', requireAdmin, adminAssignmentRoutes);
+app.use('/admin/academic', requireAdmin, adminAcademicRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', {

@@ -194,6 +194,66 @@ enum LessonCompletionRule {
   AFTER_ASSESSMENT_PASS
 }
 
+enum CohortStatus {
+  DRAFT
+  OPEN
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum AcademicGroupModality {
+  ONLINE
+  IN_PERSON
+  HYBRID
+}
+
+enum AcademicGroupStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  ARCHIVED
+}
+
+enum AcademicEnrollmentStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  CANCELLED
+  DROPPED
+}
+
+enum AcademicTeacherRole {
+  COHORT_MANAGER
+  PRIMARY
+  SECONDARY
+}
+
+enum AcademicSessionStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+}
+
+enum AcademicAttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  EXCUSED
+  TECHNICAL_ISSUE
+}
+
+enum AcademicLevel {
+  LEVEL_1
+  LEVEL_2
+  LEVEL_3
+}
+
 enum AssignmentSubmissionStatus {
   DRAFT
   SUBMITTED
@@ -239,6 +299,14 @@ enum NotificationType {
   COURSE_UPDATED
   COURSE_ARCHIVED
   LESSON_AVAILABLE
+  ENROLLMENT_CREATED
+  ENROLLMENT_UPDATED
+  ENROLLMENT_SUSPENDED
+  GROUP_ASSIGNED
+  ACADEMIC_SESSION_SCHEDULED
+  ACADEMIC_SESSION_UPDATED
+  ACADEMIC_SESSION_CANCELLED
+  ATTENDANCE_RECORDED
 }
 
 enum CertificatePaymentStatus {
@@ -284,38 +352,46 @@ enum WhatsAppDeliveryStatus {
 }
 
 model User {
-  id                           Int                      @id @default(autoincrement())
-  firstName                    String                   @map("first_name")
-  lastName                     String                   @map("last_name")
-  phoneNumber                  String                   @unique @map("phone_number")
-  passwordHash                 String                   @map("password_hash")
-  role                         Role                     @default(STUDENT)
-  isActive                     Boolean                  @default(true) @map("is_active")
-  createdAt                    DateTime                 @default(now()) @map("created_at")
-  updatedAt                    DateTime                 @updatedAt @map("updated_at")
+  id                           Int                         @id @default(autoincrement())
+  firstName                    String                      @map("first_name")
+  lastName                     String                      @map("last_name")
+  phoneNumber                  String                      @unique @map("phone_number")
+  passwordHash                 String                      @map("password_hash")
+  role                         Role                        @default(STUDENT)
+  isActive                     Boolean                     @default(true) @map("is_active")
+  createdAt                    DateTime                    @default(now()) @map("created_at")
+  updatedAt                    DateTime                    @updatedAt @map("updated_at")
   trainingSessions             TrainingSession[]
   progress                     Progress[]
   enrollments                  Enrollment[]
   teachingAssignments          TrainingSessionTeacher[]
   notifications                Notification[]
   scheduledReminders           ScheduledReminder[]
-  createdAnnouncements         Announcement[]           @relation("AnnouncementCreator")
+  createdAnnouncements         Announcement[]              @relation("AnnouncementCreator")
   whatsappPreference           WhatsAppPreference?
   whatsappDeliveries           WhatsAppDelivery[]
-  certificatePayments          CertificatePayment[]     @relation("CertificateStudent")
-  confirmedCertificatePayments CertificatePayment[]     @relation("CertificatePaymentConfirmer")
-  waivedCertificateFees        CertificateRequest[]     @relation("CertificateFeeWaiverAdmin")
-  issuedCertificates           Certificate[]            @relation("CertificateIssuer")
-  revokedCertificates          Certificate[]            @relation("CertificateRevoker")
-  createdAssessments           Assessment[]             @relation("AssessmentCreator")
-  assessmentEvaluations        AssessmentEvaluation[]   @relation("AssessmentEvaluator")
-  liveOralSessionsCreated      LiveOralSession[]        @relation("LiveOralSessionCreator")
-  liveOralSessionsRescheduled  LiveOralSession[]        @relation("LiveOralSessionRescheduler")
-  liveOralSessionsCancelled    LiveOralSession[]        @relation("LiveOralSessionCanceller")
+  certificatePayments          CertificatePayment[]        @relation("CertificateStudent")
+  confirmedCertificatePayments CertificatePayment[]        @relation("CertificatePaymentConfirmer")
+  waivedCertificateFees        CertificateRequest[]        @relation("CertificateFeeWaiverAdmin")
+  issuedCertificates           Certificate[]               @relation("CertificateIssuer")
+  revokedCertificates          Certificate[]               @relation("CertificateRevoker")
+  createdAssessments           Assessment[]                @relation("AssessmentCreator")
+  assessmentEvaluations        AssessmentEvaluation[]      @relation("AssessmentEvaluator")
+  liveOralSessionsCreated      LiveOralSession[]           @relation("LiveOralSessionCreator")
+  liveOralSessionsRescheduled  LiveOralSession[]           @relation("LiveOralSessionRescheduler")
+  liveOralSessionsCancelled    LiveOralSession[]           @relation("LiveOralSessionCanceller")
   liveOralExaminerAssignments  LiveOralExaminer[]
-  liveOralAttendancesMarked    LiveOralAttendance[]     @relation("LiveOralAttendanceMarker")
-  oralSessionEvents            OralSessionEvent[]       @relation("OralSessionEventActor")
-  lmsCoursesCreated            Course[]                 @relation("LmsCourseCreator")
+  liveOralAttendancesMarked    LiveOralAttendance[]        @relation("LiveOralAttendanceMarker")
+  oralSessionEvents            OralSessionEvent[]          @relation("OralSessionEventActor")
+  lmsCoursesCreated            Course[]                    @relation("LmsCourseCreator")
+  academicCohortsManaged       AcademicCohort[]            @relation("AcademicCohortManager")
+  academicEnrollments          AcademicEnrollment[]        @relation("AcademicStudent")
+  academicTeacherAssignments   AcademicTeacherAssignment[] @relation("AcademicTeacher")
+  academicTeacherAssignmentsBy AcademicTeacherAssignment[] @relation("AcademicTeacherAssigner")
+  academicSessionsTaught       AcademicSession[]           @relation("AcademicSessionTeacher")
+  academicAttendancesRecorded  AcademicAttendance[]        @relation("AcademicAttendanceRecorder")
+  academicAuditEvents          AcademicAuditLog[]          @relation("AcademicAuditActor")
+  academicGroupTransfers       AcademicGroupTransfer[]
 
   @@map("users")
 }
@@ -504,10 +580,11 @@ model Course {
   certificateFee   Decimal?          @map("certificate_fee") @db.Decimal(10, 2)
   assessments      Assessment[]
   createdBy        User?             @relation("LmsCourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  academicCohorts  AcademicCohort[]
 
-  @@map("courses")
   @@index([lmsStatus])
   @@index([createdById])
+  @@map("courses")
 }
 
 model CourseModule {
@@ -578,12 +655,204 @@ model CourseLesson {
   documents        Document[]
   assignments      Assignment[]
   classMeetings    ClassMeeting[]
+  academicSessions AcademicSession[]
 
   @@unique([courseChapterId, position])
   @@index([courseModuleId])
   @@index([courseChapterId])
   @@index([assessmentId])
   @@map("lessons")
+}
+
+model AcademicCohort {
+  id                 Int                         @id @default(autoincrement())
+  name               String
+  code               String                      @unique
+  level              AcademicLevel
+  courseId           Int                         @map("course_id")
+  startDate          DateTime                    @map("start_date")
+  endDate            DateTime                    @map("end_date")
+  capacity           Int
+  status             CohortStatus                @default(DRAFT)
+  academicManagerId  Int?                        @map("academic_manager_id")
+  description        String?
+  createdAt          DateTime                    @default(now()) @map("created_at")
+  updatedAt          DateTime                    @updatedAt @map("updated_at")
+  course             Course                      @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  academicManager    User?                       @relation("AcademicCohortManager", fields: [academicManagerId], references: [id], onDelete: SetNull)
+  groups             AcademicGroup[]
+  enrollments        AcademicEnrollment[]
+  teacherAssignments AcademicTeacherAssignment[]
+
+  @@index([level, status])
+  @@index([courseId, status])
+  @@index([academicManagerId])
+  @@index([startDate, endDate])
+  @@map("academic_cohorts")
+}
+
+model AcademicGroup {
+  id             Int                         @id @default(autoincrement())
+  cohortId       Int                         @map("cohort_id")
+  name           String
+  code           String
+  capacity       Int
+  modality       AcademicGroupModality
+  locationOrUrl  String?                     @map("location_or_url")
+  usualDays      String[]                    @default([]) @map("usual_days")
+  usualStartTime String?                     @map("usual_start_time")
+  usualEndTime   String?                     @map("usual_end_time")
+  status         AcademicGroupStatus         @default(DRAFT)
+  createdAt      DateTime                    @default(now()) @map("created_at")
+  updatedAt      DateTime                    @updatedAt @map("updated_at")
+  cohort         AcademicCohort              @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  enrollments    AcademicEnrollment[]
+  transfersFrom  AcademicGroupTransfer[]     @relation("TransferFromGroup")
+  transfersTo    AcademicGroupTransfer[]     @relation("TransferToGroup")
+  teachers       AcademicTeacherAssignment[]
+  sessions       AcademicSession[]
+
+  @@unique([cohortId, code])
+  @@index([cohortId, status])
+  @@map("academic_groups")
+}
+
+model AcademicEnrollment {
+  id                  Int                      @id @default(autoincrement())
+  studentId           Int                      @map("student_id")
+  cohortId            Int                      @map("cohort_id")
+  groupId             Int?                     @map("group_id")
+  entryLevel          AcademicLevel?           @map("entry_level")
+  enrolledAt          DateTime                 @default(now()) @map("enrolled_at")
+  status              AcademicEnrollmentStatus @default(PENDING)
+  source              String?
+  administrativeNotes String?                  @map("administrative_notes")
+  suspendedAt         DateTime?                @map("suspended_at")
+  endedAt             DateTime?                @map("ended_at")
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+  student             User                     @relation("AcademicStudent", fields: [studentId], references: [id], onDelete: Restrict)
+  cohort              AcademicCohort           @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  group               AcademicGroup?           @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  transfers           AcademicGroupTransfer[]
+  attendances         AcademicAttendance[]
+
+  @@unique([studentId, cohortId])
+  @@index([cohortId, status])
+  @@index([groupId, status])
+  @@index([studentId, status])
+  @@map("academic_enrollments")
+}
+
+model AcademicGroupTransfer {
+  id              Int                @id @default(autoincrement())
+  enrollmentId    Int                @map("enrollment_id")
+  fromGroupId     Int?               @map("from_group_id")
+  toGroupId       Int                @map("to_group_id")
+  transferredById Int                @map("transferred_by_id")
+  reason          String
+  transferredAt   DateTime           @default(now()) @map("transferred_at")
+  enrollment      AcademicEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  fromGroup       AcademicGroup?     @relation("TransferFromGroup", fields: [fromGroupId], references: [id], onDelete: Restrict)
+  toGroup         AcademicGroup      @relation("TransferToGroup", fields: [toGroupId], references: [id], onDelete: Restrict)
+  transferredBy   User               @relation(fields: [transferredById], references: [id], onDelete: Restrict)
+
+  @@index([enrollmentId, transferredAt])
+  @@index([fromGroupId])
+  @@index([toGroupId])
+  @@map("academic_group_transfers")
+}
+
+model AcademicTeacherAssignment {
+  id           Int                 @id @default(autoincrement())
+  teacherId    Int                 @map("teacher_id")
+  cohortId     Int                 @map("cohort_id")
+  groupId      Int?                @map("group_id")
+  role         AcademicTeacherRole
+  startsAt     DateTime            @map("starts_at")
+  endsAt       DateTime?           @map("ends_at")
+  removedAt    DateTime?           @map("removed_at")
+  assignedById Int                 @map("assigned_by_id")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  teacher      User                @relation("AcademicTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  cohort       AcademicCohort      @relation(fields: [cohortId], references: [id], onDelete: Restrict)
+  group        AcademicGroup?      @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  assignedBy   User                @relation("AcademicTeacherAssigner", fields: [assignedById], references: [id], onDelete: Restrict)
+
+  @@index([teacherId, startsAt, endsAt])
+  @@index([cohortId, removedAt])
+  @@index([groupId, removedAt])
+  @@map("academic_teacher_assignments")
+}
+
+model AcademicSession {
+  id                 Int                   @id @default(autoincrement())
+  groupId            Int                   @map("group_id")
+  lessonId           Int?                  @map("lesson_id")
+  teacherId          Int                   @map("teacher_id")
+  title              String
+  description        String?
+  startsAt           DateTime              @map("starts_at")
+  endsAt             DateTime              @map("ends_at")
+  modality           AcademicGroupModality
+  locationOrUrl      String?               @map("location_or_url")
+  status             AcademicSessionStatus @default(SCHEDULED)
+  cancellationReason String?               @map("cancellation_reason")
+  internalNotes      String?               @map("internal_notes")
+  rescheduledFromId  Int?                  @map("rescheduled_from_id")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
+  group              AcademicGroup         @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  lesson             CourseLesson?         @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  teacher            User                  @relation("AcademicSessionTeacher", fields: [teacherId], references: [id], onDelete: Restrict)
+  rescheduledFrom    AcademicSession?      @relation("AcademicSessionReschedule", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo      AcademicSession[]     @relation("AcademicSessionReschedule")
+  attendances        AcademicAttendance[]
+
+  @@index([groupId, startsAt, endsAt])
+  @@index([teacherId, startsAt, endsAt])
+  @@index([status, startsAt])
+  @@index([rescheduledFromId])
+  @@map("academic_sessions")
+}
+
+model AcademicAttendance {
+  id            Int                      @id @default(autoincrement())
+  sessionId     Int                      @map("session_id")
+  enrollmentId  Int                      @map("enrollment_id")
+  status        AcademicAttendanceStatus
+  arrivedAt     DateTime?                @map("arrived_at")
+  leftAt        DateTime?                @map("left_at")
+  lateMinutes   Int                      @default(0) @map("late_minutes")
+  comment       String?
+  justification String?
+  recordedById  Int                      @map("recorded_by_id")
+  createdAt     DateTime                 @default(now()) @map("created_at")
+  updatedAt     DateTime                 @updatedAt @map("updated_at")
+  session       AcademicSession          @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  enrollment    AcademicEnrollment       @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  recordedBy    User                     @relation("AcademicAttendanceRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, enrollmentId])
+  @@index([enrollmentId, createdAt])
+  @@index([sessionId, status])
+  @@map("academic_attendances")
+}
+
+model AcademicAuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int      @map("actor_id")
+  entityType String   @map("entity_type")
+  entityId   Int      @map("entity_id")
+  action     String
+  beforeData Json?    @map("before_data")
+  afterData  Json?    @map("after_data")
+  createdAt  DateTime @default(now()) @map("created_at")
+  actor      User     @relation("AcademicAuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorId, createdAt])
+  @@map("academic_audit_logs")
 }
 
 model LessonResource {

@@ -1,0 +1,10 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<header class="page-heading"><div><p class="eyebrow">Administration</p><h1>Gestion académique</h1></div></header>
+<div class="dashboard-grid">
+<section class="card"><h2>Niveaux officiels</h2><p>Liste fixe, non modifiable.</p><ul><% levels.forEach(level=>{ %><li><%= level %></li><% }) %></ul></section>
+<section class="card"><h2>Cohortes</h2><p><%= cohorts.length %> cohorte(s)</p><ul><% cohorts.forEach(x=>{ %><li><strong><%= x.name %></strong> · <%= x.level %> · <%= x.status %></li><% }) %></ul></section>
+<section class="card"><h2>Groupes</h2><p><%= groups.length %> groupe(s)</p><ul><% groups.forEach(x=>{ %><li><%= x.name %> · <%= x.cohort.name %> · <%= x.status %></li><% }) %></ul></section>
+<section class="card"><h2>Inscriptions</h2><p><%= enrollments.length %> inscription(s)</p><ul><% enrollments.forEach(x=>{ %><li><%= x.student.firstName %> <%= x.student.lastName %> · <%= x.cohort.name %> · <%= x.status %></li><% }) %></ul></section>
+<section class="card"><h2>Affectations</h2><p><%= assignments.length %> active(s)</p><ul><% assignments.forEach(x=>{ %><li><%= x.teacher.firstName %> <%= x.teacher.lastName %> · <%= x.group?.name || x.cohort.name %></li><% }) %></ul></section>
+<section class="card"><h2>Séances et calendrier</h2><p><%= sessions.length %> séance(s)</p><ul><% sessions.forEach(x=>{ %><li><%= x.startsAt.toLocaleString('fr-FR') %> · <%= x.title %> · <%= x.status %></li><% }) %></ul></section>
+</div><%- include('../../partials/footer') %>

@@ -1,0 +1,14 @@
+const router = require('express').Router();
+const c = require('../controllers/academicController');
+const a = require('../middlewares/asyncHandler');
+router.get('/', a(c.adminDashboard));
+router.post('/cohorts', a(c.createCohort));
+router.post('/groups', a(c.createGroup));
+router.post('/enrollments', a(c.enroll));
+router.post('/enrollments/:id/status', a(c.enrollmentStatus));
+router.post('/enrollments/:id/transfer', a(c.transfer));
+router.post('/teacher-assignments', a(c.assign));
+router.post('/sessions', a(c.createSession));
+router.post('/sessions/:id/status', a(c.sessionStatus));
+router.post('/attendances', a(c.attendance));
+module.exports = router;

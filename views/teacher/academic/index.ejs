@@ -1,0 +1,5 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<header class="page-heading"><div><p class="eyebrow">Académique</p><h1>Mes groupes et séances</h1></div></header>
+<% if (!assignments.length) { %><div class="empty-state">Aucune affectation active.</div><% } %>
+<% assignments.forEach(item=>{ %><section class="card"><h2><%= item.group?.name || item.cohort.name %></h2><p>Rôle : <%= item.role %></p><% if(item.group){ %><h3>Étudiants</h3><ul><% item.group.enrollments.forEach(e=>{ %><li><%= e.student.firstName %> <%= e.student.lastName %></li><% }) %></ul><h3>Calendrier</h3><ul><% item.group.sessions.forEach(s=>{ %><li><%= s.startsAt.toLocaleString('fr-FR') %> · <%= s.title %> · <%= s.status %></li><% }) %></ul><% } %></section><% }) %>
+<%- include('../../partials/footer') %>
