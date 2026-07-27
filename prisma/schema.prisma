@@ -63,7 +63,87 @@ enum MeetingPlatform {
   GOOGLE_MEET
   ZOOM
   MICROSOFT_TEAMS
+  JITSI
   OTHER
+}
+
+enum AssessmentMode {
+  WRITTEN
+  RECORDED_ORAL
+  LIVE_VIDEO_ORAL
+}
+
+enum AssessmentStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+  ARCHIVED
+}
+
+enum AssessmentQuestionType {
+  MULTIPLE_CHOICE
+  SHORT_TEXT
+  LONG_TEXT
+  READING_COMPREHENSION
+  LISTENING_COMPREHENSION
+  ESSAY
+  ORAL_QUIZ
+  RECORDED_PRESENTATION
+  READ_ALOUD
+  IMAGE_DESCRIPTION
+  LISTEN_AND_RESPOND
+  PRONUNCIATION
+  PROFESSIONAL_SIMULATION
+  SHORT_ORAL_RESPONSE
+  LONG_ORAL_RESPONSE
+}
+
+enum AssessmentAttemptStatus {
+  DRAFT
+  SUBMITTED
+  GRADED
+  RETURNED
+}
+
+enum AssessmentEvaluationStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AssessmentDecision {
+  UNDECIDED
+  PASSED
+  FAILED
+}
+
+enum LiveOralSessionStatus {
+  SCHEDULED
+  READY
+  IN_PROGRESS
+  COMPLETED
+  ABSENT
+  CANCELLED
+  RESCHEDULED
+  GRADED
+}
+
+enum LiveOralAttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  EXCUSED
+  TECHNICAL_ISSUE
+}
+
+enum LiveOralParticipantRole {
+  CANDIDATE
+  PARTNER
+}
+
+enum LiveOralExaminerRole {
+  LEAD
+  EXAMINER
+  JURY
 }
 
 enum PaymentStatus {
@@ -180,6 +260,14 @@ model User {
   waivedCertificateFees        CertificateRequest[]     @relation("CertificateFeeWaiverAdmin")
   issuedCertificates           Certificate[]            @relation("CertificateIssuer")
   revokedCertificates          Certificate[]            @relation("CertificateRevoker")
+  createdAssessments           Assessment[]             @relation("AssessmentCreator")
+  assessmentEvaluations        AssessmentEvaluation[]   @relation("AssessmentEvaluator")
+  liveOralSessionsCreated      LiveOralSession[]        @relation("LiveOralSessionCreator")
+  liveOralSessionsRescheduled  LiveOralSession[]        @relation("LiveOralSessionRescheduler")
+  liveOralSessionsCancelled    LiveOralSession[]        @relation("LiveOralSessionCanceller")
+  liveOralExaminerAssignments  LiveOralExaminer[]
+  liveOralAttendancesMarked    LiveOralAttendance[]     @relation("LiveOralAttendanceMarker")
+  oralSessionEvents            OralSessionEvent[]       @relation("OralSessionEventActor")
 
   @@map("users")
 }
@@ -326,6 +414,8 @@ model TrainingSession {
   teachers             TrainingSessionTeacher[]
   assignments          Assignment[]
   certificateFee       Decimal?                 @map("certificate_fee") @db.Decimal(10, 2)
+  assessments          Assessment[]
+  liveOralSessions     LiveOralSession[]
 
   @@index([courseId])
   @@index([status])
@@ -359,6 +449,7 @@ model Course {
   trainingSessions TrainingSession[]
   assignments      Assignment[]
   certificateFee   Decimal?          @map("certificate_fee") @db.Decimal(10, 2)
+  assessments      Assessment[]
 
   @@map("courses")
 }
@@ -422,21 +513,24 @@ model LessonResource {
 }
 
 model Enrollment {
-  id                    Int                    @id @default(autoincrement())
-  userId                Int                    @map("user_id")
-  trainingSessionId     Int                    @map("training_session_id")
-  status                EnrollmentStatus       @default(TRIAL_ACTIVE)
-  enrolledAt            DateTime               @default(now()) @map("enrolled_at")
-  user                  User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trainingSession       TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
-  course                Course?                @relation(fields: [courseId], references: [id])
-  courseId              Int?
-  payments              Payment[]
-  attendances           Attendance[]
-  lessonProgress        LessonProgress[]
-  assignmentSubmissions AssignmentSubmission[]
-  certificateRequest    CertificateRequest?
-  certificatePayments   CertificatePayment[]
+  id                     Int                    @id @default(autoincrement())
+  userId                 Int                    @map("user_id")
+  trainingSessionId      Int                    @map("training_session_id")
+  status                 EnrollmentStatus       @default(TRIAL_ACTIVE)
+  enrolledAt             DateTime               @default(now()) @map("enrolled_at")
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainingSession        TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  course                 Course?                @relation(fields: [courseId], references: [id])
+  courseId               Int?
+  payments               Payment[]
+  attendances            Attendance[]
+  lessonProgress         LessonProgress[]
+  assignmentSubmissions  AssignmentSubmission[]
+  certificateRequest     CertificateRequest?
+  certificatePayments    CertificatePayment[]
+  assessmentAttempts     AssessmentAttempt[]
+  assessmentEvaluations  AssessmentEvaluation[]
+  liveOralParticipations LiveOralParticipant[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
@@ -448,6 +542,14 @@ model CertificateSettings {
   certificatesPaid Boolean  @default(false) @map("certificates_paid")
   generalAmount    Decimal  @default(0) @map("general_amount") @db.Decimal(10, 2)
   currency         String   @default("USD")
+  centerName       String   @default("English Center") @map("center_name")
+  logoPath         String?  @map("logo_path")
+  primaryColor     String   @default("#173B57") @map("primary_color")
+  signerName       String   @default("Direction English Center") @map("signer_name")
+  signerTitle      String   @default("Direction") @map("signer_title")
+  certificateTitle String   @default("CERTIFICAT DE FIN DE FORMATION") @map("certificate_title")
+  certificateText  String   @default("a suivi avec succès la formation") @map("certificate_text")
+  footerText       String   @default("English Center - Excellence in English") @map("footer_text")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("certificate_settings")
@@ -494,21 +596,323 @@ model CertificatePayment {
 }
 
 model Certificate {
-  id                   Int                @id @default(autoincrement())
-  certificateRequestId Int                @unique @map("certificate_request_id")
-  serialNumber         String             @unique @map("serial_number")
-  status               CertificateStatus  @default(ISSUED)
-  issuedAt             DateTime           @default(now()) @map("issued_at")
-  issuedByAdminId      Int                @map("issued_by_admin_id")
-  revokedAt            DateTime?          @map("revoked_at")
-  revokedByAdminId     Int?               @map("revoked_by_admin_id")
-  revocationReason     String?            @map("revocation_reason")
-  certificateRequest   CertificateRequest @relation(fields: [certificateRequestId], references: [id], onDelete: Restrict)
-  issuedByAdmin        User               @relation("CertificateIssuer", fields: [issuedByAdminId], references: [id], onDelete: Restrict)
-  revokedByAdmin       User?              @relation("CertificateRevoker", fields: [revokedByAdminId], references: [id], onDelete: SetNull)
+  id                       Int                @id @default(autoincrement())
+  certificateRequestId     Int                @unique @map("certificate_request_id")
+  serialNumber             String             @unique @map("serial_number")
+  verificationCode         String             @unique @map("verification_code")
+  studentNameSnapshot      String             @map("student_name_snapshot")
+  courseNameSnapshot       String             @map("course_name_snapshot")
+  sessionNameSnapshot      String             @map("session_name_snapshot")
+  centerNameSnapshot       String             @map("center_name_snapshot")
+  signerNameSnapshot       String             @map("signer_name_snapshot")
+  signerTitleSnapshot      String             @map("signer_title_snapshot")
+  certificateTitleSnapshot String             @map("certificate_title_snapshot")
+  certificateTextSnapshot  String             @map("certificate_text_snapshot")
+  footerTextSnapshot       String             @map("footer_text_snapshot")
+  primaryColorSnapshot     String             @map("primary_color_snapshot")
+  logoPathSnapshot         String?            @map("logo_path_snapshot")
+  status                   CertificateStatus  @default(ISSUED)
+  issuedAt                 DateTime           @default(now()) @map("issued_at")
+  issuedByAdminId          Int                @map("issued_by_admin_id")
+  revokedAt                DateTime?          @map("revoked_at")
+  revokedByAdminId         Int?               @map("revoked_by_admin_id")
+  revocationReason         String?            @map("revocation_reason")
+  certificateRequest       CertificateRequest @relation(fields: [certificateRequestId], references: [id], onDelete: Restrict)
+  issuedByAdmin            User               @relation("CertificateIssuer", fields: [issuedByAdminId], references: [id], onDelete: Restrict)
+  revokedByAdmin           User?              @relation("CertificateRevoker", fields: [revokedByAdminId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@map("certificates")
+}
+
+model Assessment {
+  id                  Int                    @id @default(autoincrement())
+  title               String
+  description         String?
+  instructions        String
+  mode                AssessmentMode
+  status              AssessmentStatus       @default(DRAFT)
+  courseId            Int                    @map("course_id")
+  trainingSessionId   Int?                   @map("training_session_id")
+  createdById         Int                    @map("created_by_id")
+  openAt              DateTime?              @map("open_at")
+  closeAt             DateTime?              @map("close_at")
+  totalPoints         Decimal                @map("total_points") @db.Decimal(8, 2)
+  passingScore        Decimal                @map("passing_score") @db.Decimal(8, 2)
+  preparationSeconds  Int                    @default(0) @map("preparation_seconds")
+  maxAttempts         Int                    @default(1) @map("max_attempts")
+  maxRecordingSeconds Int?                   @map("max_recording_seconds")
+  allowPlayback       Boolean                @default(true) @map("allow_playback")
+  publishedAt         DateTime?              @map("published_at")
+  closedAt            DateTime?              @map("closed_at")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+  course              Course                 @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  trainingSession     TrainingSession?       @relation(fields: [trainingSessionId], references: [id], onDelete: Restrict)
+  createdBy           User                   @relation("AssessmentCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  questions           AssessmentQuestion[]
+  attempts            AssessmentAttempt[]
+  criteria            AssessmentCriterion[]
+  evaluations         AssessmentEvaluation[]
+  liveOralSessions    LiveOralSession[]
+
+  @@index([courseId, status])
+  @@index([trainingSessionId, status])
+  @@index([mode, status])
+  @@index([openAt, closeAt])
+  @@map("assessments")
+}
+
+model AssessmentQuestion {
+  id                 Int                    @id @default(autoincrement())
+  assessmentId       Int                    @map("assessment_id")
+  type               AssessmentQuestionType
+  prompt             String
+  options            Json?
+  expectedAnswer     Json?                  @map("expected_answer")
+  mediaStorageKey    String?                @map("media_storage_key")
+  mediaMimeType      String?                @map("media_mime_type")
+  preparationSeconds Int?                   @map("preparation_seconds")
+  maxResponseSeconds Int?                   @map("max_response_seconds")
+  maxAttempts        Int?                   @map("max_attempts")
+  position           Int
+  points             Decimal                @db.Decimal(8, 2)
+  isRequired         Boolean                @default(true) @map("is_required")
+  createdAt          DateTime               @default(now()) @map("created_at")
+  updatedAt          DateTime               @updatedAt @map("updated_at")
+  assessment         Assessment             @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  responses          AssessmentResponse[]
+
+  @@unique([assessmentId, position])
+  @@index([assessmentId, type])
+  @@map("assessment_questions")
+}
+
+model AssessmentAttempt {
+  id            Int                     @id @default(autoincrement())
+  assessmentId  Int                     @map("assessment_id")
+  enrollmentId  Int                     @map("enrollment_id")
+  attemptNumber Int                     @map("attempt_number")
+  status        AssessmentAttemptStatus @default(DRAFT)
+  startedAt     DateTime                @default(now()) @map("started_at")
+  submittedAt   DateTime?               @map("submitted_at")
+  gradedAt      DateTime?               @map("graded_at")
+  createdAt     DateTime                @default(now()) @map("created_at")
+  updatedAt     DateTime                @updatedAt @map("updated_at")
+  assessment    Assessment              @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  enrollment    Enrollment              @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  responses     AssessmentResponse[]
+  evaluation    AssessmentEvaluation?
+
+  @@unique([assessmentId, enrollmentId, attemptNumber])
+  @@index([enrollmentId, status])
+  @@index([assessmentId, status])
+  @@map("assessment_attempts")
+}
+
+model AssessmentResponse {
+  id                    Int                @id @default(autoincrement())
+  assessmentAttemptId   Int                @map("assessment_attempt_id")
+  assessmentQuestionId  Int                @map("assessment_question_id")
+  textResponse          String?            @map("text_response")
+  selectedOptions       Json?              @map("selected_options")
+  audioStorageKey       String?            @map("audio_storage_key")
+  audioOriginalFileName String?            @map("audio_original_file_name")
+  audioMimeType         String?            @map("audio_mime_type")
+  audioSizeBytes        Int?               @map("audio_size_bytes")
+  audioDurationSeconds  Int?               @map("audio_duration_seconds")
+  audioChecksum         String?            @map("audio_checksum")
+  recordedAt            DateTime?          @map("recorded_at")
+  createdAt             DateTime           @default(now()) @map("created_at")
+  updatedAt             DateTime           @updatedAt @map("updated_at")
+  assessmentAttempt     AssessmentAttempt  @relation(fields: [assessmentAttemptId], references: [id], onDelete: Cascade)
+  assessmentQuestion    AssessmentQuestion @relation(fields: [assessmentQuestionId], references: [id], onDelete: Restrict)
+
+  @@unique([assessmentAttemptId, assessmentQuestionId])
+  @@index([assessmentQuestionId])
+  @@map("assessment_responses")
+}
+
+model AssessmentCriterion {
+  id              Int                        @id @default(autoincrement())
+  assessmentId    Int                        @map("assessment_id")
+  code            String
+  label           String
+  description     String?
+  weight          Decimal                    @db.Decimal(6, 2)
+  maxScore        Decimal                    @map("max_score") @db.Decimal(8, 2)
+  position        Int
+  createdAt       DateTime                   @default(now()) @map("created_at")
+  updatedAt       DateTime                   @updatedAt @map("updated_at")
+  assessment      Assessment                 @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  criterionScores AssessmentCriterionScore[]
+
+  @@unique([assessmentId, code])
+  @@unique([assessmentId, position])
+  @@index([assessmentId])
+  @@map("assessment_criteria")
+}
+
+model AssessmentEvaluation {
+  id                       Int                        @id @default(autoincrement())
+  assessmentId             Int                        @map("assessment_id")
+  enrollmentId             Int                        @map("enrollment_id")
+  assessmentAttemptId      Int?                       @unique @map("assessment_attempt_id")
+  liveOralSessionId        Int?                       @map("live_oral_session_id")
+  evaluatorId              Int                        @map("evaluator_id")
+  status                   AssessmentEvaluationStatus @default(DRAFT)
+  overallScore             Decimal                    @map("overall_score") @db.Decimal(8, 2)
+  feedback                 String?
+  strengths                String?
+  improvements             String?
+  audioFeedbackStorageKey  String?                    @map("audio_feedback_storage_key")
+  audioFeedbackMimeType    String?                    @map("audio_feedback_mime_type")
+  audioFeedbackDurationSec Int?                       @map("audio_feedback_duration_sec")
+  decision                 AssessmentDecision         @default(UNDECIDED)
+  gradedAt                 DateTime?                  @map("graded_at")
+  publishedAt              DateTime?                  @map("published_at")
+  createdAt                DateTime                   @default(now()) @map("created_at")
+  updatedAt                DateTime                   @updatedAt @map("updated_at")
+  assessment               Assessment                 @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  enrollment               Enrollment                 @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  assessmentAttempt        AssessmentAttempt?         @relation(fields: [assessmentAttemptId], references: [id], onDelete: Restrict)
+  liveOralSession          LiveOralSession?           @relation(fields: [liveOralSessionId], references: [id], onDelete: Restrict)
+  evaluator                User                       @relation("AssessmentEvaluator", fields: [evaluatorId], references: [id], onDelete: Restrict)
+  criterionScores          AssessmentCriterionScore[]
+
+  @@unique([liveOralSessionId, enrollmentId])
+  @@index([assessmentId, status])
+  @@index([enrollmentId, status])
+  @@index([evaluatorId])
+  @@map("assessment_evaluations")
+}
+
+model AssessmentCriterionScore {
+  id                        Int                  @id @default(autoincrement())
+  assessmentEvaluationId    Int                  @map("assessment_evaluation_id")
+  assessmentCriterionId     Int                  @map("assessment_criterion_id")
+  score                     Decimal              @db.Decimal(8, 2)
+  criterionLabelSnapshot    String               @map("criterion_label_snapshot")
+  criterionWeightSnapshot   Decimal              @map("criterion_weight_snapshot") @db.Decimal(6, 2)
+  criterionMaxScoreSnapshot Decimal              @map("criterion_max_score_snapshot") @db.Decimal(8, 2)
+  comment                   String?
+  createdAt                 DateTime             @default(now()) @map("created_at")
+  updatedAt                 DateTime             @updatedAt @map("updated_at")
+  assessmentEvaluation      AssessmentEvaluation @relation(fields: [assessmentEvaluationId], references: [id], onDelete: Cascade)
+  assessmentCriterion       AssessmentCriterion  @relation(fields: [assessmentCriterionId], references: [id], onDelete: Restrict)
+
+  @@unique([assessmentEvaluationId, assessmentCriterionId])
+  @@index([assessmentCriterionId])
+  @@map("assessment_criterion_scores")
+}
+
+model LiveOralSession {
+  id                  Int                    @id @default(autoincrement())
+  assessmentId        Int                    @map("assessment_id")
+  trainingSessionId   Int                    @map("training_session_id")
+  scheduledStartAt    DateTime               @map("scheduled_start_at")
+  scheduledEndAt      DateTime               @map("scheduled_end_at")
+  meetingPlatform     MeetingPlatform        @default(OTHER) @map("meeting_platform")
+  privateMeetingUrl   String                 @map("private_meeting_url")
+  meetingCode         String?                @map("meeting_code")
+  status              LiveOralSessionStatus  @default(SCHEDULED)
+  accessBeforeMinutes Int                    @default(30) @map("access_before_minutes")
+  accessAfterMinutes  Int                    @default(0) @map("access_after_minutes")
+  rescheduledFromId   Int?                   @map("rescheduled_from_id")
+  rescheduledById     Int?                   @map("rescheduled_by_id")
+  rescheduledAt       DateTime?              @map("rescheduled_at")
+  rescheduleReason    String?                @map("reschedule_reason")
+  cancelledById       Int?                   @map("cancelled_by_id")
+  cancelledAt         DateTime?              @map("cancelled_at")
+  cancellationReason  String?                @map("cancellation_reason")
+  startedAt           DateTime?              @map("started_at")
+  completedAt         DateTime?              @map("completed_at")
+  createdById         Int                    @map("created_by_id")
+  createdAt           DateTime               @default(now()) @map("created_at")
+  updatedAt           DateTime               @updatedAt @map("updated_at")
+  assessment          Assessment             @relation(fields: [assessmentId], references: [id], onDelete: Restrict)
+  trainingSession     TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Restrict)
+  createdBy           User                   @relation("LiveOralSessionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  rescheduledFrom     LiveOralSession?       @relation("LiveOralRescheduleHistory", fields: [rescheduledFromId], references: [id], onDelete: Restrict)
+  rescheduledTo       LiveOralSession[]      @relation("LiveOralRescheduleHistory")
+  rescheduledBy       User?                  @relation("LiveOralSessionRescheduler", fields: [rescheduledById], references: [id], onDelete: Restrict)
+  cancelledBy         User?                  @relation("LiveOralSessionCanceller", fields: [cancelledById], references: [id], onDelete: Restrict)
+  participants        LiveOralParticipant[]
+  examiners           LiveOralExaminer[]
+  attendances         LiveOralAttendance[]
+  evaluations         AssessmentEvaluation[]
+  events              OralSessionEvent[]
+
+  @@index([assessmentId, status])
+  @@index([trainingSessionId, scheduledStartAt])
+  @@index([scheduledStartAt, scheduledEndAt])
+  @@index([rescheduledFromId])
+  @@map("live_oral_sessions")
+}
+
+model LiveOralParticipant {
+  id                Int                     @id @default(autoincrement())
+  liveOralSessionId Int                     @map("live_oral_session_id")
+  enrollmentId      Int                     @map("enrollment_id")
+  role              LiveOralParticipantRole @default(CANDIDATE)
+  createdAt         DateTime                @default(now()) @map("created_at")
+  liveOralSession   LiveOralSession         @relation(fields: [liveOralSessionId], references: [id], onDelete: Restrict)
+  enrollment        Enrollment              @relation(fields: [enrollmentId], references: [id], onDelete: Restrict)
+  attendance        LiveOralAttendance?
+
+  @@unique([liveOralSessionId, enrollmentId])
+  @@index([enrollmentId])
+  @@map("live_oral_participants")
+}
+
+model LiveOralExaminer {
+  id                Int                  @id @default(autoincrement())
+  liveOralSessionId Int                  @map("live_oral_session_id")
+  teacherId         Int                  @map("teacher_id")
+  role              LiveOralExaminerRole @default(EXAMINER)
+  createdAt         DateTime             @default(now()) @map("created_at")
+  liveOralSession   LiveOralSession      @relation(fields: [liveOralSessionId], references: [id], onDelete: Restrict)
+  teacher           User                 @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+
+  @@unique([liveOralSessionId, teacherId])
+  @@index([teacherId])
+  @@map("live_oral_examiners")
+}
+
+model LiveOralAttendance {
+  id                    Int                      @id @default(autoincrement())
+  liveOralSessionId     Int                      @map("live_oral_session_id")
+  liveOralParticipantId Int                      @unique @map("live_oral_participant_id")
+  status                LiveOralAttendanceStatus
+  markedByTeacherId     Int                      @map("marked_by_teacher_id")
+  markedAt              DateTime                 @default(now()) @map("marked_at")
+  notes                 String?
+  createdAt             DateTime                 @default(now()) @map("created_at")
+  updatedAt             DateTime                 @updatedAt @map("updated_at")
+  liveOralSession       LiveOralSession          @relation(fields: [liveOralSessionId], references: [id], onDelete: Restrict)
+  participant           LiveOralParticipant      @relation(fields: [liveOralParticipantId], references: [id], onDelete: Restrict)
+  markedByTeacher       User                     @relation("LiveOralAttendanceMarker", fields: [markedByTeacherId], references: [id], onDelete: Restrict)
+
+  @@index([liveOralSessionId, status])
+  @@index([markedByTeacherId])
+  @@map("live_oral_attendances")
+}
+
+model OralSessionEvent {
+  id                Int                    @id @default(autoincrement())
+  liveOralSessionId Int                    @map("live_oral_session_id")
+  actorId           Int                    @map("actor_id")
+  action            String
+  fromStatus        LiveOralSessionStatus? @map("from_status")
+  toStatus          LiveOralSessionStatus? @map("to_status")
+  reason            String?
+  createdAt         DateTime               @default(now()) @map("created_at")
+  liveOralSession   LiveOralSession        @relation(fields: [liveOralSessionId], references: [id], onDelete: Restrict)
+  actor             User                   @relation("OralSessionEventActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([liveOralSessionId, createdAt])
+  @@index([actorId])
+  @@map("oral_session_events")
 }
 
 model Assignment {

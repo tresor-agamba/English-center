@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const service = require('../services/certificateService');
+const pdf = require('../services/certificatePdfService');
 async function index(req, res) {
   const [rows, settings, courses, sessions] = await Promise.all([
     service.listForAdmin(), service.settings(),
@@ -15,4 +16,16 @@ async function payment(req, res) { await service.confirmPayment(req.params.enrol
 async function waive(req, res) { await service.waiveFee(req.params.enrollmentId, req.session.user.id, req.body.reason); res.redirect('/admin/certificates?success=waived'); }
 async function issue(req, res) { await service.issue(req.params.enrollmentId, req.session.user.id); res.redirect('/admin/certificates?success=issued'); }
 async function revoke(req, res) { await service.revoke(req.params.id, req.session.user.id, req.body.reason); res.redirect('/admin/certificates?success=revoked'); }
-module.exports = { index, config, courseFee, sessionFee, payment, waive, issue, revoke };
+async function download(req, res) {
+  const certificate = await service.getForAdmin(req.params.id);
+  const buffer = await pdf.generate(certificate, { revokedWatermark: certificate.status === 'REVOKED' });
+  res.set({
+    'Content-Type': 'application/pdf',
+    'Content-Disposition': `attachment; filename="${pdf.fileName(certificate)}"`,
+    'Content-Length': String(buffer.length),
+    'Cache-Control': 'private, no-store, max-age=0',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  res.send(buffer);
+}
+module.exports = { index, config, courseFee, sessionFee, payment, waive, issue, revoke, download };

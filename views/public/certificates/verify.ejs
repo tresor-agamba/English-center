@@ -1,0 +1,41 @@
+<%- include('../../partials/header', { title }) %>
+<main class="certificate-verify">
+  <section class="certificate-verify-hero">
+    <p class="eyebrow">Service public</p>
+    <h1>Vérifier un certificat</h1>
+    <p>Saisissez le numéro du certificat ou son code de vérification exact.</p>
+    <form method="post" action="/certificates/verify" class="certificate-search">
+      <label for="query">Numéro ou code de vérification</label>
+      <div>
+        <input id="query" name="query" minlength="8" maxlength="100" autocomplete="off" required>
+        <button class="button" type="submit">Vérifier</button>
+      </div>
+    </form>
+  </section>
+
+  <% if (message) { %>
+    <section class="certificate-result certificate-result-unknown" role="status">
+      <h2>Résultat de la vérification</h2>
+      <p><%= message %></p>
+    </section>
+  <% } %>
+
+  <% if (certificate) { %>
+    <section class="certificate-result <%= certificate.status === 'REVOKED' ? 'certificate-result-revoked' : 'certificate-result-valid' %>">
+      <p class="certificate-status"><%= certificate.status === 'REVOKED' ? 'Certificat révoqué' : 'Certificat authentique et valide' %></p>
+      <dl>
+        <div><dt>Numéro</dt><dd><%= certificate.serialNumber %></dd></div>
+        <div><dt>Date d’émission</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.issuedAt) %></dd></div>
+        <% if (certificate.status === 'REVOKED') { %>
+          <div><dt>Date de révocation</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.revokedAt) %></dd></div>
+        <% } else { %>
+          <div><dt>Étudiant</dt><dd><%= certificate.studentNameSnapshot %></dd></div>
+          <div><dt>Formation</dt><dd><%= certificate.courseNameSnapshot %></dd></div>
+          <div><dt>Session</dt><dd><%= certificate.sessionNameSnapshot %></dd></div>
+          <div><dt>Organisme émetteur</dt><dd><%= certificate.centerNameSnapshot %></dd></div>
+        <% } %>
+      </dl>
+    </section>
+  <% } %>
+</main>
+<%- include('../../partials/footer') %>

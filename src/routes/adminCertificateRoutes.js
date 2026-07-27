@@ -8,5 +8,6 @@ router.post('/sessions/:id/fee', a(c.sessionFee));
 router.post('/enrollments/:enrollmentId/confirm-payment', a(c.payment));
 router.post('/enrollments/:enrollmentId/waive', a(c.waive));
 router.post('/enrollments/:enrollmentId/issue', a(c.issue));
+router.get('/:id/download', a(c.download));
 router.post('/:id/revoke', a(c.revoke));
 module.exports = router;

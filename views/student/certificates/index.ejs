@@ -1,1 +1,29 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %><h1>Mes certificats</h1><div class="card-grid"><% rows.forEach(r => { %><article class="card"><p class="eyebrow"><%= r.enrollment.trainingSession.name %></p><h2><%= r.enrollment.trainingSession.course.title %></h2><p>Statut : <strong><%= r.status %></strong></p><p>Frais : <%= Number(r.fee.amount).toFixed(2) %> <%= r.fee.currency %></p><p>Paiement : <%= r.payment ? 'Confirmé' : (r.request?.isFeeWaived ? 'Exonéré' : (r.fee.amount.isZero() ? 'Gratuit' : 'En attente')) %></p><% if (r.status === 'ELIGIBLE_PAYMENT_REQUIRED') { %><p>Contactez l’administration pour les instructions de paiement du certificat.</p><% } %><% if (r.status === 'ISSUED') { %><a class="button" href="/student/certificates/<%= r.request.certificate.id %>">Voir le certificat</a><% } %><% if (r.status === 'REVOKED') { %><p>Ce certificat a été révoqué.</p><% } %></article><% }) %></div><% if (!rows.length) { %><p class="empty-state">Aucune formation inscrite.</p><% } %><%- include('../../partials/footer') %>
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<h1>Mes certificats</h1>
+<div class="card-grid">
+  <% rows.forEach(r => { %>
+    <article class="card">
+      <p class="eyebrow"><%= r.enrollment.trainingSession.name %></p>
+      <h2><%= r.enrollment.trainingSession.course.title %></h2>
+      <p>Statut : <strong><%= r.status %></strong></p>
+      <p>Frais : <%= Number(r.fee.amount).toFixed(2) %> <%= r.fee.currency %></p>
+      <p>Paiement : <%= r.payment ? 'Confirmé' : (r.request?.isFeeWaived ? 'Exonéré' : (r.fee.amount.isZero() ? 'Gratuit' : 'En attente')) %></p>
+      <% if (r.status === 'ELIGIBLE_PAYMENT_REQUIRED') { %>
+        <p>Contactez l’administration pour les instructions de paiement du certificat.</p>
+      <% } %>
+      <% if (r.status === 'ISSUED') { %>
+        <p>N° <strong><%= r.request.certificate.serialNumber %></strong></p>
+        <div class="certificate-actions">
+          <a class="button" href="/student/certificates/<%= r.request.certificate.id %>/download">Télécharger le PDF</a>
+          <a href="/certificates/verify/<%= r.request.certificate.verificationCode %>">Vérifier en ligne</a>
+        </div>
+      <% } %>
+      <% if (r.status === 'REVOKED') { %>
+        <p>Ce certificat a été révoqué. Le téléchargement n’est plus disponible.</p>
+      <% } %>
+    </article>
+  <% }) %>
+</div>
+<% if (!rows.length) { %><p class="empty-state">Aucune formation inscrite.</p><% } %>
+<%- include('../../partials/footer') %>

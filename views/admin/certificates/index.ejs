@@ -1,5 +1,48 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %><h1>Certificats</h1>
-<section class="card"><h2>Configuration générale</h2><form method="post" action="/admin/certificates/config"><label><input type="checkbox" name="certificatesPaid" <%= settings.certificatesPaid ? 'checked' : '' %>> Les certificats sont payants</label><label>Montant général</label><input type="number" min="0" step=".01" name="generalAmount" value="<%= settings.generalAmount %>" required><label>Devise</label><input name="currency" maxlength="3" value="<%= settings.currency %>" required><button class="button">Enregistrer</button></form></section>
-<details class="card"><summary>Prix par formation</summary><% courses.forEach(c => { %><form class="list-row" method="post" action="/admin/certificates/courses/<%= c.id %>/fee"><span><%= c.title %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= c.certificateFee ?? '' %>" placeholder="Montant général"><button>Enregistrer</button></form><% }) %></details>
-<details class="card"><summary>Prix par session</summary><% sessions.forEach(s => { %><form class="list-row" method="post" action="/admin/certificates/sessions/<%= s.id %>/fee"><span><%= s.course.title %> — <%= s.name %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= s.certificateFee ?? '' %>" placeholder="Prix formation/général"><button>Enregistrer</button></form><% }) %></details>
-<section><h2>Inscriptions</h2><div class="table-wrap"><table><thead><tr><th>Étudiant</th><th>Formation / session</th><th>Éligibilité</th><th>Frais</th><th>Paiement</th><th>Certificat</th><th>Actions administratives</th></tr></thead><tbody><% rows.forEach(r => { %><tr><td><%= r.enrollment.user.firstName %> <%= r.enrollment.user.lastName %></td><td><%= r.enrollment.trainingSession.course.title %><br><%= r.enrollment.trainingSession.name %></td><td><%= r.eligibility.valid ? 'Valide' : 'Non éligible' %><br><small><%= r.eligibility.completedLessons %>/<%= r.eligibility.totalLessons %> leçons</small></td><td><%= Number(r.fee.amount).toFixed(2) %> <%= r.fee.currency %><br><small><%= r.fee.source %></small></td><td><%= r.payment ? 'CONFIRMED' : (r.fee.amount.isZero() ? 'GRATUIT' : 'REQUIS') %><%= r.request?.isFeeWaived ? '<br>EXONÉRÉ' : '' %></td><td><%= r.status %></td><td><% if (r.eligibility.valid && !r.payment && !r.fee.amount.isZero()) { %><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/confirm-payment"><input name="paymentMethod" placeholder="Moyen de paiement" required><button>Confirmer paiement</button></form><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/waive"><input name="reason" placeholder="Motif obligatoire" required><button>Exonérer</button></form><% } %><% if (r.status === 'ELIGIBLE_PAYMENT_CONFIRMED') { %><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/issue"><button class="button button-small">Générer manuellement</button></form><% } %><% if (r.status === 'ISSUED') { %><form method="post" action="/admin/certificates/<%= r.request.certificate.id %>/revoke"><input name="reason" placeholder="Motif de révocation" required><button>Révoquer</button></form><% } %></td></tr><% }) %></tbody></table></div></section><%- include('../../partials/footer') %>
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<h1>Certificats</h1>
+
+<section class="card">
+  <h2>Configuration générale</h2>
+  <form method="post" action="/admin/certificates/config" class="certificate-config">
+    <label><input type="checkbox" name="certificatesPaid" <%= settings.certificatesPaid ? 'checked' : '' %>> Les certificats sont payants</label>
+    <label>Montant général <input type="number" min="0" step=".01" name="generalAmount" value="<%= settings.generalAmount %>" required></label>
+    <label>Devise <input name="currency" maxlength="3" value="<%= settings.currency %>" required></label>
+    <label>Nom du centre <input name="centerName" maxlength="180" value="<%= settings.centerName %>" required></label>
+    <label>Couleur principale <input type="color" name="primaryColor" value="<%= settings.primaryColor %>"></label>
+    <label>Signataire <input name="signerName" maxlength="180" value="<%= settings.signerName %>" required></label>
+    <label>Fonction du signataire <input name="signerTitle" maxlength="180" value="<%= settings.signerTitle %>" required></label>
+    <label>Titre du certificat <input name="certificateTitle" maxlength="180" value="<%= settings.certificateTitle %>" required></label>
+    <label>Texte d’attestation <input name="certificateText" maxlength="500" value="<%= settings.certificateText %>" required></label>
+    <label>Pied de page <input name="footerText" maxlength="300" value="<%= settings.footerText %>" required></label>
+    <button class="button">Enregistrer</button>
+  </form>
+</section>
+
+<details class="card"><summary>Prix par formation</summary>
+  <% courses.forEach(c => { %><form class="list-row" method="post" action="/admin/certificates/courses/<%= c.id %>/fee"><span><%= c.title %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= c.certificateFee ?? '' %>" placeholder="Montant général"><button>Enregistrer</button></form><% }) %>
+</details>
+<details class="card"><summary>Prix par session</summary>
+  <% sessions.forEach(s => { %><form class="list-row" method="post" action="/admin/certificates/sessions/<%= s.id %>/fee"><span><%= s.course.title %> — <%= s.name %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= s.certificateFee ?? '' %>" placeholder="Prix formation/général"><button>Enregistrer</button></form><% }) %>
+</details>
+
+<section><h2>Inscriptions</h2><div class="table-wrap"><table>
+  <thead><tr><th>Étudiant</th><th>Formation / session</th><th>Éligibilité</th><th>Frais</th><th>Paiement</th><th>Certificat</th><th>Actions administratives</th></tr></thead>
+  <tbody><% rows.forEach(r => { %><tr>
+    <td><%= r.enrollment.user.firstName %> <%= r.enrollment.user.lastName %></td>
+    <td><%= r.enrollment.trainingSession.course.title %><br><%= r.enrollment.trainingSession.name %></td>
+    <td><%= r.eligibility.valid ? 'Valide' : 'Non éligible' %><br><small><%= r.eligibility.completedLessons %>/<%= r.eligibility.totalLessons %> leçons</small></td>
+    <td><%= Number(r.fee.amount).toFixed(2) %> <%= r.fee.currency %><br><small><%= r.fee.source %></small></td>
+    <td><%= r.payment ? 'CONFIRMED' : (r.fee.amount.isZero() ? 'GRATUIT' : 'REQUIS') %><%= r.request?.isFeeWaived ? ' — EXONÉRÉ' : '' %></td>
+    <td><%= r.status %><% if (r.request?.certificate) { %><br><small>N° <%= r.request.certificate.serialNumber %></small><div><a href="/admin/certificates/<%= r.request.certificate.id %>/download">Télécharger PDF</a> · <a href="/certificates/verify/<%= r.request.certificate.verificationCode %>">Vérifier</a></div><% } %></td>
+    <td>
+      <% if (r.eligibility.valid && !r.payment && !r.fee.amount.isZero()) { %>
+        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/confirm-payment"><input name="paymentMethod" placeholder="Moyen de paiement" required><button>Confirmer paiement</button></form>
+        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/waive"><input name="reason" placeholder="Motif obligatoire" required><button>Exonérer</button></form>
+      <% } %>
+      <% if (r.status === 'ELIGIBLE_PAYMENT_CONFIRMED') { %><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/issue"><button class="button button-small">Générer manuellement</button></form><% } %>
+      <% if (r.status === 'ISSUED') { %><form method="post" action="/admin/certificates/<%= r.request.certificate.id %>/revoke"><input name="reason" placeholder="Motif de révocation" required><button>Révoquer</button></form><% } %>
+    </td>
+  </tr><% }) %></tbody>
+</table></div></section>
+<%- include('../../partials/footer') %>

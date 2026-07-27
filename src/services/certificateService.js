@@ -20,6 +20,13 @@ function currency(value) {
   if (!/^[A-Z]{3}$/.test(code)) throw new CertificateError('INVALID_CURRENCY', 'Devise invalide.');
   return code;
 }
+function textSetting(value, fallback, max = 180) {
+  const text = String(value ?? fallback).trim();
+  if (!text || text.length > max || /[\u0000-\u001f]/.test(text)) {
+    throw new CertificateError('INVALID_SETTING', 'Paramètre de certificat invalide.');
+  }
+  return text;
+}
 async function settings(client = prisma) {
   return client.certificateSettings.upsert({ where: { id: 1 }, create: { id: 1 }, update: {} });
 }
@@ -68,7 +75,21 @@ async function state(enrollmentId, client = prisma) {
   return { eligibility, fee, request, payment, status };
 }
 async function updateGeneralConfig(body) {
-  return prisma.certificateSettings.upsert({ where: { id: 1 }, create: { id: 1, certificatesPaid: body.certificatesPaid === 'on', generalAmount: amount(body.generalAmount), currency: currency(body.currency) }, update: { certificatesPaid: body.certificatesPaid === 'on', generalAmount: amount(body.generalAmount), currency: currency(body.currency) } });
+  const primaryColor = String(body.primaryColor || '#173B57').trim().toUpperCase();
+  if (!/^#[0-9A-F]{6}$/.test(primaryColor)) throw new CertificateError('INVALID_COLOR', 'Couleur principale invalide.');
+  const data = {
+    certificatesPaid: body.certificatesPaid === 'on',
+    generalAmount: amount(body.generalAmount),
+    currency: currency(body.currency),
+    centerName: textSetting(body.centerName, 'English Center'),
+    signerName: textSetting(body.signerName, 'Direction English Center'),
+    signerTitle: textSetting(body.signerTitle, 'Direction'),
+    certificateTitle: textSetting(body.certificateTitle, 'CERTIFICAT DE FIN DE FORMATION'),
+    certificateText: textSetting(body.certificateText, 'a suivi avec succès la formation', 500),
+    footerText: textSetting(body.footerText, 'English Center - Excellence in English', 300),
+    primaryColor,
+  };
+  return prisma.certificateSettings.upsert({ where: { id: 1 }, create: { id: 1, ...data }, update: data });
 }
 async function updateCourseFee(courseId, value) { return prisma.course.update({ where: { id: parseId(courseId, 'formation') }, data: { certificateFee: amount(value, { nullable: true }) } }); }
 async function updateSessionFee(sessionId, value) { return prisma.trainingSession.update({ where: { id: parseId(sessionId, 'session') }, data: { certificateFee: amount(value, { nullable: true }) } }); }
@@ -111,10 +132,84 @@ async function issue(enrollmentId, adminId) {
     if (!snapshot.fee.amount.isZero() && !snapshot.payment && !snapshot.request?.isFeeWaived) throw new CertificateError('PAYMENT_REQUIRED', 'Le paiement du certificat est requis.');
     const request = await tx.certificateRequest.upsert({ where: { enrollmentId: Number(enrollmentId) }, create: { enrollmentId: Number(enrollmentId) }, update: {} });
     if (snapshot.request?.certificate) throw new CertificateError('ALREADY_ISSUED', 'Un certificat existe déjà pour cette inscription.');
-    return tx.certificate.create({ data: { certificateRequestId: request.id, issuedByAdminId: adminId, serialNumber: `EC-${new Date().getFullYear()}-${crypto.randomBytes(6).toString('hex').toUpperCase()}` }, include: { certificateRequest: { include: { enrollment: true } } } });
+    const [official, config] = await Promise.all([
+      tx.enrollment.findUnique({
+        where: { id: Number(enrollmentId) },
+        select: {
+          userId: true,
+          user: { select: { firstName: true, lastName: true } },
+          trainingSession: { select: { name: true, course: { select: { title: true } } } },
+        },
+      }),
+      settings(tx),
+    ]);
+    if (!official) throw new CertificateError('NOT_FOUND', 'Inscription introuvable.', 404);
+    return tx.certificate.create({
+      data: {
+        certificateRequestId: request.id,
+        issuedByAdminId: adminId,
+        serialNumber: `EC-${new Date().getFullYear()}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
+        verificationCode: crypto.randomBytes(24).toString('base64url'),
+        studentNameSnapshot: `${official.user.firstName} ${official.user.lastName}`.trim(),
+        courseNameSnapshot: official.trainingSession.course.title,
+        sessionNameSnapshot: official.trainingSession.name,
+        centerNameSnapshot: config.centerName,
+        signerNameSnapshot: config.signerName,
+        signerTitleSnapshot: config.signerTitle,
+        certificateTitleSnapshot: config.certificateTitle,
+        certificateTextSnapshot: config.certificateText,
+        footerTextSnapshot: config.footerText,
+        primaryColorSnapshot: config.primaryColor,
+        logoPathSnapshot: config.logoPath,
+      },
+      include: { certificateRequest: { include: { enrollment: true } } },
+    });
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
   await notifications.createNotification({ userId: result.certificateRequest.enrollment.userId, type: 'CERTIFICATE_ISSUED', title: 'Certificat disponible', message: 'Votre certificat a été émis et est disponible dans votre espace.', actionUrl: '/student/certificates', relatedEntity: 'CERTIFICATE', relatedId: result.id, deduplicationKey: `CERTIFICATE_ISSUED:certificate-${result.id}` });
   return result;
+}
+const certificateInclude = {
+  certificateRequest: {
+    include: {
+      enrollment: { include: { user: true, trainingSession: { include: { course: true } } } },
+    },
+  },
+};
+async function findPublicCertificate(rawValue) {
+  const value = String(rawValue || '').trim();
+  if (value.length < 8 || value.length > 100 || !/^[A-Za-z0-9_-]+$/.test(value)) return null;
+  const certificate = await prisma.certificate.findFirst({
+    where: { OR: [{ serialNumber: value }, { verificationCode: value }] },
+    select: {
+      status: true, serialNumber: true, verificationCode: true, issuedAt: true, revokedAt: true,
+      studentNameSnapshot: true, courseNameSnapshot: true, sessionNameSnapshot: true, centerNameSnapshot: true,
+    },
+  });
+  if (!certificate) return null;
+  if (certificate.status === 'REVOKED') {
+    return { status: certificate.status, serialNumber: certificate.serialNumber, issuedAt: certificate.issuedAt, revokedAt: certificate.revokedAt };
+  }
+  return certificate;
+}
+async function getForStudent(certificateId, userId) {
+  const certificate = await prisma.certificate.findFirst({
+    where: {
+      id: parseId(certificateId, 'certificat'),
+      status: 'ISSUED',
+      certificateRequest: { enrollment: { userId: parseId(userId, 'étudiant') } },
+    },
+    include: certificateInclude,
+  });
+  if (!certificate) throw new CertificateError('NOT_FOUND', 'Certificat introuvable.', 404);
+  return certificate;
+}
+async function getForAdmin(certificateId) {
+  const certificate = await prisma.certificate.findUnique({
+    where: { id: parseId(certificateId, 'certificat') },
+    include: certificateInclude,
+  });
+  if (!certificate) throw new CertificateError('NOT_FOUND', 'Certificat introuvable.', 404);
+  return certificate;
 }
 async function revoke(certificateId, adminId, reasonValue) {
   const reason = String(reasonValue || '').trim(); if (reason.length < 3) throw new CertificateError('REASON_REQUIRED', 'Le motif de révocation est obligatoire.');
@@ -151,4 +246,4 @@ async function notifyEligibility(enrollmentId, snapshot) {
     deduplicationKey: `${paymentRequired ? 'CERTIFICATE_PAYMENT_REQUIRED' : 'CERTIFICATE_AVAILABLE'}:enrollment-${enrollmentId}`,
   });
 }
-module.exports = { CertificateError, parseId, amount, currency, settings, applicableFee, academicEligibility, state, notifyEligibility, updateGeneralConfig, updateCourseFee, updateSessionFee, confirmPayment, waiveFee, issue, revoke, listForAdmin, listForStudent };
+module.exports = { CertificateError, parseId, amount, currency, settings, applicableFee, academicEligibility, state, notifyEligibility, updateGeneralConfig, updateCourseFee, updateSessionFee, confirmPayment, waiveFee, issue, revoke, listForAdmin, listForStudent, findPublicCertificate, getForStudent, getForAdmin };

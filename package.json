@@ -30,7 +30,9 @@
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "multer": "^2.0.2"
+    "multer": "^2.0.2",
+    "pdfkit": "^0.19.1",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",

@@ -1,1 +1,17 @@
-<%- include('../../partials/header', { title }) %><article class="certificate-sheet"><p class="eyebrow">English Center</p><h1>Certificat de réussite</h1><p>Ce certificat est décerné à</p><h2><%= certificate.certificateRequest.enrollment.user.firstName %> <%= certificate.certificateRequest.enrollment.user.lastName %></h2><p>pour avoir terminé la formation</p><h2><%= certificate.certificateRequest.enrollment.trainingSession.course.title %></h2><p>Session : <%= certificate.certificateRequest.enrollment.trainingSession.name %></p><p>Émis le <%= certificate.issuedAt.toLocaleDateString('fr-FR') %></p><p>Numéro : <strong><%= certificate.serialNumber %></strong></p></article><button class="button" onclick="window.print()">Imprimer</button><%- include('../../partials/footer') %>
+<%- include('../../partials/header', { title }) %>
+<%- include('../_nav') %>
+<section class="card certificate">
+  <p class="eyebrow"><%= certificate.centerNameSnapshot %></p>
+  <h1><%= certificate.certificateTitleSnapshot %></h1>
+  <p>Le présent certificat atteste que</p>
+  <h2><%= certificate.studentNameSnapshot %></h2>
+  <p><%= certificate.certificateTextSnapshot %></p>
+  <h2><%= certificate.courseNameSnapshot %></h2>
+  <p>Session : <%= certificate.sessionNameSnapshot %></p>
+  <p>N° <%= certificate.serialNumber %> — Émis le <%= new Intl.DateTimeFormat('fr-FR').format(certificate.issuedAt) %></p>
+  <div class="certificate-actions">
+    <a class="button" href="/student/certificates/<%= certificate.id %>/download">Télécharger le PDF officiel</a>
+    <a href="/certificates/verify/<%= certificate.verificationCode %>">Vérifier en ligne</a>
+  </div>
+</section>
+<%- include('../../partials/footer') %>
