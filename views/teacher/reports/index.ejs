@@ -1,0 +1,7 @@
+<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<header class="page-heading"><div><p class="eyebrow">Pilotage</p><h1>Mes rapports</h1></div></header>
+<form method="get" action="/teacher/reports"><select name="period"><% periods.forEach(x=>{ %><option <%= (query.period||'THIS_MONTH')===x?'selected':'' %>><%= x %></option><% }) %></select><button class="button">Filtrer</button></form>
+<div class="stats-grid"><article class="stat-card"><span>Groupes actifs</span><strong><%= academicReport.groupsActive %></strong></article><article class="stat-card"><span>Étudiants suivis</span><strong><%= teacherReport.trackedStudents %></strong></article><article class="stat-card"><span>Séances prévues</span><strong><%= teacherReport.scheduled %></strong></article><article class="stat-card"><span>À corriger</span><strong><%= evaluationReport.pendingGrading %></strong></article></div>
+<section class="card"><h2>Mes présences</h2><p>Présence <%= attendanceReport.attendanceRate.toFixed(1) %>% · absence <%= attendanceReport.absenceRate.toFixed(1) %>%</p><% Object.entries(attendanceReport.counts).forEach(([key,value])=>{ %><p><%= key %> : <%= value %></p><% }) %></section>
+<p>Aucune donnée financière étudiante n’est disponible dans cet espace.</p>
+<%- include('../../partials/footer') %>
