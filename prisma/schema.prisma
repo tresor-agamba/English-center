@@ -254,6 +254,26 @@ enum AcademicLevel {
   LEVEL_3
 }
 
+enum SimpleFeeType {
+  FORMATION
+  SYLLABUS
+  CERTIFICATE
+}
+
+enum StudentInvoiceStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  CANCELLED
+}
+
+enum SimplePaymentMethod {
+  CASH
+  MOBILE_MONEY
+  BANK_TRANSFER
+  OTHER
+}
+
 enum AssignmentSubmissionStatus {
   DRAFT
   SUBMITTED
@@ -307,6 +327,9 @@ enum NotificationType {
   ACADEMIC_SESSION_UPDATED
   ACADEMIC_SESSION_CANCELLED
   ATTENDANCE_RECORDED
+  INVOICE_CREATED
+  PAYMENT_RECORDED
+  RECEIPT_AVAILABLE
 }
 
 enum CertificatePaymentStatus {
@@ -392,6 +415,9 @@ model User {
   academicAttendancesRecorded  AcademicAttendance[]        @relation("AcademicAttendanceRecorder")
   academicAuditEvents          AcademicAuditLog[]          @relation("AcademicAuditActor")
   academicGroupTransfers       AcademicGroupTransfer[]
+  studentInvoices              StudentInvoice[]            @relation("FinancialStudent")
+  studentPaymentsRecorded      StudentPayment[]            @relation("StudentPaymentRecorder")
+  financialAuditEvents         FinancialAuditLog[]         @relation("FinancialAuditActor")
 
   @@map("users")
 }
@@ -736,12 +762,118 @@ model AcademicEnrollment {
   group               AcademicGroup?           @relation(fields: [groupId], references: [id], onDelete: Restrict)
   transfers           AcademicGroupTransfer[]
   attendances         AcademicAttendance[]
+  invoices            StudentInvoice[]
 
   @@unique([studentId, cohortId])
   @@index([cohortId, status])
   @@index([groupId, status])
   @@index([studentId, status])
   @@map("academic_enrollments")
+}
+
+model FeeConfiguration {
+  id           Int                  @id @default(autoincrement())
+  type         SimpleFeeType
+  level        AcademicLevel?
+  amount       Decimal              @db.Decimal(12, 2)
+  currency     String
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  invoiceLines StudentInvoiceLine[]
+
+  @@unique([type, level])
+  @@index([type, isActive])
+  @@map("fee_configurations")
+}
+
+model StudentInvoice {
+  id                   Int                  @id @default(autoincrement())
+  number               String               @unique
+  studentId            Int                  @map("student_id")
+  academicEnrollmentId Int?                 @map("academic_enrollment_id")
+  level                AcademicLevel
+  totalAmount          Decimal              @map("total_amount") @db.Decimal(12, 2)
+  paidAmount           Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  balanceAmount        Decimal              @map("balance_amount") @db.Decimal(12, 2)
+  currency             String
+  status               StudentInvoiceStatus @default(UNPAID)
+  issuedAt             DateTime             @default(now()) @map("issued_at")
+  cancelledAt          DateTime?            @map("cancelled_at")
+  createdAt            DateTime             @default(now()) @map("created_at")
+  updatedAt            DateTime             @updatedAt @map("updated_at")
+  student              User                 @relation("FinancialStudent", fields: [studentId], references: [id], onDelete: Restrict)
+  academicEnrollment   AcademicEnrollment?  @relation(fields: [academicEnrollmentId], references: [id], onDelete: Restrict)
+  lines                StudentInvoiceLine[]
+  payments             StudentPayment[]
+
+  @@index([studentId, status])
+  @@index([academicEnrollmentId])
+  @@index([currency, status])
+  @@map("student_invoices")
+}
+
+model StudentInvoiceLine {
+  id                   Int                 @id @default(autoincrement())
+  invoiceId            Int                 @map("invoice_id")
+  type                 SimpleFeeType
+  label                String
+  amount               Decimal             @db.Decimal(12, 2)
+  currency             String
+  feeConfigurationId   Int?                @map("fee_configuration_id")
+  certificateRequestId Int?                @map("certificate_request_id")
+  createdAt            DateTime            @default(now()) @map("created_at")
+  invoice              StudentInvoice      @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  feeConfiguration     FeeConfiguration?   @relation(fields: [feeConfigurationId], references: [id], onDelete: SetNull)
+  certificateRequest   CertificateRequest? @relation(fields: [certificateRequestId], references: [id], onDelete: SetNull)
+
+  @@unique([invoiceId, type])
+  @@index([certificateRequestId])
+  @@map("student_invoice_lines")
+}
+
+model StudentPayment {
+  id             Int                 @id @default(autoincrement())
+  invoiceId      Int                 @map("invoice_id")
+  amount         Decimal             @db.Decimal(12, 2)
+  currency       String
+  method         SimplePaymentMethod
+  reference      String?
+  idempotencyKey String              @unique @map("idempotency_key")
+  paidAt         DateTime            @default(now()) @map("paid_at")
+  recordedById   Int                 @map("recorded_by_id")
+  comment        String?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  invoice        StudentInvoice      @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  recordedBy     User                @relation("StudentPaymentRecorder", fields: [recordedById], references: [id], onDelete: Restrict)
+  receipt        PaymentReceipt?
+
+  @@index([invoiceId, paidAt])
+  @@map("student_payments")
+}
+
+model PaymentReceipt {
+  id        Int            @id @default(autoincrement())
+  number    String         @unique
+  paymentId Int            @unique @map("payment_id")
+  createdAt DateTime       @default(now()) @map("created_at")
+  payment   StudentPayment @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+
+  @@map("payment_receipts")
+}
+
+model FinancialAuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int      @map("actor_id")
+  entityType String   @map("entity_type")
+  entityId   Int      @map("entity_id")
+  action     String
+  data       Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+  actor      User     @relation("FinancialAuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([entityType, entityId, createdAt])
+  @@map("financial_audit_logs")
 }
 
 model AcademicGroupTransfer {
@@ -921,17 +1053,18 @@ model CertificateSettings {
 }
 
 model CertificateRequest {
-  id                 Int          @id @default(autoincrement())
-  enrollmentId       Int          @unique @map("enrollment_id")
-  isFeeWaived        Boolean      @default(false) @map("is_fee_waived")
-  feeWaivedByAdminId Int?         @map("fee_waived_by_admin_id")
-  feeWaivedAt        DateTime?    @map("fee_waived_at")
-  feeWaiverReason    String?      @map("fee_waiver_reason")
-  createdAt          DateTime     @default(now()) @map("created_at")
-  updatedAt          DateTime     @updatedAt @map("updated_at")
-  enrollment         Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  feeWaivedByAdmin   User?        @relation("CertificateFeeWaiverAdmin", fields: [feeWaivedByAdminId], references: [id], onDelete: SetNull)
+  id                 Int                  @id @default(autoincrement())
+  enrollmentId       Int                  @unique @map("enrollment_id")
+  isFeeWaived        Boolean              @default(false) @map("is_fee_waived")
+  feeWaivedByAdminId Int?                 @map("fee_waived_by_admin_id")
+  feeWaivedAt        DateTime?            @map("fee_waived_at")
+  feeWaiverReason    String?              @map("fee_waiver_reason")
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  enrollment         Enrollment           @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  feeWaivedByAdmin   User?                @relation("CertificateFeeWaiverAdmin", fields: [feeWaivedByAdminId], references: [id], onDelete: SetNull)
   certificate        Certificate?
+  invoiceLines       StudentInvoiceLine[]
 
   @@index([feeWaivedByAdminId])
   @@map("certificate_requests")

@@ -34,6 +34,8 @@ const adminWrittenAssessmentRoutes = require('./routes/adminWrittenAssessmentRou
 const adminAcademicRoutes = require('./routes/adminAcademicRoutes');
 const teacherAcademicRoutes = require('./routes/teacherAcademicRoutes');
 const studentAcademicRoutes = require('./routes/studentAcademicRoutes');
+const adminFinanceRoutes = require('./routes/adminFinanceRoutes');
+const studentFinanceRoutes = require('./routes/studentFinanceRoutes');
 const teacherWrittenAssessmentRoutes = require('./routes/teacherWrittenAssessmentRoutes');
 const studentWrittenAssessmentRoutes = require('./routes/studentWrittenAssessmentRoutes');
 const studentLiveOralRoutes = require('./routes/studentLiveOralRoutes');
@@ -89,6 +91,7 @@ app.use('/student', requireStudent, studentAssessmentRoutes);
 app.use('/student', requireStudent, studentLiveOralRoutes);
 app.use('/student', requireStudent, studentWrittenAssessmentRoutes);
 app.use('/student', requireStudent, studentAcademicRoutes);
+app.use('/student', requireStudent, studentFinanceRoutes);
 app.use('/teacher', requireTeacher, teacherRoutes);
 app.use('/teacher', requireTeacher, teacherAssessmentRoutes);
 app.use('/teacher', requireTeacher, teacherLiveOralRoutes);
@@ -111,6 +114,7 @@ app.use('/admin/class-meetings', requireAdmin, adminClassMeetingRoutes);
 app.use('/admin', requireAdmin, adminLearningRoutes);
 app.use('/admin', requireAdmin, adminAssignmentRoutes);
 app.use('/admin/academic', requireAdmin, adminAcademicRoutes);
+app.use('/admin/finances', requireAdmin, adminFinanceRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', {
