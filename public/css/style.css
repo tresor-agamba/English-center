@@ -8,16 +8,39 @@
   --border: #dfe4ec;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  max-width: 100%;
 }
 
 body {
   margin: 0;
+  max-width: 100%;
   color: var(--text);
   background: var(--background);
   font-family: Arial, sans-serif;
   line-height: 1.6;
+}
+
+img,
+video,
+audio,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  min-width: 0;
+  max-width: 100%;
 }
 
 a {
@@ -1051,9 +1074,53 @@ select {
   background: white;
 }
 
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: white;
+}
+
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
 tr:last-child td { border-bottom: 0; }
+
+.report-tabs {
+  display: flex;
+  width: 100%;
+  max-width: 100%;
+  gap: .5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: .35rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
+.report-tabs a {
+  flex: 0 0 auto;
+  padding: .45rem .7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+
+.report-tabs + section,
+.report-tabs ~ section,
+.resource-form {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.resource-form > * {
+  min-width: 0;
+}
+
+.heading-actions {
+  flex-wrap: wrap;
+}
 
 .status {
   display: inline-block;

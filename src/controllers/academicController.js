@@ -3,7 +3,7 @@ const service = require('../services/academicService');
 
 async function adminDashboard(req, res) {
   const [cohorts, groups, enrollments, assignments, sessions] = await Promise.all([
-    prisma.academicCohort.findMany({ include: { level: true, course: true }, orderBy: { startDate: 'desc' }, take: 100 }),
+    prisma.academicCohort.findMany({ include: { course: true }, orderBy: { startDate: 'desc' }, take: 100 }),
     prisma.academicGroup.findMany({ include: { cohort: true }, orderBy: { createdAt: 'desc' }, take: 100 }),
     prisma.academicEnrollment.findMany({ include: { student: true, cohort: true, group: true }, orderBy: { enrolledAt: 'desc' }, take: 100 }),
     prisma.academicTeacherAssignment.findMany({ where: { removedAt: null }, include: { teacher: true, cohort: true, group: true }, take: 100 }),

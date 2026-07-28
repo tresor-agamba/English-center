@@ -13,13 +13,15 @@
     "notifications:process": "node src/jobs/processScheduledReminders.js",
     "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js",
     "whatsapp:process": "node src/jobs/processWhatsAppDeliveries.js",
-    "oral-audio:cleanup": "node src/jobs/cleanupOralAudio.js"
-    ,"backup:create": "node scripts/backupCli.js create"
-    ,"backup:list": "node scripts/backupCli.js list"
-    ,"backup:verify": "node scripts/backupCli.js verify"
-    ,"backup:cleanup": "node scripts/backupCli.js cleanup"
-    ,"backup:restore": "node scripts/backupCli.js restore"
-    ,"production:check": "node scripts/productionCheck.js"
+    "oral-audio:cleanup": "node src/jobs/cleanupOralAudio.js",
+    "backup:create": "node scripts/backupCli.js create",
+    "backup:list": "node scripts/backupCli.js list",
+    "backup:verify": "node scripts/backupCli.js verify",
+    "backup:cleanup": "node scripts/backupCli.js cleanup",
+    "backup:restore": "node scripts/backupCli.js restore",
+    "production:check": "node scripts/productionCheck.js",
+    "test:responsive": "playwright test",
+    "audit:responsive:prepare": "node scripts/prepareResponsiveAudit.js"
   },
   "keywords": [
     "english",
@@ -46,6 +48,7 @@
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.55.0",
     "nodemon": "^3.1.10",
     "prisma": "^6.12.0"
   }

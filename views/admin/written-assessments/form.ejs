@@ -1,2 +1,3 @@
 <%- include('../../partials/header', { title }) %><%- include('../_nav') %><h1><%= title %></h1>
-<%- include('../../shared/written-assessment-form', { action: item ? `/admin/written-assessments/${item.id}` : '/admin/written-assessments', courses, sessions, item: item || null }) %><%- include('../../partials/footer') %>
+<% const currentItem = typeof item === 'undefined' ? null : item; %>
+<%- include('../../shared/written-assessment-form', { action: currentItem ? `/admin/written-assessments/${currentItem.id}` : '/admin/written-assessments', courses, sessions, item: currentItem }) %><%- include('../../partials/footer') %>

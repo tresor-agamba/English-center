@@ -5,3 +5,5 @@ public/uploads/*
 npm-debug.log*
 logs/*
 !logs/.gitkeep
+test-results/responsive/
+audit-output/
