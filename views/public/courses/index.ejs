@@ -1,16 +1,16 @@
 <%- include('../../partials/header', { title }) %>
 
-<section class="catalog-hero">
-  <p class="eyebrow">English Center</p>
-  <h1>Nos formations</h1>
-  <p>Choisissez la formation qui correspond à votre niveau et à vos objectifs.</p>
-  <a class="button" href="/register">S’inscrire</a>
+<section class="catalog-hero polished-hero">
+  <p class="eyebrow" data-i18n="courses.eyebrow">Our programs</p>
+  <h1 data-i18n="courses.title">Find the course that fits your goals</h1>
+  <p data-i18n="courses.copy">Explore currently published programs and choose your next step.</p>
+  <a class="button button-large" href="/register" data-i18n="courses.register">Register</a>
 </section>
 
 <% if (!courses.length) { %>
   <div class="empty-state catalog-empty">
-    <strong>Aucune formation disponible</strong>
-    <p>Notre nouveau catalogue sera bientôt disponible. Revenez prochainement.</p>
+    <strong data-i18n="courses.empty.title">No courses are currently available.</strong>
+    <p data-i18n="courses.empty.copy">New programs will be published soon.</p>
   </div>
 <% } else { %>
   <section class="course-grid" aria-label="Catalogue des formations">
@@ -34,10 +34,10 @@
             <% } %>
             <small><%= course.upcomingSessionCount %> session<%= course.upcomingSessionCount > 1 ? 's' : '' %> disponible<%= course.upcomingSessionCount > 1 ? 's' : '' %></small>
           </div>
-          <a class="button button-small" href="/formations/<%= course.slug %>">Voir la formation</a>
-          <a class="button button-small button-secondary" href="/register?course=<%= course.id %>">S’inscrire</a>
+          <a class="button button-small button-outline" href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a>
+          <a class="button button-small" href="/register?course=<%= course.id %>" data-i18n="courses.register">Register</a>
         </div>
-        <p class="online-course-label">Formation 100 % en ligne</p>
+        <p class="online-course-label" data-i18n="benefits.online">100% online learning</p>
       </article>
     <% }) %>
   </section>

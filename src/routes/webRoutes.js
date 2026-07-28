@@ -7,6 +7,6 @@ router.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-router.get('/', pageController.showHome);
+router.get('/', require('../middlewares/asyncHandler')(pageController.showHome));
 
 module.exports = router;

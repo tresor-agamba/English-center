@@ -1,41 +1,20 @@
 <%- include('../partials/header', { title }) %>
-
-<section class="card login-card">
-  <h1>Connexion</h1>
-  <% if (sessionId) { %>
-    <p>Connectez-vous pour continuer votre inscription à la session choisie.</p>
-  <% } else { %>
-    <p>Connectez-vous avec votre numéro de téléphone.</p>
-  <% } %>
-
-  <% if (error) { %>
-    <p class="form-error" role="alert"><%= error %></p>
-  <% } %>
-
-  <form action="/login" method="post">
-    <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>" /><% } %>
-
-    <label for="phoneNumber">Numéro de téléphone</label>
-    <input
-      id="phoneNumber"
-      name="phoneNumber"
-      type="tel"
-      inputmode="tel"
-      autocomplete="tel"
-      placeholder="+243812345678"
-      value="<%= phoneNumber %>"
-      required
-    />
-
-    <label for="password">Mot de passe</label>
-    <input id="password" name="password" type="password" autocomplete="current-password" required />
-
-    <button class="button" type="submit">Se connecter</button>
-  </form>
-
-  <% if (sessionId) { %>
-    <p class="auth-alternative">Pas encore de compte ? <a href="/register?session=<%= sessionId %>">Créer mon compte</a></p>
-  <% } %>
+<section class="auth-shell">
+  <div class="auth-brand-panel"><span class="brand-mark">GLI</span><p>Global Language Institute</p><h2>Master Languages.<br>Unlock Opportunities.</h2><small>Live classes · Flexible programs · Real progress</small></div>
+  <div class="card login-card">
+    <p class="eyebrow" data-i18n="nav.login">Login</p>
+    <h1 data-i18n="login.title">Welcome back</h1>
+    <% if (sessionId) { %><p>Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %>
+    <% if (error) { %><p class="form-error" role="alert" data-public-error><%= error %></p><% } %>
+    <form action="/login" method="post">
+      <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %>
+      <label for="phoneNumber" data-i18n="login.phone">Phone number</label>
+      <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required>
+      <label for="password" data-i18n="login.password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="button button-large auth-submit" type="submit" data-i18n="login.button">Sign In</button>
+    </form>
+    <p class="auth-alternative"><span data-i18n="login.new">New to GLI?</span> <a href="/register<%= sessionId ? `?session=${sessionId}` : '' %>" data-i18n="login.create">Create your student account</a></p>
+  </div>
 </section>
-
 <%- include('../partials/footer') %>

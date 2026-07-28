@@ -126,7 +126,7 @@ test('configuration administrative du catalogue', async (t) => {
       assert.match(html, /18:00\s*–\s*20:00/);
       assert.match(html, /Africa\/Kinshasa/);
       assert.match(html, /Zoom/);
-      assert.match(html, /Formation 100 % en ligne/);
+      assert.match(html, /100% online|Formation 100 % en ligne/);
       assert.match(html, /Session du soir/);
       assert.doesNotMatch(html, /Session brouillon/);
       assert.doesNotMatch(html, new RegExp(privateUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));

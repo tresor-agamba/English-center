@@ -1,14 +1,48 @@
 <%- include('partials/header', { title }) %>
 
-<section class="hero">
-  <p class="eyebrow">Apprendre simplement</p>
-  <h1>Progressez en anglais à votre rythme</h1>
-  <p>
-    Retrouvez vos formations, vos leçons, vos documents et vos cours en ligne
-    dans un espace clair et facile à utiliser.
-  </p>
-  <a class="button" href="/login">Accéder à mon espace</a>
-  <a class="button button-secondary" href="/register">S’inscrire</a>
+<section class="landing-hero">
+  <div class="hero-copy reveal">
+    <p class="eyebrow" data-i18n="hero.eyebrow">Live online language learning</p>
+    <h1 data-i18n="hero.title">Master Languages. Unlock Opportunities.</h1>
+    <p class="hero-lead" data-i18n="hero.copy">Learn online with live classes, expert teachers and flexible programs designed for your personal and professional success.</p>
+    <div class="hero-actions"><a class="button button-large" href="/register" data-i18n="hero.primary">Start Learning Today</a><a class="button button-large button-outline" href="/formations" data-i18n="hero.secondary">Explore Courses</a></div>
+    <ul class="hero-trust" aria-label="Learning benefits"><li data-i18n="trust.live">Live Online Classes</li><li data-i18n="trust.teachers">Qualified Teachers</li><li data-i18n="trust.flexible">Flexible Schedules</li><li data-i18n="trust.anywhere">Learn from Anywhere</li></ul>
+  </div>
+  <div class="hero-visual reveal" aria-label="Online language learning">
+    <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+    <div class="visual-card visual-main"><span class="visual-label">LIVE</span><div class="teacher-avatar" aria-hidden="true">A</div><strong>Interactive class</strong><small>Speaking · Listening · Confidence</small></div>
+    <div class="visual-card visual-float visual-float-top"><span aria-hidden="true">◉</span><strong>Live session</strong></div>
+    <div class="visual-card visual-float visual-float-bottom"><span aria-hidden="true">✓</span><strong>Progress tracked</strong></div>
+  </div>
 </section>
+
+<section class="trust-strip reveal" aria-label="Why learn with GLI"><span data-i18n="benefits.online">100% online learning</span><span data-i18n="benefits.interactive">Live interactive classes</span><span data-i18n="benefits.schedule">Flexible learning schedule</span><span data-i18n="benefits.speaking">Practical speaking approach</span><span data-i18n="benefits.support">Professional support</span></section>
+
+<section class="landing-section" id="about">
+  <div class="section-intro reveal"><p class="eyebrow" data-i18n="why.eyebrow">Why choose GLI</p><h2 data-i18n="why.title">Everything you need to move forward</h2></div>
+  <div class="benefit-grid">
+    <% [['◉','live'],['↔','people'],['“','speak'],['◷','flex'],['↗','progress'],['◇','goals'],['✓','test'],['▣','devices']].forEach(([icon,key]) => { %>
+      <article class="feature-card reveal"><span class="feature-icon" aria-hidden="true"><%= icon %></span><h3 data-i18n="why.<%= key %>.title"></h3><p data-i18n="why.<%= key %>.copy"></p></article>
+    <% }) %>
+  </div>
+</section>
+
+<section class="landing-section courses-showcase">
+  <div class="section-heading section-intro reveal"><div><p class="eyebrow" data-i18n="courses.eyebrow">Our programs</p><h2 data-i18n="courses.title">Find the course that fits your goals</h2><p data-i18n="courses.copy">Explore currently published programs and choose your next step.</p></div><a class="text-link" href="/formations" data-i18n="courses.all">Explore all courses</a></div>
+  <% if (!courses.length) { %><div class="empty-state polished-empty"><strong data-i18n="courses.empty.title">No courses are currently available.</strong><p data-i18n="courses.empty.copy">New programs will be published soon.</p></div><% } else { %>
+    <div class="course-grid landing-course-grid"><% courses.forEach((course) => { %><article class="course-card premium-card reveal"><div class="course-card-content"><div class="course-meta"><span><%= formatCourseType(course.courseType) %></span><% if (course.level) { %><span><%= course.level %></span><% } %><span><%= formatDuration(course) %></span></div><h3><%= course.title %></h3><p><%= course.shortDescription || course.description || '' %></p></div><div class="course-card-actions"><a class="button button-small button-outline" href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a><a class="button button-small" href="/register?course=<%= course.id %>" data-i18n="courses.register">Register</a></div></article><% }) %></div>
+  <% } %>
+</section>
+
+<section class="landing-section how-section">
+  <div class="section-intro reveal"><p class="eyebrow" data-i18n="how.eyebrow">Simple from day one</p><h2 data-i18n="how.title">How it works</h2></div>
+  <ol class="steps-grid"><% [1,2,3,4].forEach((step) => { %><li class="step-card reveal"><span><%= step %></span><p data-i18n="how.<%= step %>"></p></li><% }) %></ol>
+</section>
+
+<section class="landing-section online-section reveal"><div><p class="eyebrow" data-i18n="online.eyebrow">Learning without borders</p><h2 data-i18n="online.title">Your classroom, wherever you are</h2><p data-i18n="online.copy">Avoid travel, learn on a flexible schedule and join live classes from the device that works for you.</p></div><div class="device-stack" aria-hidden="true"><span class="device desktop">GLI</span><span class="device tablet">GLI</span><span class="device phone">GLI</span></div></section>
+
+<section class="landing-section audience-section"><div class="section-intro reveal"><p class="eyebrow" data-i18n="audience.eyebrow">Programs for ambitious learners</p><h2 data-i18n="audience.title">Designed for your next opportunity</h2><p data-i18n="audience.list"></p></div><div class="expect-card reveal"><p class="eyebrow" data-i18n="expect.eyebrow">What learners can expect</p><h3 data-i18n="expect.title">Practical learning, clear guidance and consistent support</h3><p data-i18n="expect.copy"></p></div></section>
+
+<section class="final-cta reveal"><div><h2 data-i18n="cta.title">Ready to start your language journey?</h2><p data-i18n="cta.copy">Create your student account and begin learning online today.</p></div><a class="button button-large button-gold" href="/register" data-i18n="cta.button">Create My Account</a></section>
 
 <%- include('partials/footer') %>

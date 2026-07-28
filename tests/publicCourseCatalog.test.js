@@ -31,7 +31,7 @@ test('catalogue public des formations', async (t) => {
         title: 'Nos formations',
         courses: [],
       });
-      assert.match(html, /Aucune formation disponible/);
+      assert.match(html, /No courses are currently available|Aucune formation disponible/);
     });
 
     await t.test('prépare formations et sessions de contrôle', async () => {

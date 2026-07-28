@@ -1,44 +1,44 @@
 <%- include('../../partials/header', { title }) %>
 <section class="card registration-form-card public-registration">
-  <p class="eyebrow">Créer mon compte étudiant</p>
-  <h1>S’inscrire à English Center</h1>
-  <p>Choisissez votre formation et votre niveau demandé. Le téléphone sera votre identifiant de connexion.</p>
-  <% if (error) { %><div class="form-error" role="alert"><p><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>">Se connecter</a><% } %></div><% } %>
+  <p class="eyebrow">Global Language Institute</p>
+  <h1 data-i18n="form.title">Create your student account</h1>
+  <p data-i18n="form.copy">Choose your program and requested level. Your phone number will be your login.</p>
+  <% if (error) { %><div class="form-error" role="alert"><p data-public-error><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>" data-i18n="login.button">Sign In</a><% } %></div><% } %>
   <form action="/register" method="post" data-public-registration-form>
     <% if (session) { %>
       <input type="hidden" name="sessionId" value="<%= session.id %>">
       <input type="hidden" name="courseId" value="<%= session.course.id %>">
       <div class="selected-course"><strong>Formation :</strong> <%= session.course.title %> — <%= session.name %></div>
     <% } else { %>
-      <label for="courseId">Formation choisie</label>
+      <label for="courseId" data-i18n="form.course">Course</label>
       <select id="courseId" name="courseId" required>
-        <option value="">Sélectionnez une formation</option>
+        <option value="" data-i18n="form.course.placeholder">Select a course</option>
         <% courses.forEach((course) => { %><option value="<%= course.id %>" <%= String(form.courseId) === String(course.id) ? 'selected' : '' %>><%= course.title %></option><% }) %>
       </select>
     <% } %>
-    <label for="fullName">Nom complet</label>
+    <label for="fullName" data-i18n="form.name">Full name</label>
     <input id="fullName" name="fullName" value="<%= form.fullName || [form.firstName, form.lastName].filter(Boolean).join(' ') %>" autocomplete="name" maxlength="200" required>
     <div class="form-grid">
-      <div><label for="phoneNumber">Numéro de téléphone</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="0821671174" required></div>
-      <div><label for="email">Adresse email <span class="optional">(facultative)</span></label><input id="email" name="email" type="email" autocomplete="email" value="<%= form.email || '' %>"></div>
+      <div><label for="phoneNumber" data-i18n="form.phone">Phone number</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="0821671174" aria-describedby="phone-help" required><small id="phone-help" data-i18n="form.phone.help">This number will be used to sign in.</small></div>
+      <div><label for="email"><span data-i18n="form.email">Email address</span> <span class="optional" data-i18n="form.optional">(optional)</span></label><input id="email" name="email" type="email" autocomplete="email" value="<%= form.email || '' %>"></div>
     </div>
-    <label for="requestedLevel">Niveau demandé</label>
+    <label for="requestedLevel" data-i18n="form.level">Requested level</label>
     <select id="requestedLevel" name="requestedLevel" required data-requested-level>
       <option value="LEVEL_1" <%= form.requestedLevel === 'LEVEL_1' ? 'selected' : '' %>>Level 1</option>
       <option value="LEVEL_2" <%= form.requestedLevel === 'LEVEL_2' ? 'selected' : '' %>>Level 2</option>
       <option value="LEVEL_3" <%= form.requestedLevel === 'LEVEL_3' ? 'selected' : '' %>>Level 3</option>
     </select>
     <div class="level-guidance" aria-live="polite">
-      <p data-level-message="LEVEL_1">Aucun test de niveau obligatoire.</p>
-      <p data-level-message="LEVEL_2" hidden>Un test de niveau obligatoire est requis avant votre admission au Level 2.</p>
-      <p data-level-message="LEVEL_3" hidden>Un test de niveau obligatoire est requis avant votre admission au Level 3.</p>
+      <p data-level-message="LEVEL_1" data-i18n="form.level1">No placement test is required.</p>
+      <p data-level-message="LEVEL_2" data-i18n="form.level2" hidden>A placement test is required before admission to Level 2.</p>
+      <p data-level-message="LEVEL_3" data-i18n="form.level3" hidden>A placement test is required before admission to Level 3.</p>
     </div>
     <div class="form-grid">
-      <div><label for="password">Mot de passe</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
-      <div><label for="passwordConfirmation">Confirmation du mot de passe</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div><label for="password" data-i18n="form.password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div><label for="passwordConfirmation" data-i18n="form.confirm">Confirm password</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
     </div>
-    <p class="form-hint">Utilisez au moins 8 caractères. Les mots de passe ne sont jamais réaffichés.</p>
-    <button class="button" type="submit" data-registration-submit>Créer mon compte</button>
+    <p class="form-hint" data-i18n="form.password.help">Use at least 8 characters. Passwords are never displayed again.</p>
+    <button class="button button-large" type="submit" data-registration-submit data-i18n="form.create">Create My Account</button>
   </form>
 </section>
 <%- include('../../partials/footer') %>

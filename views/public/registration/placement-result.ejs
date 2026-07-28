@@ -1,10 +1,9 @@
 <%- include('../../partials/header', { title }) %>
 <section class="card placement-result">
-  <p class="eyebrow">Test terminé</p>
-  <h1>Votre niveau recommandé est <%= enrollment.recommendedLevel.replace('_', ' ') %></h1>
-  <p>Score obtenu : <strong><%= enrollment.placementTestScore %> %</strong>.</p>
-  <p>Vous aviez demandé <strong><%= enrollment.requestedLevel.replace('_', ' ') %></strong>. Votre niveau approuvé est <strong><%= enrollment.approvedLevel.replace('_', ' ') %></strong>.</p>
+  <p class="eyebrow" data-i18n="result.eyebrow">Assessment complete</p>
+  <h1><span data-i18n="result.recommended">Recommended level</span>: <%= enrollment.recommendedLevel.replace('_', ' ') %></h1>
+  <div class="result-grid"><div><span data-i18n="result.score">Score</span><strong><%= enrollment.placementTestScore %>%</strong></div><div><span data-i18n="result.requested">Requested level</span><strong><%= enrollment.requestedLevel.replace('_', ' ') %></strong></div><div><span data-i18n="result.approved">Approved level</span><strong><%= enrollment.approvedLevel.replace('_', ' ') %></strong></div></div>
   <% if (enrollment.approvedLevel !== enrollment.requestedLevel) { %><p class="placement-explanation">Ce niveau vous permettra de consolider les compétences nécessaires avant de progresser vers le niveau demandé. Votre compte et votre inscription restent actifs.</p><% } %>
-  <a class="button" href="/student">Accéder à mon tableau de bord</a>
+  <a class="button button-large" href="/student" data-i18n="result.next">Go to My Dashboard</a>
 </section>
 <%- include('../../partials/footer') %>

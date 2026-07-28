@@ -1,15 +1,16 @@
 <%- include('../../partials/header', { title }) %>
 <section class="placement-test">
-  <p class="eyebrow">Admission — <%= enrollment.trainingSession.course.title %></p>
-  <h1>Test de niveau obligatoire</h1>
-  <p>Vous avez demandé <strong><%= enrollment.requestedLevel.replace('_', ' ') %></strong>. Répondez aux questions pour recevoir votre niveau recommandé.</p>
+  <div class="test-progress"><span></span></div>
+  <p class="eyebrow" data-i18n="test.eyebrow">Placement assessment</p>
+  <h1 data-i18n="test.title">Your placement test</h1>
+  <p><span data-i18n="test.copy">Answer every question. Your result will help us recommend the most suitable level.</span> <strong><%= enrollment.trainingSession.course.title %> · <%= enrollment.requestedLevel.replace('_', ' ') %></strong></p>
   <form method="post" action="/placement-test/<%= enrollment.id %>">
     <% questions.forEach((question, index) => { %>
       <fieldset class="card placement-question"><legend><%= index + 1 %>. <%= question.prompt %></legend>
         <% question.options.forEach((option) => { %><label><input type="radio" name="<%= question.id %>" value="<%= option %>" required> <%= option %></label><% }) %>
       </fieldset>
     <% }) %>
-    <button class="button" type="submit">Valider mon test</button>
+    <button class="button button-large" type="submit" data-i18n="test.submit">Submit My Test</button>
   </form>
 </section>
 <%- include('../../partials/footer') %>

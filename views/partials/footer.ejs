@@ -1,7 +1,15 @@
     </main>
-    <footer class="site-footer">
-      <p>&copy; <%= new Date().getFullYear() %> <span data-center-name>English Center</span></p>
-      <button class="button button-small pwa-install" type="button" data-pwa-install hidden>Installer l’application</button>
+    <footer class="site-footer gli-footer" id="contact">
+      <div class="footer-grid">
+        <div>
+          <a class="brand gli-brand footer-brand" href="/"><span class="brand-mark" aria-hidden="true">GLI</span><span><strong>Global Language</strong><small>Institute</small></span></a>
+          <p data-i18n="footer.copy">Live online language programs for personal and professional growth.</p>
+        </div>
+        <div><h2 data-i18n="footer.quick">Quick links</h2><a href="/" data-i18n="nav.home">Home</a><a href="/formations" data-i18n="nav.courses">Courses</a><a href="/register" data-i18n="nav.register">Register</a><a href="/login" data-i18n="nav.login">Login</a></div>
+        <div><h2 data-i18n="nav.contact">Contact</h2><a data-center-email hidden></a><span data-center-phone hidden></span></div>
+        <div><h2 data-i18n="footer.legal">Legal</h2><span data-i18n="footer.privacy">Privacy</span><span data-i18n="footer.terms">Terms</span></div>
+      </div>
+      <div class="footer-bottom"><p>&copy; <%= new Date().getFullYear() %> Global Language Institute</p><button class="button button-small pwa-install" type="button" data-pwa-install hidden>Install app</button></div>
     </footer>
     <script src="/js/main.js"></script>
     <script src="/js/pwa.js"></script>

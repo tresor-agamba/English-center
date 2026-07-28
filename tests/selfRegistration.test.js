@@ -106,7 +106,7 @@ test('inscription autonome à une session', async (t) => {
       ];
       const publicRegistration = await fetch(`${baseUrl}/register`);
       assert.equal(publicRegistration.status, 200);
-      assert.match(await publicRegistration.text(), /Formation choisie/);
+      assert.match(await publicRegistration.text(), /Course|Formation choisie/);
       for (const [url, status, pattern] of cases) {
         const response = await fetch(`${baseUrl}${url}`);
         assert.equal(response.status, status);

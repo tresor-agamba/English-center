@@ -59,12 +59,12 @@ test('parcours public étudiant par formation et niveau', async (t) => {
       const registerPage = await fetch(`${base}/register`);
       assert.equal(registerPage.status, 200);
       const form = await registerPage.text();
-      assert.match(form, /Nom complet/); assert.match(form, /Adresse email/);
+      assert.match(form, /Full name|Nom complet/); assert.match(form, /Email address|Adresse email/);
       assert.match(form, /LEVEL_1/); assert.match(form, /LEVEL_2/); assert.match(form, /LEVEL_3/);
       for (const path of ['/', '/formations']) {
         const response = await fetch(`${base}${path}`);
         assert.equal(response.status, 200);
-        assert.match(await response.text(), /S’inscrire/);
+        assert.match(await response.text(), /Register|S’inscrire/);
       }
     });
 

@@ -1,33 +1,49 @@
 <!DOCTYPE html>
-<html lang="fr" data-environment="<%= process.env.NODE_ENV || 'development' %>">
+<html lang="en" data-environment="<%= process.env.NODE_ENV || 'development' %>">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title><%= title %> | English Center</title>
-    <meta name="theme-color" content="#1D4ED8" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="English Center" />
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="stylesheet" href="/css/style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title><%= title %> | Global Language Institute</title>
+    <meta name="description" content="Live online language programs for personal and professional growth.">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="GLI">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/i18n.js"></script>
   </head>
   <body>
-    <header class="site-header">
-      <a class="brand" href="/" data-center-name>English Center</a>
-      <nav aria-label="Navigation principale">
-        <a href="/">Accueil</a>
-        <a href="/formations">Formations</a>
-        <a href="/register">S’inscrire</a>
-        <a class="button button-small" href="/login">Connexion</a>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="site-header public-header" data-public-header>
+      <a class="brand gli-brand" href="/" aria-label="Global Language Institute — Home">
+        <span class="brand-mark" aria-hidden="true">GLI</span>
+        <span><strong>Global Language</strong><small>Institute</small></span>
+      </a>
+      <button class="mobile-menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" data-i18n-aria="nav.open">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="public-navigation" class="public-navigation" data-public-navigation aria-label="Primary navigation">
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/formations" data-i18n="nav.courses">Courses</a>
+        <a href="/#about" data-i18n="nav.about">About</a>
+        <a href="/#contact" data-i18n="nav.contact">Contact</a>
+        <a href="/login" data-i18n="nav.login">Login</a>
+        <a class="button button-small nav-register" href="/register" data-i18n="nav.register">Register</a>
+        <div class="language-switcher" aria-label="Language">
+          <button type="button" data-language="en" aria-pressed="true">EN</button>
+          <span aria-hidden="true">/</span>
+          <button type="button" data-language="fr" aria-pressed="false">FR</button>
+        </div>
       </nav>
     </header>
     <aside class="pwa-message" data-pwa-messages role="status" aria-live="polite" hidden></aside>
     <aside class="pwa-ios-help" data-pwa-ios-help hidden>
-      <strong>Installer cette application</strong>
-      <span>1. Appuyez sur Partager. 2. Sélectionnez « Sur l’écran d’accueil ». 3. Confirmez l’ajout.</span>
-      <button type="button" data-pwa-ios-dismiss aria-label="Fermer">×</button>
+      <strong>Install this application</strong>
+      <span>Use Share, choose “Add to Home Screen”, then confirm.</span>
+      <button type="button" data-pwa-ios-dismiss aria-label="Close">×</button>
     </aside>
-    <main class="container">
+    <main class="container public-main" id="main-content">
