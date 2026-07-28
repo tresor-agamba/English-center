@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const notifications = require('./notificationService');
+const centerSettingsService = require('./centerSettingsService');
 
 class CertificateError extends Error {
   constructor(code, message, statusCode = 400) { super(message); this.code = code; this.statusCode = statusCode; }
@@ -132,7 +133,7 @@ async function issue(enrollmentId, adminId) {
     if (!snapshot.fee.amount.isZero() && !snapshot.payment && !snapshot.request?.isFeeWaived) throw new CertificateError('PAYMENT_REQUIRED', 'Le paiement du certificat est requis.');
     const request = await tx.certificateRequest.upsert({ where: { enrollmentId: Number(enrollmentId) }, create: { enrollmentId: Number(enrollmentId) }, update: {} });
     if (snapshot.request?.certificate) throw new CertificateError('ALREADY_ISSUED', 'Un certificat existe déjà pour cette inscription.');
-    const [official, config] = await Promise.all([
+    const [official, config, centerConfig] = await Promise.all([
       tx.enrollment.findUnique({
         where: { id: Number(enrollmentId) },
         select: {
@@ -142,25 +143,30 @@ async function issue(enrollmentId, adminId) {
         },
       }),
       settings(tx),
+      centerSettingsService.getCenterSettings({ client: tx }),
     ]);
     if (!official) throw new CertificateError('NOT_FOUND', 'Inscription introuvable.', 404);
+    if (!centerConfig.certificatesEnabled) throw new CertificateError('CERTIFICATES_DISABLED', 'Les certificats sont désactivés.', 409);
+    const serialNumber = centerConfig.certificateNumberFormat
+      .replaceAll('{YEAR}', String(new Date().getFullYear()))
+      .replaceAll('{NUMBER}', crypto.randomBytes(6).toString('hex').toUpperCase());
     return tx.certificate.create({
       data: {
         certificateRequestId: request.id,
         issuedByAdminId: adminId,
-        serialNumber: `EC-${new Date().getFullYear()}-${crypto.randomBytes(6).toString('hex').toUpperCase()}`,
+        serialNumber,
         verificationCode: crypto.randomBytes(24).toString('base64url'),
         studentNameSnapshot: `${official.user.firstName} ${official.user.lastName}`.trim(),
         courseNameSnapshot: official.trainingSession.course.title,
         sessionNameSnapshot: official.trainingSession.name,
-        centerNameSnapshot: config.centerName,
-        signerNameSnapshot: config.signerName,
-        signerTitleSnapshot: config.signerTitle,
+        centerNameSnapshot: centerConfig.officialName,
+        signerNameSnapshot: centerConfig.certificateSignerName,
+        signerTitleSnapshot: centerConfig.certificateSignerTitle,
         certificateTitleSnapshot: config.certificateTitle,
-        certificateTextSnapshot: config.certificateText,
-        footerTextSnapshot: config.footerText,
-        primaryColorSnapshot: config.primaryColor,
-        logoPathSnapshot: config.logoPath,
+        certificateTextSnapshot: centerConfig.certificateValidationText,
+        footerTextSnapshot: centerConfig.documentFooter || config.footerText,
+        primaryColorSnapshot: centerConfig.primaryColor,
+        logoPathSnapshot: null,
       },
       include: { certificateRequest: { include: { enrollment: true } } },
     });

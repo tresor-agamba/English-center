@@ -1,0 +1,135 @@
+<%- include('../../partials/header', { title }) %>
+<main class="container settings-page">
+  <%- include('../_nav') %>
+  <div class="page-heading"><div><p class="eyebrow">Administration</p><h1>Paramètres du centre</h1><p>Configuration centralisée utilisée par les modules du centre.</p></div></div>
+  <% if (success) { %><div class="alert alert-success" role="status">Modifications enregistrées.</div><% } %>
+  <% const tabs = [
+    ['general','Général'],['branding','Identité visuelle'],['academic','Académique'],['finance','Finances'],
+    ['certificates','Certificats'],['lms','LMS'],['assessments','Évaluations'],['attendance','Présences'],
+    ['documents','Documents'],['history','Historique']
+  ]; %>
+  <nav class="settings-tabs" aria-label="Sections des paramètres">
+    <% tabs.forEach(([key,label]) => { %><a class="<%= activeTab === key ? 'active' : '' %>" href="/admin/settings?tab=<%= key %>"><%= label %></a><% }) %>
+  </nav>
+
+  <% const checked = (value) => value ? 'checked' : ''; %>
+  <% if (activeTab === 'general') { %>
+  <section class="card settings-panel"><h2>Informations générales</h2><p class="help-text">Valeurs par défaut : fuseau Africa/Kinshasa, langue fr.</p>
+    <form method="post" action="/admin/settings/general" class="settings-form">
+      <label>Nom officiel *<input required maxlength="160" name="officialName" value="<%= settings.officialName %>"></label>
+      <label>Nom court<input maxlength="80" name="shortName" value="<%= settings.shortName || '' %>"></label>
+      <label class="wide">Description<textarea maxlength="2000" name="description"><%= settings.description || '' %></textarea></label>
+      <label class="wide">Adresse<input maxlength="300" name="address" value="<%= settings.address || '' %>"></label>
+      <label>Ville<input maxlength="100" name="city" value="<%= settings.city || '' %>"></label><label>Pays<input maxlength="100" name="country" value="<%= settings.country || '' %>"></label>
+      <label>Téléphone principal<input name="primaryPhone" value="<%= settings.primaryPhone || '' %>"></label><label>Téléphone secondaire<input name="secondaryPhone" value="<%= settings.secondaryPhone || '' %>"></label>
+      <label>Email<input type="email" name="email" value="<%= settings.email || '' %>"></label><label>Site web<input type="url" name="website" value="<%= settings.website || '' %>"></label>
+      <label>Fuseau horaire *<input required name="timezone" value="<%= settings.timezone %>"></label>
+      <label>Langue principale<select name="primaryLanguage"><option value="fr" <%= settings.primaryLanguage === 'fr' ? 'selected' : '' %>>Français</option><option value="en" <%= settings.primaryLanguage === 'en' ? 'selected' : '' %>>Anglais</option></select></label>
+      <label>Devise principale<select name="primaryCurrency"><% CURRENCIES.forEach(x => { %><option <%= settings.primaryCurrency === x ? 'selected' : '' %>><%= x %></option><% }) %></select></label>
+      <label class="check"><input type="checkbox" name="isActive" <%= checked(settings.isActive) %>> Centre actif</label>
+      <label class="wide">Motif facultatif<input maxlength="500" name="reason"></label><button class="button" type="submit">Enregistrer</button>
+    </form>
+  </section>
+  <% } %>
+
+  <% if (activeTab === 'branding') { %>
+  <section class="card settings-panel"><h2>Identité visuelle</h2>
+    <% if (settings.mainLogoFileId) { %><div class="logo-preview"><img src="/admin/settings/files/<%= settings.mainLogoFileId %>?preview=1" alt="Aperçu du logo principal"></div><% } else { %><p class="empty-state">Aucun logo principal : le nom du centre est utilisé.</p><% } %>
+    <form method="post" action="/admin/settings/branding" class="settings-form">
+      <label>Couleur principale<input type="color" name="primaryColor" value="<%= settings.primaryColor %>"></label>
+      <label>Couleur secondaire<input type="color" name="secondaryColor" value="<%= settings.secondaryColor %>"></label>
+      <label>Couleur d’accentuation<input type="color" name="accentColor" value="<%= settings.accentColor %>"></label>
+      <div class="color-preview wide" style="--preview-primary:<%= settings.primaryColor %>;--preview-secondary:<%= settings.secondaryColor %>;--preview-accent:<%= settings.accentColor %>"><span></span><span></span><span></span></div>
+      <button class="button" type="submit">Enregistrer les couleurs</button>
+    </form>
+    <hr><h3>Images privées</h3><p class="help-text">PNG, JPG/JPEG ou WEBP, 5 Mo maximum. SVG n’est pas accepté.</p>
+    <div class="file-settings">
+      <% [['MAIN_LOGO','Logo principal'],['SECONDARY_LOGO','Logo secondaire'],['FAVICON','Favicon'],['CERTIFICATE_SIGNATURE','Signature certificat'],['CERTIFICATE_STAMP','Cachet certificat']].forEach(([category,label]) => { %>
+      <form method="post" action="/admin/settings/files" enctype="multipart/form-data"><input type="hidden" name="category" value="<%= category %>"><label><%= label %><input required type="file" name="file" accept=".png,.jpg,.jpeg,.webp"></label><button class="button button-secondary">Remplacer</button></form>
+      <% }) %>
+    </div>
+    <% if (!files.length) { %><p class="empty-state">Aucun fichier privé configuré.</p><% } else { %>
+    <ul class="settings-files"><% files.forEach(file => { %><li><span><%= file.category %> — <%= Math.ceil(file.sizeBytes / 1024) %> Ko</span><a href="/admin/settings/files/<%= file.id %>">Télécharger</a></li><% }) %></ul><% } %>
+  </section>
+  <% } %>
+
+  <% if (activeTab === 'academic') { %>
+  <section class="card settings-panel"><h2>Paramètres académiques</h2><p class="help-text">Ces valeurs ne modifient pas les cohortes, groupes ou séances existants.</p>
+    <form method="post" action="/admin/settings/academic" class="settings-form">
+      <label>Capacité cohorte<input required type="number" min="1" max="10000" name="defaultCohortCapacity" value="<%= settings.defaultCohortCapacity %>"></label>
+      <label>Capacité groupe<input required type="number" min="1" max="10000" name="defaultGroupCapacity" value="<%= settings.defaultGroupCapacity %>"></label>
+      <label>Durée séance (minutes)<input required type="number" min="5" max="1440" name="defaultSessionMinutes" value="<%= settings.defaultSessionMinutes %>"></label>
+      <label>Début habituel<input required type="time" name="usualStartTime" value="<%= settings.usualStartTime %>"></label><label>Fin habituelle<input required type="time" name="usualEndTime" value="<%= settings.usualEndTime %>"></label>
+      <label>Mode par défaut<select name="defaultTrainingMode"><% MODES.forEach(x => { %><option <%= settings.defaultTrainingMode === x ? 'selected' : '' %>><%= x %></option><% }) %></select></label>
+      <label>Retard toléré (minutes)<input required type="number" min="0" max="1440" name="toleratedLateMinutes" value="<%= settings.toleratedLateMinutes %>"></label>
+      <fieldset class="wide"><legend>Jours d’ouverture</legend><div class="checks"><% DAYS.forEach(x => { %><label><input type="checkbox" name="openingDays" value="<%= x %>" <%= checked(settings.openingDays.includes(x)) %>><%= x %></label><% }) %></div></fieldset>
+      <div class="checks wide"><label><input type="checkbox" name="onlineCoursesEnabled" <%= checked(settings.onlineCoursesEnabled) %>> En ligne</label><label><input type="checkbox" name="inPersonCoursesEnabled" <%= checked(settings.inPersonCoursesEnabled) %>> Présentiel</label><label><input type="checkbox" name="hybridCoursesEnabled" <%= checked(settings.hybridCoursesEnabled) %>> Hybride</label></div>
+      <h3 class="wide">Niveaux fixes</h3>
+      <% levels.forEach(level => { %><fieldset class="wide level-row"><legend><%= level.level %> (identifiant non modifiable)</legend>
+        <label>Nom affiché<input required name="level_<%= level.level %>_displayName" value="<%= level.displayName %>"></label>
+        <label>Durée indicative (semaines)<input type="number" min="1" max="520" name="level_<%= level.level %>_indicativeWeeks" value="<%= level.indicativeWeeks || '' %>"></label>
+        <label>Ordre<input required type="number" min="1" max="3" name="level_<%= level.level %>_displayOrder" value="<%= level.displayOrder %>"></label>
+        <label class="wide">Description<input maxlength="1000" name="level_<%= level.level %>_description" value="<%= level.description || '' %>"></label>
+        <label class="check"><input type="checkbox" name="level_<%= level.level %>_isActive" <%= checked(level.isActive) %>> Actif</label>
+      </fieldset><% }) %><button class="button" type="submit">Enregistrer</button>
+    </form>
+  </section>
+  <% } %>
+
+  <% if (activeTab === 'finance') { %>
+  <section class="card settings-panel"><h2>Paramètres financiers</h2><p class="help-text">Les montants des frais restent dans le module Finances. L’inscription reste gratuite.</p>
+    <form method="post" action="/admin/settings/finance" class="settings-form">
+      <label>Devise<select name="primaryCurrency"><% CURRENCIES.forEach(x => { %><option <%= settings.primaryCurrency === x ? 'selected' : '' %>><%= x %></option><% }) %></select></label>
+      <label>Préfixe factures<input required pattern="[A-Za-z0-9]{1,12}" name="invoicePrefix" value="<%= settings.invoicePrefix %>"></label><label>Préfixe reçus<input required pattern="[A-Za-z0-9]{1,12}" name="receiptPrefix" value="<%= settings.receiptPrefix %>"></label>
+      <label>Prochaine facture<input required type="number" min="1" name="nextInvoiceNumber" value="<%= settings.nextInvoiceNumber %>"></label><label>Prochain reçu<input required type="number" min="1" name="nextReceiptNumber" value="<%= settings.nextReceiptNumber %>"></label>
+      <div class="checks wide"><% [['trainingFeesEnabled','Frais de formation'],['syllabusFeesEnabled','Frais de syllabus'],['certificateFeesEnabled','Frais de certificat'],['showBalanceOnReceipts','Solde sur reçus'],['showPaymentMethod','Mode de paiement'],['showPaymentReference','Référence de paiement']].forEach(([key,label]) => { %><label><input type="checkbox" name="<%= key %>" <%= checked(settings[key]) %>><%= label %></label><% }) %></div>
+      <button class="button">Enregistrer</button>
+    </form>
+  </section><% } %>
+
+  <% if (activeTab === 'certificates') { %>
+  <section class="card settings-panel"><h2>Certificats</h2><form method="post" action="/admin/settings/certificates" class="settings-form">
+    <label class="check"><input type="checkbox" name="certificatesEnabled" <%= checked(settings.certificatesEnabled) %>> Certificats activés</label>
+    <label>Signataire<input required name="certificateSignerName" value="<%= settings.certificateSignerName %>"></label><label>Fonction<input required name="certificateSignerTitle" value="<%= settings.certificateSignerTitle %>"></label>
+    <label class="wide">Texte introductif<textarea required name="certificateIntroText"><%= settings.certificateIntroText %></textarea></label><label class="wide">Texte de validation<textarea required name="certificateValidationText"><%= settings.certificateValidationText %></textarea></label>
+    <label>Lieu d’émission<input name="certificateIssuePlace" value="<%= settings.certificateIssuePlace || '' %>"></label><label>Format du numéro<input required name="certificateNumberFormat" value="<%= settings.certificateNumberFormat %>"><small>Doit contenir {NUMBER} ; {YEAR} est facultatif.</small></label>
+    <div class="checks wide"><label><input type="checkbox" name="certificateShowVerificationCode" <%= checked(settings.certificateShowVerificationCode) %>> QR/code de vérification</label><label><input type="checkbox" name="certificateShowLogo" <%= checked(settings.certificateShowLogo) %>> Logo</label></div><button class="button">Enregistrer</button>
+  </form></section><% } %>
+
+  <% if (activeTab === 'lms') { %>
+  <section class="card settings-panel"><h2>LMS</h2><p class="help-text">La progression existante est conservée.</p><form method="post" action="/admin/settings/lms" class="settings-form">
+    <label class="check"><input type="checkbox" name="lmsEnabled" <%= checked(settings.lmsEnabled) %>> LMS activé</label><label>Progression<select name="lmsProgressionMode"><option value="FREE" <%= settings.lmsProgressionMode === 'FREE' ? 'selected' : '' %>>Libre</option><option value="REQUIRED" <%= settings.lmsProgressionMode === 'REQUIRED' ? 'selected' : '' %>>Obligatoire</option></select></label>
+    <label>Minutes max/action<input required type="number" min="1" max="1440" name="lmsMaxTrackedMinutesPerAction" value="<%= settings.lmsMaxTrackedMinutesPerAction %>"></label>
+    <div class="checks wide"><% [['lmsRequirePreviousLesson','Leçon précédente obligatoire'],['lmsDownloadsEnabled','Téléchargements'],['lmsAutoResumeEnabled','Reprise automatique'],['lmsTimeTrackingEnabled','Suivi du temps']].forEach(([key,label]) => { %><label><input type="checkbox" name="<%= key %>" <%= checked(settings[key]) %>><%= label %></label><% }) %></div>
+    <label class="wide">Accueil étudiant<textarea name="studentWelcomeMessage"><%= settings.studentWelcomeMessage || '' %></textarea></label><label class="wide">Accueil enseignant<textarea name="teacherWelcomeMessage"><%= settings.teacherWelcomeMessage || '' %></textarea></label><button class="button">Enregistrer</button>
+  </form></section><% } %>
+
+  <% if (activeTab === 'assessments') { %>
+  <section class="card settings-panel"><h2>Évaluations</h2><p class="help-text">Valeurs par défaut sans effet rétroactif.</p><form method="post" action="/admin/settings/assessments" class="settings-form">
+    <div class="checks wide"><label><input type="checkbox" name="writtenAssessmentsEnabled" <%= checked(settings.writtenAssessmentsEnabled) %>> WRITTEN</label><label><input type="checkbox" name="recordedOralAssessmentsEnabled" <%= checked(settings.recordedOralAssessmentsEnabled) %>> RECORDED_ORAL</label><label><input type="checkbox" name="liveVideoOralAssessmentsEnabled" <%= checked(settings.liveVideoOralAssessmentsEnabled) %>> LIVE_VIDEO_ORAL</label></div>
+    <label>Note maximale<input required type="number" step=".01" min=".01" name="defaultMaximumScore" value="<%= settings.defaultMaximumScore %>"></label><label>Note de réussite<input required type="number" step=".01" min="0" name="defaultPassingScore" value="<%= settings.defaultPassingScore %>"></label>
+    <label>Durée écrite (min)<input required type="number" min="1" max="1440" name="defaultWrittenDurationMinutes" value="<%= settings.defaultWrittenDurationMinutes %>"></label><label>Audio max (Mo)<input required type="number" min="1" max="500" name="maxAudioFileSizeMb" value="<%= settings.maxAudioFileSizeMb %>"></label>
+    <fieldset class="wide"><legend>Plateformes</legend><div class="checks"><% PLATFORMS.forEach(x => { %><label><input type="checkbox" name="allowedVideoPlatforms" value="<%= x %>" <%= checked(settings.allowedVideoPlatforms.includes(x)) %>><%= x %></label><% }) %></div></fieldset>
+    <div class="checks wide"><label><input type="checkbox" name="automaticResultPublication" <%= checked(settings.automaticResultPublication) %>> Publication automatique</label><label><input type="checkbox" name="showEvaluatorComment" <%= checked(settings.showEvaluatorComment) %>> Afficher le commentaire</label></div><button class="button">Enregistrer</button>
+  </form></section><% } %>
+
+  <% if (activeTab === 'attendance') { %>
+  <section class="card settings-panel"><h2>Présences</h2><p class="help-text">Statuts conservés : PRESENT, LATE, ABSENT, EXCUSED, TECHNICAL_ISSUE.</p><form method="post" action="/admin/settings/attendance" class="settings-form">
+    <label>Retard après (minutes)<input required type="number" min="0" max="1440" name="attendanceLateMinutes" value="<%= settings.attendanceLateMinutes %>"></label><label>Correction max (heures)<input required type="number" min="1" max="8760" name="attendanceCorrectionMaxHours" value="<%= settings.attendanceCorrectionMaxHours %>"></label>
+    <div class="checks wide"><% [['attendanceCorrectionEnabled','Corrections autorisées'],['attendanceCorrectionReasonRequired','Motif obligatoire'],['attendanceTechnicalIssueEnabled','TECHNICAL_ISSUE'],['attendanceExcusedEnabled','EXCUSED']].forEach(([key,label]) => { %><label><input type="checkbox" name="<%= key %>" <%= checked(settings[key]) %>><%= label %></label><% }) %></div><button class="button">Enregistrer</button>
+  </form></section><% } %>
+
+  <% if (activeTab === 'documents') { %>
+  <section class="card settings-panel"><h2>Factures, reçus et documents PDF</h2><form method="post" action="/admin/settings/documents" class="settings-form">
+    <div class="checks wide"><% [['documentShowLogo','Logo'],['documentShowCenterName','Nom du centre'],['documentShowAddress','Adresse'],['documentShowPhone','Téléphone'],['documentShowEmail','Email'],['documentShowCurrency','Devise']].forEach(([key,label]) => { %><label><input type="checkbox" name="<%= key %>" <%= checked(settings[key]) %>><%= label %></label><% }) %></div>
+    <label class="wide">Pied de page<textarea name="documentFooter"><%= settings.documentFooter || '' %></textarea></label><label class="wide">Remerciement<textarea name="documentThankYouText"><%= settings.documentThankYouText || '' %></textarea></label><button class="button">Enregistrer</button>
+  </form></section><% } %>
+
+  <% if (activeTab === 'history') { %>
+  <section class="card settings-panel"><h2>Historique</h2>
+    <% if (!history.length) { %><p class="empty-state">Aucune modification enregistrée.</p><% } else { %><div class="responsive-table"><table><thead><tr><th>Date</th><th>Catégorie</th><th>Champ</th><th>Administrateur</th><th>Ancienne valeur</th><th>Nouvelle valeur</th></tr></thead><tbody>
+    <% history.forEach(item => { %><tr><td data-label="Date"><%= item.createdAt.toLocaleString('fr-FR') %></td><td data-label="Catégorie"><%= item.category %></td><td data-label="Champ"><%= item.field %></td><td data-label="Administrateur"><%= item.actor.firstName %> <%= item.actor.lastName %></td><td data-label="Avant"><%= JSON.stringify(item.oldValue) %></td><td data-label="Après"><%= JSON.stringify(item.newValue) %></td></tr><% }) %>
+    </tbody></table></div><% } %>
+  </section><% } %>
+</main>
+<%- include('../../partials/footer') %>

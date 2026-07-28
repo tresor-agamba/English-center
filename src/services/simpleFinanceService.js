@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const notifications = require('./notificationService');
+const centerSettings = require('./centerSettingsService');
 
 const FEE_TYPES = Object.freeze(['FORMATION', 'SYLLABUS', 'CERTIFICATE']);
 const LEVELS = Object.freeze(['LEVEL_1', 'LEVEL_2', 'LEVEL_3']);
@@ -62,8 +63,9 @@ async function createInvoice(body, actorId) {
       certificateRequestId = request.id;
     }
     const total = fees.reduce((sum, fee) => sum.add(fee.amount), new Prisma.Decimal(0));
+    const invoiceNumber = await centerSettings.getNextInvoiceNumber(tx);
     const invoice = await tx.studentInvoice.create({ data: {
-      number: token('INV'), studentId, academicEnrollmentId: enrollment.id, level,
+      number: invoiceNumber, studentId, academicEnrollmentId: enrollment.id, level,
       totalAmount: total, balanceAmount: total, currency: fees[0].currency,
       lines: { create: fees.map((fee) => ({
         type: fee.type, label: fee.type === 'FORMATION' ? `Formation ${level}` : fee.type === 'SYLLABUS' ? 'Syllabus' : 'Certificat',
@@ -92,10 +94,11 @@ async function recordPayment(invoiceId, body, actorId) {
     if (amount.gt(invoice.balanceAmount)) throw new FinanceError('OVERPAYMENT', 'Le montant dépasse le solde.', 409);
     const paid = invoice.paidAmount.add(amount), balance = invoice.totalAmount.sub(paid);
     const status = balance.eq(0) ? 'PAID' : 'PARTIALLY_PAID';
+    const receiptNumber = await centerSettings.getNextReceiptNumber(tx);
     const payment = await tx.studentPayment.create({ data: {
       invoiceId: invoice.id, amount, currency: invoice.currency, method: body.method, reference: String(body.reference || '').trim() || null,
       idempotencyKey: key, paidAt: body.paidAt ? new Date(body.paidAt) : new Date(), recordedById: id(actorId), comment: String(body.comment || '').trim() || null,
-      receipt: { create: { number: token('REC') } },
+      receipt: { create: { number: receiptNumber } },
     }, include: { receipt: true } });
     await tx.studentInvoice.update({ where: { id: invoice.id }, data: { paidAmount: paid, balanceAmount: balance, status } });
     await audit(tx, actorId, 'STUDENT_PAYMENT', payment.id, 'RECORDED', { amount: amount.toString(), currency: invoice.currency });

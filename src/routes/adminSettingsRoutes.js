@@ -1,0 +1,11 @@
+const router = require('express').Router();
+const c = require('../controllers/centerSettingsController');
+const a = require('../middlewares/asyncHandler');
+const upload = require('../middlewares/settingFileUpload');
+router.get('/', a(c.index));
+for (const category of ['general', 'branding', 'finance', 'certificates', 'lms', 'assessments', 'attendance', 'documents']) router.post(`/${category}`, a(c[category]));
+router.post('/academic', a(c.academic));
+router.post('/files', upload, a(c.upload));
+router.get('/files/:id', a(c.download));
+router.get('/history', a(c.history));
+module.exports = router;
