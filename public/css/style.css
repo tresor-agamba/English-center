@@ -25,6 +25,8 @@ body {
   background: var(--background);
   font-family: Arial, sans-serif;
   line-height: 1.6;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 img,
@@ -60,6 +62,7 @@ a {
   align-items: center;
   justify-content: space-between;
   min-height: 72px;
+  padding-top: env(safe-area-inset-top);
 }
 
 .site-header nav {
@@ -1598,6 +1601,36 @@ tr:last-child td { border-bottom: 0; }
 .logo-preview img { max-width: 240px; max-height: 110px; object-fit: contain; }
 .brand-logo { width: 32px; height: 32px; margin-right: .5rem; object-fit: contain; vertical-align: middle; }
 @media (max-width: 700px) { .settings-form, .file-settings { grid-template-columns: 1fr; }.settings-form > *, .settings-form .wide { grid-column: 1; }.file-settings form { align-items: stretch; flex-direction: column; } }
+
+.pwa-message,
+.pwa-ios-help {
+  position: fixed;
+  z-index: 1000;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  max-width: min(32rem, calc(100% - 2rem));
+  padding: .9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 12px 35px rgb(23 59 87 / 18%);
+}
+.pwa-message[hidden],
+.pwa-ios-help[hidden],
+.pwa-install[hidden] { display: none; }
+.pwa-ios-help { align-items: flex-start; flex-direction: column; padding-right: 2.75rem; }
+.pwa-ios-help button { position: absolute; top: .45rem; right: .6rem; border: 0; background: transparent; font-size: 1.5rem; cursor: pointer; }
+.site-footer { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
+.pwa-standalone .site-header { min-height: calc(72px + env(safe-area-inset-top)); }
+
+@media (max-width: 520px) {
+  .pwa-message,
+  .pwa-ios-help { left: max(1rem, env(safe-area-inset-left)); right: max(1rem, env(safe-area-inset-right)); }
+  .pwa-message { align-items: stretch; flex-direction: column; }
+}
 
 .certificate-verify { max-width: 900px; margin: 0 auto; padding: 2rem 1rem 4rem; }
 .certificate-verify-hero { padding: clamp(1.5rem, 4vw, 3rem); border-radius: 18px; background: linear-gradient(135deg, #173b57, #245d80); color: #fff; }

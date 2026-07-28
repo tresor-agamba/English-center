@@ -56,6 +56,7 @@ const notificationLocals = require('./middlewares/notificationLocals');
 const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const requestContext = require('./middlewares/requestContext');
+const pwaRoutes = require('./routes/pwaRoutes');
 
 const app = express();
 app.disable('x-powered-by');
@@ -69,7 +70,7 @@ app.use(helmet({
   contentSecurityPolicy: { directives: {
     defaultSrc: ["'self'"], baseUri: ["'self'"], objectSrc: ["'none'"], frameAncestors: ["'none'"],
     imgSrc: ["'self'", 'data:'], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'", "'unsafe-inline'"],
-    connectSrc: ["'self'"], formAction: ["'self'"],
+    connectSrc: ["'self'"], formAction: ["'self'"], manifestSrc: ["'self'"], workerSrc: ["'self'"],
   } },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
@@ -77,6 +78,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ verify: (req, res, buffer) => {
   if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
 } }));
+app.use(pwaRoutes);
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use(

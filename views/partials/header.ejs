@@ -1,9 +1,17 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-environment="<%= process.env.NODE_ENV || 'development' %>">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title><%= title %> | English Center</title>
+    <meta name="theme-color" content="#1D4ED8" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="English Center" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="stylesheet" href="/css/style.css" />
   </head>
   <body>
@@ -15,4 +23,10 @@
         <a class="button button-small" href="/login">Connexion</a>
       </nav>
     </header>
+    <aside class="pwa-message" data-pwa-messages role="status" aria-live="polite" hidden></aside>
+    <aside class="pwa-ios-help" data-pwa-ios-help hidden>
+      <strong>Installer cette application</strong>
+      <span>1. Appuyez sur Partager. 2. Sélectionnez « Sur l’écran d’accueil ». 3. Confirmez l’ajout.</span>
+      <button type="button" data-pwa-ios-dismiss aria-label="Fermer">×</button>
+    </aside>
     <main class="container">

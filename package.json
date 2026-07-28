@@ -21,6 +21,8 @@
     "backup:restore": "node scripts/backupCli.js restore",
     "production:check": "node scripts/productionCheck.js",
     "test:responsive": "playwright test",
+    "test:pwa": "node --test tests/pwa/phase11.test.js",
+    "test:pwa:e2e": "playwright test tests/pwa/pwa.spec.js --config=playwright.pwa.config.js",
     "audit:responsive:prepare": "node scripts/prepareResponsiveAudit.js"
   },
   "keywords": [
