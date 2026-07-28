@@ -3,6 +3,7 @@ const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
 const enrollmentReminders = require('./enrollmentReminderService');
 const whatsappPreferences = require('./whatsappPreferenceService');
+const placement = require('./placementTestService');
 
 const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
@@ -36,6 +37,30 @@ function parseSessionId(value) {
     throw new RegistrationError('SESSION_REQUIRED', messages.SESSION_REQUIRED);
   }
   return id;
+}
+
+function parseCourseId(value) {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new RegistrationError('COURSE_REQUIRED', 'Veuillez sélectionner une formation.');
+  }
+  return id;
+}
+
+function validateLevel(value) {
+  if (!placement.LEVELS.includes(value)) {
+    throw new RegistrationError('INVALID_LEVEL', 'Le niveau demandé est invalide.');
+  }
+  return value;
+}
+
+function normalizeEmail(value) {
+  const email = String(value || '').trim().toLowerCase();
+  if (!email) return null;
+  if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new RegistrationError('INVALID_EMAIL', 'Adresse email invalide.');
+  }
+  return email;
 }
 
 function sessionSelect(now) {
@@ -105,6 +130,41 @@ async function getSessionForRegistration(rawSessionId, client = prisma) {
   return validateSession(session, now);
 }
 
+async function listCoursesForPublicRegistration(client = prisma) {
+  const now = new Date();
+  return client.course.findMany({
+    where: {
+      isPublished: true,
+      lmsStatus: { notIn: ['CLOSED', 'ARCHIVED'] },
+      trainingSessions: { some: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } } },
+    },
+    select: { id: true, title: true, slug: true },
+    orderBy: { title: 'asc' },
+  });
+}
+
+async function getCourseRegistrationSession(rawCourseId, client = prisma) {
+  const courseId = parseCourseId(rawCourseId);
+  const now = new Date();
+  const course = await client.course.findFirst({
+    where: { id: courseId, isPublished: true, lmsStatus: { notIn: ['CLOSED', 'ARCHIVED'] } },
+    select: {
+      trainingSessions: {
+        where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },
+        orderBy: { startDate: 'asc' },
+        select: sessionSelect(now),
+      },
+    },
+  });
+  if (!course) throw new RegistrationError('COURSE_UNAVAILABLE', 'Cette formation n’est pas disponible aux inscriptions publiques.');
+  for (const candidate of course.trainingSessions) {
+    try { return validateSession(candidate, now); } catch (error) {
+      if (!['SESSION_FULL', 'REGISTRATION_CLOSED'].includes(error.code)) throw error;
+    }
+  }
+  throw new RegistrationError('COURSE_UNAVAILABLE', 'Cette formation n’est pas disponible aux inscriptions publiques.');
+}
+
 function findUserEnrollment(client, userId, trainingSessionId) {
   return client.enrollment.findUnique({
     where: { userId_trainingSessionId: { userId, trainingSessionId } },
@@ -132,10 +192,16 @@ async function getEnrollmentIntent(userId, rawSessionId) {
   return { existingEnrollment, session };
 }
 
-async function runRegistrationTransaction({ sessionId, firstName, lastName, phoneNumber, passwordHash }) {
+async function runRegistrationTransaction({
+  sessionId, courseId, firstName, lastName, phoneNumber, email = null, passwordHash, requestedLevel = null,
+}) {
   return prisma.$transaction(
     async (tx) => {
-      const session = await getSessionForRegistration(sessionId, tx);
+      const session = courseId
+        ? await getCourseRegistrationSession(courseId, tx)
+        : await getSessionForRegistration(sessionId, tx);
+      const level = requestedLevel ? validateLevel(requestedLevel) : null;
+      const normalizedEmail = normalizeEmail(email);
       const existingUser = await tx.user.findUnique({
         where: { phoneNumber },
         select: { id: true },
@@ -156,11 +222,16 @@ async function runRegistrationTransaction({ sessionId, firstName, lastName, phon
         );
       }
 
+      if (normalizedEmail && await tx.user.findUnique({ where: { email: normalizedEmail }, select: { id: true } })) {
+        throw new RegistrationError('EMAIL_EXISTS', 'Cette adresse email est déjà utilisée.');
+      }
+
       const user = await tx.user.create({
         data: {
           firstName,
           lastName,
           phoneNumber,
+          email: normalizedEmail,
           passwordHash,
           role: 'STUDENT',
           isActive: true,
@@ -170,6 +241,7 @@ async function runRegistrationTransaction({ sessionId, firstName, lastName, phon
           firstName: true,
           lastName: true,
           phoneNumber: true,
+          email: true,
           role: true,
           isActive: true,
         },
@@ -179,9 +251,16 @@ async function runRegistrationTransaction({ sessionId, firstName, lastName, phon
         data: {
           userId: user.id,
           trainingSessionId: session.id,
-          status: 'TRIAL_ACTIVE',
+          status: level && level !== 'LEVEL_1' ? 'PLACEMENT_TEST_REQUIRED' : 'TRIAL_ACTIVE',
+          requestedLevel: level,
+          recommendedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
+          approvedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
+          placementTestRequired: Boolean(level && level !== 'LEVEL_1'),
         },
-        select: { id: true, status: true },
+        select: {
+          id: true, status: true, requestedLevel: true, recommendedLevel: true,
+          approvedLevel: true, placementTestRequired: true,
+        },
       });
 
       return { user, enrollment };
@@ -200,7 +279,11 @@ async function createRegistration(data) {
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
       if (error?.code === 'P2002') {
-          throw new RegistrationError('ACCOUNT_EXISTS', messages.ACCOUNT_EXISTS);
+        const target = Array.isArray(error.meta?.target) ? error.meta.target.join(' ') : String(error.meta?.target || '');
+        throw new RegistrationError(
+          target.includes('email') ? 'EMAIL_EXISTS' : 'ACCOUNT_EXISTS',
+          target.includes('email') ? 'Cette adresse email est déjà utilisée.' : messages.ACCOUNT_EXISTS
+        );
       }
       if (error?.code === 'P2034' && attempt < MAX_TRANSACTION_ATTEMPTS) {
         await retryDelay(attempt);
@@ -290,6 +373,11 @@ function findEnrollmentForViewer(enrollmentId) {
       userId: true,
       status: true,
       enrolledAt: true,
+      requestedLevel: true,
+      recommendedLevel: true,
+      approvedLevel: true,
+      placementTestRequired: true,
+      placementTestScore: true,
       user: { select: { id: true, firstName: true, lastName: true } },
       trainingSession: {
         select: {
@@ -333,8 +421,13 @@ module.exports = {
   RegistrationError,
   messages,
   parseSessionId,
+  parseCourseId,
+  validateLevel,
+  normalizeEmail,
   validateSession,
   getSessionForRegistration,
+  listCoursesForPublicRegistration,
+  getCourseRegistrationSession,
   getEnrollmentIntent,
   createRegistration,
   enrollExistingStudent,

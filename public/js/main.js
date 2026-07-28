@@ -17,3 +17,18 @@ fetch('/settings/public', { headers: { Accept: 'application/json' } })
     }
   })
   .catch(() => {});
+
+const registrationForm = document.querySelector('[data-public-registration-form]');
+if (registrationForm) {
+  const level = registrationForm.querySelector('[data-requested-level]');
+  const submit = registrationForm.querySelector('[data-registration-submit]');
+  const updateLevelGuidance = () => {
+    const needsTest = ['LEVEL_2', 'LEVEL_3'].includes(level.value);
+    registrationForm.querySelectorAll('[data-level-message]').forEach((node) => {
+      node.hidden = node.dataset.levelMessage !== level.value;
+    });
+    submit.textContent = needsTest ? 'Créer mon compte et passer le test' : 'Créer mon compte';
+  };
+  level.addEventListener('change', updateLevelGuidance);
+  updateLevelGuidance();
+}

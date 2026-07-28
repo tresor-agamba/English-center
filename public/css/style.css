@@ -1625,6 +1625,16 @@ tr:last-child td { border-bottom: 0; }
 .pwa-ios-help button { position: absolute; top: .45rem; right: .6rem; border: 0; background: transparent; font-size: 1.5rem; cursor: pointer; }
 .site-footer { padding-bottom: max(1rem, env(safe-area-inset-bottom)); }
 .pwa-standalone .site-header { min-height: calc(72px + env(safe-area-inset-top)); }
+.public-registration { max-width: 760px; margin-inline: auto; }
+.public-registration form, .placement-test form { display: grid; gap: 1rem; }
+.selected-course, .level-guidance { padding: 1rem; border-radius: 10px; background: #eef4ff; }
+.level-guidance p { margin: 0; }
+.optional { color: var(--muted); font-weight: normal; }
+.placement-test, .placement-result { max-width: 760px; margin-inline: auto; }
+.placement-question { display: grid; gap: .65rem; }
+.placement-question legend { padding-inline: .35rem; font-weight: 700; }
+.placement-question label { display: flex; gap: .5rem; align-items: center; }
+.placement-explanation { padding: 1rem; border-left: 4px solid var(--primary); background: #eef4ff; }
 
 @media (max-width: 520px) {
   .pwa-message,

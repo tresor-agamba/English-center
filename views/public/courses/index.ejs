@@ -4,6 +4,7 @@
   <p class="eyebrow">English Center</p>
   <h1>Nos formations</h1>
   <p>Choisissez la formation qui correspond à votre niveau et à vos objectifs.</p>
+  <a class="button" href="/register">S’inscrire</a>
 </section>
 
 <% if (!courses.length) { %>
@@ -34,6 +35,7 @@
             <small><%= course.upcomingSessionCount %> session<%= course.upcomingSessionCount > 1 ? 's' : '' %> disponible<%= course.upcomingSessionCount > 1 ? 's' : '' %></small>
           </div>
           <a class="button button-small" href="/formations/<%= course.slug %>">Voir la formation</a>
+          <a class="button button-small button-secondary" href="/register?course=<%= course.id %>">S’inscrire</a>
         </div>
         <p class="online-course-label">Formation 100 % en ligne</p>
       </article>

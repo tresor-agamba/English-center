@@ -2,21 +2,35 @@ const bcrypt = require('bcrypt');
 const registrationService = require('../services/registrationService');
 const trialAccessService = require('../services/trialAccessService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
+const placementTestService = require('../services/placementTestService');
 
 const PASSWORD_COST = 12;
 
 function emptyForm() {
-  return { firstName: '', lastName: '', phoneNumber: '' };
+  return { fullName: '', firstName: '', lastName: '', phoneNumber: '', email: '', courseId: '', requestedLevel: 'LEVEL_1' };
 }
 
 function cleanForm(body) {
+  const fullName = body.fullName?.trim().replace(/\s+/g, ' ').slice(0, 200) || '';
+  const nameParts = fullName.split(' ').filter(Boolean);
   const form = {
-    firstName: body.firstName?.trim().slice(0, 100) || '',
-    lastName: body.lastName?.trim().slice(0, 100) || '',
+    fullName,
+    firstName: body.firstName?.trim().slice(0, 100) || nameParts.shift() || '',
+    lastName: body.lastName?.trim().slice(0, 100) || nameParts.join(' ').slice(0, 100) || '',
     phoneNumber: body.phoneNumber?.trim().slice(0, 30) || '',
+    email: body.email?.trim().toLowerCase().slice(0, 254) || null,
+    courseId: body.courseId || '',
+    requestedLevel: body.requestedLevel || '',
   };
   if (!form.firstName || !form.lastName || !form.phoneNumber) {
     throw new registrationService.RegistrationError('INVALID_FORM', 'Tous les champs sont obligatoires.');
+  }
+  if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+    throw new registrationService.RegistrationError('INVALID_EMAIL', 'Adresse email invalide.');
+  }
+  if (body.courseId !== undefined) {
+    form.courseId = registrationService.parseCourseId(form.courseId);
+    form.requestedLevel = registrationService.validateLevel(form.requestedLevel);
   }
   form.phoneNumber = normalizePhoneNumber(form.phoneNumber);
   return form;
@@ -42,10 +56,11 @@ function renderUnavailable(res, error) {
   });
 }
 
-function renderForm(res, { session, form, error, accountExists = false }) {
+function renderForm(res, { session = null, courses = [], form, error, accountExists = false }) {
   return res.status(error ? 400 : 200).render('public/registration/new', {
     title: 'Inscription',
     session,
+    courses,
     form,
     error,
     accountExists,
@@ -64,8 +79,13 @@ function establishSession(req, user) {
 
 async function newForm(req, res) {
   try {
+    const courses = await registrationService.listCoursesForPublicRegistration();
+    if (!req.query.session) {
+      const selectedCourse = courses.some((course) => String(course.id) === String(req.query.course)) ? String(req.query.course) : '';
+      return renderForm(res, { courses, form: { ...emptyForm(), courseId: selectedCourse }, error: null });
+    }
     const session = await registrationService.getSessionForRegistration(req.query.session);
-    return renderForm(res, { session, form: emptyForm(), error: null });
+    return renderForm(res, { session, courses, form: { ...emptyForm(), courseId: session.course.id }, error: null });
   } catch (error) {
     if (error instanceof registrationService.RegistrationError) return renderUnavailable(res, error);
     throw error;
@@ -74,39 +94,78 @@ async function newForm(req, res) {
 
 async function create(req, res) {
   let session;
+  let courses = [];
   let form = {
     firstName: req.body.firstName?.trim() || '',
     lastName: req.body.lastName?.trim() || '',
     phoneNumber: req.body.phoneNumber?.trim() || '',
+    email: req.body.email?.trim() || '',
+    courseId: req.body.courseId || '',
+    requestedLevel: req.body.requestedLevel || 'LEVEL_1',
     whatsappConsent: req.body.whatsappConsent === 'yes',
   };
   try {
-    session = await registrationService.getSessionForRegistration(req.body.sessionId);
+    courses = await registrationService.listCoursesForPublicRegistration();
+    if (req.body.sessionId) session = await registrationService.getSessionForRegistration(req.body.sessionId);
     form = cleanForm(req.body);
     validatePassword(req.body.password, req.body.passwordConfirmation);
     const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
     const result = await registrationService.createRegistration({
-      sessionId: session.id,
+      sessionId: session?.id,
       ...form,
       passwordHash,
       whatsappConsent: req.body.whatsappConsent === 'yes',
     });
     await establishSession(req, result.user);
+    if (result.enrollment.placementTestRequired) return res.redirect(`/placement-test/${result.enrollment.id}`);
     return res.redirect(`/registration/success/${result.enrollment.id}`);
   } catch (error) {
     if (error.message === INVALID_PHONE_MESSAGE) {
-      return renderForm(res, { session, form, error: INVALID_PHONE_MESSAGE });
+      return renderForm(res, { session, courses, form, error: INVALID_PHONE_MESSAGE });
     }
     if (error instanceof registrationService.RegistrationError) {
-      if (!session || ['SESSION_REQUIRED', 'SESSION_NOT_FOUND', 'SESSION_UNAVAILABLE', 'REGISTRATION_CLOSED', 'SESSION_FULL'].includes(error.code)) {
+      if (req.body.sessionId && (!session || ['SESSION_REQUIRED', 'SESSION_NOT_FOUND', 'SESSION_UNAVAILABLE', 'REGISTRATION_CLOSED', 'SESSION_FULL'].includes(error.code))) {
         return renderUnavailable(res, error);
       }
       return renderForm(res, {
         session,
+        courses,
         form,
         error: error.message,
         accountExists: ['ACCOUNT_EXISTS', 'DUPLICATE_ENROLLMENT'].includes(error.code),
       });
+    }
+    throw error;
+  }
+}
+
+async function placementForm(req, res) {
+  try {
+    const enrollment = await placementTestService.getPendingEnrollment(req.params.enrollmentId, req.session.user.id);
+    return res.render('public/registration/placement-test', {
+      title: 'Test de niveau', enrollment, questions: placementTestService.QUESTIONS, error: null,
+    });
+  } catch (error) {
+    if (error instanceof placementTestService.PlacementTestError) {
+      return res.status(error.statusCode).render('error', { title: 'Test de niveau', message: error.message });
+    }
+    throw error;
+  }
+}
+
+async function submitPlacement(req, res) {
+  try {
+    await placementTestService.getPendingEnrollment(req.params.enrollmentId, req.session.user.id);
+    const score = placementTestService.scoreAnswers(req.body);
+    const enrollment = await placementTestService.completePlacement({
+      enrollmentId: req.params.enrollmentId, studentId: req.session.user.id, score,
+    });
+    return res.render('public/registration/placement-result', {
+      title: 'Résultat du test', enrollment,
+    });
+  } catch (error) {
+    if (error instanceof placementTestService.PlacementTestError) {
+      return res.status(error.statusCode).render('error', { title: 'Test de niveau', message: error.message });
     }
     throw error;
   }
@@ -147,4 +206,7 @@ async function success(req, res) {
   });
 }
 
-module.exports = { newForm, create, success, cleanForm, validatePassword, establishSession };
+module.exports = {
+  newForm, create, success, placementForm, submitPlacement,
+  cleanForm, validatePassword, establishSession,
+};

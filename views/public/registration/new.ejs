@@ -1,64 +1,44 @@
 <%- include('../../partials/header', { title }) %>
-
-<div class="registration-layout">
-  <section class="card registration-form-card">
-    <p class="eyebrow">Créer mon compte</p>
-    <h1>S’inscrire à la session</h1>
-    <p>Vos informations serviront à créer votre compte étudiant.</p>
-
-    <% if (error) { %>
-      <div class="form-error" role="alert">
-        <p><%= error %></p>
-        <% if (accountExists) { %>
-          <a href="/login?session=<%= session.id %>">Se connecter pour continuer</a>
-        <% } %>
-      </div>
+<section class="card registration-form-card public-registration">
+  <p class="eyebrow">Créer mon compte étudiant</p>
+  <h1>S’inscrire à English Center</h1>
+  <p>Choisissez votre formation et votre niveau demandé. Le téléphone sera votre identifiant de connexion.</p>
+  <% if (error) { %><div class="form-error" role="alert"><p><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>">Se connecter</a><% } %></div><% } %>
+  <form action="/register" method="post" data-public-registration-form>
+    <% if (session) { %>
+      <input type="hidden" name="sessionId" value="<%= session.id %>">
+      <input type="hidden" name="courseId" value="<%= session.course.id %>">
+      <div class="selected-course"><strong>Formation :</strong> <%= session.course.title %> — <%= session.name %></div>
+    <% } else { %>
+      <label for="courseId">Formation choisie</label>
+      <select id="courseId" name="courseId" required>
+        <option value="">Sélectionnez une formation</option>
+        <% courses.forEach((course) => { %><option value="<%= course.id %>" <%= String(form.courseId) === String(course.id) ? 'selected' : '' %>><%= course.title %></option><% }) %>
+      </select>
     <% } %>
-
-    <form action="/register" method="post">
-      <input type="hidden" name="sessionId" value="<%= session.id %>" />
-      <div class="form-grid">
-        <div>
-          <label for="firstName">Prénom</label>
-          <input id="firstName" name="firstName" value="<%= form.firstName %>" autocomplete="given-name" maxlength="100" required />
-        </div>
-        <div>
-          <label for="lastName">Nom</label>
-          <input id="lastName" name="lastName" value="<%= form.lastName %>" autocomplete="family-name" maxlength="100" required />
-        </div>
-      </div>
-      <label for="phoneNumber">Numéro de téléphone</label>
-      <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="+243812345678" required />
-      <div class="form-grid">
-        <div>
-          <label for="password">Mot de passe</label>
-          <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required />
-        </div>
-        <div>
-          <label for="passwordConfirmation">Confirmation</label>
-          <input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required />
-        </div>
-      </div>
-      <p class="form-hint">Utilisez au moins 8 caractères. Votre mot de passe ne sera jamais affiché.</p>
-      <button class="button" type="submit">Créer mon compte et réserver ma place</button>
-      <label class="checkbox-row"><input type="checkbox" name="whatsappConsent" value="yes" <%= form.whatsappConsent ? 'checked' : '' %> /> J’accepte de recevoir sur WhatsApp les rappels de cours, informations sur mes devoirs et notifications liées à mon inscription.</label>
-    </form>
-  </section>
-
-  <aside class="registration-summary" aria-label="Session sélectionnée">
-    <p class="eyebrow">Votre choix</p>
-    <h2><%= session.course.title %></h2>
-    <h3><%= session.name %></h3>
-    <dl class="session-facts">
-      <div><dt>Début</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
-      <div><dt>Fin</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
-      <div><dt>Horaires</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
-      <div><dt>Fuseau horaire</dt><dd><%= session.timezone %></dd></div>
-      <div><dt>Mode</dt><dd><%= session.course.trainingMode || 'À préciser' %></dd></div>
-      <div><dt>Prix</dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>
-      <div><dt>Disponibilité</dt><dd><%= session.remainingPlaces %> place<%= session.remainingPlaces > 1 ? 's' : '' %> restante<%= session.remainingPlaces > 1 ? 's' : '' %></dd></div>
-    </dl>
-  </aside>
-</div>
-
+    <label for="fullName">Nom complet</label>
+    <input id="fullName" name="fullName" value="<%= form.fullName || [form.firstName, form.lastName].filter(Boolean).join(' ') %>" autocomplete="name" maxlength="200" required>
+    <div class="form-grid">
+      <div><label for="phoneNumber">Numéro de téléphone</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="0821671174" required></div>
+      <div><label for="email">Adresse email <span class="optional">(facultative)</span></label><input id="email" name="email" type="email" autocomplete="email" value="<%= form.email || '' %>"></div>
+    </div>
+    <label for="requestedLevel">Niveau demandé</label>
+    <select id="requestedLevel" name="requestedLevel" required data-requested-level>
+      <option value="LEVEL_1" <%= form.requestedLevel === 'LEVEL_1' ? 'selected' : '' %>>Level 1</option>
+      <option value="LEVEL_2" <%= form.requestedLevel === 'LEVEL_2' ? 'selected' : '' %>>Level 2</option>
+      <option value="LEVEL_3" <%= form.requestedLevel === 'LEVEL_3' ? 'selected' : '' %>>Level 3</option>
+    </select>
+    <div class="level-guidance" aria-live="polite">
+      <p data-level-message="LEVEL_1">Aucun test de niveau obligatoire.</p>
+      <p data-level-message="LEVEL_2" hidden>Un test de niveau obligatoire est requis avant votre admission au Level 2.</p>
+      <p data-level-message="LEVEL_3" hidden>Un test de niveau obligatoire est requis avant votre admission au Level 3.</p>
+    </div>
+    <div class="form-grid">
+      <div><label for="password">Mot de passe</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div><label for="passwordConfirmation">Confirmation du mot de passe</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
+    </div>
+    <p class="form-hint">Utilisez au moins 8 caractères. Les mots de passe ne sont jamais réaffichés.</p>
+    <button class="button" type="submit" data-registration-submit>Créer mon compte</button>
+  </form>
+</section>
 <%- include('../../partials/footer') %>

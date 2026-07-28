@@ -98,13 +98,15 @@ test('inscription autonome à une session', async (t) => {
       assert.match(validHtml, /Auto-inscription test/);
 
       const cases = [
-        ['/register', 400, /sélectionner/i],
         ['/register?session=999999999', 404, /introuvable/i],
         [`/register?session=${pastSessionId}`, 400, /plus disponible/i],
         [`/register?session=${cancelledSessionId}`, 400, /plus disponible/i],
         [`/register?session=${expiredSessionId}`, 400, /date limite/i],
         [`/register?session=${fullSessionId}`, 400, /complète/i],
       ];
+      const publicRegistration = await fetch(`${baseUrl}/register`);
+      assert.equal(publicRegistration.status, 200);
+      assert.match(await publicRegistration.text(), /Formation choisie/);
       for (const [url, status, pattern] of cases) {
         const response = await fetch(`${baseUrl}${url}`);
         assert.equal(response.status, status);

@@ -25,6 +25,7 @@ enum TrainingSessionStatus {
 
 enum EnrollmentStatus {
   TRIAL_ACTIVE
+  PLACEMENT_TEST_REQUIRED
   PAYMENT_REQUIRED
   CONFIRMED
   CANCELLED
@@ -400,6 +401,7 @@ model User {
   firstName                    String                      @map("first_name")
   lastName                     String                      @map("last_name")
   phoneNumber                  String                      @unique @map("phone_number")
+  email                        String?                     @unique
   passwordHash                 String                      @map("password_hash")
   role                         Role                        @default(STUDENT)
   isActive                     Boolean                     @default(true) @map("is_active")
@@ -1252,6 +1254,12 @@ model Enrollment {
   trainingSessionId      Int                    @map("training_session_id")
   status                 EnrollmentStatus       @default(TRIAL_ACTIVE)
   enrolledAt             DateTime               @default(now()) @map("enrolled_at")
+  requestedLevel         AcademicLevel?         @map("requested_level")
+  recommendedLevel       AcademicLevel?         @map("recommended_level")
+  approvedLevel          AcademicLevel?         @map("approved_level")
+  placementTestRequired  Boolean                @default(false) @map("placement_test_required")
+  placementTestScore     Int?                   @map("placement_test_score")
+  placementTestCompletedAt DateTime?            @map("placement_test_completed_at")
   user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   trainingSession        TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
   course                 Course?                @relation(fields: [courseId], references: [id])
