@@ -1,0 +1,32 @@
+<%- include('../../partials/header', { title }) %>
+<main class="container">
+  <%- include('../_nav') %>
+  <div class="page-heading"><div><p class="eyebrow">Système</p><h1>Sauvegardes PostgreSQL</h1><p>Fichiers privés créés exclusivement avec pg_dump.</p></div>
+    <form method="post" action="/admin/system/backups"><button class="button">Créer une sauvegarde</button></form>
+  </div>
+  <% if (success) { %><div class="alert alert-success">Opération terminée : <%= success %>.</div><% } %>
+  <section class="card settings-panel"><h2>Politique de rétention</h2>
+    <form method="post" action="/admin/system/backups/policy" class="settings-form">
+      <label>Conservation (jours)<input type="number" min="1" max="3650" required name="retentionDays" value="<%= policy.retentionDays %>"></label>
+      <label>Nombre maximal<input type="number" min="1" max="1000" required name="maxBackups" value="<%= policy.maxBackups %>"></label>
+      <label>Heure quotidienne<input type="time" required name="dailyBackupTime" value="<%= policy.dailyBackupTime %>"></label>
+      <div class="checks"><label><input type="checkbox" name="autoCleanup" <%= policy.autoCleanup ? 'checked' : '' %>> Nettoyage automatique</label><label><input type="checkbox" name="dailyBackup" <%= policy.dailyBackup ? 'checked' : '' %>> Sauvegarde quotidienne</label></div>
+      <button class="button">Enregistrer</button>
+    </form>
+    <form method="post" action="/admin/system/backups/cleanup"><button class="button button-secondary">Nettoyer maintenant</button></form>
+  </section>
+  <section class="card settings-panel"><h2>Historique</h2>
+  <% if (!items.length) { %><p class="empty-state">Aucune sauvegarde.</p><% } else { %>
+  <div class="responsive-table"><table><thead><tr><th>Date</th><th>Taille</th><th>Type</th><th>Statut</th><th>Vérification</th><th>Auteur</th><th>Actions</th></tr></thead><tbody>
+  <% items.forEach(item => { %><tr>
+    <td data-label="Date"><%= item.createdAt.toLocaleString('fr-FR') %></td><td data-label="Taille"><%= item.sizeBytes ? `${(Number(item.sizeBytes)/1048576).toFixed(2)} Mo` : '—' %></td>
+    <td data-label="Type"><%= item.type %></td><td data-label="Statut"><%= item.status %></td><td data-label="Vérification"><%= item.verificationStatus %></td>
+    <td data-label="Auteur"><%= item.createdBy ? `${item.createdBy.firstName} ${item.createdBy.lastName}` : 'CLI/Système' %></td>
+    <td data-label="Actions"><div class="table-actions">
+      <% if (item.status === 'COMPLETED') { %><a class="button button-small" href="/admin/system/backups/<%= item.id %>/download">Télécharger</a><form method="post" action="/admin/system/backups/<%= item.id %>/verify"><button>Vérifier</button></form><% } %>
+      <% if (['COMPLETED','FAILED'].includes(item.status)) { %><form method="post" action="/admin/system/backups/<%= item.id %>/delete"><button class="button-danger">Supprimer</button></form><% } %>
+    </div></td>
+  </tr><% }) %></tbody></table></div><% } %></section>
+  <section class="card settings-panel danger-zone"><h2>Restauration contrôlée</h2><p>Désactivée par défaut. Utilisez prioritairement la commande CLI et la confirmation configurée côté serveur. Aucune restauration silencieuse n’est exécutée depuis cette page.</p></section>
+</main>
+<%- include('../../partials/footer') %>

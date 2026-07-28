@@ -1,0 +1,14 @@
+const router = require('express').Router();
+const c = require('../controllers/systemController');
+const a = require('../middlewares/asyncHandler');
+const limits = require('../middlewares/rateLimits');
+router.get('/health', a(c.health));
+router.get('/backups', a(c.backups));
+router.post('/backups', limits.backupCreate, a(c.create));
+router.post('/backups/cleanup', limits.backupCreate, a(c.cleanup));
+router.post('/backups/policy', a(c.policy));
+router.get('/backups/:id/download', limits.privateDownload, a(c.download));
+router.post('/backups/:id/verify', limits.privateDownload, a(c.verify));
+router.post('/backups/:id/delete', a(c.remove));
+router.post('/backups/:id/restore', limits.restore, a(c.restore));
+module.exports = router;

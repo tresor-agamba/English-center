@@ -1,4 +1,5 @@
 const authService = require('../services/authService');
+const loginProtection = require('../services/loginProtectionService');
 
 const LOGIN_ERROR = 'Numéro de téléphone ou mot de passe incorrect.';
 
@@ -16,6 +17,7 @@ async function login(req, res, next) {
   const phoneNumber = req.body.phoneNumber?.trim() || '';
   const password = req.body.password;
   const sessionId = safeSessionId(req.body.sessionId);
+  loginProtection.check(req.ip, phoneNumber);
 
   if (!phoneNumber || !password) {
     return res.status(400).render('auth/login', { title: 'Connexion', error: LOGIN_ERROR, phoneNumber, sessionId });
@@ -32,8 +34,10 @@ async function login(req, res, next) {
   }
 
   if (!user) {
+    loginProtection.failed(req.ip, phoneNumber, req.requestId);
     return res.status(401).render('auth/login', { title: 'Connexion', error: LOGIN_ERROR, phoneNumber, sessionId });
   }
+  loginProtection.succeeded(req.ip, phoneNumber);
 
   return req.session.regenerate((error) => {
     if (error) return next(error);

@@ -1,13 +1,14 @@
 const router = require('express').Router();
 const c = require('../controllers/adminTeacherController');
 const a = require('../middlewares/asyncHandler');
+const limits = require('../middlewares/rateLimits');
 router.get('/', a(c.index));
 router.get('/new', c.newForm);
 router.post('/', a(c.create));
 router.get('/:id/edit', a(c.editForm));
 router.post('/:id', a(c.update));
 router.post('/:id/toggle-status', a(c.toggle));
-router.post('/:id/reset-password', a(c.resetPassword));
+router.post('/:id/reset-password', limits.passwordReset, a(c.resetPassword));
 router.post('/:id/sessions', a(c.assign));
 router.post('/:id/sessions/:sessionId/remove', a(c.unassign));
 router.get('/:id', a(c.show));

@@ -1,6 +1,7 @@
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet');
 
 const webRoutes = require('./routes/webRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -39,6 +40,8 @@ const studentFinanceRoutes = require('./routes/studentFinanceRoutes');
 const adminReportRoutes = require('./routes/adminReportRoutes');
 const adminSettingsRoutes = require('./routes/adminSettingsRoutes');
 const publicSettingsRoutes = require('./routes/publicSettingsRoutes');
+const healthRoutes = require('./routes/healthRoutes');
+const adminSystemRoutes = require('./routes/adminSystemRoutes');
 const teacherReportRoutes = require('./routes/teacherReportRoutes');
 const teacherWrittenAssessmentRoutes = require('./routes/teacherWrittenAssessmentRoutes');
 const studentWrittenAssessmentRoutes = require('./routes/studentWrittenAssessmentRoutes');
@@ -52,12 +55,24 @@ const requireAuthenticated = require('./middlewares/requireAuthenticated');
 const notificationLocals = require('./middlewares/notificationLocals');
 const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
+const requestContext = require('./middlewares/requestContext');
 
 const app = express();
+app.disable('x-powered-by');
+if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
+app.use(requestContext);
+app.use(helmet({
+  contentSecurityPolicy: { directives: {
+    defaultSrc: ["'self'"], baseUri: ["'self'"], objectSrc: ["'none'"], frameAncestors: ["'none'"],
+    imgSrc: ["'self'", 'data:'], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'", "'unsafe-inline'"],
+    connectSrc: ["'self'"], formAction: ["'self'"],
+  } },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ verify: (req, res, buffer) => {
   if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
@@ -79,6 +94,7 @@ app.use(
 );
 app.use(notificationLocals);
 
+app.use(healthRoutes);
 app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
 app.use(webRoutes);
 app.use(authRoutes);
@@ -123,11 +139,13 @@ app.use('/admin/academic', requireAdmin, adminAcademicRoutes);
 app.use('/admin/finances', requireAdmin, adminFinanceRoutes);
 app.use('/admin/reports', requireAdmin, adminReportRoutes);
 app.use('/admin/settings', requireAdmin, adminSettingsRoutes);
+app.use('/admin/system', requireAdmin, adminSystemRoutes);
 
 app.use((req, res) => {
-  res.status(404).render('error', {
+  res.status(404).render('errors/404', {
     title: 'Page introuvable',
     message: 'La page demandée est introuvable.',
+    requestId: req.requestId,
   });
 });
 

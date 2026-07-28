@@ -14,6 +14,12 @@
     "notifications:sync-enrollments": "node src/jobs/syncEnrollmentReminders.js",
     "whatsapp:process": "node src/jobs/processWhatsAppDeliveries.js",
     "oral-audio:cleanup": "node src/jobs/cleanupOralAudio.js"
+    ,"backup:create": "node scripts/backupCli.js create"
+    ,"backup:list": "node scripts/backupCli.js list"
+    ,"backup:verify": "node scripts/backupCli.js verify"
+    ,"backup:cleanup": "node scripts/backupCli.js cleanup"
+    ,"backup:restore": "node scripts/backupCli.js restore"
+    ,"production:check": "node scripts/productionCheck.js"
   },
   "keywords": [
     "english",
@@ -30,8 +36,10 @@
     "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
     "express-session": "^1.18.2",
     "file-type": "^20.5.0",
+    "helmet": "^8.1.0",
     "multer": "^2.0.2",
     "music-metadata": "^11.8.3",
     "pdfkit": "^0.19.1",

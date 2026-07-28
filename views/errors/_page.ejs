@@ -1,0 +1,9 @@
+<%- include('../partials/header', { title }) %>
+<section class="card error-page">
+  <p class="eyebrow">Erreur <%= statusCode %></p>
+  <h1><%= title %></h1>
+  <p><%= message %></p>
+  <% if (requestId && statusCode >= 500) { %><p class="help-text">Référence : <code><%= requestId %></code></p><% } %>
+  <a class="button" href="/">Retour à l’accueil</a>
+</section>
+<%- include('../partials/footer') %>
