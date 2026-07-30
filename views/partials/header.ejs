@@ -17,23 +17,23 @@
     <script src="/js/i18n.js"></script>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="a11y.skip">Skip to content</a>
     <header class="site-header public-header" data-public-header>
-      <a class="brand gli-brand" href="/" aria-label="Global Language Institute — Home">
+      <a class="brand gli-brand" href="/" aria-label="Global Language Institute — Home" data-i18n-aria="a11y.brandHome">
         <span class="brand-mark" aria-hidden="true">GLI</span>
         <span><strong>Global Language</strong><small>Institute</small></span>
       </a>
       <button class="mobile-menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" data-i18n-aria="nav.open">
         <span></span><span></span><span></span>
       </button>
-      <nav id="public-navigation" class="public-navigation" data-public-navigation aria-label="Primary navigation">
+      <nav id="public-navigation" class="public-navigation" data-public-navigation aria-label="Primary navigation" data-i18n-aria="a11y.primaryNav">
         <a href="/" data-i18n="nav.home">Home</a>
         <a href="/formations" data-i18n="nav.courses">Courses</a>
         <a href="/#about" data-i18n="nav.about">About</a>
         <a href="/#contact" data-i18n="nav.contact">Contact</a>
         <a href="/login" data-i18n="nav.login">Login</a>
         <a class="button button-small nav-register" href="/register" data-i18n="nav.register">Register</a>
-        <div class="language-switcher" aria-label="Language">
+        <div class="language-switcher" aria-label="Language" data-i18n-aria="a11y.language">
           <button type="button" data-language="en" aria-pressed="true">EN</button>
           <span aria-hidden="true">/</span>
           <button type="button" data-language="fr" aria-pressed="false">FR</button>
@@ -42,8 +42,8 @@
     </header>
     <aside class="pwa-message" data-pwa-messages role="status" aria-live="polite" hidden></aside>
     <aside class="pwa-ios-help" data-pwa-ios-help hidden>
-      <strong>Install this application</strong>
-      <span>Use Share, choose “Add to Home Screen”, then confirm.</span>
-      <button type="button" data-pwa-ios-dismiss aria-label="Close">×</button>
+      <strong data-i18n="pwa.installTitle">Install this application</strong>
+      <span data-i18n="pwa.iosHelp">Use Share, choose “Add to Home Screen”, then confirm.</span>
+      <button type="button" data-pwa-ios-dismiss aria-label="Close" data-i18n-aria="a11y.close">×</button>
     </aside>
     <main class="container public-main" id="main-content">

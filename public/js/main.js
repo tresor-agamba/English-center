@@ -32,14 +32,22 @@ if (menuToggle && navigation) {
   const closeMenu = () => {
     navigation.classList.remove('is-open'); menuToggle.classList.remove('is-open');
     menuToggle.setAttribute('aria-expanded', 'false');
+    const lang = window.GLI_I18N?.language || 'en';
+    menuToggle.setAttribute('aria-label', window.GLI_I18N?.translations[lang]?.['nav.open'] || 'Open menu');
   };
   menuToggle.addEventListener('click', () => {
     const open = navigation.classList.toggle('is-open');
     menuToggle.classList.toggle('is-open', open);
     menuToggle.setAttribute('aria-expanded', String(open));
+    const lang = window.GLI_I18N?.language || 'en';
+    menuToggle.setAttribute('aria-label', window.GLI_I18N?.translations[lang]?.[open ? 'nav.close' : 'nav.open'] || (open ? 'Close menu' : 'Open menu'));
   });
   navigation.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
   document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMenu(); });
+  document.addEventListener('click', (event) => {
+    if (navigation.classList.contains('is-open') && !navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
+  });
+  window.addEventListener('resize', () => { if (window.innerWidth > 900) closeMenu(); });
 }
 
 const observer = 'IntersectionObserver' in window
@@ -66,3 +74,26 @@ if (registrationForm) {
   document.addEventListener('gli:languagechange', updateLevelGuidance);
   updateLevelGuidance();
 }
+
+const localizePublicValues = () => {
+  const language = window.GLI_I18N?.language || 'en';
+  const locale = language === 'fr' ? 'fr-FR' : 'en-US';
+  document.querySelectorAll('[data-local-date]').forEach((node) => {
+    const date = new Date(node.getAttribute('datetime'));
+    if (!Number.isNaN(date.getTime())) node.textContent = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(date);
+  });
+  document.querySelectorAll('[data-local-price]').forEach((node) => {
+    const amount = Number(node.dataset.amount);
+    if (Number.isFinite(amount)) node.textContent = new Intl.NumberFormat(locale, { style: 'currency', currency: node.dataset.currency }).format(amount);
+  });
+  const weekDays = {
+    en: { MONDAY: 'Monday', TUESDAY: 'Tuesday', WEDNESDAY: 'Wednesday', THURSDAY: 'Thursday', FRIDAY: 'Friday', SATURDAY: 'Saturday', SUNDAY: 'Sunday' },
+    fr: { MONDAY: 'lundi', TUESDAY: 'mardi', WEDNESDAY: 'mercredi', THURSDAY: 'jeudi', FRIDAY: 'vendredi', SATURDAY: 'samedi', SUNDAY: 'dimanche' },
+  };
+  document.querySelectorAll('[data-week-days]').forEach((node) => {
+    const values = node.dataset.weekDays.split(',').filter(Boolean).map((day) => weekDays[language][day] || day);
+    node.textContent = new Intl.ListFormat(locale, { style: 'long', type: 'conjunction' }).format(values);
+  });
+};
+document.addEventListener('gli:languagechange', localizePublicValues);
+document.addEventListener('DOMContentLoaded', localizePublicValues);

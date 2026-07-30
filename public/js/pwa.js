@@ -21,9 +21,16 @@
       region.append(button);
     }
   };
+  const translate = (key) => {
+    const language = window.GLI_I18N?.language || 'en';
+    return window.GLI_I18N?.translations[language]?.[key] || key;
+  };
 
-  if (!navigator.onLine) announce('Vous êtes hors connexion. Cette action nécessite une connexion Internet.');
-  window.addEventListener('offline', () => announce('Vous êtes hors connexion. Cette action nécessite une connexion Internet.'));
+  if (!navigator.onLine) announce(translate('pwa.offline'));
+  window.addEventListener('offline', () => announce(translate('pwa.offline')));
+  document.addEventListener('gli:languagechange', () => {
+    if (!navigator.onLine) announce(translate('pwa.offline'));
+  });
   window.addEventListener('online', () => {
     const region = document.querySelector('[data-pwa-messages]');
     if (region) region.hidden = true;
@@ -31,7 +38,7 @@
   document.addEventListener('submit', (event) => {
     if (!navigator.onLine) {
       event.preventDefault();
-      announce('Cette action nécessite une connexion Internet.');
+      announce(translate('pwa.requiresInternet'));
     }
   });
 
@@ -66,7 +73,7 @@
   window.addEventListener('load', async () => {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-      const offerUpdate = (worker) => announce('Une nouvelle version de l’application est disponible.', 'Mettre à jour', () => worker.postMessage({ type: 'SKIP_WAITING' }));
+      const offerUpdate = (worker) => announce(translate('pwa.updateAvailable'), translate('pwa.update'), () => worker.postMessage({ type: 'SKIP_WAITING' }));
       if (registration.waiting) offerUpdate(registration.waiting);
       registration.addEventListener('updatefound', () => {
         const worker = registration.installing;
@@ -79,7 +86,7 @@
         if (refreshing) return;
         refreshing = true;
         if (!document.querySelector('form:focus-within')) window.location.reload();
-        else announce('Mise à jour prête. Rechargez lorsque votre saisie est terminée.', 'Recharger', () => window.location.reload());
+        else announce(translate('pwa.updateReady'), translate('pwa.reload'), () => window.location.reload());
       });
     } catch (error) {
       if (document.documentElement.dataset.environment === 'development') console.warn('Service worker non enregistré.', error);

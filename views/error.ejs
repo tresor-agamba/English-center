@@ -1,9 +1,9 @@
 <%- include('partials/header', { title }) %>
 
 <section class="card">
-  <h1><%= title %></h1>
-  <p><%= message %></p>
-  <a href="/">Retour à l’accueil</a>
+  <h1 data-public-error><%= title %></h1>
+  <p data-public-error><%= message %></p>
+  <a class="button" href="/" data-i18n="error.home">Back to home</a>
 </section>
 
 <%- include('partials/footer') %>

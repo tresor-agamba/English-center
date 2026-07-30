@@ -2,62 +2,62 @@
 
 <section class="registration-success">
   <% const statusDisplay = {
-    TRIAL_ACTIVE: { label: 'Inscription gratuite active', className: 'status-active' },
-    PAYMENT_REQUIRED: { label: 'Paiement requis', className: 'status-pending' },
-    CONFIRMED: { label: 'Inscription confirmée', className: 'status-active' },
-    CANCELLED: { label: 'Inscription annulée', className: 'status-inactive' },
-    PAYMENT_FAILED: { label: 'Paiement échoué', className: 'status-inactive' }
+    TRIAL_ACTIVE: { label: 'Inscription gratuite active', key: 'success.status.trial', className: 'status-active' },
+    PAYMENT_REQUIRED: { label: 'Paiement requis', key: 'success.status.payment', className: 'status-pending' },
+    CONFIRMED: { label: 'Inscription confirmée', key: 'success.status.confirmed', className: 'status-active' },
+    CANCELLED: { label: 'Inscription annulée', key: 'success.status.cancelled', className: 'status-inactive' },
+    PAYMENT_FAILED: { label: 'Paiement échoué', key: 'success.status.failed', className: 'status-inactive' }
   }[enrollment.status] || { label: enrollment.status, className: '' }; %>
   <% const latestPayment = enrollment.payments[0] || null; %>
   <% const successfulPayment = enrollment.payments.find((payment) => payment.status === 'SUCCESS') || null; %>
 
   <div class="success-icon" aria-hidden="true">✓</div>
-  <p class="eyebrow">Inscription enregistrée</p>
-  <h1><%= enrollment.status === 'CONFIRMED' ? 'Votre inscription est confirmée' : 'Votre place est réservée' %></h1>
-  <p>Bienvenue, <strong><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></strong>.</p>
+  <p class="eyebrow" data-i18n="success.eyebrow">Inscription enregistrée</p>
+  <h1 data-i18n="<%= enrollment.status === 'CONFIRMED' ? 'success.confirmedTitle' : 'success.reservedTitle' %>"><%= enrollment.status === 'CONFIRMED' ? 'Votre inscription est confirmée' : 'Votre place est réservée' %></h1>
+  <p><span data-i18n="success.welcome">Bienvenue</span>, <strong><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></strong>.</p>
 
   <div class="success-summary">
-    <div><span>Formation</span><strong><%= enrollment.trainingSession.course.title %></strong></div>
-    <div><span>Session</span><strong><%= enrollment.trainingSession.name %></strong></div>
-    <div><span>Dates</span><strong><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.endDate) %></strong></div>
-    <div><span>Horaires</span><strong><%= enrollment.trainingSession.startTime %> – <%= enrollment.trainingSession.endTime %></strong></div>
-    <div><span>Prix</span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
-    <div><span>Statut</span><strong class="status <%= statusDisplay.className %>"><%= statusDisplay.label %></strong></div>
+    <div><span data-i18n="success.course">Formation</span><strong><%= enrollment.trainingSession.course.title %></strong></div>
+    <div><span data-i18n="success.session">Session</span><strong><%= enrollment.trainingSession.name %></strong></div>
+    <div><span data-i18n="success.dates">Dates</span><strong><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.endDate) %></strong></div>
+    <div><span data-i18n="success.hours">Horaires</span><strong><%= enrollment.trainingSession.startTime %> – <%= enrollment.trainingSession.endTime %></strong></div>
+    <div><span data-i18n="success.price">Prix</span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
+    <div><span data-i18n="success.status">Statut</span><strong class="status <%= statusDisplay.className %>" <% if (statusDisplay.key) { %>data-i18n="<%= statusDisplay.key %>"<% } %>><%= statusDisplay.label %></strong></div>
   </div>
 
   <% if (enrollment.status === 'TRIAL_ACTIVE') { %>
     <div class="trial-notice trial-notice-active">
-      <strong>Votre essai gratuit est actif.</strong>
-      <span>Séances suivies : <%= trialAccess.trialAttendanceCount %> sur <%= trialAccess.trialLimit %></span>
-      <span>Séances gratuites restantes : <%= trialAccess.remainingTrialAttendances %></span>
+      <strong data-i18n="success.trialActive">Votre essai gratuit est actif.</strong>
+      <span><span data-i18n="success.attended">Séances suivies</span> : <%= trialAccess.trialAttendanceCount %> / <%= trialAccess.trialLimit %></span>
+      <span><span data-i18n="success.remaining">Séances gratuites restantes</span> : <%= trialAccess.remainingTrialAttendances %></span>
     </div>
   <% } else if (enrollment.status === 'PAYMENT_REQUIRED') { %>
     <div class="trial-notice trial-notice-blocked">
-      <strong>Vos trois séances gratuites sont terminées.</strong>
-      <span>Payez la formation pour continuer à accéder aux cours.</span>
+      <strong data-i18n="success.trialEnded">Vos trois séances gratuites sont terminées.</strong>
+      <span data-i18n="success.payToContinue">Payez la formation pour continuer à accéder aux cours.</span>
     </div>
   <% } else if (enrollment.status === 'CONFIRMED') { %>
     <div class="trial-notice trial-notice-confirmed">
-      <strong>Accès complet à la formation</strong>
-      <span>Votre paiement est confirmé et la limite d’essai ne s’applique plus.</span>
+      <strong data-i18n="success.fullAccess">Accès complet à la formation</strong>
+      <span data-i18n="success.paymentConfirmedCopy">Votre paiement est confirmé et la limite d’essai ne s’applique plus.</span>
     </div>
   <% } %>
 
   <% if (successfulPayment) { %>
     <div class="payment-notice payment-notice-success">
-      <strong>Paiement confirmé</strong>
-      <span>Référence : <%= successfulPayment.reference %></span>
-      <% if (successfulPayment.paidAt) { %><span>Payé le <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(successfulPayment.paidAt) %></span><% } %>
+      <strong data-i18n="success.paymentConfirmed">Paiement confirmé</strong>
+      <span><span data-i18n="error.reference">Référence</span> : <%= successfulPayment.reference %></span>
+      <% if (successfulPayment.paidAt) { %><span><span data-i18n="success.paidOn">Payé le</span> <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(successfulPayment.paidAt) %></span><% } %>
     </div>
   <% } else if (latestPayment && latestPayment.status === 'FAILED') { %>
     <div class="payment-notice payment-notice-failed">
-      <strong>La dernière tentative de paiement a échoué.</strong>
-      <span>Vous pouvez créer une nouvelle tentative.</span>
+      <strong data-i18n="success.lastPaymentFailed">La dernière tentative de paiement a échoué.</strong>
+      <span data-i18n="success.retryCopy">Vous pouvez créer une nouvelle tentative.</span>
     </div>
   <% } else if (latestPayment && ['PENDING', 'PROCESSING'].includes(latestPayment.status)) { %>
     <div class="payment-notice">
-      <strong>Une tentative de paiement est en attente.</strong>
-      <a href="/payments/<%= latestPayment.reference %>">Reprendre le paiement</a>
+      <strong data-i18n="success.paymentPending">Une tentative de paiement est en attente.</strong>
+      <a href="/payments/<%= latestPayment.reference %>" data-i18n="success.resumePayment">Reprendre le paiement</a>
     </div>
   <% } %>
 
@@ -65,16 +65,16 @@
     <% if (['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) { %>
       <form action="/payments" method="post">
         <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>" />
-        <button class="button" type="submit"><%= latestPayment && latestPayment.status === 'FAILED' ? 'Réessayer le paiement' : 'Payer maintenant' %></button>
+        <button class="button" type="submit" data-i18n="<%= latestPayment && latestPayment.status === 'FAILED' ? 'success.retryPayment' : 'success.payNow' %>"><%= latestPayment && latestPayment.status === 'FAILED' ? 'Réessayer le paiement' : 'Payer maintenant' %></button>
       </form>
     <% } %>
-    <span class="future-link" aria-disabled="true">Espace étudiant — bientôt disponible</span>
-    <a href="/">Retour à l’accueil</a>
+    <span class="future-link" aria-disabled="true" data-i18n="success.studentSoon">Espace étudiant — bientôt disponible</span>
+    <a href="/" data-i18n="error.home">Retour à l’accueil</a>
   </div>
 
   <% if (classMeetings.length) { %>
     <section class="meeting-list">
-      <h2>Séances de formation</h2>
+      <h2 data-i18n="success.meetings">Séances de formation</h2>
       <% classMeetings.forEach((meeting) => { %>
         <article>
           <div>
@@ -82,9 +82,9 @@
             <span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(meeting.startsAt) %></span>
           </div>
           <% if (trialAccess.hasCourseAccess) { %>
-            <a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Accéder au cours</a>
+            <a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>" data-i18n="success.join">Accéder au cours</a>
           <% } else { %>
-            <span class="status status-inactive">Accès bloqué</span>
+            <span class="status status-inactive" data-i18n="success.blocked">Accès bloqué</span>
           <% } %>
         </article>
       <% }) %>

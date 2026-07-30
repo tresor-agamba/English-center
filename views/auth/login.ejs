@@ -4,7 +4,7 @@
   <div class="card login-card">
     <p class="eyebrow" data-i18n="nav.login">Login</p>
     <h1 data-i18n="login.title">Welcome back</h1>
-    <% if (sessionId) { %><p>Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %>
+    <% if (sessionId) { %><p data-i18n="login.continue">Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %>
     <% if (error) { %><p class="form-error" role="alert" data-public-error><%= error %></p><% } %>
     <form action="/login" method="post">
       <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %>

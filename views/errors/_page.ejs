@@ -1,9 +1,9 @@
 <%- include('../partials/header', { title }) %>
 <section class="card error-page">
-  <p class="eyebrow">Erreur <%= statusCode %></p>
-  <h1><%= title %></h1>
-  <p><%= message %></p>
-  <% if (requestId && statusCode >= 500) { %><p class="help-text">Référence : <code><%= requestId %></code></p><% } %>
-  <a class="button" href="/">Retour à l’accueil</a>
+  <p class="eyebrow"><span data-i18n="error.label">Error</span> <%= statusCode %></p>
+  <h1 data-public-error><%= title %></h1>
+  <p data-public-error><%= message %></p>
+  <% if (requestId && statusCode >= 500) { %><p class="help-text"><span data-i18n="error.reference">Reference</span>: <code><%= requestId %></code></p><% } %>
+  <a class="button" href="/" data-i18n="error.home">Back to home</a>
 </section>
 <%- include('../partials/footer') %>

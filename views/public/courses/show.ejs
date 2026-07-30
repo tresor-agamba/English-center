@@ -7,24 +7,24 @@
   <h1><%= course.title %></h1>
   <p class="course-lead"><%= course.shortDescription || course.description || '' %></p>
   <div class="course-facts">
-    <span><strong data-i18n="detail.level">Level</strong><%= course.level || 'To be confirmed' %></span>
+    <span><strong data-i18n="detail.level">Level</strong><% if (course.level) { %><%= course.level %><% } else { %><span data-i18n="detail.tbc">To be confirmed</span><% } %></span>
     <span><strong data-i18n="detail.duration">Duration</strong><%= formatDuration(course) %></span>
     <span><strong data-i18n="detail.mode">Format</strong><span data-i18n="detail.online">100% online</span></span>
-    <span><strong data-i18n="detail.price">Indicative price</strong><%= course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) : 'On request' %></span>
+    <span><strong data-i18n="detail.price">Indicative price</strong><% if (course.price !== null) { %><span data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></span><% } else { %><span data-i18n="detail.onRequest">On request</span><% } %></span>
   </div>
 </section>
 
-<main class="course-detail-grid">
+<section class="course-detail-grid">
   <section class="content-section">
     <h2 data-i18n="detail.about">About this course</h2>
-    <p class="formatted-copy"><%= course.description || 'Detailed information will be available soon.' %></p>
+    <p class="formatted-copy"><% if (course.description) { %><%= course.description %><% } else { %><span data-i18n="detail.comingSoon">Detailed information will be available soon.</span><% } %></p>
   </section>
   <section class="content-section detail-info-grid">
-    <article><h2 data-i18n="detail.objectives">Objectives</h2><p class="formatted-copy"><%= course.objectives || 'To be confirmed.' %></p></article>
-    <article><h2 data-i18n="detail.audience">Who it is for</h2><p class="formatted-copy"><%= course.targetAudience || 'Anyone who wants to improve their English.' %></p></article>
-    <article><h2 data-i18n="detail.prerequisites">Prerequisites</h2><p class="formatted-copy"><%= course.prerequisites || 'No specific prerequisites.' %></p></article>
+    <article><h2 data-i18n="detail.objectives">Objectives</h2><p class="formatted-copy"><% if (course.objectives) { %><%= course.objectives %><% } else { %><span data-i18n="detail.tbc">To be confirmed.</span><% } %></p></article>
+    <article><h2 data-i18n="detail.audience">Who it is for</h2><p class="formatted-copy"><% if (course.targetAudience) { %><%= course.targetAudience %><% } else { %><span data-i18n="detail.defaultAudience">Anyone who wants to improve their English.</span><% } %></p></article>
+    <article><h2 data-i18n="detail.prerequisites">Prerequisites</h2><p class="formatted-copy"><% if (course.prerequisites) { %><%= course.prerequisites %><% } else { %><span data-i18n="detail.noPrerequisites">No specific prerequisites.</span><% } %></p></article>
   </section>
-</main>
+</section>
 
 <section class="section-block public-sessions" aria-labelledby="sessions-title">
   <div class="section-heading"><div><p class="eyebrow" data-i18n="detail.calendar">Schedule</p><h2 id="sessions-title" data-i18n="detail.sessions">Upcoming sessions</h2></div></div>
@@ -37,10 +37,10 @@
           <span class="status <%= session.registrationOpen ? 'status-active' : 'status-inactive' %>" data-i18n="<%= session.registrationOpen ? 'detail.open' : 'detail.closed' %>"><%= session.registrationOpen ? 'Registration open' : 'Registration closed' %></span>
           <h3><%= session.name %></h3>
           <dl class="session-facts">
-            <div><dt data-i18n="detail.start">Start</dt><dd><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.startDate) %></dd></div>
-            <div><dt data-i18n="detail.end">End</dt><dd><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.endDate) %></dd></div>
+            <div><dt data-i18n="detail.start">Start</dt><dd><time data-local-date datetime="<%= session.startDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.startDate) %></time></dd></div>
+            <div><dt data-i18n="detail.end">End</dt><dd><time data-local-date datetime="<%= session.endDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.endDate) %></time></dd></div>
             <div><dt data-i18n="detail.seats">Seats</dt><dd><%= session.remainingPlaces %> / <%= session.capacity %></dd></div>
-            <div><dt data-i18n="detail.days">Days</dt><dd><%= formatWeekDays(session.weekDays) %></dd></div>
+            <div><dt data-i18n="detail.days">Days</dt><dd data-week-days="<%= session.weekDays.join(',') %>"><%= formatWeekDays(session.weekDays) %></dd></div>
             <div><dt data-i18n="detail.hours">Hours</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
             <div><dt data-i18n="detail.timezone">Time zone</dt><dd><%= session.timezone %></dd></div>
             <div><dt data-i18n="detail.platform">Platform</dt><dd><%= session.platform || 'Online' %></dd></div>

@@ -23,7 +23,8 @@
     "test:responsive": "playwright test",
     "test:pwa": "node --test tests/pwa/phase11.test.js",
     "test:pwa:e2e": "playwright test tests/pwa/pwa.spec.js --config=playwright.pwa.config.js",
-    "audit:responsive:prepare": "node scripts/prepareResponsiveAudit.js"
+    "audit:responsive:prepare": "node scripts/prepareResponsiveAudit.js",
+    "validate:public-ui": "node scripts/validateEjs.js && node --check public/js/main.js && node --check public/js/i18n.js && node --check public/js/pwa.js && node scripts/validatePublicI18n.js"
   },
   "keywords": [
     "english",

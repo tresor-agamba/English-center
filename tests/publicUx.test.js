@@ -31,6 +31,31 @@ test('interface publique GLI bilingue et orientée conversion', async (t) => {
       assert.match(source, /Create My Account and Take the Test/);
       assert.match(source, /Créer mon compte et passer le test/);
       assert.match(source, /localStorage\.setItem\('gli-language'/);
+      const dictionaryMatch = source.match(/const translations = (\{[\s\S]*?\n  \});/);
+      assert.ok(dictionaryMatch, 'Le dictionnaire i18n doit rester centralisé');
+      const translations = Function(`"use strict"; return (${dictionaryMatch[1]});`)();
+      assert.deepEqual(Object.keys(translations.en).sort(), Object.keys(translations.fr).sort());
+      for (const language of ['en', 'fr']) {
+        for (const [key, value] of Object.entries(translations[language])) {
+          assert.equal(typeof value, 'string', `${language}.${key} doit être une chaîne`);
+          assert.ok(value.trim(), `${language}.${key} ne doit pas être vide`);
+        }
+      }
+      const viewFiles = [
+        'views/home.ejs', 'views/auth/login.ejs', 'views/error.ejs',
+        'views/partials/header.ejs', 'views/partials/footer.ejs',
+        'views/public/certificates/verify.ejs', 'views/public/courses/index.ejs',
+        'views/public/courses/show.ejs', 'views/public/registration/new.ejs',
+        'views/public/registration/placement-test.ejs', 'views/public/registration/placement-result.ejs',
+        'views/public/registration/success.ejs', 'views/errors/_page.ejs',
+      ];
+      for (const file of viewFiles) {
+        const view = await fs.readFile(file, 'utf8');
+        for (const match of view.matchAll(/data-i18n(?:-aria)?="([^"<%]+)"/g)) {
+          assert.ok(translations.en[match[1]], `${file}: clé anglaise absente ${match[1]}`);
+          assert.ok(translations.fr[match[1]], `${file}: clé française absente ${match[1]}`);
+        }
+      }
     });
     await t.test('maintient les pages publiques et leurs champs métier', async () => {
       for (const path of ['/formations', '/register', '/login']) {
@@ -46,6 +71,31 @@ test('interface publique GLI bilingue et orientée conversion', async (t) => {
       assert.match(login, /name="phoneNumber"/);
       assert.match(login, /name="password"/);
       assert.doesNotMatch(login, /name="email"/);
+    });
+    await t.test('expose une navigation mobile et des libellés accessibles traduisibles', async () => {
+      const { html } = await get('/');
+      assert.match(html, /aria-controls="public-navigation"/);
+      assert.match(html, /aria-expanded="false"/);
+      assert.match(html, /data-i18n-aria="nav\.open"/);
+      assert.match(html, /data-i18n-aria="a11y\.primaryNav"/);
+      assert.match(html, /data-i18n="a11y\.skip"/);
+      assert.match(html, /href="\/#about"/);
+      assert.match(html, /href="\/#contact"/);
+    });
+    await t.test('conserve les routes et formulaires publics secondaires', async () => {
+      const certificate = await get('/certificates/verify');
+      assert.equal(certificate.response.status, 200);
+      assert.match(certificate.html, /label for="query" data-i18n="certificate\.label"/);
+      assert.match(certificate.html, /action="\/certificates\/verify"/);
+      const missing = await get('/route-publique-inexistante');
+      assert.equal(missing.response.status, 404);
+      assert.match(missing.html, /data-i18n="error\.home"/);
+    });
+    await t.test('n’imbrique pas de région main dans le contenu public', async () => {
+      for (const path of ['/', '/formations', '/register', '/login', '/certificates/verify']) {
+        const { html } = await get(path);
+        assert.equal((html.match(/<main\b/g) || []).length, 1, `${path} doit contenir un seul élément main`);
+      }
     });
     await t.test('conserve les boutons dynamiques LEVEL_1, LEVEL_2 et LEVEL_3', async () => {
       const source = await fs.readFile('public/js/main.js', 'utf8');
