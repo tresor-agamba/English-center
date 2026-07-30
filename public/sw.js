@@ -14,6 +14,7 @@ const ESSENTIAL_ASSETS = [
   '/icons/icon-512.png',
   '/icons/icon-512-maskable.png',
   '/icons/apple-touch-icon.png',
+  '/images/logo/logo-icon.png',
   '/favicon.ico',
 ];
 const PRIVATE_PREFIXES = [

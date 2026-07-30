@@ -1,6 +1,6 @@
 <%- include('../../partials/header', { title }) %>
 <section class="card registration-form-card public-registration">
-  <p class="eyebrow">Global Language Institute</p>
+  <p class="eyebrow">New Vision Academy</p>
   <h1 data-i18n="form.title">Create your student account</h1>
   <p data-i18n="form.copy">Choose your program and requested level. Your phone number will be your login.</p>
   <% if (error) { %><div class="form-error" role="alert"><p data-public-error><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>" data-i18n="login.button">Sign In</a><% } %></div><% } %>

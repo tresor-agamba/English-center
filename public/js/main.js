@@ -4,17 +4,6 @@ fetch('/settings/public', { headers: { Accept: 'application/json' } })
   .then((response) => response.ok ? response.json() : null)
   .then((settings) => {
     if (!settings) return;
-    document.documentElement.style.setProperty('--primary', settings.primaryColor || '#2563EB');
-    document.documentElement.style.setProperty('--secondary', settings.secondaryColor || '#0F172A');
-    document.documentElement.style.setProperty('--accent', settings.accentColor || '#F59E0B');
-    if (settings.mainLogoUrl) {
-      document.querySelectorAll('.gli-brand').forEach((brand) => {
-        if (brand.querySelector('img')) return;
-        const image = document.createElement('img');
-        image.src = settings.mainLogoUrl; image.alt = ''; image.className = 'brand-logo';
-        brand.querySelector('.brand-mark')?.replaceWith(image);
-      });
-    }
     document.querySelectorAll('[data-center-email]').forEach((node) => {
       if (!settings.email) return;
       node.hidden = false; node.textContent = settings.email; node.href = `mailto:${settings.email}`;

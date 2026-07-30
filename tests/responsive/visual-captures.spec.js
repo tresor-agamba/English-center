@@ -49,3 +49,26 @@ test('captures visuelles représentatives', async () => {
     await require('../../src/utils/prisma').$disconnect();
   }
 });
+
+test('navigation et logo publics restent utilisables à 320 px', async () => {
+  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 320, height: 568 } });
+    const response = await page.goto('/', { waitUntil: 'networkidle' });
+    expect(response.status()).toBe(200);
+    const navigation = page.locator('[data-public-navigation]');
+    const toggle = page.locator('[data-menu-toggle]');
+    await expect(navigation).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    const logo = page.locator('.header-brand img');
+    await expect(logo).toBeVisible();
+    expect((await logo.boundingBox()).height).toBeGreaterThanOrEqual(32);
+    await toggle.click();
+    await expect(navigation).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+  } finally {
+    await browser.close();
+    await require('../../src/utils/prisma').$disconnect();
+  }
+});

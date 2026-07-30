@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs/promises');
 const app = require('../src/app');
 
-test('interface publique GLI bilingue et orientée conversion', async (t) => {
+test('interface publique New Vision Academy bilingue et orientée conversion', async (t) => {
   const server = app.listen(0, '127.0.0.1');
   await new Promise((resolve) => server.once('listening', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -13,16 +13,35 @@ test('interface publique GLI bilingue et orientée conversion', async (t) => {
     return { response, html: await response.text() };
   };
   try {
-    await t.test('rend une landing page GLI avec les deux appels à l’action', async () => {
+    await t.test('rend une landing page New Vision Academy avec les deux appels à l’action', async () => {
       const { response, html } = await get('/');
       assert.equal(response.status, 200);
-      assert.match(html, /Global Language Institute/);
+      assert.match(html, /New Vision Academy/);
+      assert.match(html, /src="\/images\/logo\/logo-navigation\.png"/);
       assert.match(html, /Master Languages\. Unlock Opportunities\./);
       assert.match(html, /href="\/register"/);
       assert.match(html, /href="\/formations"/);
       assert.match(html, /data-language="en"/);
       assert.match(html, /data-language="fr"/);
       assert.match(html, /data-menu-toggle/);
+    });
+    await t.test('utilise chaque variante officielle du logo au bon emplacement', async () => {
+      const { html } = await get('/');
+      assert.match(html, /<header[\s\S]*logo-navigation\.png/);
+      assert.match(html, /<source[^>]+logo-icon\.png/);
+      assert.match(html, /<footer[\s\S]*logo-with-tagline\.png/);
+      assert.match(html, /alt="New Vision Academy"/);
+      assert.doesNotMatch(html, /[A-Z]:\\[^"<]+/);
+      for (const path of [
+        'logo/file_00000000136481f4adfe20138a5ac0be.png',
+        'logo/file_00000000288c82469aee30c1647223e5.png',
+        'logo/file_0000000081cc81f495d7da251e20f7a4.png',
+        'public/images/logo/logo-with-tagline.png',
+        'public/images/logo/logo-navigation.png',
+        'public/images/logo/logo-icon.png',
+        'public/favicon.ico',
+        'public/icons/apple-touch-icon.png',
+      ]) await fs.access(path);
     });
     await t.test('centralise et contient les traductions anglaises et françaises', async () => {
       const source = await fs.readFile('public/js/i18n.js', 'utf8');
