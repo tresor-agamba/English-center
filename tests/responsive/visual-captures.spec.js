@@ -72,3 +72,48 @@ test('navigation et logo publics restent utilisables à 320 px', async () => {
     await require('../../src/utils/prisma').$disconnect();
   }
 });
+
+test('le dashboard admin reste dégagé sous le header à toutes les largeurs cibles', async () => {
+  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto('/login');
+    await page.locator('[name=phoneNumber]').fill(ACCOUNTS.ADMIN.phoneNumber);
+    await page.locator('[name=password]').fill(PASSWORD);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/admin/dashboard'),
+      page.locator('button[type=submit]').click(),
+    ]);
+
+    for (const viewport of [
+      { width: 1440, height: 900 }, { width: 1024, height: 768 },
+      { width: 768, height: 1024 }, { width: 430, height: 932 },
+      { width: 375, height: 812 }, { width: 320, height: 568 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
+      const layout = await page.evaluate(() => {
+        const header = document.querySelector('.public-header').getBoundingClientRect();
+        const navigation = document.querySelector('[data-admin-navigation]').getBoundingClientRect();
+        const heading = document.querySelector('.dashboard-heading').getBoundingClientRect();
+        return {
+          mainCount: document.querySelectorAll('main').length,
+          headerBottom: header.bottom,
+          navigationTop: navigation.top,
+          navigationBottom: navigation.bottom,
+          headingTop: heading.top,
+          overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        };
+      });
+      expect(layout.mainCount).toBe(1);
+      expect(layout.navigationTop).toBeGreaterThanOrEqual(layout.headerBottom + 12);
+      expect(layout.headingTop).toBeGreaterThanOrEqual(layout.navigationBottom + 20);
+      expect(layout.overflow).toBe(false);
+      await expect(page.locator('.header-brand img')).toBeVisible();
+      await expect(page.locator('[data-menu-toggle]')).toHaveAttribute('aria-expanded', 'false');
+    }
+  } finally {
+    await browser.close();
+    await require('../../src/utils/prisma').$disconnect();
+  }
+});
