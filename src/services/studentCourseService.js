@@ -13,6 +13,11 @@ const COURSE_SELECT = {
   description: true,
   price: true,
   currency: true,
+  pricingMode: true,
+  pricingActive: true,
+  registrationFee: true,
+  pricingStartsAt: true,
+  pricingEndsAt: true,
 };
 
 function paymentState(payments, now = new Date()) {

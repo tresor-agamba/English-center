@@ -13,7 +13,7 @@
     <tbody><% courses.forEach((course) => { %><tr>
       <td data-label="Formation"><strong><%= course.title %></strong><br /><small>/<%= course.slug %></small></td>
       <td data-label="Type"><%= typeLabels[course.courseType] %></td>
-      <td data-label="Prix"><%= course.price !== null ? `${course.price} ${course.currency}` : 'À définir' %></td>
+      <td data-label="Prix"><% if (course.price === null || !course.pricingMode) { %>À définir<% } else if (!course.pricingActive) { %><%= course.price %> <%= course.currency %> · Inactif<% } else if (course.pricingMode === 'FREE') { %>Gratuite<% } else { %><%= Number(course.price) + Number(course.registrationFee || 0) %> <%= course.currency %><% } %></td>
       <td data-label="Sessions"><%= course._count.trainingSessions %></td>
       <td data-label="Publication"><span class="status <%= course.isPublished ? 'status-active' : 'status-inactive' %>"><%= course.isPublished ? 'Publiée' : 'Brouillon' %></span></td>
       <td data-label="Actions"><a href="/admin/courses/<%= course.id %>/edit">Modifier</a></td>

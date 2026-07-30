@@ -19,8 +19,10 @@
 <a class="button" href="/student/courses/<%= enrollment.id %>/assignments">Voir les devoirs</a>
 <% if (['TRIAL_ACTIVE','PAYMENT_REQUIRED','PAYMENT_FAILED'].includes(enrollment.status)) { %>
 <section class="student-payment-action">
-  <% if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
-  <% } else { %><form action="/payments" method="post"><input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><button class="button" type="submit"><%= enrollment.status === 'TRIAL_ACTIVE' ? 'Payer maintenant' : 'Nouvelle tentative de paiement' %></button></form><% } %>
+  <% const pricingNow = new Date(); const pricingAvailable = course.pricingMode && course.pricingActive && (!course.pricingStartsAt || course.pricingStartsAt <= pricingNow) && (!course.pricingEndsAt || course.pricingEndsAt > pricingNow); %>
+  <% if (!pricingAvailable) { %><p class="empty-state" data-i18n="payment.priceUnavailable">Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.</p>
+  <% } else if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
+  <% } else { %><form action="/payments" method="post"><input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><button class="button" type="submit"><%= course.pricingMode === 'FREE' ? 'Activer gratuitement' : (enrollment.status === 'TRIAL_ACTIVE' ? 'Payer maintenant' : 'Nouvelle tentative de paiement') %></button></form><% } %>
   <% if (enrollment.payments.lastFailedPayment) { %><p class="form-error">Dernière tentative échouée. Vous pouvez réessayer.</p><% } %>
 </section><% } %>
 <section class="section-block"><h2>Séances</h2>

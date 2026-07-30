@@ -15,6 +15,7 @@ test('configuration administrative du catalogue', async (t) => {
   let openSession;
   let privateUrl;
   let studentId;
+  let teacherId;
   let server;
   let baseUrl;
 
@@ -63,6 +64,8 @@ test('configuration administrative du catalogue', async (t) => {
       assert.equal(course.durationUnit, 'WEEKS');
       assert.equal(Number(course.price), 150.5);
       assert.equal(course.currency, 'USD');
+      assert.equal(course.pricingMode, 'ONE_TIME');
+      assert.equal(course.pricingActive, true);
       assert.equal(course.trainingMode, '100 % en ligne');
       assert.equal(course.isPublished, true);
 
@@ -77,6 +80,17 @@ test('configuration administrative du catalogue', async (t) => {
     await t.test('rejette prix négatif et devise non autorisée', () => {
       assert.throws(() => courseController.parseForm({ ...courseBody, price: '-1' }), /prix/i);
       assert.throws(() => courseController.parseForm({ ...courseBody, currency: 'EUR' }), /devise/i);
+      assert.throws(() => courseController.parseForm({ ...courseBody, pricingState: 'AVAILABLE', price: '0' }), /supérieur à zéro/i);
+      assert.throws(() => courseController.parseForm({ ...courseBody, registrationFee: '-1' }), /frais/i);
+    });
+
+    await t.test('distingue tarif gratuit, indisponible et inactif', () => {
+      const free = courseController.parseForm({ ...courseBody, pricingState: 'FREE', price: '999', registrationFee: '12' });
+      assert.equal(free.pricingMode, 'FREE'); assert.equal(free.price, '0'); assert.equal(free.registrationFee, '0');
+      const unavailable = courseController.parseForm({ ...courseBody, pricingState: 'UNAVAILABLE', price: '', registrationFee: '' });
+      assert.equal(unavailable.pricingMode, null); assert.equal(unavailable.price, null);
+      const inactive = courseController.parseForm({ ...courseBody, pricingState: 'INACTIVE', price: '99' });
+      assert.equal(inactive.pricingActive, false); assert.equal(inactive.pricingMode, 'ONE_TIME');
     });
 
     await t.test('crée une session avec jours et horaires contrôlés', async () => {
@@ -149,23 +163,36 @@ test('configuration administrative du catalogue', async (t) => {
         },
       });
       studentId = student.id;
-      const login = await fetch(`${baseUrl}/login`, {
-        method: 'POST',
-        body: new URLSearchParams({ phoneNumber: student.phoneNumber, password }),
-        redirect: 'manual',
+      const teacher = await prisma.user.create({
+        data: {
+          firstName: 'Protection',
+          lastName: 'Enseignant',
+          phoneNumber: `+24388${suffix}`,
+          passwordHash: await bcrypt.hash(password, 12),
+          role: 'TEACHER',
+        },
       });
-      const cookie = login.headers.get('set-cookie').split(';')[0];
-      const forbidden = await fetch(`${baseUrl}/admin/courses`, {
-        method: 'POST',
-        headers: { Cookie: cookie },
-        body: new URLSearchParams(courseBody),
-      });
-      assert.equal(forbidden.status, 403);
+      teacherId = teacher.id;
+      for (const user of [student, teacher]) {
+        const login = await fetch(`${baseUrl}/login`, {
+          method: 'POST',
+          body: new URLSearchParams({ phoneNumber: user.phoneNumber, password }),
+          redirect: 'manual',
+        });
+        const cookie = login.headers.get('set-cookie').split(';')[0];
+        const forbidden = await fetch(`${baseUrl}/admin/courses`, {
+          method: 'POST',
+          headers: { Cookie: cookie },
+          body: new URLSearchParams(courseBody),
+        });
+        assert.equal(forbidden.status, 403);
+      }
     });
   } finally {
     if (server) await new Promise((resolve) => server.close(resolve));
     for (const id of createdCourseIds.reverse()) await prisma.course.delete({ where: { id } }).catch(() => {});
     if (studentId) await prisma.user.delete({ where: { id: studentId } }).catch(() => {});
+    if (teacherId) await prisma.user.delete({ where: { id: teacherId } }).catch(() => {});
     await prisma.$disconnect();
   }
 });

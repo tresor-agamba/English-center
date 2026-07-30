@@ -7,6 +7,7 @@ const enrollmentReminders = require('./enrollmentReminderService');
 
 const MAX_TRANSACTION_ATTEMPTS = 8;
 const ACTIVE_STATUSES = ['PENDING', 'PROCESSING'];
+const ALLOWED_CURRENCIES = ['USD', 'CDF'];
 
 class PaymentError extends Error {
   constructor(code, message, statusCode = 400) {
@@ -54,7 +55,10 @@ function paymentPublicSelect() {
     reference: true,
     provider: true,
     amount: true,
+    baseAmount: true,
+    registrationFee: true,
     currency: true,
+    pricingMode: true,
     status: true,
     failureReason: true,
     paidAt: true,
@@ -95,9 +99,15 @@ async function loadEnrollmentForPayment(client, enrollmentId, userId) {
           registrationDeadline: true,
           course: {
             select: {
+              id: true,
               isPublished: true,
               price: true,
               currency: true,
+              pricingMode: true,
+              pricingActive: true,
+              registrationFee: true,
+              pricingStartsAt: true,
+              pricingEndsAt: true,
             },
           },
         },
@@ -124,9 +134,14 @@ function validatePayableEnrollment(enrollment, now) {
   if (!session.course.isPublished || session.endDate < now || !['OPEN', 'FULL', 'ONGOING'].includes(session.status)) {
     throw new PaymentError('SESSION_UNAVAILABLE', 'Cette session n’est plus disponible.');
   }
-  if (session.course.price === null || Number(session.course.price) < 0) {
-    throw new PaymentError('PRICE_UNAVAILABLE', 'Le prix de cette formation n’est pas disponible.');
-  }
+  const pricing = session.course;
+  if (pricing.price === null || !pricing.pricingMode) throw new PaymentError('PRICE_UNAVAILABLE', 'Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.');
+  if (!pricing.pricingActive) throw new PaymentError('PRICE_INACTIVE', 'Le tarif de cette formation est actuellement indisponible. Veuillez contacter l’administration.');
+  if (pricing.pricingStartsAt && pricing.pricingStartsAt > now) throw new PaymentError('PRICE_NOT_STARTED', 'Le tarif de cette formation n’est pas encore applicable.');
+  if (pricing.pricingEndsAt && pricing.pricingEndsAt <= now) throw new PaymentError('PRICE_EXPIRED', 'Le tarif de cette formation n’est plus applicable.');
+  if (!['FREE', 'ONE_TIME'].includes(pricing.pricingMode)) throw new PaymentError('PRICING_MODE_UNSUPPORTED', 'Ce mode de paiement n’est pas encore disponible.');
+  if (Number(pricing.price) < 0 || Number(pricing.registrationFee) < 0) throw new PaymentError('PRICE_INVALID', 'Le tarif configuré est invalide.');
+  if (!ALLOWED_CURRENCIES.includes(pricing.currency)) throw new PaymentError('CURRENCY_INVALID', 'La devise configurée est invalide.');
 }
 
 async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
@@ -148,6 +163,11 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
           }
 
           validatePayableEnrollment(enrollment, now);
+          const pricing = enrollment.trainingSession.course;
+          if (pricing.pricingMode === 'FREE') {
+            await tx.enrollment.update({ where: { id: enrollment.id }, data: { status: 'CONFIRMED' } });
+            return { redirectToEnrollment: true, enrollmentId: enrollment.id, free: true };
+          }
           const active = enrollment.payments.find((payment) => ACTIVE_STATUSES.includes(payment.status));
           if (active && (!active.expiresAt || active.expiresAt > now)) {
             return { paymentReference: active.reference, reused: true };
@@ -157,15 +177,21 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
           }
 
           const initialized = developmentProvider.initializePayment();
+          const total = new Prisma.Decimal(pricing.price).add(pricing.registrationFee);
           const payment = await tx.payment.create({
             data: {
               reference: generateReference(),
               provider: initialized.provider,
-              amount: enrollment.trainingSession.course.price,
-              currency: enrollment.trainingSession.course.currency,
+              amount: total,
+              baseAmount: pricing.price,
+              registrationFee: pricing.registrationFee,
+              currency: pricing.currency,
+              pricingMode: pricing.pricingMode,
               status: 'PENDING',
               expiresAt: initialized.expiresAt,
               enrollmentId: enrollment.id,
+              courseId: pricing.id,
+              metadata: { pricingSnapshotVersion: 1 },
             },
             select: { reference: true },
           });

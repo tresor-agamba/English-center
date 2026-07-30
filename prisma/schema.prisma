@@ -165,6 +165,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum CoursePricingMode {
+  FREE
+  ONE_TIME
+  MONTHLY
+  INSTALLMENT
+}
+
 enum LessonResourceType {
   PDF
   VIDEO_LINK
@@ -441,11 +448,11 @@ model User {
   studentInvoices              StudentInvoice[]            @relation("FinancialStudent")
   studentPaymentsRecorded      StudentPayment[]            @relation("StudentPaymentRecorder")
   financialAuditEvents         FinancialAuditLog[]         @relation("FinancialAuditActor")
-  centerSettingsUpdates        CenterSettings[]             @relation("CenterSettingsUpdater")
-  centerSettingsAudits         CenterSettingsAudit[]        @relation("CenterSettingsAuditActor")
-  privateSettingFiles          PrivateSettingFile[]         @relation("PrivateSettingFileUploader")
-  databaseBackups             DatabaseBackup[]              @relation("DatabaseBackupCreator")
-  backupAuditEvents           BackupAuditLog[]              @relation("BackupAuditActor")
+  centerSettingsUpdates        CenterSettings[]            @relation("CenterSettingsUpdater")
+  centerSettingsAudits         CenterSettingsAudit[]       @relation("CenterSettingsAuditActor")
+  privateSettingFiles          PrivateSettingFile[]        @relation("PrivateSettingFileUploader")
+  databaseBackups              DatabaseBackup[]            @relation("DatabaseBackupCreator")
+  backupAuditEvents            BackupAuditLog[]            @relation("BackupAuditActor")
 
   @@map("users")
 }
@@ -601,40 +608,47 @@ model TrainingSession {
 }
 
 model Course {
-  id               Int               @id @default(autoincrement())
+  id               Int                @id @default(autoincrement())
   title            String
-  slug             String            @unique
+  slug             String             @unique
   description      String?
-  shortDescription String?           @map("short_description")
-  courseType       CourseType        @default(OTHER) @map("course_type")
+  shortDescription String?            @map("short_description")
+  courseType       CourseType         @default(OTHER) @map("course_type")
   level            String?
   duration         String?
-  durationValue    Int?              @map("duration_value")
-  durationUnit     DurationUnit?     @map("duration_unit")
+  durationValue    Int?               @map("duration_value")
+  durationUnit     DurationUnit?      @map("duration_unit")
   objectives       String?
-  targetAudience   String?           @map("target_audience")
+  targetAudience   String?            @map("target_audience")
   prerequisites    String?
-  price            Decimal?          @db.Decimal(10, 2)
-  currency         String            @default("USD")
-  trainingMode     String?           @map("training_mode")
-  isPublished      Boolean           @default(false) @map("is_published")
-  lmsStatus        LmsCourseStatus   @default(DRAFT) @map("lms_status")
-  createdById      Int?              @map("created_by_id")
-  publishedAt      DateTime?         @map("published_at")
-  closedAt         DateTime?         @map("closed_at")
-  archivedAt       DateTime?         @map("archived_at")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
+  price            Decimal?           @db.Decimal(10, 2)
+  currency         String             @default("USD")
+  pricingMode      CoursePricingMode? @default(ONE_TIME) @map("pricing_mode")
+  pricingActive    Boolean            @default(true) @map("pricing_active")
+  registrationFee  Decimal            @default(0) @map("registration_fee") @db.Decimal(10, 2)
+  maxInstallments  Int                @default(1) @map("max_installments")
+  pricingStartsAt  DateTime?          @map("pricing_starts_at")
+  pricingEndsAt    DateTime?          @map("pricing_ends_at")
+  trainingMode     String?            @map("training_mode")
+  isPublished      Boolean            @default(false) @map("is_published")
+  lmsStatus        LmsCourseStatus    @default(DRAFT) @map("lms_status")
+  createdById      Int?               @map("created_by_id")
+  publishedAt      DateTime?          @map("published_at")
+  closedAt         DateTime?          @map("closed_at")
+  archivedAt       DateTime?          @map("archived_at")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
   modules          CourseModule[]
   enrollments      Enrollment[]
   schedules        Schedule[]
   documents        Document[]
   trainingSessions TrainingSession[]
   assignments      Assignment[]
-  certificateFee   Decimal?          @map("certificate_fee") @db.Decimal(10, 2)
+  certificateFee   Decimal?           @map("certificate_fee") @db.Decimal(10, 2)
   assessments      Assessment[]
-  createdBy        User?             @relation("LmsCourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  createdBy        User?              @relation("LmsCourseCreator", fields: [createdById], references: [id], onDelete: SetNull)
   academicCohorts  AcademicCohort[]
+  payments         Payment[]
 
   @@index([lmsStatus])
   @@index([createdById])
@@ -891,98 +905,98 @@ model PaymentReceipt {
 }
 
 model CenterSettings {
-  id                                  String   @id @default("MAIN")
-  officialName                        String   @default("English Center") @map("official_name")
-  shortName                           String?  @map("short_name")
-  description                         String?
-  address                             String?
-  city                                String?  @default("Kinshasa")
-  country                             String?  @default("RDC")
-  primaryPhone                        String?  @map("primary_phone")
-  secondaryPhone                      String?  @map("secondary_phone")
-  email                               String?
-  website                             String?
-  timezone                            String   @default("Africa/Kinshasa")
-  primaryLanguage                     String   @default("fr") @map("primary_language")
-  primaryCurrency                     String   @default("USD") @map("primary_currency")
-  isActive                            Boolean  @default(true) @map("is_active")
-  mainLogoFileId                      Int?     @map("main_logo_file_id")
-  secondaryLogoFileId                 Int?     @map("secondary_logo_file_id")
-  faviconFileId                       Int?     @map("favicon_file_id")
-  primaryColor                        String   @default("#1D4ED8") @map("primary_color")
-  secondaryColor                      String   @default("#173B57") @map("secondary_color")
-  accentColor                         String   @default("#C9A95E") @map("accent_color")
-  defaultCohortCapacity               Int      @default(30) @map("default_cohort_capacity")
-  defaultGroupCapacity                Int      @default(20) @map("default_group_capacity")
-  defaultSessionMinutes               Int      @default(60) @map("default_session_minutes")
-  usualStartTime                      String   @default("08:00") @map("usual_start_time")
-  usualEndTime                        String   @default("17:00") @map("usual_end_time")
-  openingDays                         String[] @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]) @map("opening_days")
-  defaultTrainingMode                 AcademicGroupModality @default(IN_PERSON) @map("default_training_mode")
-  toleratedLateMinutes                Int      @default(15) @map("tolerated_late_minutes")
-  onlineCoursesEnabled                Boolean  @default(true) @map("online_courses_enabled")
-  inPersonCoursesEnabled              Boolean  @default(true) @map("in_person_courses_enabled")
-  hybridCoursesEnabled                Boolean  @default(true) @map("hybrid_courses_enabled")
-  invoicePrefix                       String   @default("INV") @map("invoice_prefix")
-  receiptPrefix                       String   @default("REC") @map("receipt_prefix")
-  nextInvoiceNumber                   BigInt   @default(1) @map("next_invoice_number")
-  nextReceiptNumber                   BigInt   @default(1) @map("next_receipt_number")
-  trainingFeesEnabled                 Boolean  @default(true) @map("training_fees_enabled")
-  syllabusFeesEnabled                 Boolean  @default(true) @map("syllabus_fees_enabled")
-  certificateFeesEnabled              Boolean  @default(true) @map("certificate_fees_enabled")
-  showBalanceOnReceipts               Boolean  @default(true) @map("show_balance_on_receipts")
-  showPaymentMethod                   Boolean  @default(true) @map("show_payment_method")
-  showPaymentReference                Boolean  @default(true) @map("show_payment_reference")
-  certificatesEnabled                 Boolean  @default(true) @map("certificates_enabled")
-  certificateSignerName               String   @default("Direction English Center") @map("certificate_signer_name")
-  certificateSignerTitle              String   @default("Direction") @map("certificate_signer_title")
-  certificateSignatureFileId          Int?     @map("certificate_signature_file_id")
-  certificateStampFileId              Int?     @map("certificate_stamp_file_id")
-  certificateIntroText                String   @default("Le présent certificat atteste que") @map("certificate_intro_text")
-  certificateValidationText           String   @default("a suivi avec succès la formation") @map("certificate_validation_text")
-  certificateIssuePlace               String?  @default("Kinshasa") @map("certificate_issue_place")
-  certificateNumberFormat             String   @default("CERT-{YEAR}-{NUMBER}") @map("certificate_number_format")
-  certificateShowVerificationCode     Boolean  @default(true) @map("certificate_show_verification_code")
-  certificateShowLogo                 Boolean  @default(true) @map("certificate_show_logo")
-  documentShowLogo                    Boolean  @default(true) @map("document_show_logo")
-  documentShowCenterName              Boolean  @default(true) @map("document_show_center_name")
-  documentShowAddress                 Boolean  @default(true) @map("document_show_address")
-  documentShowPhone                   Boolean  @default(true) @map("document_show_phone")
-  documentShowEmail                   Boolean  @default(true) @map("document_show_email")
-  documentShowCurrency                Boolean  @default(true) @map("document_show_currency")
-  documentFooter                      String?  @map("document_footer")
-  documentThankYouText                String?  @default("Merci pour votre confiance.") @map("document_thank_you_text")
-  documentSignatureFileId             Int?     @map("document_signature_file_id")
-  documentStampFileId                 Int?     @map("document_stamp_file_id")
-  lmsEnabled                          Boolean  @default(true) @map("lms_enabled")
-  lmsProgressionMode                  String   @default("FREE") @map("lms_progression_mode")
-  lmsMaxTrackedMinutesPerAction       Int      @default(30) @map("lms_max_tracked_minutes_per_action")
-  lmsRequirePreviousLesson            Boolean  @default(false) @map("lms_require_previous_lesson")
-  lmsDownloadsEnabled                 Boolean  @default(true) @map("lms_downloads_enabled")
-  lmsAutoResumeEnabled                Boolean  @default(true) @map("lms_auto_resume_enabled")
-  lmsTimeTrackingEnabled              Boolean  @default(true) @map("lms_time_tracking_enabled")
-  studentWelcomeMessage               String?  @map("student_welcome_message")
-  teacherWelcomeMessage               String?  @map("teacher_welcome_message")
-  writtenAssessmentsEnabled           Boolean  @default(true) @map("written_assessments_enabled")
-  recordedOralAssessmentsEnabled      Boolean  @default(true) @map("recorded_oral_assessments_enabled")
-  liveVideoOralAssessmentsEnabled     Boolean  @default(true) @map("live_video_oral_assessments_enabled")
-  defaultMaximumScore                 Decimal  @default(100) @map("default_maximum_score") @db.Decimal(8, 2)
-  defaultPassingScore                 Decimal  @default(50) @map("default_passing_score") @db.Decimal(8, 2)
-  defaultWrittenDurationMinutes       Int      @default(60) @map("default_written_duration_minutes")
-  maxAudioFileSizeMb                  Int      @default(25) @map("max_audio_file_size_mb")
-  allowedVideoPlatforms               String[] @default(["GOOGLE_MEET", "ZOOM", "MICROSOFT_TEAMS", "JITSI"]) @map("allowed_video_platforms")
-  automaticResultPublication         Boolean  @default(false) @map("automatic_result_publication")
-  showEvaluatorComment               Boolean  @default(true) @map("show_evaluator_comment")
-  attendanceLateMinutes               Int      @default(15) @map("attendance_late_minutes")
-  attendanceCorrectionEnabled        Boolean  @default(true) @map("attendance_correction_enabled")
-  attendanceCorrectionMaxHours       Int      @default(48) @map("attendance_correction_max_hours")
-  attendanceCorrectionReasonRequired Boolean  @default(true) @map("attendance_correction_reason_required")
-  attendanceTechnicalIssueEnabled    Boolean  @default(true) @map("attendance_technical_issue_enabled")
-  attendanceExcusedEnabled           Boolean  @default(true) @map("attendance_excused_enabled")
-  updatedById                         Int?     @map("updated_by_id")
-  createdAt                           DateTime @default(now()) @map("created_at")
-  updatedAt                           DateTime @updatedAt @map("updated_at")
-  updatedBy                           User?    @relation("CenterSettingsUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  id                                 String                @id @default("MAIN")
+  officialName                       String                @default("English Center") @map("official_name")
+  shortName                          String?               @map("short_name")
+  description                        String?
+  address                            String?
+  city                               String?               @default("Kinshasa")
+  country                            String?               @default("RDC")
+  primaryPhone                       String?               @map("primary_phone")
+  secondaryPhone                     String?               @map("secondary_phone")
+  email                              String?
+  website                            String?
+  timezone                           String                @default("Africa/Kinshasa")
+  primaryLanguage                    String                @default("fr") @map("primary_language")
+  primaryCurrency                    String                @default("USD") @map("primary_currency")
+  isActive                           Boolean               @default(true) @map("is_active")
+  mainLogoFileId                     Int?                  @map("main_logo_file_id")
+  secondaryLogoFileId                Int?                  @map("secondary_logo_file_id")
+  faviconFileId                      Int?                  @map("favicon_file_id")
+  primaryColor                       String                @default("#1D4ED8") @map("primary_color")
+  secondaryColor                     String                @default("#173B57") @map("secondary_color")
+  accentColor                        String                @default("#C9A95E") @map("accent_color")
+  defaultCohortCapacity              Int                   @default(30) @map("default_cohort_capacity")
+  defaultGroupCapacity               Int                   @default(20) @map("default_group_capacity")
+  defaultSessionMinutes              Int                   @default(60) @map("default_session_minutes")
+  usualStartTime                     String                @default("08:00") @map("usual_start_time")
+  usualEndTime                       String                @default("17:00") @map("usual_end_time")
+  openingDays                        String[]              @default(["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"]) @map("opening_days")
+  defaultTrainingMode                AcademicGroupModality @default(IN_PERSON) @map("default_training_mode")
+  toleratedLateMinutes               Int                   @default(15) @map("tolerated_late_minutes")
+  onlineCoursesEnabled               Boolean               @default(true) @map("online_courses_enabled")
+  inPersonCoursesEnabled             Boolean               @default(true) @map("in_person_courses_enabled")
+  hybridCoursesEnabled               Boolean               @default(true) @map("hybrid_courses_enabled")
+  invoicePrefix                      String                @default("INV") @map("invoice_prefix")
+  receiptPrefix                      String                @default("REC") @map("receipt_prefix")
+  nextInvoiceNumber                  BigInt                @default(1) @map("next_invoice_number")
+  nextReceiptNumber                  BigInt                @default(1) @map("next_receipt_number")
+  trainingFeesEnabled                Boolean               @default(true) @map("training_fees_enabled")
+  syllabusFeesEnabled                Boolean               @default(true) @map("syllabus_fees_enabled")
+  certificateFeesEnabled             Boolean               @default(true) @map("certificate_fees_enabled")
+  showBalanceOnReceipts              Boolean               @default(true) @map("show_balance_on_receipts")
+  showPaymentMethod                  Boolean               @default(true) @map("show_payment_method")
+  showPaymentReference               Boolean               @default(true) @map("show_payment_reference")
+  certificatesEnabled                Boolean               @default(true) @map("certificates_enabled")
+  certificateSignerName              String                @default("Direction English Center") @map("certificate_signer_name")
+  certificateSignerTitle             String                @default("Direction") @map("certificate_signer_title")
+  certificateSignatureFileId         Int?                  @map("certificate_signature_file_id")
+  certificateStampFileId             Int?                  @map("certificate_stamp_file_id")
+  certificateIntroText               String                @default("Le présent certificat atteste que") @map("certificate_intro_text")
+  certificateValidationText          String                @default("a suivi avec succès la formation") @map("certificate_validation_text")
+  certificateIssuePlace              String?               @default("Kinshasa") @map("certificate_issue_place")
+  certificateNumberFormat            String                @default("CERT-{YEAR}-{NUMBER}") @map("certificate_number_format")
+  certificateShowVerificationCode    Boolean               @default(true) @map("certificate_show_verification_code")
+  certificateShowLogo                Boolean               @default(true) @map("certificate_show_logo")
+  documentShowLogo                   Boolean               @default(true) @map("document_show_logo")
+  documentShowCenterName             Boolean               @default(true) @map("document_show_center_name")
+  documentShowAddress                Boolean               @default(true) @map("document_show_address")
+  documentShowPhone                  Boolean               @default(true) @map("document_show_phone")
+  documentShowEmail                  Boolean               @default(true) @map("document_show_email")
+  documentShowCurrency               Boolean               @default(true) @map("document_show_currency")
+  documentFooter                     String?               @map("document_footer")
+  documentThankYouText               String?               @default("Merci pour votre confiance.") @map("document_thank_you_text")
+  documentSignatureFileId            Int?                  @map("document_signature_file_id")
+  documentStampFileId                Int?                  @map("document_stamp_file_id")
+  lmsEnabled                         Boolean               @default(true) @map("lms_enabled")
+  lmsProgressionMode                 String                @default("FREE") @map("lms_progression_mode")
+  lmsMaxTrackedMinutesPerAction      Int                   @default(30) @map("lms_max_tracked_minutes_per_action")
+  lmsRequirePreviousLesson           Boolean               @default(false) @map("lms_require_previous_lesson")
+  lmsDownloadsEnabled                Boolean               @default(true) @map("lms_downloads_enabled")
+  lmsAutoResumeEnabled               Boolean               @default(true) @map("lms_auto_resume_enabled")
+  lmsTimeTrackingEnabled             Boolean               @default(true) @map("lms_time_tracking_enabled")
+  studentWelcomeMessage              String?               @map("student_welcome_message")
+  teacherWelcomeMessage              String?               @map("teacher_welcome_message")
+  writtenAssessmentsEnabled          Boolean               @default(true) @map("written_assessments_enabled")
+  recordedOralAssessmentsEnabled     Boolean               @default(true) @map("recorded_oral_assessments_enabled")
+  liveVideoOralAssessmentsEnabled    Boolean               @default(true) @map("live_video_oral_assessments_enabled")
+  defaultMaximumScore                Decimal               @default(100) @map("default_maximum_score") @db.Decimal(8, 2)
+  defaultPassingScore                Decimal               @default(50) @map("default_passing_score") @db.Decimal(8, 2)
+  defaultWrittenDurationMinutes      Int                   @default(60) @map("default_written_duration_minutes")
+  maxAudioFileSizeMb                 Int                   @default(25) @map("max_audio_file_size_mb")
+  allowedVideoPlatforms              String[]              @default(["GOOGLE_MEET", "ZOOM", "MICROSOFT_TEAMS", "JITSI"]) @map("allowed_video_platforms")
+  automaticResultPublication         Boolean               @default(false) @map("automatic_result_publication")
+  showEvaluatorComment               Boolean               @default(true) @map("show_evaluator_comment")
+  attendanceLateMinutes              Int                   @default(15) @map("attendance_late_minutes")
+  attendanceCorrectionEnabled        Boolean               @default(true) @map("attendance_correction_enabled")
+  attendanceCorrectionMaxHours       Int                   @default(48) @map("attendance_correction_max_hours")
+  attendanceCorrectionReasonRequired Boolean               @default(true) @map("attendance_correction_reason_required")
+  attendanceTechnicalIssueEnabled    Boolean               @default(true) @map("attendance_technical_issue_enabled")
+  attendanceExcusedEnabled           Boolean               @default(true) @map("attendance_excused_enabled")
+  updatedById                        Int?                  @map("updated_by_id")
+  createdAt                          DateTime              @default(now()) @map("created_at")
+  updatedAt                          DateTime              @updatedAt @map("updated_at")
+  updatedBy                          User?                 @relation("CenterSettingsUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@map("center_settings")
 }
@@ -1062,13 +1076,13 @@ model DatabaseBackup {
 }
 
 model BackupPolicy {
-  id               String   @id @default("MAIN")
-  retentionDays    Int      @default(30) @map("retention_days")
-  maxBackups       Int      @default(30) @map("max_backups")
-  autoCleanup      Boolean  @default(true) @map("auto_cleanup")
-  dailyBackup      Boolean  @default(false) @map("daily_backup")
-  dailyBackupTime  String   @default("02:00") @map("daily_backup_time")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id              String   @id @default("MAIN")
+  retentionDays   Int      @default(30) @map("retention_days")
+  maxBackups      Int      @default(30) @map("max_backups")
+  autoCleanup     Boolean  @default(true) @map("auto_cleanup")
+  dailyBackup     Boolean  @default(false) @map("daily_backup")
+  dailyBackupTime String   @default("02:00") @map("daily_backup_time")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   @@map("backup_policies")
 }
@@ -1249,30 +1263,30 @@ model LessonResource {
 }
 
 model Enrollment {
-  id                     Int                    @id @default(autoincrement())
-  userId                 Int                    @map("user_id")
-  trainingSessionId      Int                    @map("training_session_id")
-  status                 EnrollmentStatus       @default(TRIAL_ACTIVE)
-  enrolledAt             DateTime               @default(now()) @map("enrolled_at")
-  requestedLevel         AcademicLevel?         @map("requested_level")
-  recommendedLevel       AcademicLevel?         @map("recommended_level")
-  approvedLevel          AcademicLevel?         @map("approved_level")
-  placementTestRequired  Boolean                @default(false) @map("placement_test_required")
-  placementTestScore     Int?                   @map("placement_test_score")
-  placementTestCompletedAt DateTime?            @map("placement_test_completed_at")
-  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trainingSession        TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
-  course                 Course?                @relation(fields: [courseId], references: [id])
-  courseId               Int?
-  payments               Payment[]
-  attendances            Attendance[]
-  lessonProgress         LessonProgress[]
-  assignmentSubmissions  AssignmentSubmission[]
-  certificateRequest     CertificateRequest?
-  certificatePayments    CertificatePayment[]
-  assessmentAttempts     AssessmentAttempt[]
-  assessmentEvaluations  AssessmentEvaluation[]
-  liveOralParticipations LiveOralParticipant[]
+  id                       Int                    @id @default(autoincrement())
+  userId                   Int                    @map("user_id")
+  trainingSessionId        Int                    @map("training_session_id")
+  status                   EnrollmentStatus       @default(TRIAL_ACTIVE)
+  enrolledAt               DateTime               @default(now()) @map("enrolled_at")
+  requestedLevel           AcademicLevel?         @map("requested_level")
+  recommendedLevel         AcademicLevel?         @map("recommended_level")
+  approvedLevel            AcademicLevel?         @map("approved_level")
+  placementTestRequired    Boolean                @default(false) @map("placement_test_required")
+  placementTestScore       Int?                   @map("placement_test_score")
+  placementTestCompletedAt DateTime?              @map("placement_test_completed_at")
+  user                     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trainingSession          TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  course                   Course?                @relation(fields: [courseId], references: [id])
+  courseId                 Int?
+  payments                 Payment[]
+  attendances              Attendance[]
+  lessonProgress           LessonProgress[]
+  assignmentSubmissions    AssignmentSubmission[]
+  certificateRequest       CertificateRequest?
+  certificatePayments      CertificatePayment[]
+  assessmentAttempts       AssessmentAttempt[]
+  assessmentEvaluations    AssessmentEvaluation[]
+  liveOralParticipations   LiveOralParticipant[]
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
@@ -1799,23 +1813,29 @@ model Attendance {
 }
 
 model Payment {
-  id                Int           @id @default(autoincrement())
-  reference         String        @unique
+  id                Int               @id @default(autoincrement())
+  reference         String            @unique
   provider          String
-  providerReference String?       @map("provider_reference")
-  amount            Decimal       @db.Decimal(10, 2)
+  providerReference String?           @map("provider_reference")
+  amount            Decimal           @db.Decimal(10, 2)
+  baseAmount        Decimal           @map("base_amount") @db.Decimal(10, 2)
+  registrationFee   Decimal           @default(0) @map("registration_fee") @db.Decimal(10, 2)
   currency          String
-  status            PaymentStatus @default(PENDING)
-  failureReason     String?       @map("failure_reason")
-  paidAt            DateTime?     @map("paid_at")
-  expiresAt         DateTime?     @map("expires_at")
+  pricingMode       CoursePricingMode @map("pricing_mode")
+  status            PaymentStatus     @default(PENDING)
+  failureReason     String?           @map("failure_reason")
+  paidAt            DateTime?         @map("paid_at")
+  expiresAt         DateTime?         @map("expires_at")
   metadata          Json?
-  enrollmentId      Int           @map("enrollment_id")
-  enrollment        Enrollment    @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
-  createdAt         DateTime      @default(now()) @map("created_at")
-  updatedAt         DateTime      @updatedAt @map("updated_at")
+  enrollmentId      Int               @map("enrollment_id")
+  courseId          Int               @map("course_id")
+  enrollment        Enrollment        @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  course            Course            @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
 
   @@index([enrollmentId])
+  @@index([courseId])
   @@index([status])
   @@map("payments")
 }

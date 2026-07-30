@@ -33,7 +33,7 @@ test('frais et émission manuelle des certificats', async (t) => {
       assert.equal(await prisma.certificate.count({ where: { certificateRequest: { enrollmentId: enrollment.id } } }), 0);
     });
     await t.test('ne confond pas paiement de formation et paiement du certificat', async () => {
-      await prisma.payment.create({ data: { reference: `COURSE-${key}`, provider: 'TEST', amount: 100, currency: 'USD', status: 'SUCCESS', enrollmentId: enrollment.id } });
+      await prisma.payment.create({ data: { reference: `COURSE-${key}`, provider: 'TEST', amount: 100, baseAmount: 100, registrationFee: 0, currency: 'USD', pricingMode: 'ONE_TIME', status: 'SUCCESS', enrollmentId: enrollment.id, courseId: course.id } });
       await assert.rejects(() => service.issue(enrollment.id, admin.id), error => error.code === 'PAYMENT_REQUIRED');
     });
     await t.test('recalcule le montant serveur et confirme le paiement une seule fois', async () => {
@@ -70,6 +70,7 @@ test('frais et émission manuelle des certificats', async (t) => {
     });
   } finally {
     await prisma.certificate.deleteMany({ where: { certificateRequest: { enrollment: { userId: { in: userIds } } } } });
+    await prisma.payment.deleteMany({ where: { courseId: { in: courseIds } } });
     await prisma.course.deleteMany({ where: { id: { in: courseIds } } });
     await prisma.user.deleteMany({ where: { id: { in: userIds } } });
     await prisma.certificateSettings.update({ where: { id: 1 }, data: { certificatesPaid: originalSettings.certificatesPaid, generalAmount: originalSettings.generalAmount, currency: originalSettings.currency } });

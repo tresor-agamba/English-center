@@ -69,6 +69,9 @@ test('architecture interne des paiements', async (t) => {
         slug: `paiement-${unique}`,
         price: '149.50',
         currency: 'USD',
+        pricingMode: 'ONE_TIME',
+        pricingActive: true,
+        registrationFee: '10.50',
         isPublished: true,
       },
     });
@@ -107,17 +110,23 @@ test('architecture interne des paiements', async (t) => {
       const reference = response.headers.get('location').split('/').pop();
       firstPayment = await prisma.payment.findUnique({ where: { reference } });
       assert.equal(firstPayment.enrollmentId, firstEnrollment.id);
-      assert.equal(Number(firstPayment.amount), 149.5);
+      assert.equal(Number(firstPayment.baseAmount), 149.5);
+      assert.equal(Number(firstPayment.registrationFee), 10.5);
+      assert.equal(Number(firstPayment.amount), 160);
       assert.equal(firstPayment.currency, 'USD');
+      assert.equal(firstPayment.pricingMode, 'ONE_TIME');
+      assert.equal(firstPayment.courseId, courseId);
       assert.equal(firstPayment.status, 'PENDING');
       assert.equal(firstPayment.provider, 'development');
       assert.equal(firstPayment.providerReference, null);
       assert.ok(firstPayment.expiresAt > firstPayment.createdAt);
       assert.equal(Math.round((firstPayment.expiresAt - firstPayment.createdAt) / 60000), 30);
 
-      await prisma.course.update({ where: { id: courseId }, data: { price: '200.00', currency: 'EUR' } });
+      await prisma.course.update({ where: { id: courseId }, data: { price: '200.00', currency: 'CDF', registrationFee: '25.00' } });
       const unchanged = await prisma.payment.findUnique({ where: { id: firstPayment.id } });
-      assert.equal(Number(unchanged.amount), 149.5);
+      assert.equal(Number(unchanged.baseAmount), 149.5);
+      assert.equal(Number(unchanged.registrationFee), 10.5);
+      assert.equal(Number(unchanged.amount), 160);
       assert.equal(unchanged.currency, 'USD');
     });
 
@@ -240,6 +249,27 @@ test('architecture interne des paiements', async (t) => {
       assert.equal(await prisma.payment.count({ where: { enrollmentId: enrollment.id } }), 0);
     });
 
+    await t.test('gère formation gratuite, tarif absent, tarif inactif et formation non publiée', async () => {
+      const freeEnrollment = await createPendingEnrollment(student.id, 'gratuite');
+      await prisma.course.update({ where: { id: courseId }, data: { price: 0, registrationFee: 0, currency: 'USD', pricingMode: 'FREE', pricingActive: true, isPublished: true } });
+      const free = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: freeEnrollment.id });
+      assert.equal(free.free, true);
+      assert.equal((await prisma.enrollment.findUnique({ where: { id: freeEnrollment.id } })).status, 'CONFIRMED');
+      assert.equal(await prisma.payment.count({ where: { enrollmentId: freeEnrollment.id } }), 0);
+
+      const unavailableEnrollment = await createPendingEnrollment(student.id, 'sans tarif');
+      await prisma.course.update({ where: { id: courseId }, data: { price: null, pricingMode: null, pricingActive: true } });
+      await assert.rejects(() => paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: unavailableEnrollment.id }), (error) => error.code === 'PRICE_UNAVAILABLE');
+
+      const inactiveEnrollment = await createPendingEnrollment(student.id, 'inactif');
+      await prisma.course.update({ where: { id: courseId }, data: { price: 100, pricingMode: 'ONE_TIME', pricingActive: false } });
+      await assert.rejects(() => paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: inactiveEnrollment.id }), (error) => error.code === 'PRICE_INACTIVE');
+
+      const unpublishedEnrollment = await createPendingEnrollment(student.id, 'non publiée');
+      await prisma.course.update({ where: { id: courseId }, data: { pricingActive: true, isPublished: false } });
+      await assert.rejects(() => paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: unpublishedEnrollment.id }), (error) => error.code === 'SESSION_UNAVAILABLE');
+    });
+
     await t.test('désactive les simulations en production', () => {
       const previous = process.env.NODE_ENV;
       process.env.NODE_ENV = 'production';
@@ -252,8 +282,8 @@ test('architecture interne des paiements', async (t) => {
     });
   } finally {
     if (server) await new Promise((resolve) => server.close(resolve));
-    if (courseId) await prisma.course.delete({ where: { id: courseId } }).catch(() => {});
     for (const id of userIds) await prisma.user.delete({ where: { id } }).catch(() => {});
+    if (courseId) await prisma.course.delete({ where: { id: courseId } }).catch(() => {});
     await prisma.$disconnect();
   }
 });

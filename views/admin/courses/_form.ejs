@@ -34,18 +34,35 @@
     </div>
   </div>
 
-  <div class="form-grid">
-    <div>
-      <label for="price">Prix</label>
-      <input id="price" name="price" type="number" min="0" step="0.01" value="<%= form.price !== undefined && form.price !== null ? form.price : '' %>" required />
+  <% const currentPricingState = form.pricingState || (form.pricingMode === null || form.price === null || form.price === '' ? 'UNAVAILABLE' : (!form.pricingActive ? 'INACTIVE' : (form.pricingMode === 'FREE' || Number(form.price) === 0 ? 'FREE' : 'AVAILABLE'))); %>
+  <fieldset class="pricing-fieldset">
+    <legend>Tarification</legend>
+    <div class="form-grid">
+      <div>
+        <label for="pricingState">État du tarif</label>
+        <select id="pricingState" name="pricingState" required>
+          <% Object.entries(pricingStates).forEach(([value, label]) => { %>
+            <option value="<%= value %>" <%= currentPricingState === value ? 'selected' : '' %>><%= label %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label for="currency">Devise</label>
+        <select id="currency" name="currency" required>
+          <% currencies.forEach((currency) => { %><option value="<%= currency %>" <%= (form.currency || 'USD') === currency ? 'selected' : '' %>><%= currency %></option><% }) %>
+        </select>
+      </div>
     </div>
-    <div>
-      <label for="currency">Devise</label>
-      <select id="currency" name="currency" required>
-        <% currencies.forEach((currency) => { %><option value="<%= currency %>" <%= (form.currency || 'USD') === currency ? 'selected' : '' %>><%= currency %></option><% }) %>
-      </select>
+    <div class="form-grid">
+      <div><label for="price">Prix de la formation</label><input id="price" name="price" type="number" min="0" step="0.01" value="<%= form.price !== undefined && form.price !== null ? form.price : '' %>" /></div>
+      <div><label for="registrationFee">Frais d’inscription</label><input id="registrationFee" name="registrationFee" type="number" min="0" step="0.01" value="<%= form.registrationFee !== undefined && form.registrationFee !== null ? form.registrationFee : '0' %>" /></div>
     </div>
-  </div>
+    <p class="form-hint">Le paiement en ligne actuel est unique. Les formations gratuites sont activées sans transaction monétaire.</p>
+    <div class="form-grid">
+      <div><label for="pricingStartsAt">Applicable à partir du</label><input id="pricingStartsAt" name="pricingStartsAt" type="datetime-local" value="<%= form.pricingStartsAt ? new Date(form.pricingStartsAt).toISOString().slice(0,16) : '' %>"></div>
+      <div><label for="pricingEndsAt">Applicable jusqu’au</label><input id="pricingEndsAt" name="pricingEndsAt" type="datetime-local" value="<%= form.pricingEndsAt ? new Date(form.pricingEndsAt).toISOString().slice(0,16) : '' %>"></div>
+    </div>
+  </fieldset>
 
   <label for="shortDescription">Courte description</label>
   <textarea id="shortDescription" name="shortDescription" rows="3"><%= form.shortDescription || '' %></textarea>

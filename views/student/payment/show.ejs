@@ -17,7 +17,10 @@
 
   <dl class="payment-details">
     <div><dt>Référence</dt><dd><code><%= payment.reference %></code></dd></div>
-    <div><dt>Montant</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></dd></div>
+    <div><dt>Formation</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.baseAmount)) %></dd></div>
+    <div><dt>Frais d’inscription</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.registrationFee)) %></dd></div>
+    <div><dt>Total à payer</dt><dd><strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></strong></dd></div>
+    <div><dt>Mode</dt><dd>Paiement unique</dd></div>
     <div><dt>Créé le</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.createdAt) %></dd></div>
     <div><dt>Expiration</dt><dd><%= payment.expiresAt ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.expiresAt) : 'Aucune' %></dd></div>
   </dl>
@@ -41,7 +44,8 @@
     </section>
   <% } %>
 
-  <p><a href="/registration/success/<%= payment.enrollmentId %>">← Retour à l’inscription</a></p>
+  <p class="payment-security-note">Le montant est calculé et vérifié par le serveur. Aucune donnée bancaire n’est enregistrée sur cette page.</p>
+  <p><a href="/student/payments">← Retour à mes paiements</a></p>
 </section>
 
 <%- include('../../partials/footer') %>
