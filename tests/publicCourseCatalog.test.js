@@ -144,6 +144,15 @@ test('catalogue public des formations', async (t) => {
       assert.equal(Object.hasOwn(openSession, '_count'), false);
     });
 
+    await t.test('publie les prochaines sessions ouvertes dans l’ordre sans données expirées', async () => {
+      const sessions = await publicCourseService.listUpcomingSessions(6);
+      const controlled = sessions.filter((session) => session.course.title === 'Formation publique test');
+      assert.deepEqual(controlled.map((session) => session.name), ['Session future ouverte']);
+      assert.equal(controlled[0].remainingPlaces, 2);
+      assert.ok(controlled.every((session) => session.startDate >= now));
+      assert.ok(controlled.every((session, index) => index === 0 || controlled[index - 1].startDate <= session.startDate));
+    });
+
     await t.test('renvoie une page 404 claire pour un slug inexistant', async () => {
       const response = {
         statusCode: 200,

@@ -124,6 +124,7 @@ async function getCenterSettings({ create = true, client = prisma } = {}) {
 }
 async function getPublicCenterSettings() {
   const settings = await getCenterSettings();
+  const { getPublicWhatsAppNumber } = require('../config/publicWhatsAppConfig');
   return {
     officialName: settings.officialName, shortName: settings.shortName, description: settings.description,
     city: settings.city, country: settings.country, primaryPhone: settings.primaryPhone, email: settings.email,
@@ -133,6 +134,7 @@ async function getPublicCenterSettings() {
     primaryColor: settings.primaryColor, secondaryColor: settings.secondaryColor, accentColor: settings.accentColor,
     lmsEnabled: settings.lmsEnabled, studentWelcomeMessage: settings.studentWelcomeMessage,
     teacherWelcomeMessage: settings.teacherWelcomeMessage,
+    publicWhatsAppNumber: getPublicWhatsAppNumber(),
   };
 }
 async function getPublicLogo(kind) {

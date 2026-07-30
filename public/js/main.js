@@ -12,6 +12,34 @@ fetch('/settings/public', { headers: { Accept: 'application/json' } })
       if (!settings.primaryPhone) return;
       node.hidden = false; node.textContent = settings.primaryPhone;
     });
+    document.querySelectorAll('[data-center-phone-link]').forEach((node) => {
+      if (!settings.primaryPhone) return;
+      node.hidden = false; node.href = `tel:${settings.primaryPhone.replace(/[^\d+]/g, '')}`;
+    });
+    const location = [settings.city, settings.country].filter(Boolean).join(', ');
+    document.querySelectorAll('[data-center-location]').forEach((node) => {
+      if (!location) return;
+      node.hidden = false; node.textContent = location;
+    });
+    document.querySelectorAll('[data-contact-email]').forEach((node) => { node.hidden = !settings.email; });
+    document.querySelectorAll('[data-contact-phone]').forEach((node) => { node.hidden = !settings.primaryPhone; });
+    document.querySelectorAll('[data-contact-location]').forEach((node) => { node.hidden = !location; });
+    document.querySelectorAll('[data-contact-empty]').forEach((node) => {
+      node.hidden = Boolean(settings.email || settings.primaryPhone || location);
+    });
+    const whatsapp = document.querySelector('[data-whatsapp-contact]');
+    const whatsappLink = whatsapp?.querySelector('[data-whatsapp-link]');
+    if (whatsapp && whatsappLink && settings.publicWhatsAppNumber) {
+      const updateWhatsAppLink = () => {
+        const language = window.GLI_I18N?.language || 'en';
+        const dictionary = window.GLI_I18N?.translations[language] || {};
+        const message = dictionary['whatsapp.message'] || 'Hello, I would like more information about New Vision Academy courses.';
+        whatsappLink.href = `https://wa.me/${settings.publicWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+      };
+      updateWhatsAppLink();
+      document.addEventListener('gli:languagechange', updateWhatsAppLink);
+      whatsapp.hidden = false;
+    }
   })
   .catch(() => {});
 
@@ -38,6 +66,28 @@ if (menuToggle && navigation) {
   });
   window.addEventListener('resize', () => { if (window.innerWidth > 900) closeMenu(); });
 }
+
+document.querySelectorAll('[data-faq-button]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const faq = button.closest('[data-faq]');
+    const panel = document.getElementById(button.getAttribute('aria-controls'));
+    const willOpen = button.getAttribute('aria-expanded') !== 'true';
+    faq.querySelectorAll('[data-faq-button]').forEach((other) => {
+      other.setAttribute('aria-expanded', 'false');
+      const otherPanel = document.getElementById(other.getAttribute('aria-controls'));
+      if (otherPanel) otherPanel.hidden = true;
+    });
+    button.setAttribute('aria-expanded', String(willOpen));
+    if (panel) panel.hidden = !willOpen;
+  });
+});
+
+document.querySelectorAll('.certificate-search').forEach((form) => {
+  form.addEventListener('submit', () => {
+    const button = form.querySelector('button[type="submit"]');
+    if (button && form.checkValidity()) button.setAttribute('aria-busy', 'true');
+  });
+});
 
 const observer = 'IntersectionObserver' in window
   ? new IntersectionObserver((entries) => entries.forEach((entry) => {

@@ -55,6 +55,43 @@ async function listPublished() {
   }));
 }
 
+async function listUpcomingSessions(limit = 3) {
+  const now = new Date();
+  const sessions = await prisma.trainingSession.findMany({
+    where: {
+      ...futureSessionWhere(now),
+      status: 'OPEN',
+      registrationDeadline: { gte: now },
+      course: { isPublished: true },
+    },
+    orderBy: [{ startDate: 'asc' }, { id: 'asc' }],
+    take: Math.max(1, Math.min(Number(limit) || 3, 6)),
+    select: {
+      id: true,
+      name: true,
+      startDate: true,
+      weekDays: true,
+      startTime: true,
+      endTime: true,
+      timezone: true,
+      platform: true,
+      capacity: true,
+      course: { select: { title: true, level: true, slug: true } },
+      _count: {
+        select: {
+          enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },
+        },
+      },
+    },
+  });
+  return sessions
+    .map(({ _count, ...session }) => ({
+      ...session,
+      remainingPlaces: Math.max(0, session.capacity - _count.enrollments),
+    }))
+    .filter((session) => session.remainingPlaces > 0);
+}
+
 async function findPublishedBySlug(slug) {
   const now = new Date();
   const course = await prisma.course.findFirst({
@@ -118,4 +155,4 @@ async function findPublishedBySlug(slug) {
   };
 }
 
-module.exports = { listPublished, findPublishedBySlug };
+module.exports = { listPublished, listUpcomingSessions, findPublishedBySlug };

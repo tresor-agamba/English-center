@@ -1,0 +1,20 @@
+<%- include('../partials/header', { title }) %>
+<section class="polished-hero public-page-hero">
+  <p class="eyebrow" data-i18n="contact.eyebrow">Contact</p>
+  <h1 data-i18n="contact.title">Talk to the academy</h1>
+  <p class="hero-lead" data-i18n="contact.copy">Use the verified contact details below for questions about programs, sessions or registration.</p>
+</section>
+<section class="landing-section contact-layout" aria-labelledby="contact-options-title">
+  <div>
+    <p class="eyebrow" data-i18n="contact.options.eyebrow">Available channels</p>
+    <h2 id="contact-options-title" data-i18n="contact.options.title">Choose a configured contact method</h2>
+    <p data-i18n="contact.privacy">Only contact information configured by the academy is displayed.</p>
+  </div>
+  <div class="contact-cards">
+    <article class="contact-card" data-contact-email hidden><span class="feature-icon" aria-hidden="true">@</span><h3 data-i18n="contact.email">Email</h3><a data-center-email></a></article>
+    <article class="contact-card" data-contact-phone hidden><span class="feature-icon" aria-hidden="true">☎</span><h3 data-i18n="contact.phone">Phone</h3><a data-center-phone-link><span data-center-phone></span></a></article>
+    <article class="contact-card" data-contact-location hidden><span class="feature-icon" aria-hidden="true">⌖</span><h3 data-i18n="contact.location">Location</h3><span data-center-location></span></article>
+    <div class="empty-state contact-empty" data-contact-empty><strong data-i18n="contact.empty.title">Contact details are being updated.</strong><p data-i18n="contact.empty.copy">Please check again soon or browse the available programs.</p><a class="button button-small" href="/formations" data-i18n="courses.all">Explore all courses</a></div>
+  </div>
+</section>
+<%- include('../partials/footer') %>

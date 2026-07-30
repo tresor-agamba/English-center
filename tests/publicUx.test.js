@@ -61,7 +61,7 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
         }
       }
       const viewFiles = [
-        'views/home.ejs', 'views/auth/login.ejs', 'views/error.ejs',
+        'views/home.ejs', 'views/auth/login.ejs', 'views/error.ejs', 'views/public/about.ejs', 'views/public/contact.ejs',
         'views/partials/header.ejs', 'views/partials/footer.ejs',
         'views/public/certificates/verify.ejs', 'views/public/courses/index.ejs',
         'views/public/courses/show.ejs', 'views/public/registration/new.ejs',
@@ -98,8 +98,27 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
       assert.match(html, /data-i18n-aria="nav\.open"/);
       assert.match(html, /data-i18n-aria="a11y\.primaryNav"/);
       assert.match(html, /data-i18n="a11y\.skip"/);
-      assert.match(html, /href="\/#about"/);
-      assert.match(html, /href="\/#contact"/);
+      assert.match(html, /href="\/about"/);
+      assert.match(html, /href="\/contact"/);
+    });
+    await t.test('présente les nouvelles sections sans contenu fictif', async () => {
+      const { html } = await get('/');
+      assert.match(html, /class="journey-timeline"/);
+      assert.match(html, /data-faq-button/);
+      assert.match(html, /aria-controls="faq-panel-1"/);
+      assert.match(html, /class="dashboard-mock/);
+      assert.match(html, /data-i18n="dashboard\.preview"/);
+      assert.match(html, /class="[^"]*\bsessions-section\b[^"]*"/);
+      assert.doesNotMatch(html, /testimonial|partner-logo|app-store|google-play|chatbot/i);
+    });
+    await t.test('sert les pages À propos et Contact avec les coordonnées administrables', async () => {
+      const about = await get('/about');
+      assert.equal(about.response.status, 200);
+      assert.match(about.html, /data-i18n="about\.mission\.title"/);
+      const contact = await get('/contact');
+      assert.equal(contact.response.status, 200);
+      assert.match(contact.html, /data-contact-empty/);
+      assert.match(contact.html, /data-center-email/);
     });
     await t.test('conserve les routes et formulaires publics secondaires', async () => {
       const certificate = await get('/certificates/verify');
@@ -111,7 +130,7 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
       assert.match(missing.html, /data-i18n="error\.home"/);
     });
     await t.test('n’imbrique pas de région main dans le contenu public', async () => {
-      for (const path of ['/', '/formations', '/register', '/login', '/certificates/verify']) {
+      for (const path of ['/', '/about', '/contact', '/formations', '/register', '/login', '/certificates/verify']) {
         const { html } = await get(path);
         assert.equal((html.match(/<main\b/g) || []).length, 1, `${path} doit contenir un seul élément main`);
       }

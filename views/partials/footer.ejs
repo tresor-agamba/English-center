@@ -8,13 +8,16 @@
           </a>
           <p data-i18n="footer.copy">Live online language programs for personal and professional growth.</p>
         </div>
-        <div><h2 data-i18n="footer.quick">Quick links</h2><a href="/" data-i18n="nav.home">Home</a><a href="/formations" data-i18n="nav.courses">Courses</a><a href="/register" data-i18n="nav.register">Register</a><a href="/login" data-i18n="nav.login">Login</a></div>
-        <div><h2 data-i18n="nav.contact">Contact</h2><a data-center-email hidden></a><span data-center-phone hidden></span></div>
-        <div><h2 data-i18n="footer.legal">Legal</h2><span data-i18n="footer.privacy">Privacy</span><span data-i18n="footer.terms">Terms</span></div>
+        <div><h2 data-i18n="footer.quick">Quick links</h2><a href="/" data-i18n="nav.home">Home</a><a href="/formations" data-i18n="nav.courses">Courses</a><a href="/about" data-i18n="nav.about">About</a><a href="/contact" data-i18n="nav.contact">Contact</a></div>
+        <div><h2 data-i18n="footer.learn">Learn</h2><a href="/register" data-i18n="nav.register">Register</a><a href="/login" data-i18n="nav.login">Login</a><a href="/certificates/verify" data-i18n="footer.verify">Verify a certificate</a></div>
+        <div><h2 data-i18n="nav.contact">Contact</h2><a data-center-email hidden></a><a data-center-phone-link hidden><span data-center-phone></span></a><span data-center-location hidden></span></div>
       </div>
-      <div class="footer-bottom"><p>&copy; <%= new Date().getFullYear() %> New Vision Academy</p><button class="button button-small pwa-install" type="button" data-pwa-install data-i18n="pwa.install" hidden>Install app</button></div>
+      <div class="footer-bottom"><p>&copy; <%= new Date().getFullYear() %> New Vision Academy</p><div class="footer-tools"><div class="language-switcher footer-language" aria-label="Language" data-i18n-aria="a11y.language"><button type="button" data-language="en" aria-pressed="true">EN</button><span aria-hidden="true">/</span><button type="button" data-language="fr" aria-pressed="false">FR</button></div><button class="button button-small pwa-install" type="button" data-pwa-install data-i18n="pwa.install" hidden>Install app</button></div></div>
     </footer>
-    <script src="/js/main.js"></script>
-    <script src="/js/pwa.js"></script>
+    <% if (typeof showPublicWhatsApp !== 'undefined' && showPublicWhatsApp) { %>
+      <%- include('whatsapp-button') %>
+    <% } %>
+    <script src="/js/main.js?v=nva-ui-20260730-3"></script>
+    <script src="/js/pwa.js?v=nva-ui-20260730-3"></script>
   </body>
 </html>

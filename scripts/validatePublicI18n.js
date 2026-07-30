@@ -14,7 +14,7 @@ if (JSON.stringify(englishKeys) !== JSON.stringify(frenchKeys)) {
 }
 
 const views = [
-  'views/home.ejs', 'views/auth/login.ejs', 'views/error.ejs',
+  'views/home.ejs', 'views/auth/login.ejs', 'views/error.ejs', 'views/public/about.ejs', 'views/public/contact.ejs',
   'views/partials/header.ejs', 'views/partials/footer.ejs',
   'views/public/certificates/verify.ejs', 'views/public/courses/index.ejs',
   'views/public/courses/show.ejs', 'views/public/registration/new.ejs',

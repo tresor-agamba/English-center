@@ -4,30 +4,31 @@
     <p class="eyebrow" data-i18n="certificate.eyebrow">Service public</p>
     <h1 data-i18n="certificate.title">Vérifier un certificat</h1>
     <p data-i18n="certificate.copy">Saisissez le numéro du certificat ou son code de vérification exact.</p>
-    <form method="post" action="/certificates/verify" class="certificate-search">
+    <form method="post" action="/certificates/verify" class="certificate-search" aria-describedby="certificate-search-help">
       <label for="query" data-i18n="certificate.label">Numéro ou code de vérification</label>
+      <p id="certificate-search-help" class="form-hint" data-i18n="certificate.help">The value is checked securely and is not stored in your browser.</p>
       <div>
-        <input id="query" name="query" minlength="8" maxlength="100" autocomplete="off" required>
+        <input id="query" name="query" minlength="8" maxlength="100" autocomplete="off" autocapitalize="characters" spellcheck="false" required>
         <button class="button" type="submit" data-i18n="certificate.button">Vérifier</button>
       </div>
     </form>
   </section>
 
   <% if (message) { %>
-    <section class="certificate-result certificate-result-unknown" role="status">
+    <section class="certificate-result certificate-result-unknown" role="status" aria-live="polite">
       <h2 data-i18n="certificate.result">Résultat de la vérification</h2>
       <p><%= message %></p>
     </section>
   <% } %>
 
   <% if (certificate) { %>
-    <section class="certificate-result <%= certificate.status === 'REVOKED' ? 'certificate-result-revoked' : 'certificate-result-valid' %>">
-      <p class="certificate-status" data-i18n="<%= certificate.status === 'REVOKED' ? 'certificate.revoked' : 'certificate.valid' %>"><%= certificate.status === 'REVOKED' ? 'Certificat révoqué' : 'Certificat authentique et valide' %></p>
+    <section class="certificate-result <%= certificate.status === 'REVOKED' ? 'certificate-result-revoked' : 'certificate-result-valid' %>" aria-live="polite">
+      <p class="certificate-status"><span class="certificate-status-icon" aria-hidden="true"><%= certificate.status === 'REVOKED' ? '!' : '✓' %></span><span data-i18n="<%= certificate.status === 'REVOKED' ? 'certificate.revoked' : 'certificate.valid' %>"><%= certificate.status === 'REVOKED' ? 'Certificat révoqué' : 'Certificat authentique et valide' %></span></p>
       <dl>
         <div><dt data-i18n="certificate.number">Numéro</dt><dd><%= certificate.serialNumber %></dd></div>
-        <div><dt data-i18n="certificate.issued">Date d’émission</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.issuedAt) %></dd></div>
+        <div><dt data-i18n="certificate.issued">Date d’émission</dt><dd><time data-local-date datetime="<%= certificate.issuedAt.toISOString() %>"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.issuedAt) %></time></dd></div>
         <% if (certificate.status === 'REVOKED') { %>
-          <div><dt data-i18n="certificate.revokedAt">Date de révocation</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.revokedAt) %></dd></div>
+          <div><dt data-i18n="certificate.revokedAt">Date de révocation</dt><dd><time data-local-date datetime="<%= certificate.revokedAt.toISOString() %>"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long' }).format(certificate.revokedAt) %></time></dd></div>
         <% } else { %>
           <div><dt data-i18n="certificate.student">Étudiant</dt><dd><%= certificate.studentNameSnapshot %></dd></div>
           <div><dt data-i18n="success.course">Formation</dt><dd><%= certificate.courseNameSnapshot %></dd></div>

@@ -1,9 +1,9 @@
 const { test, expect, chromium } = require('@playwright/test');
 const fs = require('fs/promises');
-const { ACCOUNTS, PASSWORD } = require('../../scripts/prepareResponsiveAudit');
+const { prepare, ACCOUNTS, PASSWORD } = require('../../scripts/prepareResponsiveAudit');
 
 const CASES = {
-  PUBLIC: ['/', '/login'],
+  PUBLIC: ['/', '/about', '/contact', '/login'],
   ADMIN: ['/admin/dashboard', '/admin/reports', '/admin/certificates'],
   TEACHER: ['/teacher'],
   STUDENT: ['/student', '/student/courses'],
@@ -73,7 +73,26 @@ test('navigation et logo publics restent utilisables à 320 px', async () => {
   }
 });
 
+test('la FAQ publique reste accessible au clavier et sans débordement', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  const response = await page.goto('/', { waitUntil: 'networkidle' });
+  expect(response.status()).toBe(200);
+  const first = page.locator('[data-faq-button]').first();
+  const second = page.locator('[data-faq-button]').nth(1);
+  await first.focus();
+  await page.keyboard.press('Enter');
+  await expect(first).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('#faq-panel-1')).toBeVisible();
+  await second.focus();
+  await page.keyboard.press('Space');
+  await expect(second).toHaveAttribute('aria-expanded', 'true');
+  await expect(first).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('#faq-panel-1')).toBeHidden();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+});
+
 test('le dashboard admin reste dégagé sous le header à toutes les largeurs cibles', async () => {
+  await prepare();
   const browser = await chromium.launch({ channel: 'msedge', headless: true });
   try {
     const page = await browser.newPage();
@@ -112,6 +131,84 @@ test('le dashboard admin reste dégagé sous le header à toutes les largeurs ci
       await expect(page.locator('.header-brand img')).toBeVisible();
       await expect(page.locator('[data-menu-toggle]')).toHaveAttribute('aria-expanded', 'false');
     }
+  } finally {
+    await browser.close();
+    await require('../../src/utils/prisma').$disconnect();
+  }
+});
+
+test('diagnostic DOM réel de la navigation admin et captures de validation', async () => {
+  test.setTimeout(180_000);
+  await prepare();
+  const output = 'audit-output/admin-header-fix';
+  await fs.mkdir(output, { recursive: true });
+  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const diagnostics = [];
+  try {
+    const page = await browser.newPage();
+    await page.goto('/login');
+    await page.locator('[name=phoneNumber]').fill(ACCOUNTS.ADMIN.phoneNumber);
+    await page.locator('[name=password]').fill(PASSWORD);
+    await Promise.all([
+      page.waitForURL((url) => url.pathname === '/admin/dashboard'),
+      page.locator('button[type=submit]').click(),
+    ]);
+    for (const viewport of [
+      { name: 'desktop-1440', width: 1440, height: 900 },
+      { name: 'laptop-1024', width: 1024, height: 768 },
+      { name: 'tablet-768', width: 768, height: 1024 },
+      { name: 'mobile-430', width: 430, height: 932 },
+      { name: 'mobile-375', width: 375, height: 812 },
+      { name: 'mobile-320', width: 320, height: 568 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto('/admin/dashboard', { waitUntil: 'networkidle' });
+      const result = await page.evaluate(() => {
+        const nav = document.querySelector('[data-admin-navigation]');
+        const parent = nav.parentElement;
+        const style = getComputedStyle(nav);
+        const rect = nav.getBoundingClientRect();
+        const visibleOverflow = [...document.querySelectorAll('body *')]
+          .filter((element) => {
+            const computed = getComputedStyle(element);
+            const box = element.getBoundingClientRect();
+            return computed.visibility !== 'hidden' && computed.display !== 'none' && box.width > 2 && box.height > 2
+              && element.scrollWidth > element.clientWidth + 1;
+          })
+          .map((element) => ({
+            tag: element.tagName.toLowerCase(),
+            className: String(element.className).slice(0, 120),
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth,
+            overflowX: getComputedStyle(element).overflowX,
+          }));
+        return {
+          tag: nav.tagName.toLowerCase(),
+          className: nav.className,
+          parent: `${parent.tagName.toLowerCase()}.${parent.className.trim().replace(/\s+/g, '.')}`,
+          linkCount: nav.querySelectorAll('a').length,
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+          display: style.display,
+          position: style.position,
+          overflowX: style.overflowX,
+          marginTop: style.marginTop,
+          padding: style.padding,
+          documentClientWidth: document.documentElement.clientWidth,
+          documentScrollWidth: document.documentElement.scrollWidth,
+          visibleOverflow,
+          unexpectedScrollers: visibleOverflow.filter((element) => ['auto', 'scroll'].includes(element.overflowX)),
+        };
+      });
+      diagnostics.push({ viewport, ...result });
+      expect(result.linkCount).toBeGreaterThan(10);
+      expect(result.display).toBe('flex');
+      expect(result.overflowX).toBe('visible');
+      expect(result.documentScrollWidth).toBeLessThanOrEqual(result.documentClientWidth);
+      expect(result.unexpectedScrollers).toEqual([]);
+      await page.screenshot({ path: `${output}/admin-dashboard-${viewport.name}.png`, fullPage: true });
+    }
+    await fs.writeFile(`${output}/dom-diagnostics.json`, JSON.stringify(diagnostics, null, 2));
   } finally {
     await browser.close();
     await require('../../src/utils/prisma').$disconnect();

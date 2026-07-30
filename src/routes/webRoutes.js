@@ -8,5 +8,7 @@ router.get('/health', (req, res) => {
 });
 
 router.get('/', require('../middlewares/asyncHandler')(pageController.showHome));
+router.get('/about', pageController.showAbout);
+router.get('/contact', pageController.showContact);
 
 module.exports = router;

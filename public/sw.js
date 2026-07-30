@@ -1,15 +1,15 @@
 'use strict';
 
-const CACHE_VERSION = 'english-center-v1';
+const CACHE_VERSION = 'new-vision-academy-v4';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PUBLIC_CACHE = `${CACHE_VERSION}-public`;
 const ALLOWED_CACHES = new Set([STATIC_CACHE, PUBLIC_CACHE]);
 const ESSENTIAL_ASSETS = [
   '/offline',
   '/offline.html',
-  '/css/style.css',
-  '/js/main.js',
-  '/js/pwa.js',
+  '/css/style.css?v=nva-ui-20260730-3',
+  '/js/main.js?v=nva-ui-20260730-3',
+  '/js/pwa.js?v=nva-ui-20260730-3',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-512-maskable.png',

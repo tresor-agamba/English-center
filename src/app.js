@@ -95,6 +95,13 @@ app.use(
   })
 );
 app.use(notificationLocals);
+app.use((req, res, next) => {
+  const publicPrefixes = ['/', '/about', '/contact', '/login', '/register', '/formations', '/certificates'];
+  res.locals.showPublicWhatsApp = publicPrefixes.some((prefix) => (
+    prefix === '/' ? req.path === '/' : (req.path === prefix || req.path.startsWith(`${prefix}/`))
+  ));
+  next();
+});
 
 app.use(healthRoutes);
 app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
