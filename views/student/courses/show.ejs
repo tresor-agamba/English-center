@@ -1,11 +1,15 @@
 <%- include('../../partials/header', { title }) %>
 <%- include('../_nav') %>
-<% const course = enrollment.trainingSession.course; const labels = { TRIAL_ACTIVE:'Essai gratuit actif', PAYMENT_REQUIRED:'Paiement requis', CONFIRMED:'Accès complet', CANCELLED:'Annulée', PAYMENT_FAILED:'Paiement échoué' }; %>
+<% const course = enrollment.trainingSession.course; const access = enrollment.trialAccess; const labels = { TRIAL_ACTIVE:'Accès actif', PAYMENT_REQUIRED:'Paiement requis', CONFIRMED:'Accès complet', CANCELLED:'Annulée', PAYMENT_FAILED:'Paiement échoué' }; const stageLabels = { FREE_TRIAL:'5 séances gratuites', PAYMENT_REQUIRED_50:'Paiement de 50 % requis', PARTIAL_ACCESS:'Accès aux séances 6 à 10', PAYMENT_REQUIRED_FULL:'Solde complet requis', FULL_ACCESS:'Paiement total confirmé', COMPLETED:'Niveau terminé', PLACEMENT_TEST_REQUIRED:'Test de placement requis' }; %>
 <header class="page-heading"><div><p class="eyebrow">Ma formation</p><h1><%= course.title %></h1><p class="heading-copy"><%= enrollment.trainingSession.name %></p></div><span class="status enrollment-status-<%= enrollment.status.toLowerCase() %>"><%= labels[enrollment.status] %></span></header>
 <section class="trial-notice trial-notice-<%= enrollment.status === 'CONFIRMED' ? 'confirmed' : (enrollment.status === 'TRIAL_ACTIVE' ? 'active' : 'blocked') %>">
-  <% if (enrollment.status === 'TRIAL_ACTIVE') { %><strong>Votre essai gratuit est actif.</strong><span>Séances suivies : <%= enrollment.trialAccess.trialAttendanceCount %> sur 3. Séances gratuites restantes : <%= enrollment.trialAccess.remainingTrialAttendances %>.</span>
-  <% } else if (enrollment.status === 'PAYMENT_REQUIRED') { %><strong>Vos trois séances gratuites sont terminées.</strong><span>Payez la formation pour continuer.</span>
-  <% } else if (enrollment.status === 'CONFIRMED') { %><strong>Paiement confirmé.</strong><span>Vous avez un accès complet à cette formation.</span>
+  <strong><%= stageLabels[access.accessStage] %></strong>
+  <% if (access.accessStage === 'PAYMENT_REQUIRED_50') { %><span>Votre période gratuite de 5 séances est terminée. Vous devez payer au moins 50 % du prix total pour accéder aux 5 séances suivantes.</span>
+  <% } else if (access.accessStage === 'PAYMENT_REQUIRED_FULL') { %><span>Vous avez terminé les 10 premières séances autorisées. Veuillez payer le solde restant pour accéder aux 6 dernières séances du niveau.</span>
+  <% } else if (access.accessStage === 'PARTIAL_ACCESS') { %><span>Le palier de 50 % est atteint. Accès autorisé jusqu’à la 10e séance.</span>
+  <% } else if (access.accessStage === 'FREE_TRIAL') { %><span>Séances consommées : <%= access.attendedSessionCount %>/5. Il reste <%= access.remainingTrialAttendances %> séance(s) gratuite(s).</span>
+  <% } else if (access.accessStage === 'FULL_ACCESS') { %><span>Paiement complet. Accès autorisé jusqu’à la 16e séance.</span>
+  <% } else if (access.accessStage === 'COMPLETED') { %><span>Les 16 séances de ce niveau sont terminées.</span>
   <% } else if (enrollment.status === 'CANCELLED') { %><strong>Cette inscription a été annulée.</strong>
   <% } else { %><strong>La dernière tentative de paiement a échoué.</strong><span>Vous pouvez lancer une nouvelle tentative.</span><% } %>
 </section>
@@ -14,21 +18,37 @@
   <article class="card"><strong>Durée</strong><span><%= course.duration || 'À préciser' %></span></article>
   <article class="card"><strong>Jours et heures</strong><span><%= enrollment.trainingSession.weekDays.join(', ') || 'À préciser' %> · <%= enrollment.trainingSession.startTime %>–<%= enrollment.trainingSession.endTime %></span></article>
   <article class="card"><strong>Plateforme</strong><span><%= enrollment.trainingSession.platform || 'En ligne' %></span></article>
+  <article class="card"><strong>Inscription gratuite</strong><span>Oui — frais d’inscription : 0 <%= access.expectedCurrency %></span></article>
+  <article class="card"><strong>Séances d’essai</strong><span><%= access.attendedSessionCount %>/5 utilisées · <%= access.remainingTrialAttendances %> restantes</span></article>
+  <article class="card"><strong>Prix total</strong><span><%= access.expectedTotalAmount %> <%= access.expectedCurrency %></span></article>
+  <article class="card"><strong>Montant confirmé</strong><span><%= access.confirmedPaidAmount %> <%= access.expectedCurrency %></span></article>
+  <article class="card"><strong>Solde restant</strong><span><%= access.remainingAmount %> <%= access.expectedCurrency %></span></article>
+  <article class="card"><strong>Progression du paiement</strong><span><%= access.paidPercentage %> %</span></article>
+  <article class="card"><strong>Montant nécessaire pour atteindre 50 %</strong><span><%= Number(access.paidPercentage) >= 50 ? 0 : access.nextRequiredPaymentAmount %> <%= access.expectedCurrency %></span></article>
+  <article class="card"><strong>Statut du palier</strong><span><%= stageLabels[access.accessStage] %></span></article>
+  <article class="card"><strong>Séances accessibles</strong><span>1 à <%= access.nextSessionLimit %> sur 16</span></article>
 </section>
 <a class="button" href="/student/courses/<%= enrollment.id %>/learn">Accéder au contenu pédagogique</a>
 <a class="button" href="/student/courses/<%= enrollment.id %>/assignments">Voir les devoirs</a>
-<% if (['TRIAL_ACTIVE','PAYMENT_REQUIRED','PAYMENT_FAILED'].includes(enrollment.status)) { %>
+<% if (Number(access.remainingAmount) > 0 && enrollment.status !== 'CANCELLED') { %>
 <section class="student-payment-action">
   <% const pricingNow = new Date(); const pricingAvailable = course.pricingMode && course.pricingActive && (!course.pricingStartsAt || course.pricingStartsAt <= pricingNow) && (!course.pricingEndsAt || course.pricingEndsAt > pricingNow); %>
-  <% if (!pricingAvailable) { %><p class="empty-state" data-i18n="payment.priceUnavailable">Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.</p>
+  <% if (!pricingAvailable || course.pricingMode !== 'ONE_TIME') { %><p class="empty-state" data-i18n="payment.priceUnavailable">Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.</p>
   <% } else if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
-  <% } else { %><form action="/payments" method="post"><input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><button class="button" type="submit"><%= course.pricingMode === 'FREE' ? 'Activer gratuitement' : (enrollment.status === 'TRIAL_ACTIVE' ? 'Payer maintenant' : 'Nouvelle tentative de paiement') %></button></form><% } %>
+  <% } else { %><form action="/payments" method="post" class="learning-form">
+    <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><input type="hidden" name="currency" value="<%= access.expectedCurrency %>">
+    <label for="payment-amount">Montant à payer (<%= access.expectedCurrency %>)</label>
+    <input id="payment-amount" name="amount" type="number" min="0.01" step="0.01" max="<%= access.remainingAmount %>" value="<%= access.nextRequiredPaymentAmount %>" required>
+    <p>Solde restant : <strong><%= access.remainingAmount %> <%= access.expectedCurrency %></strong></p>
+    <small>Montant conseillé pour atteindre le prochain palier : <%= access.nextRequiredPaymentAmount %> <%= access.expectedCurrency %>. Les paiements confirmés sont cumulés.</small>
+    <button class="button" type="submit">Payer maintenant</button>
+  </form><% } %>
   <% if (enrollment.payments.lastFailedPayment) { %><p class="form-error">Dernière tentative échouée. Vous pouvez réessayer.</p><% } %>
 </section><% } %>
 <section class="section-block"><h2>Séances</h2>
   <% if (!enrollment.meetings.length) { %><div class="empty-state">Aucune séance programmée.</div><% } else { %><div class="student-meeting-list">
-  <% enrollment.meetings.forEach(meeting => { %><article><div><strong><%= meeting.lesson?.title || meeting.title || 'Séance générale' %></strong><span><%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: enrollment.trainingSession.timezone }) %></span><small><%= meeting.platform.replaceAll('_', ' ') %> · Présence : <%= meeting.attendance || 'Non enregistrée' %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div>
-    <% if (meeting.access.canJoin && enrollment.status !== 'CANCELLED') { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Accéder au cours</a><% } %>
+  <% enrollment.meetings.forEach(meeting => { %><article><div><strong>Séance <%= meeting.levelPosition || '—' %> · <%= meeting.lesson?.title || meeting.title || 'Séance générale' %></strong><span><%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: enrollment.trainingSession.timezone }) %></span><small><%= meeting.platform.replaceAll('_', ' ') %> · Présence : <%= meeting.attendance || 'Non enregistrée' %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div>
+    <% if (meeting.access.canJoin && enrollment.status !== 'CANCELLED') { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>">Accéder au cours</a><% } else if (meeting.access.code === 'PAYMENT_REQUIRED') { %><span aria-label="Séance verrouillée"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> Paiement requis pour ce palier</span><% } %>
   </article><% }) %></div><% } %>
 </section>
 <%- include('../../partials/footer') %>

@@ -4,6 +4,8 @@ const prisma = require('../utils/prisma');
 const developmentProvider = require('./paymentProviders/developmentPaymentProvider');
 const notificationEvents = require('./notificationEventService');
 const enrollmentReminders = require('./enrollmentReminderService');
+const trialAccessService = require('./trialAccessService');
+const logger = require('./loggerService');
 
 const MAX_TRANSACTION_ATTEMPTS = 8;
 const ACTIVE_STATUSES = ['PENDING', 'PROCESSING'];
@@ -90,6 +92,8 @@ async function loadEnrollmentForPayment(client, enrollmentId, userId) {
       id: true,
       userId: true,
       status: true,
+      expectedTotalAmount: true,
+      expectedCurrency: true,
       trainingSession: {
         select: {
           id: true,
@@ -114,7 +118,10 @@ async function loadEnrollmentForPayment(client, enrollmentId, userId) {
       },
       payments: {
         orderBy: { createdAt: 'desc' },
-        select: { id: true, reference: true, status: true, expiresAt: true },
+        select: {
+          id: true, reference: true, status: true, expiresAt: true,
+          amount: true, currency: true, courseId: true,
+        },
       },
     },
   });
@@ -124,10 +131,7 @@ async function loadEnrollmentForPayment(client, enrollmentId, userId) {
 }
 
 function validatePayableEnrollment(enrollment, now) {
-  if (enrollment.status === 'CONFIRMED') {
-    throw new PaymentError('ENROLLMENT_CONFIRMED', 'Cette inscription est déjà confirmée.');
-  }
-  if (!['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) {
+  if (!['TRIAL_ACTIVE', 'PAYMENT_REQUIRED', 'CONFIRMED'].includes(enrollment.status)) {
     throw new PaymentError('ENROLLMENT_NOT_PAYABLE', 'Cette inscription ne peut pas être payée.');
   }
   const session = enrollment.trainingSession;
@@ -135,16 +139,41 @@ function validatePayableEnrollment(enrollment, now) {
     throw new PaymentError('SESSION_UNAVAILABLE', 'Cette session n’est plus disponible.');
   }
   const pricing = session.course;
+  if (enrollment.expectedTotalAmount !== null && enrollment.expectedCurrency) return;
   if (pricing.price === null || !pricing.pricingMode) throw new PaymentError('PRICE_UNAVAILABLE', 'Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.');
   if (!pricing.pricingActive) throw new PaymentError('PRICE_INACTIVE', 'Le tarif de cette formation est actuellement indisponible. Veuillez contacter l’administration.');
   if (pricing.pricingStartsAt && pricing.pricingStartsAt > now) throw new PaymentError('PRICE_NOT_STARTED', 'Le tarif de cette formation n’est pas encore applicable.');
   if (pricing.pricingEndsAt && pricing.pricingEndsAt <= now) throw new PaymentError('PRICE_EXPIRED', 'Le tarif de cette formation n’est plus applicable.');
-  if (!['FREE', 'ONE_TIME'].includes(pricing.pricingMode)) throw new PaymentError('PRICING_MODE_UNSUPPORTED', 'Ce mode de paiement n’est pas encore disponible.');
-  if (Number(pricing.price) < 0 || Number(pricing.registrationFee) < 0) throw new PaymentError('PRICE_INVALID', 'Le tarif configuré est invalide.');
+  if (pricing.pricingMode !== 'ONE_TIME') throw new PaymentError('PRICING_MODE_UNSUPPORTED', 'Cette formation doit utiliser un tarif payant unique.');
+  if (Number(pricing.price) <= 0 || Number(pricing.registrationFee) < 0) throw new PaymentError('PRICE_INVALID', 'Le tarif payant configuré est invalide.');
   if (!ALLOWED_CURRENCIES.includes(pricing.currency)) throw new PaymentError('CURRENCY_INVALID', 'La devise configurée est invalide.');
 }
 
-async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
+function requestedPaymentAmount(value, access) {
+  const fallback = access.nextRequiredPaymentAmount.gt(0)
+    ? access.nextRequiredPaymentAmount
+    : access.remainingAmount;
+  let amount;
+  try {
+    amount = value === undefined || value === null || value === ''
+      ? fallback
+      : new Prisma.Decimal(value);
+  } catch {
+    throw new PaymentError('PAYMENT_AMOUNT_INVALID', 'Le montant du paiement est invalide.');
+  }
+  if (!amount.isFinite() || amount.lte(0)) {
+    throw new PaymentError('PAYMENT_AMOUNT_INVALID', 'Le montant du paiement doit être supérieur à zéro.');
+  }
+  if (amount.gt(access.remainingAmount)) {
+    logger.security('PAYMENT_OVER_BALANCE_REFUSED', {
+      requestedAmount: amount.toString(), remainingAmount: access.remainingAmount.toString(),
+    });
+    throw new PaymentError('PAYMENT_OVER_BALANCE', 'Le montant dépasse le solde restant.');
+  }
+  return amount;
+}
+
+async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amount: rawAmount, currency: rawCurrency }) {
   const enrollmentId = parseEnrollmentId(rawEnrollmentId);
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
@@ -154,19 +183,12 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
           const enrollment = await loadEnrollmentForPayment(tx, enrollmentId, userId);
           const now = new Date();
 
-          const successful = enrollment.payments.find((payment) => payment.status === 'SUCCESS');
-          if (successful || enrollment.status === 'CONFIRMED') {
-            if (successful && enrollment.status !== 'CONFIRMED') {
-              await tx.enrollment.update({ where: { id: enrollment.id }, data: { status: 'CONFIRMED' } });
-            }
-            return { redirectToEnrollment: true, enrollmentId: enrollment.id };
-          }
-
           validatePayableEnrollment(enrollment, now);
+          const access = await trialAccessService.calculateTrialAccess(enrollment.id, tx);
+          if (access.remainingAmount.lte(0)) return { redirectToEnrollment: true, enrollmentId: enrollment.id };
           const pricing = enrollment.trainingSession.course;
-          if (pricing.pricingMode === 'FREE') {
-            await tx.enrollment.update({ where: { id: enrollment.id }, data: { status: 'CONFIRMED' } });
-            return { redirectToEnrollment: true, enrollmentId: enrollment.id, free: true };
+          if (rawCurrency && rawCurrency !== access.expectedCurrency) {
+            throw new PaymentError('PAYMENT_CURRENCY_INVALID', 'La devise du paiement ne correspond pas au tarif historique.');
           }
           const active = enrollment.payments.find((payment) => ACTIVE_STATUSES.includes(payment.status));
           if (active && (!active.expiresAt || active.expiresAt > now)) {
@@ -177,21 +199,25 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId }) {
           }
 
           const initialized = developmentProvider.initializePayment();
-          const total = new Prisma.Decimal(pricing.price).add(pricing.registrationFee);
+          const amount = requestedPaymentAmount(rawAmount, access);
           const payment = await tx.payment.create({
             data: {
               reference: generateReference(),
               provider: initialized.provider,
-              amount: total,
-              baseAmount: pricing.price,
-              registrationFee: pricing.registrationFee,
-              currency: pricing.currency,
-              pricingMode: pricing.pricingMode,
+              amount,
+              baseAmount: access.expectedTotalAmount,
+              registrationFee: 0,
+              currency: access.expectedCurrency,
+              pricingMode: 'ONE_TIME',
               status: 'PENDING',
               expiresAt: initialized.expiresAt,
               enrollmentId: enrollment.id,
               courseId: pricing.id,
-              metadata: { pricingSnapshotVersion: 1 },
+              metadata: {
+                pricingSnapshotVersion: 2,
+                expectedTotalAmount: access.expectedTotalAmount.toString(),
+                remainingBeforePayment: access.remainingAmount.toString(),
+              },
             },
             select: { reference: true },
           });
@@ -226,7 +252,7 @@ async function getPaymentForStudent(reference, userId) {
       select: paymentPublicSelect(),
     });
   }
-  return payment;
+  return { ...payment, access: await trialAccessService.calculateTrialAccess(payment.enrollmentId) };
 }
 
 async function simulateSuccess(reference, userId) {
@@ -235,12 +261,15 @@ async function simulateSuccess(reference, userId) {
     await getActiveStudent(userId, tx);
     const payment = await tx.payment.findUnique({
       where: { reference },
-      select: { id: true, status: true, expiresAt: true, enrollmentId: true, enrollment: { select: { userId: true } } },
+      select: {
+        id: true, status: true, expiresAt: true, enrollmentId: true, amount: true,
+        enrollment: { select: { userId: true } },
+      },
     });
     if (!payment) throw new PaymentError('PAYMENT_NOT_FOUND', 'Ce paiement est introuvable.', 404);
     if (payment.enrollment.userId !== userId) throw new PaymentError('PAYMENT_FORBIDDEN', 'Accès interdit.', 403);
     if (payment.status === 'SUCCESS') {
-      await tx.enrollment.update({ where: { id: payment.enrollmentId }, data: { status: 'CONFIRMED' } });
+      await trialAccessService.calculateTrialAccess(payment.enrollmentId, tx);
       return { paymentId: payment.id, enrollmentId: payment.enrollmentId, success: true };
     }
     if (payment.expiresAt && payment.expiresAt <= new Date()) {
@@ -254,8 +283,8 @@ async function simulateSuccess(reference, userId) {
       where: { id: payment.id },
       data: { status: 'SUCCESS', paidAt: new Date(), failureReason: null },
     });
-    await tx.enrollment.update({ where: { id: payment.enrollmentId }, data: { status: 'CONFIRMED' } });
-    return { paymentId: payment.id, enrollmentId: payment.enrollmentId, success: true };
+    const access = await trialAccessService.calculateTrialAccess(payment.enrollmentId, tx);
+    return { paymentId: payment.id, enrollmentId: payment.enrollmentId, success: true, accessStage: access.accessStage };
   });
   if (result.expired) throw new PaymentError('PAYMENT_EXPIRED', 'Cette tentative de paiement a expiré.');
   if (result.success) {

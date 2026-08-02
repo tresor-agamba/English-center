@@ -28,7 +28,7 @@ test('séances live liées au programme pédagogique', async (t) => {
 
   async function course(label) {
     const item = await prisma.course.create({
-      data: { title: `Live ${label}`, slug: `live-${label}-${key}`, isPublished: true },
+      data: { title: `Live ${label}`, slug: `live-${label}-${key}`, price: '100', currency: 'USD', isPublished: true },
     });
     courses.push(item.id);
     return item;
@@ -98,6 +98,20 @@ test('séances live liées au programme pédagogique', async (t) => {
         data: { userId: account.id, trainingSessionId: session.id, status },
       });
     }
+    await prisma.payment.create({
+      data: {
+        reference: `LIVE-PAID-${key}`, provider: 'TEST', amount: '100', baseAmount: '100',
+        currency: 'USD', pricingMode: 'ONE_TIME', status: 'SUCCESS', paidAt: new Date(),
+        enrollmentId: enrollments.confirmed.id, courseId: mainCourse.id,
+      },
+    });
+    await prisma.payment.create({
+      data: {
+        reference: `LIVE-HALF-${key}`, provider: 'TEST', amount: '50', baseAmount: '100',
+        currency: 'USD', pricingMode: 'ONE_TIME', status: 'SUCCESS', paidAt: new Date(),
+        enrollmentId: enrollments.trial.id, courseId: mainCourse.id,
+      },
+    });
 
     const body = (overrides = {}) => ({
       trainingSessionId: String(session.id), lessonId: '', title: 'Cours live 1',
@@ -168,7 +182,7 @@ test('séances live liées au programme pédagogique', async (t) => {
         platform: 'ZOOM', privateMeetingUrl: `https://zoom.example.test/access-${key}`, status: 'SCHEDULED',
       },
     });
-    for (let index = 0; index < 3; index += 1) {
+    for (let index = 0; index < 5; index += 1) {
       const attendedMeeting = await prisma.classMeeting.create({
         data: {
           trainingSessionId: session.id,
@@ -199,7 +213,7 @@ test('séances live liées au programme pédagogique', async (t) => {
       assert.equal((await fetch(`${baseUrl}/student/class-meetings/${linkedMeeting.id}`, { headers: { Cookie: cookies.outsider } })).status, 404);
     });
 
-    await t.test('autorise essai et confirmé, refuse les statuts bloqués et isole', async () => {
+    await t.test('autorise le palier partiel confirmé après l’essai et isole', async () => {
       for (const name of ['trial', 'confirmed']) {
         const access = await trialAccessService.canAccessClassMeeting(
           name === 'trial' ? trialStudent.id : confirmedStudent.id,

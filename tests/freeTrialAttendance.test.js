@@ -12,7 +12,7 @@ function addDays(date, days) {
   return new Date(date.getTime() + days * 86400000);
 }
 
-test('essai gratuit limité à trois présences', async (t) => {
+test('accès gratuit limité à cinq présences', async (t) => {
   const unique = `${Date.now()}-${process.pid}`;
   const suffix = String(Date.now()).slice(-7);
   const password = 'EssaiGratuit@2026';
@@ -65,12 +65,13 @@ test('essai gratuit limité à trois présences', async (t) => {
       },
     });
     sessionId = session.id;
-    for (let index = 0; index < 4; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
+      const startsAt = index < 5 ? addDays(now, -10 + index) : new Date(Date.now() + 10 * 60 * 1000);
       meetings.push(await prisma.classMeeting.create({
         data: {
           title: `Séance ${index + 1}`,
-          startsAt: addDays(now, 10 + index * 2),
-          endsAt: addDays(now, 10 + index * 2 + 0.1),
+          startsAt,
+          endsAt: new Date(startsAt.getTime() + 60 * 60 * 1000),
           privateMeetingUrl: `https://meet.example.test/private-${unique}-${index}`,
           trainingSessionId: session.id,
         },
@@ -100,7 +101,7 @@ test('essai gratuit limité à trois présences', async (t) => {
           allowed: access.hasCourseAccess,
           status: access.enrollmentStatus,
         },
-        { count: 0, remaining: 3, allowed: true, status: 'TRIAL_ACTIVE' }
+        { count: 0, remaining: 5, allowed: true, status: 'TRIAL_ACTIVE' }
       );
 
       await attendanceService.recordAttendance({
@@ -119,7 +120,7 @@ test('essai gratuit limité à trois présences', async (t) => {
       });
       access = await trialAccessService.calculateTrialAccess(enrollment.id);
       assert.equal(access.trialAttendanceCount, 2);
-      assert.equal(access.remainingTrialAttendances, 1);
+      assert.equal(access.remainingTrialAttendances, 3);
       assert.equal(access.hasCourseAccess, true);
     });
 
@@ -139,17 +140,16 @@ test('essai gratuit limité à trois présences', async (t) => {
       assert.equal(access.enrollmentStatus, 'TRIAL_ACTIVE');
     });
 
-    await t.test('passe à PAYMENT_REQUIRED à la troisième présence et bloque le lien', async () => {
-      const result = await attendanceService.recordAttendance({
-        enrollmentId: enrollment.id,
-        classMeetingId: meetings[2].id,
-        status: 'PRESENT',
+    await t.test('passe à PAYMENT_REQUIRED à la cinquième présence et bloque le lien', async () => {
+      let result;
+      for (const index of [2, 3, 4]) result = await attendanceService.recordAttendance({
+        enrollmentId: enrollment.id, classMeetingId: meetings[index].id, status: 'PRESENT',
       });
-      assert.equal(result.trialAccess.trialAttendanceCount, 3);
+      assert.equal(result.trialAccess.trialAttendanceCount, 5);
       assert.equal(result.trialAccess.enrollmentStatus, 'PAYMENT_REQUIRED');
       assert.equal(result.trialAccess.hasCourseAccess, false);
 
-      const denied = await trialAccessService.canAccessClassMeeting(student.id, enrollment.id, meetings[3].id);
+      const denied = await trialAccessService.canAccessClassMeeting(student.id, enrollment.id, meetings[5].id);
       assert.equal(denied.allowed, false);
       assert.equal(Object.hasOwn(denied, 'meeting'), false);
 
@@ -158,11 +158,11 @@ test('essai gratuit limité à trois présences', async (t) => {
       });
       const html = await page.text();
       assert.equal(page.status, 200);
-      assert.match(html, /trois séances gratuites sont terminées/i);
+      assert.match(html, /5 séances/i);
       assert.match(html, /Accès bloqué/);
       assert.doesNotMatch(html, /meet\.example\.test/);
 
-      const join = await fetch(`${baseUrl}/class-meetings/${meetings[3].id}/join?enrollment=${enrollment.id}`, {
+      const join = await fetch(`${baseUrl}/class-meetings/${meetings[5].id}/join?enrollment=${enrollment.id}`, {
         headers: { Cookie: cookie },
         redirect: 'manual',
       });
@@ -173,29 +173,30 @@ test('essai gratuit limité à trois présences', async (t) => {
     await t.test('corrige une présence sans doublon et réactive l’essai', async () => {
       const corrected = await attendanceService.recordAttendance({
         enrollmentId: enrollment.id,
-        classMeetingId: meetings[2].id,
+        classMeetingId: meetings[4].id,
         status: 'EXCUSED',
       });
-      assert.equal(corrected.trialAccess.trialAttendanceCount, 2);
+      assert.equal(corrected.trialAccess.trialAttendanceCount, 4);
       assert.equal(corrected.trialAccess.enrollmentStatus, 'TRIAL_ACTIVE');
       assert.equal(corrected.trialAccess.hasCourseAccess, true);
       assert.equal(
         await prisma.attendance.count({
-          where: { enrollmentId: enrollment.id, classMeetingId: meetings[2].id },
+          where: { enrollmentId: enrollment.id, classMeetingId: meetings[4].id },
         }),
         1
       );
 
       await prisma.classMeeting.update({
-        where: { id: meetings[3].id },
+        where: { id: meetings[4].id },
         data: {
           startsAt: new Date(Date.now() + 10 * 60 * 1000),
           endsAt: new Date(Date.now() + 70 * 60 * 1000),
         },
       });
-      const allowed = await trialAccessService.canAccessClassMeeting(student.id, enrollment.id, meetings[3].id);
+      await prisma.classMeeting.update({ where: { id: meetings[5].id }, data: { status: 'CANCELLED' } });
+      const allowed = await trialAccessService.canAccessClassMeeting(student.id, enrollment.id, meetings[4].id);
       assert.equal(allowed.allowed, true);
-      assert.equal(allowed.meeting.privateMeetingUrl, meetings[3].privateMeetingUrl);
+      assert.equal(allowed.meeting.privateMeetingUrl, meetings[4].privateMeetingUrl);
     });
 
     await t.test('valide la correspondance séance/session', async () => {
@@ -238,14 +239,14 @@ test('essai gratuit limité à trois présences', async (t) => {
         headers: { Cookie: cookie },
         body: new URLSearchParams({
           enrollmentId: String(enrollment.id),
-          classMeetingId: String(meetings[3].id),
+          classMeetingId: String(meetings[5].id),
           status: 'PRESENT',
         }),
       });
       assert.equal(response.status, 403);
       assert.equal(
         await prisma.attendance.count({
-          where: { enrollmentId: enrollment.id, classMeetingId: meetings[3].id, status: 'PRESENT' },
+          where: { enrollmentId: enrollment.id, classMeetingId: meetings[5].id, status: 'PRESENT' },
         }),
         0
       );
@@ -259,7 +260,7 @@ test('essai gratuit limité à trois présences', async (t) => {
       assert.ok(earlyPayment.paymentReference);
       await paymentService.simulateSuccess(earlyPayment.paymentReference, student.id);
       const confirmed = await trialAccessService.calculateTrialAccess(enrollment.id);
-      assert.equal(confirmed.enrollmentStatus, 'CONFIRMED');
+      assert.equal(confirmed.accessStage, 'PARTIAL_ACCESS');
       assert.equal(confirmed.hasCourseAccess, true);
 
       await attendanceService.recordAttendance({
@@ -268,8 +269,8 @@ test('essai gratuit limité à trois présences', async (t) => {
         status: 'PRESENT',
       });
       const stillConfirmed = await trialAccessService.calculateTrialAccess(enrollment.id);
-      assert.equal(stillConfirmed.trialAttendanceCount, 3);
-      assert.equal(stillConfirmed.enrollmentStatus, 'CONFIRMED');
+      assert.equal(stillConfirmed.trialAttendanceCount, 4);
+      assert.equal(stillConfirmed.accessStage, 'PARTIAL_ACCESS');
       assert.equal(stillConfirmed.hasCourseAccess, true);
     });
 

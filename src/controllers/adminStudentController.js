@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const { Prisma } = require('@prisma/client');
 const studentService = require('../services/studentService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
+const trialAccessService = require('../services/trialAccessService');
 
 const PASSWORD_COST = 12;
 const DUPLICATE_PHONE_MESSAGE = 'Ce numéro de téléphone est déjà utilisé.';
@@ -44,6 +45,12 @@ function isDuplicatePhone(error) {
 async function getStudent(value) {
   const student = await studentService.findById(parseId(value));
   if (!student) throw httpError(404, 'Étudiant introuvable.');
+  return student;
+}
+
+async function withAccess(student) {
+  const access = await Promise.all(student.enrollments.map((item) => trialAccessService.calculateTrialAccess(item.id)));
+  student.enrollments = student.enrollments.map((item, index) => ({ ...item, access: access[index] }));
   return student;
 }
 
@@ -97,7 +104,7 @@ async function create(req, res) {
 }
 
 async function show(req, res) {
-  const student = await getStudent(req.params.id);
+  const student = await withAccess(await getStudent(req.params.id));
   return res.render('admin/students/show', {
     title: `${student.firstName} ${student.lastName}`,
     student,
@@ -150,7 +157,7 @@ async function toggleStatus(req, res) {
 }
 
 async function resetPassword(req, res) {
-  const student = await getStudent(req.params.id);
+  let student = await getStudent(req.params.id);
   try {
     validatePassword(req.body.password, req.body.passwordConfirmation);
     const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
@@ -159,6 +166,7 @@ async function resetPassword(req, res) {
     return res.redirect(`/admin/students/${student.id}?success=password`);
   } catch (error) {
     if (error.statusCode === 400) {
+      student = await withAccess(student);
       return res.status(400).render('admin/students/show', {
         title: `${student.firstName} ${student.lastName}`,
         student,

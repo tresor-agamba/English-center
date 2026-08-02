@@ -127,7 +127,7 @@ test('espace étudiant', async (t) => {
       assert.doesNotMatch(scheduleHtml, /Séance annulée|meet\.example\.test|zoom\.example\.test/);
 
       const presenceMeetings = [openMeeting];
-      for (let index = 0; index < 2; index += 1) {
+      for (let index = 0; index < 5; index += 1) {
         presenceMeetings.push(await prisma.classMeeting.create({
           data: {
             title: `Présence ${index + 1}`, startsAt: shift(-500 - index * 100), endsAt: shift(-450 - index * 100),
@@ -140,7 +140,7 @@ test('espace étudiant', async (t) => {
         await attendanceService.recordAttendance({ enrollmentId: own.id, classMeetingId: meeting.id, status: 'PRESENT' });
       }
       const detailHtml = await (await fetch(`${baseUrl}/student/courses/${own.id}`, { headers: { Cookie: cookie } })).text();
-      assert.match(detailHtml, /trois séances gratuites sont terminées/i);
+      assert.match(detailHtml, /période gratuite de 5 séances est terminée/i);
       assert.doesNotMatch(detailHtml, new RegExp(`/class-meetings/${openMeeting.id}/join`));
       assert.equal((await prisma.enrollment.findUnique({ where: { id: own.id } })).status, 'PAYMENT_REQUIRED');
     });
@@ -155,7 +155,7 @@ test('espace étudiant', async (t) => {
       assert.doesNotMatch(html, /metadata|providerReference|passwordHash|privateMeetingUrl/i);
       await paymentService.simulateSuccess(attempt.paymentReference, student.id);
       const confirmedHtml = await (await fetch(`${baseUrl}/student/courses/${own.id}`, { headers: { Cookie: cookie } })).text();
-      assert.match(confirmedHtml, /Paiement confirmé/);
+      assert.match(confirmedHtml, /Accès aux séances 6 à 10/);
     });
 
     await t.test('normalise le téléphone et contrôle son unicité', async () => {

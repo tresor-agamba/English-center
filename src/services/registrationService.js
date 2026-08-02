@@ -85,6 +85,8 @@ function sessionSelect(now) {
         shortDescription: true,
         price: true,
         currency: true,
+        registrationFee: true,
+        pricingMode: true,
         trainingMode: true,
         isPublished: true,
       },
@@ -113,6 +115,14 @@ function validateSession(session, now = new Date(), options = {}) {
     throw new RegistrationError('SESSION_FULL', messages.SESSION_FULL);
   }
   return { ...session, remainingPlaces };
+}
+
+function enrollmentPricingSnapshot(session) {
+  if (session.course.pricingMode !== 'ONE_TIME' || session.course.price === null || Number(session.course.price) <= 0) return {};
+  return {
+    expectedTotalAmount: new Prisma.Decimal(session.course.price),
+    expectedCurrency: session.course.currency,
+  };
 }
 
 async function getSessionSnapshot(rawSessionId, client = prisma) {
@@ -256,6 +266,7 @@ async function runRegistrationTransaction({
           recommendedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
           approvedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
           placementTestRequired: Boolean(level && level !== 'LEVEL_1'),
+          ...enrollmentPricingSnapshot(session),
         },
         select: {
           id: true, status: true, requestedLevel: true, recommendedLevel: true,
@@ -331,6 +342,7 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
           userId: user.id,
           trainingSessionId: availableSession.id,
           status: 'TRIAL_ACTIVE',
+          ...enrollmentPricingSnapshot(availableSession),
         },
         select: { id: true, status: true },
       });

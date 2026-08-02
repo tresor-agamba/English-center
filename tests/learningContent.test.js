@@ -66,6 +66,25 @@ test('gestion pédagogique des formations', async (t) => {
     const blocked = await createEnrollment(blockedStudent.id, course.id, 'PAYMENT_REQUIRED');
     const isolated = await createEnrollment(otherStudent.id, course.id, 'TRIAL_ACTIVE');
     const foreignEnrollment = await createEnrollment(trialStudent.id, otherCourse.id, 'TRIAL_ACTIVE');
+    await prisma.payment.create({
+      data: {
+        reference: `PEDAGO-PAID-${key}`, provider: 'TEST', amount: '50', baseAmount: '50',
+        currency: 'USD', pricingMode: 'ONE_TIME', status: 'SUCCESS', paidAt: new Date(),
+        enrollmentId: confirmed.id, courseId: course.id,
+      },
+    });
+    for (let index = 0; index < 5; index += 1) {
+      const meeting = await prisma.classMeeting.create({
+        data: {
+          trainingSessionId: blocked.trainingSessionId, title: `Séance consommée ${index + 1}`,
+          startsAt: addDays(-(index + 2)), endsAt: new Date(addDays(-(index + 2)).getTime() + 3600000),
+          privateMeetingUrl: `https://example.com/pedago-${index}-${key}`, status: 'COMPLETED',
+        },
+      });
+      await prisma.attendance.create({
+        data: { enrollmentId: blocked.id, classMeetingId: meeting.id, status: 'PRESENT' },
+      });
+    }
 
     await t.test('valide, crée, modifie, publie et ordonne les modules', async () => {
       const first = await contentService.createModule(course.id, {

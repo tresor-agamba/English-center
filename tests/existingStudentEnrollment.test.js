@@ -100,6 +100,16 @@ test('inscription d’un étudiant existant', async (t) => {
         { userId: student.id, trainingSessionId: failedEnrollmentSession.id, status: 'PAYMENT_FAILED' },
       ],
     });
+    const paidEnrollment = await prisma.enrollment.findUnique({
+      where: { userId_trainingSessionId: { userId: student.id, trainingSessionId: confirmedSession.id } },
+    });
+    await prisma.payment.create({
+      data: {
+        reference: `EXISTING-PAID-${unique}`, provider: 'TEST', amount: '75', baseAmount: '75',
+        currency: 'USD', pricingMode: 'ONE_TIME', status: 'SUCCESS', paidAt: now,
+        enrollmentId: paidEnrollment.id, courseId,
+      },
+    });
 
     server = app.listen(0);
     await new Promise((resolve) => server.once('listening', resolve));

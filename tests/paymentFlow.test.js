@@ -71,7 +71,7 @@ test('architecture interne des paiements', async (t) => {
         currency: 'USD',
         pricingMode: 'ONE_TIME',
         pricingActive: true,
-        registrationFee: '10.50',
+        registrationFee: '0',
         isPublished: true,
       },
     });
@@ -91,14 +91,14 @@ test('architecture interne des paiements', async (t) => {
 
     let firstEnrollment;
     let firstPayment;
-    await t.test('crée un paiement depuis PostgreSQL et ignore les valeurs frauduleuses', async () => {
+    await t.test('crée un paiement partiel et refuse une devise falsifiée', async () => {
       firstEnrollment = await createPendingEnrollment(student.id, 'création');
-      const response = await fetch(`${baseUrl}/payments`, {
+      const fraudulent = await fetch(`${baseUrl}/payments`, {
         method: 'POST',
         headers: { Cookie: cookie },
         body: new URLSearchParams({
           enrollmentId: String(firstEnrollment.id),
-          amount: '0.01',
+          amount: '30',
           currency: 'FAKE',
           userId: String(otherStudent.id),
           status: 'SUCCESS',
@@ -106,13 +106,19 @@ test('architecture interne des paiements', async (t) => {
         }),
         redirect: 'manual',
       });
+      assert.equal(fraudulent.status, 400);
+      const response = await fetch(`${baseUrl}/payments`, {
+        method: 'POST', headers: { Cookie: cookie },
+        body: new URLSearchParams({ enrollmentId: String(firstEnrollment.id), amount: '30', currency: 'USD' }),
+        redirect: 'manual',
+      });
       assert.equal(response.status, 302);
       const reference = response.headers.get('location').split('/').pop();
       firstPayment = await prisma.payment.findUnique({ where: { reference } });
       assert.equal(firstPayment.enrollmentId, firstEnrollment.id);
       assert.equal(Number(firstPayment.baseAmount), 149.5);
-      assert.equal(Number(firstPayment.registrationFee), 10.5);
-      assert.equal(Number(firstPayment.amount), 160);
+      assert.equal(Number(firstPayment.registrationFee), 0);
+      assert.equal(Number(firstPayment.amount), 30);
       assert.equal(firstPayment.currency, 'USD');
       assert.equal(firstPayment.pricingMode, 'ONE_TIME');
       assert.equal(firstPayment.courseId, courseId);
@@ -122,11 +128,11 @@ test('architecture interne des paiements', async (t) => {
       assert.ok(firstPayment.expiresAt > firstPayment.createdAt);
       assert.equal(Math.round((firstPayment.expiresAt - firstPayment.createdAt) / 60000), 30);
 
-      await prisma.course.update({ where: { id: courseId }, data: { price: '200.00', currency: 'CDF', registrationFee: '25.00' } });
+      await prisma.course.update({ where: { id: courseId }, data: { price: '200.00', currency: 'CDF', registrationFee: '0' } });
       const unchanged = await prisma.payment.findUnique({ where: { id: firstPayment.id } });
       assert.equal(Number(unchanged.baseAmount), 149.5);
-      assert.equal(Number(unchanged.registrationFee), 10.5);
-      assert.equal(Number(unchanged.amount), 160);
+      assert.equal(Number(unchanged.registrationFee), 0);
+      assert.equal(Number(unchanged.amount), 30);
       assert.equal(unchanged.currency, 'USD');
     });
 
@@ -194,13 +200,15 @@ test('architecture interne des paiements', async (t) => {
       ]);
       assert.equal(payment.status, 'SUCCESS');
       assert.ok(payment.paidAt);
-      assert.equal(enrollment.status, 'CONFIRMED');
+      assert.equal(enrollment.status, 'TRIAL_ACTIVE');
       assert.equal(await prisma.payment.count({ where: { enrollmentId: firstEnrollment.id } }), 1);
-      const noNewAttempt = await paymentService.createPaymentAttempt({
-        userId: student.id,
-        enrollmentId: firstEnrollment.id,
+      const finalAttempt = await paymentService.createPaymentAttempt({
+        userId: student.id, enrollmentId: firstEnrollment.id, amount: '119.50', currency: 'USD',
       });
+      await paymentService.simulateSuccess(finalAttempt.paymentReference, student.id);
+      const noNewAttempt = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: firstEnrollment.id });
       assert.equal(noNewAttempt.redirectToEnrollment, true);
+      assert.equal((await prisma.enrollment.findUnique({ where: { id: firstEnrollment.id } })).status, 'CONFIRMED');
     });
 
     await t.test('simule un échec et autorise une nouvelle tentative', async () => {
@@ -241,20 +249,19 @@ test('architecture interne des paiements', async (t) => {
       assert.notEqual(retry.paymentReference, attempt.paymentReference);
     });
 
-    await t.test('refuse une inscription déjà confirmée', async () => {
+    await t.test('ne considère pas un statut confirmé sans paiement comme payé', async () => {
       const enrollment = await createPendingEnrollment(student.id, 'déjà confirmée');
       await prisma.enrollment.update({ where: { id: enrollment.id }, data: { status: 'CONFIRMED' } });
       const result = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: enrollment.id });
-      assert.equal(result.redirectToEnrollment, true);
-      assert.equal(await prisma.payment.count({ where: { enrollmentId: enrollment.id } }), 0);
+      assert.ok(result.paymentReference);
+      assert.equal(await prisma.payment.count({ where: { enrollmentId: enrollment.id } }), 1);
     });
 
-    await t.test('gère formation gratuite, tarif absent, tarif inactif et formation non publiée', async () => {
+    await t.test('refuse formation gratuite, tarif absent, tarif inactif et formation non publiée', async () => {
       const freeEnrollment = await createPendingEnrollment(student.id, 'gratuite');
       await prisma.course.update({ where: { id: courseId }, data: { price: 0, registrationFee: 0, currency: 'USD', pricingMode: 'FREE', pricingActive: true, isPublished: true } });
-      const free = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: freeEnrollment.id });
-      assert.equal(free.free, true);
-      assert.equal((await prisma.enrollment.findUnique({ where: { id: freeEnrollment.id } })).status, 'CONFIRMED');
+      await assert.rejects(() => paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: freeEnrollment.id }), (error) => error.code === 'PRICING_MODE_UNSUPPORTED');
+      assert.notEqual((await prisma.enrollment.findUnique({ where: { id: freeEnrollment.id } })).status, 'CONFIRMED');
       assert.equal(await prisma.payment.count({ where: { enrollmentId: freeEnrollment.id } }), 0);
 
       const unavailableEnrollment = await createPendingEnrollment(student.id, 'sans tarif');

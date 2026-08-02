@@ -81,12 +81,11 @@ test('configuration administrative du catalogue', async (t) => {
       assert.throws(() => courseController.parseForm({ ...courseBody, price: '-1' }), /prix/i);
       assert.throws(() => courseController.parseForm({ ...courseBody, currency: 'EUR' }), /devise/i);
       assert.throws(() => courseController.parseForm({ ...courseBody, pricingState: 'AVAILABLE', price: '0' }), /supérieur à zéro/i);
-      assert.throws(() => courseController.parseForm({ ...courseBody, registrationFee: '-1' }), /frais/i);
+      assert.equal(courseController.parseForm({ ...courseBody, registrationFee: '999' }).registrationFee, '0');
     });
 
-    await t.test('distingue tarif gratuit, indisponible et inactif', () => {
-      const free = courseController.parseForm({ ...courseBody, pricingState: 'FREE', price: '999', registrationFee: '12' });
-      assert.equal(free.pricingMode, 'FREE'); assert.equal(free.price, '0'); assert.equal(free.registrationFee, '0');
+    await t.test('interdit la formation gratuite et distingue tarif indisponible ou inactif', () => {
+      assert.throws(() => courseController.parseForm({ ...courseBody, pricingState: 'FREE', price: '999' }), /tarifaire/i);
       const unavailable = courseController.parseForm({ ...courseBody, pricingState: 'UNAVAILABLE', price: '', registrationFee: '' });
       assert.equal(unavailable.pricingMode, null); assert.equal(unavailable.price, null);
       const inactive = courseController.parseForm({ ...courseBody, pricingState: 'INACTIVE', price: '99' });

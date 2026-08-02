@@ -1,4 +1,5 @@
 const sessionService = require('../services/trainingSessionService');
+const trialAccessService = require('../services/trialAccessService');
 
 const statuses = ['DRAFT', 'OPEN', 'FULL', 'ONGOING', 'COMPLETED', 'CANCELLED'];
 const weekDays = {
@@ -118,6 +119,8 @@ async function create(req, res) {
 
 async function show(req, res) {
   const session = await getSession(req.params.id);
+  const access = await Promise.all(session.enrollments.map((item) => trialAccessService.calculateTrialAccess(item.id)));
+  session.enrollments = session.enrollments.map((item, index) => ({ ...item, access: access[index] }));
   res.render('admin/sessions/show', { title: session.name, session });
 }
 

@@ -93,9 +93,13 @@ async function getStudentCourse(userId, enrollmentId) {
   if (!enrollment) return null;
   const trialAccess = await trialAccessService.calculateTrialAccess(id);
   const now = new Date();
+  let levelPosition = 0;
   const meetings = enrollment.trainingSession.classMeetings.map((meeting) => ({
     ...meeting,
+    levelPosition: meeting.status === 'CANCELLED' ? null : (levelPosition += 1),
     attendance: meeting.attendances[0]?.status || null,
+  })).map((meeting) => ({
+    ...meeting,
     access: studentScheduleService.accessPresentation(meeting, trialAccess, now),
   }));
   return {

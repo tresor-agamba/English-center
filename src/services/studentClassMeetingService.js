@@ -35,7 +35,13 @@ async function getMeetingDetails(userId, value) {
   const enrollment = meeting?.trainingSession.enrollments[0];
   if (!meeting || !enrollment) throw new StudentClassMeetingError('MEETING_NOT_FOUND', 'Séance introuvable.', 404);
   const trialAccess = await trialAccessService.calculateTrialAccess(enrollment.id);
-  const access = trialAccessService.evaluateMeetingAccess(meeting, trialAccess);
+  const orderedMeetings = await prisma.classMeeting.findMany({
+    where: { trainingSessionId: meeting.trainingSession.id, status: { not: 'CANCELLED' } },
+    orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
+    select: { id: true },
+  });
+  const levelPosition = orderedMeetings.findIndex((item) => item.id === meeting.id) + 1;
+  const access = trialAccessService.evaluateMeetingAccess({ ...meeting, levelPosition }, trialAccess);
   let lesson = null;
   if (meeting.lessonId && trialAccess.hasCourseAccess) {
     lesson = await prisma.courseLesson.findFirst({
@@ -55,7 +61,7 @@ async function getMeetingDetails(userId, value) {
   return {
     meeting: {
       id: meeting.id, title: meeting.title, startsAt: meeting.startsAt, endsAt: meeting.endsAt,
-      status: meeting.status, platform: meeting.platform,
+      status: meeting.status, platform: meeting.platform, levelPosition,
     },
     session: {
       id: meeting.trainingSession.id, name: meeting.trainingSession.name,

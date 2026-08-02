@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <% const currentPricingState = form.pricingState || (form.pricingMode === null || form.price === null || form.price === '' ? 'UNAVAILABLE' : (!form.pricingActive ? 'INACTIVE' : (form.pricingMode === 'FREE' || Number(form.price) === 0 ? 'FREE' : 'AVAILABLE'))); %>
+  <% const currentPricingState = form.pricingState || (form.pricingMode === null || form.price === null || form.price === '' ? 'UNAVAILABLE' : (!form.pricingActive ? 'INACTIVE' : 'AVAILABLE')); %>
   <fieldset class="pricing-fieldset">
     <legend>Tarification</legend>
     <div class="form-grid">
@@ -55,9 +55,9 @@
     </div>
     <div class="form-grid">
       <div><label for="price">Prix de la formation</label><input id="price" name="price" type="number" min="0" step="0.01" value="<%= form.price !== undefined && form.price !== null ? form.price : '' %>" /></div>
-      <div><label for="registrationFee">Frais d’inscription</label><input id="registrationFee" name="registrationFee" type="number" min="0" step="0.01" value="<%= form.registrationFee !== undefined && form.registrationFee !== null ? form.registrationFee : '0' %>" /></div>
+      <div><strong>Inscription gratuite</strong><p class="form-hint">Aucun frais d’inscription n’est ajouté au prix de la formation.</p><input name="registrationFee" type="hidden" value="0"></div>
     </div>
-    <p class="form-hint">Le paiement en ligne actuel est unique. Les formations gratuites sont activées sans transaction monétaire.</p>
+    <p class="form-hint"><strong>Séances gratuites : 5.</strong> Les paiements partiels confirmés sont cumulés : 50 % ouvre les séances 6 à 10 et 100 % ouvre les séances 11 à 16.</p>
     <div class="form-grid">
       <div><label for="pricingStartsAt">Applicable à partir du</label><input id="pricingStartsAt" name="pricingStartsAt" type="datetime-local" value="<%= form.pricingStartsAt ? new Date(form.pricingStartsAt).toISOString().slice(0,16) : '' %>"></div>
       <div><label for="pricingEndsAt">Applicable jusqu’au</label><input id="pricingEndsAt" name="pricingEndsAt" type="datetime-local" value="<%= form.pricingEndsAt ? new Date(form.pricingEndsAt).toISOString().slice(0,16) : '' %>"></div>

@@ -28,7 +28,6 @@ async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, pe
           timezone: true,
           course: { select: { id: true, title: true } },
           classMeetings: {
-            where: { status: 'SCHEDULED', endsAt: { gte: now } },
             orderBy: { startsAt: 'asc' },
             select: {
               id: true, title: true, startsAt: true, endsAt: true, status: true, platform: true,
@@ -44,9 +43,11 @@ async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, pe
     enrollments.map(async (enrollment) => [enrollment.id, await trialAccessService.calculateTrialAccess(enrollment.id)])
   );
   const accessByEnrollment = new Map(accessEntries);
-  let meetings = enrollments.flatMap((enrollment) =>
-    enrollment.trainingSession.classMeetings.map((meeting) => ({
+  let meetings = enrollments.flatMap((enrollment) => {
+    let levelPosition = 0;
+    return enrollment.trainingSession.classMeetings.map((meeting) => ({
       ...meeting,
+      levelPosition: meeting.status === 'CANCELLED' ? null : (levelPosition += 1),
       enrollmentId: enrollment.id,
       enrollmentStatus: enrollment.status,
       session: {
@@ -58,8 +59,8 @@ async function getStudentMeetings(userId, { enrollmentId, courseEnrollmentId, pe
       course: enrollment.trainingSession.course,
       lesson: meeting.lesson,
       access: accessPresentation(meeting, accessByEnrollment.get(enrollment.id), now),
-    }))
-  );
+    })).filter((meeting) => meeting.status === 'SCHEDULED' && meeting.endsAt >= now);
+  });
 
   if (period === 'week') {
     const end = new Date(now);

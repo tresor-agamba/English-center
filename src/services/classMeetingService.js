@@ -1,5 +1,5 @@
 const prisma = require('../utils/prisma');
-const { OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
+const { OCCUPYING_ENROLLMENT_STATUSES, TOTAL_SESSIONS_LIMIT } = require('./enrollmentPolicy');
 const trialAccessService = require('./trialAccessService');
 const { zonedDateTimeToUtc, dateKeyInZone } = require('../utils/timezone.util');
 const notificationEvents = require('./notificationEventService');
@@ -227,7 +227,15 @@ async function getAttendanceSheet(id) {
 }
 
 async function create(data) {
-  const meeting = await prisma.classMeeting.create({ data });
+  const meeting = await prisma.$transaction(async (tx) => {
+    const count = await tx.classMeeting.count({
+      where: { trainingSessionId: data.trainingSessionId, status: { not: 'CANCELLED' } },
+    });
+    if (count >= TOTAL_SESSIONS_LIMIT) {
+      throw new ClassMeetingError('LEVEL_SESSION_LIMIT', 'Un niveau ne peut pas contenir plus de 16 séances.');
+    }
+    return tx.classMeeting.create({ data });
+  });
   await notificationEvents.meetingCreated(meeting).catch((error) => console.error('Notifications séance:', error.message));
   return meeting;
 }

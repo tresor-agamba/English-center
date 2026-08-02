@@ -45,11 +45,13 @@
     <p>Aucun étudiant n’est inscrit à cette session.</p>
   <% } else { %>
     <div class="table-wrapper"><table>
-      <thead><tr><th>Étudiant</th><th>Téléphone</th><th>Inscription</th></tr></thead>
+      <thead><tr><th>Étudiant</th><th>Séances</th><th>Palier</th><th>Prix / payé / solde</th><th>Seuils</th></tr></thead>
       <tbody><% session.enrollments.forEach((enrollment) => { %><tr>
         <td><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></td>
-        <td><%= enrollment.user.phoneNumber %></td>
-        <td><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.enrolledAt) %></td>
+        <td><%= enrollment.access.attendedSessionCount %>/16</td>
+        <td><%= enrollment.access.accessStage %> · <%= enrollment.access.allowed ? 'Actif' : 'Bloqué' %></td>
+        <td><%= enrollment.access.expectedTotalAmount %> / <%= enrollment.access.confirmedPaidAmount %> / <%= enrollment.access.remainingAmount %> <%= enrollment.access.expectedCurrency %> (<%= enrollment.access.paidPercentage %> %)</td>
+        <td>Séances gratuites : <%= enrollment.access.attendedSessionCount %>/5<br>50 % : <%= enrollment.access.firstHalfReachedAt ? enrollment.access.firstHalfReachedAt.toLocaleDateString('fr-FR') : 'Non' %><br>100 % : <%= enrollment.access.fullyPaidAt ? enrollment.access.fullyPaidAt.toLocaleDateString('fr-FR') : 'Non' %></td>
       </tr><% }) %></tbody>
     </table></div>
   <% } %>

@@ -12,7 +12,9 @@
       <div><dt>Jours</dt><dd><%= item.trainingSession.weekDays.join(', ') || 'À préciser' %></dd></div>
       <div><dt>Horaires</dt><dd><%= item.trainingSession.startTime %>–<%= item.trainingSession.endTime %></dd></div>
       <div><dt>Plateforme</dt><dd><%= item.trainingSession.platform || 'En ligne' %></dd></div>
-      <div><dt>Essai</dt><dd><%= item.trialAccess.trialAttendanceCount %>/3 · <%= item.trialAccess.remainingTrialAttendances %> restante(s)</dd></div>
+      <div><dt>Séances consommées</dt><dd><%= item.trialAccess.attendedSessionCount %>/16</dd></div>
+      <div><dt>Palier</dt><dd><%= item.trialAccess.accessStage %></dd></div>
+      <div><dt>Paiement</dt><dd><%= item.trialAccess.paidPercentage %> % · solde <%= item.trialAccess.remainingAmount %> <%= item.trialAccess.expectedCurrency %></dd></div>
       <div><dt>Début</dt><dd><%= item.trainingSession.startDate.toLocaleDateString('fr-FR') %></dd></div>
       <div><dt>Fin</dt><dd><%= item.trainingSession.endDate.toLocaleDateString('fr-FR') %></dd></div>
     </dl><a class="button" href="/student/courses/<%= item.id %>">Voir le détail</a>

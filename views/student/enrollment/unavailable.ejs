@@ -4,7 +4,15 @@
   <p class="eyebrow">Inscription</p>
   <h1><%= title %></h1>
   <p><%= message %></p>
-  <a class="button" href="/formations">Retourner au catalogue</a>
+  <% if (typeof access !== 'undefined' && access) { %>
+    <dl class="payment-details">
+      <div><dt>Prix total</dt><dd><%= access.expectedTotalAmount %> <%= access.expectedCurrency %></dd></div>
+      <div><dt>Déjà payé</dt><dd><%= access.confirmedPaidAmount %> <%= access.expectedCurrency %></dd></div>
+      <div><dt>Minimum nécessaire</dt><dd><%= access.nextRequiredPaymentAmount %> <%= access.expectedCurrency %></dd></div>
+      <div><dt>Solde total</dt><dd><%= access.remainingAmount %> <%= access.expectedCurrency %></dd></div>
+    </dl>
+    <a class="button" href="/student/courses/<%= access.enrollmentId || '' %>">Payer maintenant</a>
+  <% } else { %><a class="button" href="/formations">Retourner au catalogue</a><% } %>
 </section>
 
 <%- include('../../partials/footer') %>

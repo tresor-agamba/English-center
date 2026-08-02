@@ -7,7 +7,6 @@ const DURATION_UNITS = Object.keys(DURATION_UNIT_LABELS);
 const CURRENCIES = ['USD', 'CDF'];
 const PRICING_STATES = Object.freeze({
   UNAVAILABLE: 'Tarif non disponible',
-  FREE: 'Formation gratuite',
   AVAILABLE: 'Formation payante',
   INACTIVE: 'Tarif désactivé',
 });
@@ -57,7 +56,7 @@ function parseForm(body) {
     currency: body.currency,
     pricingMode: null,
     pricingActive: body.pricingState !== 'INACTIVE',
-    registrationFee: body.registrationFee || '0',
+    registrationFee: '0',
     maxInstallments: 1,
     pricingStartsAt: body.pricingStartsAt ? new Date(body.pricingStartsAt) : null,
     pricingEndsAt: body.pricingEndsAt ? new Date(body.pricingEndsAt) : null,
@@ -73,12 +72,9 @@ function parseForm(body) {
   if (!COURSE_TYPES.includes(data.courseType)) throw validationError('Type de formation invalide.');
   if (!Number.isInteger(data.durationValue) || data.durationValue <= 0) throw validationError('La durée doit être supérieure à zéro.');
   if (!DURATION_UNITS.includes(data.durationUnit)) throw validationError('Unité de durée invalide.');
-  const pricingState = body.pricingState || (body.price === '' || body.price == null ? 'UNAVAILABLE' : (Number(body.price) === 0 ? 'FREE' : 'AVAILABLE'));
+  const pricingState = body.pricingState || (body.price === '' || body.price == null ? 'UNAVAILABLE' : 'AVAILABLE');
   if (!Object.hasOwn(PRICING_STATES, pricingState)) throw validationError('État tarifaire invalide.');
   if (!CURRENCIES.includes(data.currency)) throw validationError('Devise invalide.');
-  if (!/^\d+(?:[.,]\d{1,2})?$/.test(String(data.registrationFee).trim())) throw validationError('Frais d’inscription invalides.');
-  data.registrationFee = String(data.registrationFee).replace(',', '.');
-  if (Number(data.registrationFee) < 0) throw validationError('Les frais d’inscription ne peuvent pas être négatifs.');
   if (pricingState === 'UNAVAILABLE') {
     data.price = null;
     data.pricingMode = null;
@@ -87,15 +83,8 @@ function parseForm(body) {
   } else {
     if (typeof data.price !== 'string' || !/^\d+(?:[.,]\d{1,2})?$/.test(data.price.trim())) throw validationError('Prix invalide.');
     data.price = data.price.replace(',', '.');
-    if (Number(data.price) < 0) throw validationError('Le prix ne peut pas être négatif.');
-    if (pricingState === 'FREE') {
-      data.price = '0';
-      data.registrationFee = '0';
-      data.pricingMode = 'FREE';
-    } else {
-      if (Number(data.price) <= 0) throw validationError('Le montant d’une formation payante doit être supérieur à zéro.');
-      data.pricingMode = 'ONE_TIME';
-    }
+    if (Number(data.price) <= 0) throw validationError('Le montant d’une formation payante doit être supérieur à zéro.');
+    data.pricingMode = 'ONE_TIME';
   }
   if (data.pricingStartsAt && Number.isNaN(data.pricingStartsAt.getTime())) throw validationError('Date de début tarifaire invalide.');
   if (data.pricingEndsAt && Number.isNaN(data.pricingEndsAt.getTime())) throw validationError('Date de fin tarifaire invalide.');

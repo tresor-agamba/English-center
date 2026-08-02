@@ -36,13 +36,15 @@
     <div class="empty-state"><strong>Aucune inscription</strong><p>Cet étudiant n’est inscrit à aucune session.</p></div>
   <% } else { %>
     <div class="table-wrapper responsive-table"><table>
-      <thead><tr><th>Formation</th><th>Session</th><th>Début</th><th>Statut</th></tr></thead>
+      <thead><tr><th>Formation</th><th>Session</th><th>Séances</th><th>Palier</th><th>Paiement</th><th>Seuils atteints</th></tr></thead>
       <tbody><% student.enrollments.forEach((enrollment) => { const session = enrollment.trainingSession; %>
         <tr>
           <td data-label="Formation"><%= session.course.title %></td>
           <td data-label="Session"><a href="/admin/sessions/<%= session.id %>"><%= session.name %></a></td>
-          <td data-label="Début"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(session.startDate) %></td>
-          <td data-label="Statut"><span class="status status-<%= session.status.toLowerCase() %>"><%= session.status %></span></td>
+          <td data-label="Séances"><%= enrollment.access.attendedSessionCount %>/16</td>
+          <td data-label="Palier"><span class="status"><%= enrollment.access.accessStage %></span></td>
+          <td data-label="Paiement"><%= enrollment.access.confirmedPaidAmount %>/<%= enrollment.access.expectedTotalAmount %> <%= enrollment.access.expectedCurrency %> · <%= enrollment.access.paidPercentage %> %<br>Solde : <%= enrollment.access.remainingAmount %></td>
+          <td data-label="Seuils atteints">Séances gratuites : <%= enrollment.access.attendedSessionCount %>/5<br>50 % : <%= enrollment.access.firstHalfReachedAt ? new Intl.DateTimeFormat('fr-FR').format(enrollment.access.firstHalfReachedAt) : 'Non' %><br>100 % : <%= enrollment.access.fullyPaidAt ? new Intl.DateTimeFormat('fr-FR').format(enrollment.access.fullyPaidAt) : 'Non' %></td>
         </tr>
       <% }) %></tbody>
     </table></div>

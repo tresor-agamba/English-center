@@ -8,9 +8,13 @@ async function join(req, res) {
       Number(req.params.id)
     );
     if (!access.allowed) {
+      const paymentMessage = access.trialAccess.accessStage === 'PAYMENT_REQUIRED_FULL'
+        ? 'Vous avez terminé les 10 premières séances autorisées. Veuillez payer le solde restant pour accéder aux 6 dernières séances du niveau.'
+        : 'Votre période gratuite de 5 séances est terminée. Vous devez payer au moins 50 % du prix total pour accéder aux 5 séances suivantes.';
       return res.status(403).render('student/enrollment/unavailable', {
         title: 'Accès au cours bloqué',
-        message: 'Vos trois séances gratuites sont terminées. Confirmez votre paiement pour continuer.',
+        message: paymentMessage,
+        access: access.trialAccess,
       });
     }
     return res.redirect(access.meeting.privateMeetingUrl);

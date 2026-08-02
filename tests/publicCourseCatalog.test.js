@@ -79,9 +79,9 @@ test('catalogue public des formations', async (t) => {
         data: {
           name: 'Session future ouverte',
           courseId: published.id,
-          startDate: addDays(now, 10),
+          startDate: addDays(now, 0.01),
           endDate: addDays(now, 20),
-          registrationDeadline: addDays(now, 8),
+          registrationDeadline: addDays(now, 0.005),
           capacity: 3,
           status: 'OPEN',
         },

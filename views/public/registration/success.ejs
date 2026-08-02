@@ -33,8 +33,9 @@
     </div>
   <% } else if (enrollment.status === 'PAYMENT_REQUIRED') { %>
     <div class="trial-notice trial-notice-blocked">
-      <strong data-i18n="success.trialEnded">Vos trois séances gratuites sont terminées.</strong>
-      <span data-i18n="success.payToContinue">Payez la formation pour continuer à accéder aux cours.</span>
+      <strong data-i18n="success.trialEnded">Votre période d’essai de 5 séances est terminée.</strong>
+      <% if (trialAccess.accessStage === 'PAYMENT_REQUIRED_FULL') { %><span>Vous avez terminé les 10 premières séances autorisées. Veuillez payer le solde restant pour accéder aux 6 dernières séances du niveau.</span>
+      <% } else { %><span data-i18n="success.payToContinue">Vous devez payer au moins 50 % du prix total pour accéder aux 5 séances suivantes.</span><% } %>
     </div>
   <% } else if (enrollment.status === 'CONFIRMED') { %>
     <div class="trial-notice trial-notice-confirmed">
@@ -65,6 +66,10 @@
     <% if (['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) { %>
       <form action="/payments" method="post">
         <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>" />
+        <input type="hidden" name="currency" value="<%= trialAccess.expectedCurrency %>" />
+        <label for="payment-amount">Montant à payer (<%= trialAccess.expectedCurrency %>)</label>
+        <input id="payment-amount" name="amount" type="number" min="0.01" step="0.01" max="<%= trialAccess.remainingAmount %>" value="<%= trialAccess.nextRequiredPaymentAmount %>" required>
+        <p>Inscription gratuite · Déjà payé : <strong><%= trialAccess.confirmedPaidAmount %></strong> · Solde : <strong><%= trialAccess.remainingAmount %> <%= trialAccess.expectedCurrency %></strong></p>
         <button class="button" type="submit" data-i18n="<%= latestPayment && latestPayment.status === 'FAILED' ? 'success.retryPayment' : 'success.payNow' %>"><%= latestPayment && latestPayment.status === 'FAILED' ? 'Réessayer le paiement' : 'Payer maintenant' %></button>
       </form>
     <% } %>
@@ -81,7 +86,7 @@
             <strong><%= meeting.title || 'Séance de formation' %></strong>
             <span><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium', timeStyle: 'short' }).format(meeting.startsAt) %></span>
           </div>
-          <% if (trialAccess.hasCourseAccess) { %>
+          <% if (meeting.access.canJoin) { %>
             <a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= enrollment.id %>" data-i18n="success.join">Accéder au cours</a>
           <% } else { %>
             <span class="status status-inactive" data-i18n="success.blocked">Accès bloqué</span>

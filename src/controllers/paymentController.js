@@ -12,6 +12,8 @@ async function create(req, res) {
     const result = await paymentService.createPaymentAttempt({
       userId: req.session.user.id,
       enrollmentId: req.body.enrollmentId,
+      amount: req.body.amount,
+      currency: req.body.currency,
     });
     if (result.redirectToEnrollment) {
       return res.redirect(`/student/courses/${result.enrollmentId}`);

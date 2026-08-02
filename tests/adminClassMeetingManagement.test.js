@@ -187,7 +187,12 @@ test('administration des séances et présences', async (t) => {
 
     await t.test('déclenche le paiement requis puis exclut une séance annulée du compteur', async () => {
       const extraMeetings = [];
-      for (const [date, title] of [['2027-01-06', 'Séance 2'], ['2027-01-11', 'Séance 3']]) {
+      for (const [date, title] of [
+        ['2027-01-06', 'Séance 2'],
+        ['2027-01-11', 'Séance 3'],
+        ['2027-01-13', 'Séance 4'],
+        ['2027-01-18', 'Séance 5'],
+      ]) {
         const data = await classMeetingService.buildMeetingData(meetingBody({
           date,
           title,
@@ -203,17 +208,34 @@ test('administration des séances et présences', async (t) => {
         status: 'PRESENT',
       });
       for (const item of extraMeetings) {
+        const sequence = extraMeetings.indexOf(item) + 1;
+        await prisma.classMeeting.update({
+          where: { id: item.id },
+          data: {
+            startsAt: new Date(Date.now() - (sequence + 1) * 120 * 60 * 1000),
+            endsAt: new Date(Date.now() - (sequence + 1) * 120 * 60 * 1000 + 60 * 60 * 1000),
+            status: 'COMPLETED',
+          },
+        });
         await attendanceService.recordAttendance({
           enrollmentId: enrollment.id,
           classMeetingId: item.id,
           status: 'PRESENT',
         });
       }
+      await prisma.classMeeting.update({
+        where: { id: meeting.id },
+        data: {
+          startsAt: new Date(Date.now() - 60 * 60 * 1000),
+          endsAt: new Date(Date.now() - 30 * 60 * 1000),
+          status: 'COMPLETED',
+        },
+      });
       assert.equal((await trialAccessService.calculateTrialAccess(enrollment.id)).enrollmentStatus, 'PAYMENT_REQUIRED');
 
       await classMeetingService.cancel(extraMeetings[0].id);
       const afterCancellation = await trialAccessService.calculateTrialAccess(enrollment.id);
-      assert.equal(afterCancellation.trialAttendanceCount, 2);
+      assert.equal(afterCancellation.trialAttendanceCount, 4);
       assert.equal(afterCancellation.enrollmentStatus, 'TRIAL_ACTIVE');
       assert.ok(await prisma.classMeeting.findUnique({ where: { id: extraMeetings[0].id } }));
       await assert.rejects(

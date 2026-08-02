@@ -19,8 +19,12 @@
     <div><dt>Référence</dt><dd><code><%= payment.reference %></code></dd></div>
     <div><dt>Formation</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.baseAmount)) %></dd></div>
     <div><dt>Frais d’inscription</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.registrationFee)) %></dd></div>
-    <div><dt>Total à payer</dt><dd><strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></strong></dd></div>
-    <div><dt>Mode</dt><dd>Paiement unique</dd></div>
+    <div><dt>Ce versement</dt><dd><strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></strong></dd></div>
+    <div><dt>Prix total historique</dt><dd><%= payment.access.expectedTotalAmount %> <%= payment.access.expectedCurrency %></dd></div>
+    <div><dt>Déjà confirmé</dt><dd><%= payment.access.confirmedPaidAmount %> <%= payment.access.expectedCurrency %></dd></div>
+    <div><dt>Solde restant</dt><dd><%= payment.access.remainingAmount %> <%= payment.access.expectedCurrency %></dd></div>
+    <div><dt>Pourcentage payé</dt><dd><%= payment.access.paidPercentage %> %</dd></div>
+    <div><dt>Palier actuel</dt><dd><%= payment.access.accessStage %></dd></div>
     <div><dt>Créé le</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.createdAt) %></dd></div>
     <div><dt>Expiration</dt><dd><%= payment.expiresAt ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.expiresAt) : 'Aucune' %></dd></div>
   </dl>

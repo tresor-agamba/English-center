@@ -1,5 +1,6 @@
 const prisma = require('../utils/prisma');
 const notificationService = require('./notificationService');
+const trialAccessService = require('./trialAccessService');
 
 const FULL_ACCESS_STATUSES = ['TRIAL_ACTIVE', 'CONFIRMED'];
 const OUTLINE_ACCESS_STATUSES = ['PAYMENT_REQUIRED'];
@@ -111,7 +112,7 @@ async function enrollmentForLearning(userId, enrollmentId) {
     || ['CLOSED', 'ARCHIVED'].includes(enrollment.trainingSession.course.lmsStatus)) {
     throw new LearningAccessError('COURSE_NOT_PUBLISHED', 'Ce cours n’est pas publié.', 403);
   }
-  return enrollment;
+  return { ...enrollment, courseAccess: await trialAccessService.calculateTrialAccess(enrollment.id) };
 }
 
 async function completedLessonIds(enrollmentId) {
@@ -153,7 +154,12 @@ function filterUnlockedModules(rawModules, completedIds, now = new Date()) {
 
 async function getLearningPath(userId, enrollmentId) {
   const enrollment = await enrollmentForLearning(userId, enrollmentId);
-  const access = accessForStatus(enrollment.status);
+  const access = {
+    canViewOutline: true,
+    canViewContent: enrollment.courseAccess.allowed,
+    blocked: !enrollment.courseAccess.allowed,
+    ...enrollment.courseAccess,
+  };
   if (!access.canViewOutline) throw new LearningAccessError('LEARNING_BLOCKED', 'Cette inscription ne permet pas d’accéder au contenu.', 403);
   const completedIds = await completedLessonIds(enrollment.id);
   const course = enrollment.trainingSession.course;
