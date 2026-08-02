@@ -73,13 +73,18 @@ test('inscription d’un étudiant existant', async (t) => {
   try {
     const course = await prisma.course.create({
       data: {
-        title: 'Parcours étudiant existant',
-        slug: `parcours-existant-${unique}`,
+        title: 'Inscription existante contrôlée',
+        slug: `inscription-existante-${unique}`,
         shortDescription: 'Formation entièrement en ligne',
         price: '75.00',
         currency: 'USD',
         trainingMode: 'En ligne',
+        level: 'Intermédiaire',
+        durationValue: 8,
+        durationUnit: 'WEEKS',
         isPublished: true,
+        lmsStatus: 'PUBLISHED',
+        publishedAt: now,
       },
     });
     courseId = course.id;

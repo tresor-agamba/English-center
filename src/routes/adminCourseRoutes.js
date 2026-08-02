@@ -9,4 +9,5 @@ router.post('/', asyncHandler(controller.create));
 router.get('/:id/edit', asyncHandler(controller.editForm));
 router.post('/:id', asyncHandler(controller.update));
 router.post('/:id/toggle-published', asyncHandler(controller.togglePublished));
+router.post('/:id/archive', asyncHandler(controller.archive));
 module.exports = router;

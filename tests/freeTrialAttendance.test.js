@@ -45,11 +45,17 @@ test('accès gratuit limité à cinq présences', async (t) => {
   try {
     const course = await prisma.course.create({
       data: {
-        title: 'Formation essai gratuit',
-        slug: `essai-gratuit-${unique}`,
+        title: 'Période gratuite contrôlée',
+        slug: `periode-gratuite-${unique}`,
+        shortDescription: 'Formation publique complète',
+        level: 'Intermédiaire',
+        durationValue: 8,
+        durationUnit: 'WEEKS',
         price: '120.00',
         currency: 'USD',
         isPublished: true,
+        lmsStatus: 'PUBLISHED',
+        publishedAt: now,
       },
     });
     courseId = course.id;

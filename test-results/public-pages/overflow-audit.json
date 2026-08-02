@@ -730,6 +730,17 @@
         "position": "absolute",
         "overflowX": "hidden",
         "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 389.91,
+        "right": 390.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
       }
     ],
     "viewportOffenders": []
@@ -758,6 +769,17 @@
         "scrollWidth": 159,
         "left": 35,
         "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 389.91,
+        "right": 390.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -805,6 +827,17 @@
         "position": "absolute",
         "overflowX": "hidden",
         "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 349.91,
+        "right": 350.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
       }
     ],
     "viewportOffenders": []
@@ -833,6 +866,17 @@
         "scrollWidth": 159,
         "left": 35,
         "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 349.91,
+        "right": 350.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -880,6 +924,17 @@
         "position": "absolute",
         "overflowX": "hidden",
         "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 334.91,
+        "right": 335.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
       }
     ],
     "viewportOffenders": []
@@ -908,6 +963,17 @@
         "scrollWidth": 159,
         "left": 35,
         "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 334.91,
+        "right": 335.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -955,6 +1021,17 @@
         "position": "absolute",
         "overflowX": "hidden",
         "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 279.91,
+        "right": 280.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
       }
     ],
     "viewportOffenders": []
@@ -983,6 +1060,17 @@
         "scrollWidth": 159,
         "left": 35,
         "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 279.91,
+        "right": 280.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",

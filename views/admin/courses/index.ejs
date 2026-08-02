@@ -15,7 +15,7 @@
       <td data-label="Type"><%= typeLabels[course.courseType] %></td>
       <td data-label="Prix"><% if (course.price === null || !course.pricingMode) { %>À définir<% } else if (!course.pricingActive) { %><%= course.price %> <%= course.currency %> · Inactif<% } else if (course.pricingMode === 'FREE') { %>Gratuite<% } else { %><%= Number(course.price) + Number(course.registrationFee || 0) %> <%= course.currency %><% } %></td>
       <td data-label="Sessions"><%= course._count.trainingSessions %></td>
-      <td data-label="Publication"><span class="status <%= course.isPublished ? 'status-active' : 'status-inactive' %>"><%= course.isPublished ? 'Publiée' : 'Brouillon' %></span></td>
+      <td data-label="Publication"><span class="status <%= course.publicationState === 'PUBLISHED' ? 'status-active' : 'status-inactive' %>"><%= ({READY:'Prête à publier', PUBLISHED:'Publiée', ARCHIVED:'Archivée', INCOMPLETE:'Configuration incomplète'})[course.publicationState] || 'Brouillon' %></span><% if (course.publicationMissingFields.length) { %><br><small>Manque : <%= course.publicationMissingFields.join(', ') %></small><% } %></td>
       <td data-label="Actions"><a href="/admin/courses/<%= course.id %>/edit">Modifier</a></td>
     </tr><% }) %></tbody>
   </table></div>

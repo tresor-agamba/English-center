@@ -31,9 +31,9 @@ function classifyCourse(course) {
 }
 
 function protectedDependencyCount(dependencies) {
-  return dependencies.enrollments + dependencies.payments + dependencies.attendances +
-    dependencies.assessments + dependencies.modules + dependencies.assignments +
-    dependencies.documents + dependencies.schedules + dependencies.academicCohorts;
+  return ['enrollments', 'payments', 'attendances', 'certificates', 'progress', 'assessments',
+    'modules', 'assignments', 'documents', 'schedules', 'academicCohorts']
+    .reduce((total, key) => total + Number(dependencies[key] || 0), 0);
 }
 
 async function auditFixtures(client = prisma) {
@@ -55,15 +55,19 @@ async function auditFixtures(client = prisma) {
   });
   const audited = [];
   for (const course of courses) {
-    const [sessionEnrollments, attendances] = await Promise.all([
+    const [sessionEnrollments, attendances, certificates, progress] = await Promise.all([
       client.enrollment.count({ where: { trainingSession: { courseId: course.id } } }),
       client.attendance.count({ where: { enrollment: { trainingSession: { courseId: course.id } } } }),
+      client.certificate?.count ? client.certificate.count({ where: { certificateRequest: { enrollment: { trainingSession: { courseId: course.id } } } } }) : 0,
+      client.lessonProgress?.count ? client.lessonProgress.count({ where: { enrollment: { trainingSession: { courseId: course.id } } } }) : 0,
     ]);
     const dependencies = {
       sessions: course._count.trainingSessions,
       enrollments: course._count.enrollments + sessionEnrollments,
       payments: course._count.payments,
       attendances,
+      certificates,
+      progress,
       assessments: course._count.assessments,
       modules: course._count.modules,
       assignments: course._count.assignments,

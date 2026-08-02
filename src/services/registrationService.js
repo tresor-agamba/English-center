@@ -4,6 +4,7 @@ const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPoli
 const enrollmentReminders = require('./enrollmentReminderService');
 const whatsappPreferences = require('./whatsappPreferenceService');
 const placement = require('./placementTestService');
+const { isPublicCourse } = require('./coursePublicationPolicy');
 
 const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
@@ -89,6 +90,16 @@ function sessionSelect(now) {
         pricingMode: true,
         trainingMode: true,
         isPublished: true,
+        lmsStatus: true,
+        archivedAt: true,
+        closedAt: true,
+        createdAt: true,
+        description: true,
+        level: true,
+        duration: true,
+        durationValue: true,
+        durationUnit: true,
+        pricingActive: true,
       },
     },
     _count: {
@@ -101,7 +112,7 @@ function sessionSelect(now) {
 
 function validateSession(session, now = new Date(), options = {}) {
   const { checkCapacity = true } = options;
-  if (!session || !session.course.isPublished) {
+  if (!session || !isPublicCourse(session.course)) {
     throw new RegistrationError('SESSION_NOT_FOUND', messages.SESSION_NOT_FOUND, 404);
   }
   if (session.startDate < now || !['OPEN'].includes(session.status)) {
@@ -142,22 +153,23 @@ async function getSessionForRegistration(rawSessionId, client = prisma) {
 
 async function listCoursesForPublicRegistration(client = prisma) {
   const now = new Date();
-  return client.course.findMany({
+  const courses = await client.course.findMany({
     where: {
       isPublished: true,
-      lmsStatus: { notIn: ['CLOSED', 'ARCHIVED'] },
+      lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null,
       trainingSessions: { some: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } } },
     },
-    select: { id: true, title: true, slug: true },
+    select: { id: true, title: true, slug: true, shortDescription: true, description: true, level: true, duration: true, durationValue: true, durationUnit: true, price: true, currency: true, pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true, archivedAt: true, closedAt: true, createdAt: true },
     orderBy: { title: 'asc' },
   });
+  return courses.filter(isPublicCourse).map(({ id, title, slug }) => ({ id, title, slug }));
 }
 
 async function getCourseRegistrationSession(rawCourseId, client = prisma) {
   const courseId = parseCourseId(rawCourseId);
   const now = new Date();
   const course = await client.course.findFirst({
-    where: { id: courseId, isPublished: true, lmsStatus: { notIn: ['CLOSED', 'ARCHIVED'] } },
+    where: { id: courseId, isPublished: true, lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null },
     select: {
       trainingSessions: {
         where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },

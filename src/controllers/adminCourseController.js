@@ -66,7 +66,6 @@ function parseForm(body) {
     targetAudience: body.targetAudience?.trim() || null,
     prerequisites: body.prerequisites?.trim() || null,
     trainingMode: '100 % en ligne',
-    isPublished: body.isPublished === 'on' || body.isPublished === 'true',
   };
   if (!data.title || !data.level) throw validationError('Le titre et le niveau sont obligatoires.');
   if (!COURSE_TYPES.includes(data.courseType)) throw validationError('Type de formation invalide.');
@@ -107,7 +106,7 @@ async function getCourse(value) {
 }
 
 async function index(req, res) {
-  const courses = await courseService.list();
+  const courses = (await courseService.list()).map(courseService.decoratePublication);
   return res.render('admin/courses/index', { title: 'Formations', courses, typeLabels: COURSE_TYPE_LABELS });
 }
 
@@ -134,7 +133,7 @@ async function create(req, res) {
 }
 
 async function editForm(req, res) {
-  const course = await getCourse(req.params.id);
+  const course = courseService.decoratePublication(await getCourse(req.params.id));
   return res.render('admin/courses/edit', viewData({
     title: `Modifier ${course.title}`,
     course,
@@ -153,9 +152,10 @@ async function update(req, res) {
     return res.redirect(`/admin/courses/${course.id}/edit?updated=1`);
   } catch (error) {
     if (error.statusCode === 400 || error?.code === 'P2002') {
+      const decorated = courseService.decoratePublication(course);
       return res.status(400).render('admin/courses/edit', viewData({
         title: `Modifier ${course.title}`,
-        course,
+        course: decorated,
         form: req.body,
         error: error?.code === 'P2002' ? 'Une formation utilise déjà ce slug.' : error.message,
         success: '',
@@ -167,8 +167,23 @@ async function update(req, res) {
 
 async function togglePublished(req, res) {
   const course = await getCourse(req.params.id);
-  await courseService.togglePublished(course.id, !course.isPublished);
-  return res.redirect(`/admin/courses/${course.id}/edit?updated=1`);
+  try {
+    if (course.isPublished) await courseService.unpublish(course.id);
+    else await courseService.publish(course.id);
+    return res.redirect(`/admin/courses/${course.id}/edit?updated=1`);
+  } catch (error) {
+    if (error.statusCode === 400) {
+      const decorated = courseService.decoratePublication(course);
+      return res.status(400).render('admin/courses/edit', viewData({ title: `Modifier ${course.title}`, course: decorated, form: course, error: error.message, success: '' }));
+    }
+    throw error;
+  }
+}
+
+async function archive(req, res) {
+  const course = await getCourse(req.params.id);
+  await courseService.archive(course.id);
+  return res.redirect('/admin/courses');
 }
 
 module.exports = {
@@ -184,4 +199,5 @@ module.exports = {
   editForm,
   update,
   togglePublished,
+  archive,
 };

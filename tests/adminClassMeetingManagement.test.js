@@ -55,9 +55,15 @@ test('administration des séances et présences', async (t) => {
       data: {
         title: 'Gestion séances test',
         slug: `gestion-seances-${unique}`,
+        shortDescription: 'Formation publique complète',
+        level: 'Intermédiaire',
+        durationValue: 8,
+        durationUnit: 'WEEKS',
         price: '100.00',
         currency: 'USD',
         isPublished: true,
+        lmsStatus: 'PUBLISHED',
+        publishedAt: new Date(),
       },
     });
     courseId = course.id;

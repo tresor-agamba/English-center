@@ -23,7 +23,11 @@ test('parcours public étudiant par formation et niveau', async (t) => {
 
   async function createCourse(title, published = true) {
     const item = await prisma.course.create({
-      data: { title, slug: `${title.toLowerCase().replace(/\s+/g, '-')}-${key}`, isPublished: published },
+      data: { title, slug: `${title.toLowerCase().replace(/\s+/g, '-')}-${key}`,
+        shortDescription: 'Formation publique complète', level: 'Intermédiaire',
+        durationValue: 8, durationUnit: 'WEEKS', price: '100', currency: 'USD',
+        pricingMode: 'ONE_TIME', pricingActive: true, isPublished: published,
+        lmsStatus: published ? 'PUBLISHED' : 'DRAFT', publishedAt: published ? now : null },
     });
     await prisma.trainingSession.create({
       data: {

@@ -52,10 +52,16 @@ test('inscription autonome à une session', async (t) => {
         title: 'Auto-inscription test',
         slug: `auto-inscription-${unique}`,
         description: 'Formation de test',
+        shortDescription: 'Formation publique de test',
+        level: 'Intermédiaire',
+        durationValue: 8,
+        durationUnit: 'WEEKS',
         price: '90.00',
         currency: 'USD',
         trainingMode: 'En ligne',
         isPublished: true,
+        lmsStatus: 'PUBLISHED',
+        publishedAt: now,
       },
     });
     courseId = course.id;

@@ -67,7 +67,11 @@ test('configuration administrative du catalogue', async (t) => {
       assert.equal(course.pricingMode, 'ONE_TIME');
       assert.equal(course.pricingActive, true);
       assert.equal(course.trainingMode, '100 % en ligne');
+      assert.equal(course.isPublished, false, 'la création reste en brouillon même si le formulaire contient une ancienne case à cocher');
+      await courseService.publish(course.id);
+      course = await courseService.findById(course.id);
       assert.equal(course.isPublished, true);
+      assert.equal(course.lmsStatus, 'PUBLISHED');
 
       const duplicateData = courseController.parseForm({ ...courseBody, isPublished: undefined });
       const duplicateSlug = await courseController.uniqueSlug(duplicateData.title);

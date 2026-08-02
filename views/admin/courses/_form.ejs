@@ -75,10 +75,7 @@
   <label for="prerequisites">Prérequis</label>
   <textarea id="prerequisites" name="prerequisites" rows="3"><%= form.prerequisites || '' %></textarea>
 
-  <label class="checkbox-label">
-    <input name="isPublished" type="checkbox" <%= form.isPublished === true || form.isPublished === 'on' ? 'checked' : '' %> />
-    Publier cette formation
-  </label>
+  <p class="form-hint">La publication s'effectue séparément après validation de la configuration obligatoire.</p>
   <p class="form-hint">Mode imposé : formation 100 % en ligne. Le slug est généré automatiquement.</p>
 
   <div class="form-actions">

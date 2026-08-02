@@ -1,7 +1,8 @@
 const prisma = require('../utils/prisma');
 const { OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
+const { isPublicCourse } = require('./coursePublicationPolicy');
 
-const PUBLIC_SESSION_STATUSES = ['OPEN', 'FULL'];
+const PUBLIC_SESSION_STATUSES = ['OPEN'];
 
 function futureSessionWhere(now) {
   return {
@@ -13,7 +14,7 @@ function futureSessionWhere(now) {
 async function listPublished() {
   const now = new Date();
   const courses = await prisma.course.findMany({
-    where: { isPublished: true },
+    where: { isPublished: true, lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null },
     orderBy: [{ createdAt: 'desc' }, { title: 'asc' }],
     select: {
       id: true,
@@ -28,6 +29,13 @@ async function listPublished() {
       durationUnit: true,
       price: true,
       currency: true,
+      pricingMode: true,
+      pricingActive: true,
+      isPublished: true,
+      lmsStatus: true,
+      archivedAt: true,
+      closedAt: true,
+      createdAt: true,
       trainingSessions: {
         where: futureSessionWhere(now),
         select: {
@@ -46,7 +54,7 @@ async function listPublished() {
     },
   });
 
-  return courses.map(({ trainingSessions, ...course }) => {
+  return courses.filter(isPublicCourse).map(({ trainingSessions, ...course }) => {
     const availableSessions = trainingSessions.filter(
       (session) =>
         session.status === 'OPEN' &&
@@ -68,7 +76,7 @@ async function listUpcomingSessions(limit = 3) {
       ...futureSessionWhere(now),
       status: 'OPEN',
       registrationDeadline: { gte: now },
-      course: { isPublished: true },
+      course: { isPublished: true, lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null },
     },
     orderBy: [{ startDate: 'asc' }, { id: 'asc' }],
     take: Math.max(1, Math.min(Number(limit) || 3, 6)),
@@ -83,7 +91,7 @@ async function listUpcomingSessions(limit = 3) {
       platform: true,
       capacity: true,
       courseId: true,
-      course: { select: { id: true, title: true, level: true, slug: true, trainingMode: true } },
+      course: { select: { id: true, title: true, level: true, slug: true, trainingMode: true, shortDescription: true, description: true, duration: true, durationValue: true, durationUnit: true, price: true, currency: true, pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true, archivedAt: true, closedAt: true, createdAt: true } },
       _count: {
         select: {
           enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },
@@ -96,13 +104,13 @@ async function listUpcomingSessions(limit = 3) {
       ...session,
       remainingPlaces: Math.max(0, session.capacity - _count.enrollments),
     }))
-    .filter((session) => session.remainingPlaces > 0);
+    .filter((session) => session.remainingPlaces > 0 && isPublicCourse(session.course));
 }
 
 async function findPublishedBySlug(slug) {
   const now = new Date();
   const course = await prisma.course.findFirst({
-    where: { slug, isPublished: true },
+    where: { slug, isPublished: true, lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null },
     select: {
       id: true,
       slug: true,
@@ -120,6 +128,13 @@ async function findPublishedBySlug(slug) {
       price: true,
       currency: true,
       trainingMode: true,
+      pricingMode: true,
+      pricingActive: true,
+      isPublished: true,
+      lmsStatus: true,
+      archivedAt: true,
+      closedAt: true,
+      createdAt: true,
       trainingSessions: {
         where: futureSessionWhere(now),
         orderBy: { startDate: 'asc' },
@@ -146,7 +161,7 @@ async function findPublishedBySlug(slug) {
     },
   });
 
-  if (!course) return null;
+  if (!course || !isPublicCourse(course)) return null;
 
   return {
     ...course,

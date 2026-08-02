@@ -51,6 +51,12 @@ test('catalogue public des formations', async (t) => {
           currency: 'USD',
           trainingMode: 'Présentiel',
           isPublished: true,
+          lmsStatus: 'PUBLISHED',
+          publishedAt: now,
+          durationValue: 8,
+          durationUnit: 'WEEKS',
+          pricingMode: 'ONE_TIME',
+          pricingActive: true,
         },
       });
       publishedCourseId = published.id;
@@ -141,7 +147,7 @@ test('catalogue public des formations', async (t) => {
       const course = await publicCourseService.findPublishedBySlug(courseRow.slug);
       assert.deepEqual(
         course.trainingSessions.map((session) => session.name),
-        ['Session future ouverte', 'Session future complète']
+        ['Session future ouverte']
       );
       const openSession = course.trainingSessions[0];
       assert.equal(openSession.remainingPlaces, 2);
