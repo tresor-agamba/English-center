@@ -3,12 +3,13 @@
 <p class="back-link"><a href="/formations"><span aria-hidden="true">←</span> <span data-i18n="detail.back">All courses</span></a></p>
 
 <section class="course-detail-hero">
-  <p class="eyebrow"><%= formatCourseType(course.courseType) %></p>
+  <% const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); %>
+  <p class="eyebrow" <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></p>
   <h1><%= course.title %></h1>
   <p class="course-lead"><%= course.shortDescription || course.description || '' %></p>
   <div class="course-facts">
     <span><strong data-i18n="detail.level">Level</strong><% if (course.level) { %><%= course.level %><% } else { %><span data-i18n="detail.tbc">To be confirmed</span><% } %></span>
-    <span><strong data-i18n="detail.duration">Duration</strong><%= formatDuration(course) %></span>
+    <span><strong data-i18n="detail.duration">Duration</strong><em <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></em></span>
     <span><strong data-i18n="detail.mode">Format</strong><span data-i18n="detail.online">100% online</span></span>
     <span><strong data-i18n="detail.price">Indicative price</strong><% if (course.price !== null) { %><span data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></span><% } else { %><span data-i18n="detail.onRequest">On request</span><% } %></span>
   </div>

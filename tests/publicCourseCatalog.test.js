@@ -7,6 +7,7 @@ const prisma = require('../src/utils/prisma');
 const app = require('../src/app');
 const publicCourseService = require('../src/services/publicCourseService');
 const publicCourseController = require('../src/controllers/publicCourseController');
+const { formatCourseType, formatDuration } = require('../src/utils/catalogFormat.util');
 
 function addDays(date, days) {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
@@ -124,11 +125,15 @@ test('catalogue public des formations', async (t) => {
     });
 
     await t.test('liste uniquement les formations publiées et compte les sessions ouvertes', async () => {
+      const countBefore = await prisma.course.count();
       const courses = await publicCourseService.listPublished();
       const published = courses.find((course) => course.id === publishedCourseId);
       assert.ok(published);
       assert.equal(published.upcomingSessionCount, 1);
       assert.equal(courses.some((course) => course.id === hiddenCourseId), false);
+      assert.equal(new Set(courses.map((course) => course.id)).size, courses.length);
+      assert.equal(await prisma.course.count(), countBefore, 'la consultation ne supprime aucune donnée, même de test');
+      assert.ok(published.nextSessionStart instanceof Date);
     });
 
     await t.test('exclut les sessions passées et annulées et calcule les places restantes', async () => {
@@ -151,6 +156,28 @@ test('catalogue public des formations', async (t) => {
       assert.equal(controlled[0].remainingPlaces, 2);
       assert.ok(controlled.every((session) => session.startDate >= now));
       assert.ok(controlled.every((session, index) => index === 0 || controlled[index - 1].startDate <= session.startDate));
+      assert.equal(new Set(sessions.map((session) => session.id)).size, sessions.length);
+      assert.ok(controlled.every((session) => session.courseId === publishedCourseId));
+    });
+
+    await t.test('utilise des fallbacks neutres traduisibles sans inventer de catégorie ni durée', async () => {
+      assert.equal(formatCourseType('OTHER'), null);
+      assert.equal(formatDuration({}), null);
+      const html = await renderFile('views/public/courses/index.ejs', {
+        title: 'Nos formations',
+        courses: [{
+          id: 999999, slug: 'fallback-test', title: 'Formation sans métadonnées',
+          courseType: 'OTHER', level: null, duration: null, durationValue: null,
+          durationUnit: null, shortDescription: null, description: null, price: null,
+          currency: 'USD', upcomingSessionCount: 0, nextSessionStart: null,
+        }],
+        formatCourseType,
+        formatDuration,
+      });
+      assert.match(html, /data-i18n="fallback\.category"/);
+      assert.match(html, /data-i18n="fallback\.level"/);
+      assert.match(html, /data-i18n="fallback\.duration"/);
+      assert.doesNotMatch(html, /Autre formation|À préciser/);
     });
 
     await t.test('renvoie une page 404 claire pour un slug inexistant', async () => {

@@ -31,6 +31,8 @@ async function listPublished() {
       trainingSessions: {
         where: futureSessionWhere(now),
         select: {
+          id: true,
+          startDate: true,
           capacity: true,
           status: true,
           registrationDeadline: true,
@@ -44,15 +46,19 @@ async function listPublished() {
     },
   });
 
-  return courses.map(({ trainingSessions, ...course }) => ({
-    ...course,
-    upcomingSessionCount: trainingSessions.filter(
+  return courses.map(({ trainingSessions, ...course }) => {
+    const availableSessions = trainingSessions.filter(
       (session) =>
         session.status === 'OPEN' &&
         session.registrationDeadline >= now &&
         session._count.enrollments < session.capacity
-    ).length,
-  }));
+    ).sort((left, right) => left.startDate - right.startDate || left.id - right.id);
+    return {
+      ...course,
+      upcomingSessionCount: availableSessions.length,
+      nextSessionStart: availableSessions[0]?.startDate || null,
+    };
+  });
 }
 
 async function listUpcomingSessions(limit = 3) {
@@ -76,7 +82,8 @@ async function listUpcomingSessions(limit = 3) {
       timezone: true,
       platform: true,
       capacity: true,
-      course: { select: { title: true, level: true, slug: true } },
+      courseId: true,
+      course: { select: { id: true, title: true, level: true, slug: true, trainingMode: true } },
       _count: {
         select: {
           enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },

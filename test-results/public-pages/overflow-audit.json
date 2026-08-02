@@ -1,0 +1,994 @@
+[
+  {
+    "route": "/",
+    "width": 1920,
+    "scrollWidth": 1920,
+    "clientWidth": 1920,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 1180,
+        "scrollWidth": 1550,
+        "left": 370,
+        "right": 1550,
+        "width": 1180,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 1241.82,
+        "right": 1359.53,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 370,
+        "right": 528.28,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 540.28,
+        "right": 698.56,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 710.56,
+        "right": 868.84,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 880.84,
+        "right": 1039.14,
+        "width": 158.3,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 1051.14,
+        "right": 1209.42,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 1221.42,
+        "right": 1379.7,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 381,
+        "right": 382,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 1920,
+    "scrollWidth": 1920,
+    "clientWidth": 1920,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "p.eyebrow",
+        "clientWidth": 0,
+        "scrollWidth": 14,
+        "left": 370,
+        "right": 370,
+        "width": 0,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "h1",
+        "clientWidth": 0,
+        "scrollWidth": 45,
+        "left": 370,
+        "right": 370,
+        "width": 0,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "p",
+        "clientWidth": 0,
+        "scrollWidth": 14,
+        "left": 370,
+        "right": 370,
+        "width": 0,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 381,
+        "right": 382,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 1180,
+        "scrollWidth": 1310,
+        "left": 130,
+        "right": 1310,
+        "width": 1180,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 1001.82,
+        "right": 1119.53,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 130,
+        "right": 288.28,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 300.28,
+        "right": 458.56,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 470.56,
+        "right": 628.84,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 640.84,
+        "right": 799.14,
+        "width": 158.3,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 811.14,
+        "right": 969.42,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 981.42,
+        "right": 1139.7,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 141,
+        "right": 142,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 141,
+        "right": 142,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 1366,
+    "scrollWidth": 1366,
+    "clientWidth": 1366,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 1180,
+        "scrollWidth": 1273,
+        "left": 93,
+        "right": 1273,
+        "width": 1180,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 964.72,
+        "right": 1082.43,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 93,
+        "right": 251.28,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 263.28,
+        "right": 421.56,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 433.56,
+        "right": 591.84,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 603.84,
+        "right": 762.14,
+        "width": 158.3,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 774.14,
+        "right": 932.42,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 158,
+        "scrollWidth": 174,
+        "left": 944.42,
+        "right": 1102.7,
+        "width": 158.28,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 104,
+        "right": 105,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 1366,
+    "scrollWidth": 1366,
+    "clientWidth": 1366,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 104,
+        "right": 105,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 992,
+        "scrollWidth": 1008,
+        "left": 16,
+        "right": 1008,
+        "width": 992,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 737.46,
+        "right": 855.17,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 16,
+        "right": 147.42,
+        "width": 131.42,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 159.42,
+        "right": 290.84,
+        "width": 131.42,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 302.84,
+        "right": 434.28,
+        "width": 131.44,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 446.28,
+        "right": 577.7,
+        "width": 131.42,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 589.7,
+        "right": 721.14,
+        "width": 131.44,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "li.journey-step.reveal",
+        "clientWidth": 131,
+        "scrollWidth": 147,
+        "left": 733.14,
+        "right": 864.56,
+        "width": 131.42,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 768,
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 736,
+        "scrollWidth": 752,
+        "left": 16,
+        "right": 752,
+        "width": 736,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 325.15,
+        "right": 442.85,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 768,
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 640,
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 608,
+        "scrollWidth": 624,
+        "left": 16,
+        "right": 624,
+        "width": 608,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 110,
+        "scrollWidth": 121,
+        "left": 261.15,
+        "right": 378.85,
+        "width": 117.71,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 640,
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 608,
+        "scrollWidth": 624,
+        "left": 16,
+        "right": 624,
+        "width": 608,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 430,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 410,
+        "scrollWidth": 420,
+        "left": 10,
+        "right": 420,
+        "width": 410,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 94,
+        "scrollWidth": 105,
+        "left": 164.55,
+        "right": 265.45,
+        "width": 100.89,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 430,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 410,
+        "scrollWidth": 420,
+        "left": 10,
+        "right": 420,
+        "width": 410,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 390,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 370,
+        "scrollWidth": 380,
+        "left": 10,
+        "right": 380,
+        "width": 370,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 94,
+        "scrollWidth": 105,
+        "left": 144.55,
+        "right": 245.45,
+        "width": 100.89,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 390,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 370,
+        "scrollWidth": 380,
+        "left": 10,
+        "right": 380,
+        "width": 370,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 375,
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 355,
+        "scrollWidth": 365,
+        "left": 10,
+        "right": 365,
+        "width": 355,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 94,
+        "scrollWidth": 105,
+        "left": 137.05,
+        "right": 237.95,
+        "width": 100.89,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 375,
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 355,
+        "scrollWidth": 365,
+        "left": 10,
+        "right": 365,
+        "width": 355,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 320,
+    "scrollWidth": 320,
+    "clientWidth": 320,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 304,
+        "scrollWidth": 312,
+        "left": 8,
+        "right": 312,
+        "width": 304,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "div.teacher-avatar",
+        "clientWidth": 94,
+        "scrollWidth": 105,
+        "left": 109.54,
+        "right": 210.43,
+        "width": 100.89,
+        "position": "relative",
+        "overflowX": "visible",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/formations",
+    "width": 320,
+    "scrollWidth": 320,
+    "clientWidth": 320,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "#main-content",
+        "clientWidth": 304,
+        "scrollWidth": 312,
+        "left": 8,
+        "right": 312,
+        "width": 304,
+        "position": "static",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 159,
+        "left": 35,
+        "right": 36,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  }
+]

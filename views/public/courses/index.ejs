@@ -14,16 +14,17 @@
   </div>
 <% } else { %>
   <section class="course-grid" aria-label="Course catalogue" data-i18n-aria="a11y.courseCatalogue">
-    <% courses.forEach((course) => { %>
-      <article class="course-card">
+    <% courses.forEach((course) => { const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); %>
+      <article class="course-card" data-course-id="<%= course.id %>">
         <div class="course-card-content">
           <div class="course-meta">
-            <span><%= formatCourseType(course.courseType) %></span>
-            <% if (course.level) { %><span><%= course.level %></span><% } %>
-            <span><%= formatDuration(course) %></span>
+            <span <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span>
+            <% if (course.level) { %><span><%= course.level %></span><% } else { %><span data-i18n="fallback.level">Level not specified</span><% } %>
+            <span <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span>
           </div>
           <h2><%= course.title %></h2>
           <p><%= course.shortDescription || course.description || 'Découvrez cette formation proposée par English Center.' %></p>
+          <% if (course.nextSessionStart) { %><small><span data-i18n="courses.nextSession">Next session</span> · <time data-local-date datetime="<%= course.nextSessionStart.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(course.nextSessionStart) %></time></small><% } %>
         </div>
         <div class="course-card-footer">
           <div>

@@ -5,7 +5,7 @@ const COURSE_TYPE_LABELS = {
   CONVERSATION: 'Conversation anglaise',
   IELTS_PREPARATION: 'Préparation IELTS',
   BEGINNER_ENGLISH: 'Anglais débutant',
-  OTHER: 'Autre formation',
+  OTHER: null,
 };
 
 const DURATION_UNIT_LABELS = {
@@ -26,7 +26,7 @@ const WEEK_DAY_LABELS = {
 };
 
 function formatCourseType(value) {
-  return COURSE_TYPE_LABELS[value] || COURSE_TYPE_LABELS.OTHER;
+  return COURSE_TYPE_LABELS[value] || null;
 }
 
 function formatDuration(course) {
@@ -34,7 +34,7 @@ function formatDuration(course) {
     const labels = DURATION_UNIT_LABELS[course.durationUnit];
     return `${course.durationValue} ${course.durationValue > 1 ? labels[1] : labels[0]}`;
   }
-  return course.duration || 'À préciser';
+  return course.duration || null;
 }
 
 function formatWeekDays(values = []) {
