@@ -1794,6 +1794,13 @@ body:has(.admin-nav) .dashboard-heading {
 .visual-icon { display: grid; flex: 0 0 auto; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--brand-secondary-light); color: var(--brand-secondary-dark); }.visual-icon svg { width: 19px; }
 .visual-float-top { top: 13%; right: 9%; animation-delay: -2s; }.visual-float-side { top: 48%; left: 4%; animation-delay: -5s; }.visual-float-bottom { right: 12%; bottom: 10%; animation-delay: -3.5s; }
 .visual-spark { position: absolute; z-index: 2; width: 11px; aspect-ratio: 1; border: 2px solid #fff; border-radius: 4px; background: var(--brand-primary); box-shadow: 0 6px 16px rgb(23 16 92 / 18%); transform: rotate(45deg); }.spark-one { top: 21%; left: 19%; }.spark-two { right: 19%; bottom: 23%; width: 8px; background: var(--brand-secondary); }
+.hero-photo-frame { position: relative; z-index: 2; display: block; width: min(86%, 455px); aspect-ratio: 1.04; overflow: hidden; border: 4px solid #fff; border-radius: 42% 58% 48% 52% / 45% 42% 58% 55%; background: var(--brand-secondary-light); box-shadow: 0 28px 60px rgb(23 16 92 / 20%), 0 0 0 1px rgb(0 143 147 / 20%); }
+.hero-photo-frame::after { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(145deg, transparent 58%, rgb(23 16 92 / 8%)); content: ""; pointer-events: none; }
+.hero-student-photo { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 54% 50%; }
+.hero-visual .visual-float { z-index: 4; }
+.hero-visual .visual-float-top { top: 8%; right: auto; left: 8%; }
+.hero-visual .visual-float-side { top: auto; right: 10%; bottom: 8%; left: auto; }
+.hero-visual .visual-float-bottom { top: 3%; right: 18%; bottom: auto; font-size: .68rem; white-space: nowrap; }
 @keyframes hero-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes hero-orbit { to { transform: rotate(360deg); } }
 @keyframes hero-orbit-reverse { to { transform: rotate(-360deg); } }
@@ -1864,7 +1871,9 @@ body:has(.admin-nav) .dashboard-heading {
   .admin-nav a { flex-basis: calc(50% - .3rem); padding: .55rem .4rem; font-size: .82rem; }
   .public-main { width: min(100% - 1.25rem, 1180px); }.landing-hero { min-height: auto; padding-block: 3rem 4rem; }.hero-copy h1 { font-size: clamp(2.55rem, 13vw, 3.5rem); }
   .hero-actions { align-items: stretch; flex-direction: column; }.hero-actions .button { text-align: center; }.hero-visual { min-height: 370px; }
-  .visual-float-top, .visual-float-side { display: none; }.visual-float-bottom { right: 15%; bottom: 10%; padding: .5rem; border-radius: 13px; }.visual-float-bottom strong { display: none; }
+  .visual-float-top, .visual-float-side { display: none; }.visual-float-bottom { top: auto; right: 4%; bottom: 7%; padding: .5rem; border-radius: 13px; }.visual-float-bottom strong { display: none; }
+  .hero-photo-frame { width: min(91%, 430px); aspect-ratio: 1.12; border-width: 3px; }
+  .hero-student-photo { object-position: 54% 48%; }
   .visual-main { width: min(70%, 280px); min-height: 250px; padding: 1.4rem; }.visual-depth-card { width: min(66%, 265px); height: 235px; }.teacher-avatar { width: 96px; height: 96px; }
   .trust-strip, .benefit-grid, .landing-course-grid, .steps-grid, .result-grid { grid-template-columns: 1fr; }
   .landing-section { padding-block: 3.8rem; }.online-section { padding-block: 2.5rem; }.device-stack { min-height: 210px; }
@@ -1878,7 +1887,7 @@ body:has(.admin-nav) .dashboard-heading {
   .public-header { padding-inline: .65rem; }
   .header-brand picture, .header-brand img { height: 48px; }.header-brand img { max-width: 90px; }
   .hero-copy h1 { font-size: 2.35rem; }
-  .visual-main { width: 78%; padding: 1.2rem; }.visual-depth-card { width: 74%; }
+  .hero-photo-frame { width: 94%; }
   .visual-float-bottom { right: 10%; }
   .public-registration, .placement-result { padding: 1rem; }
   body:has(.admin-nav) .header-brand picture, body:has(.admin-nav) .header-brand img { height: 50px; }

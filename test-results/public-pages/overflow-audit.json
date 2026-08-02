@@ -18,17 +18,6 @@
         "transform": "none"
       },
       {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 1241.82,
-        "right": 1359.53,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
-      },
-      {
         "selector": "li.journey-step.reveal",
         "clientWidth": 158,
         "scrollWidth": 174,
@@ -181,17 +170,6 @@
         "transform": "none"
       },
       {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 1001.82,
-        "right": 1119.53,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
-      },
-      {
         "selector": "li.journey-step.reveal",
         "clientWidth": 158,
         "scrollWidth": 174,
@@ -309,17 +287,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 964.72,
-        "right": 1082.43,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "li.journey-step.reveal",
@@ -441,17 +408,6 @@
         "transform": "none"
       },
       {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 737.46,
-        "right": 855.17,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
-      },
-      {
         "selector": "li.journey-step.reveal",
         "clientWidth": 131,
         "scrollWidth": 147,
@@ -571,17 +527,6 @@
         "transform": "none"
       },
       {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 325.15,
-        "right": 442.85,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 159,
@@ -633,17 +578,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 110,
-        "scrollWidth": 121,
-        "left": 261.15,
-        "right": 378.85,
-        "width": 117.71,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "span.sr-only",
@@ -708,17 +642,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 94,
-        "scrollWidth": 105,
-        "left": 164.55,
-        "right": 265.45,
-        "width": 100.89,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "span.sr-only",
@@ -805,17 +728,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 94,
-        "scrollWidth": 105,
-        "left": 144.55,
-        "right": 245.45,
-        "width": 100.89,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "span.sr-only",
@@ -902,17 +814,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 94,
-        "scrollWidth": 105,
-        "left": 137.05,
-        "right": 237.95,
-        "width": 100.89,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "span.sr-only",
@@ -999,17 +900,6 @@
         "position": "static",
         "overflowX": "visible",
         "transform": "none"
-      },
-      {
-        "selector": "div.teacher-avatar",
-        "clientWidth": 94,
-        "scrollWidth": 105,
-        "left": 109.54,
-        "right": 210.43,
-        "width": 100.89,
-        "position": "relative",
-        "overflowX": "visible",
-        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
       },
       {
         "selector": "span.sr-only",
