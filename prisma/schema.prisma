@@ -301,6 +301,9 @@ enum NotificationType {
   FEEDBACK_PUBLISHED
   PAYMENT_REQUIRED
   PAYMENT_CONFIRMED
+  MANUAL_PAYMENT_SUBMITTED
+  MANUAL_PAYMENT_CONFIRMED
+  MANUAL_PAYMENT_REJECTED
   ENROLLMENT_CONFIRMED
   TRIAL_ENDING
   TEACHER_ASSIGNED
@@ -1844,6 +1847,29 @@ model Payment {
   @@index([courseId])
   @@index([status])
   @@map("payments")
+}
+
+model ManualPaymentMethod {
+  id              Int      @id @default(autoincrement())
+  code            String   @unique
+  type            String
+  label           String
+  beneficiaryName String?  @map("beneficiary_name")
+  accountNumber   String?  @map("account_number")
+  accountHolder   String?  @map("account_holder")
+  bankName        String?  @map("bank_name")
+  swiftCode       String?  @map("swift_code")
+  bankBranch      String?  @map("bank_branch")
+  currency        String   @default("USD")
+  instructionsFr  String?  @map("instructions_fr")
+  instructionsEn  String?  @map("instructions_en")
+  isEnabled       Boolean  @default(false) @map("is_enabled")
+  displayOrder    Int      @default(0) @map("display_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@index([isEnabled, displayOrder])
+  @@map("manual_payment_methods")
 }
 
 model Schedule {

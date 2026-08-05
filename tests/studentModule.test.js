@@ -39,6 +39,7 @@ function mockFormResponse() {
 
 test('module administrateur des étudiants', async (t) => {
   let studentId;
+  let adminId;
   const suffix = String(Date.now()).slice(-8);
   const phoneNumber = normalizePhoneNumber(`089${suffix.slice(0, 7)}`);
   const updatedPhoneNumber = normalizePhoneNumber(`088${suffix.slice(0, 7)}`);
@@ -46,6 +47,16 @@ test('module administrateur des étudiants', async (t) => {
   const newPassword = 'Nouveau@2026';
 
   try {
+    const admin = await prisma.user.create({
+      data: {
+        firstName: 'Administrateur',
+        lastName: 'Étudiants',
+        phoneNumber: normalizePhoneNumber(`087${suffix.slice(0, 7)}`),
+        passwordHash: 'test',
+        role: 'ADMIN',
+      },
+    });
+    adminId = admin.id;
     await t.test('valide les numéros et la confirmation du mot de passe', async () => {
       assert.throws(() => normalizePhoneNumber('123'), /invalide/i);
 
@@ -137,7 +148,7 @@ test('module administrateur des étudiants', async (t) => {
       });
       assert.equal(updated.count, 1);
 
-      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
+      const admin = await prisma.user.findUnique({ where: { id: adminId } });
       assert.ok(admin);
       const blocked = await studentService.update(admin.id, { firstName: 'Interdit' });
       assert.equal(blocked.count, 0);
@@ -166,6 +177,7 @@ test('module administrateur des étudiants', async (t) => {
     });
   } finally {
     if (studentId) await prisma.user.delete({ where: { id: studentId } });
+    if (adminId) await prisma.user.delete({ where: { id: adminId } });
     await prisma.$disconnect();
   }
 });

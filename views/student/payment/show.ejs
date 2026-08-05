@@ -1,55 +1,81 @@
 <%- include('../../partials/header', { title }) %>
-
-<section class="payment-page">
-  <div class="payment-heading">
-    <div>
-      <p class="eyebrow">Paiement sécurisé</p>
-      <h1><%= payment.enrollment.trainingSession.course.title %></h1>
-      <p><%= payment.enrollment.trainingSession.name %></p>
-    </div>
+<%- include('../_nav') %>
+<% const money = (value) => `${Number(value).toFixed(2)} ${payment.currency}`; const declared = payment.metadata?.manualDeclaredAt; %>
+<section class="payment-page manual-payment-page">
+  <header class="payment-heading">
+    <div><p class="eyebrow">Paiement de formation</p><h1><%= payment.enrollment.trainingSession.course.title %></h1><p><%= payment.enrollment.trainingSession.name %></p></div>
     <span class="status payment-status payment-status-<%= payment.status.toLowerCase() %>"><%= payment.status %></span>
-  </div>
+  </header>
 
-  <div class="online-banner">
-    <strong>Formation 100 % en ligne</strong>
-    <span>Cette page utilise actuellement le simulateur de paiement English Center.</span>
-  </div>
+  <ol class="payment-steps" aria-label="Étapes du paiement">
+    <li class="active"><span>1</span>Choisir</li><li class="<%= payment.provider === 'manual' ? 'active' : '' %>"><span>2</span>Payer</li><li class="<%= declared ? 'active' : '' %>"><span>3</span>Déclarer</li>
+  </ol>
 
-  <dl class="payment-details">
-    <div><dt>Référence</dt><dd><code><%= payment.reference %></code></dd></div>
-    <div><dt>Formation</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.baseAmount)) %></dd></div>
-    <div><dt>Frais d’inscription</dt><dd><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.registrationFee)) %></dd></div>
-    <div><dt>Ce versement</dt><dd><strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: payment.currency }).format(Number(payment.amount)) %></strong></dd></div>
-    <div><dt>Prix total historique</dt><dd><%= payment.access.expectedTotalAmount %> <%= payment.access.expectedCurrency %></dd></div>
-    <div><dt>Déjà confirmé</dt><dd><%= payment.access.confirmedPaidAmount %> <%= payment.access.expectedCurrency %></dd></div>
-    <div><dt>Solde restant</dt><dd><%= payment.access.remainingAmount %> <%= payment.access.expectedCurrency %></dd></div>
-    <div><dt>Pourcentage payé</dt><dd><%= payment.access.paidPercentage %> %</dd></div>
-    <div><dt>Palier actuel</dt><dd><%= payment.access.accessStage %></dd></div>
-    <div><dt>Créé le</dt><dd><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.createdAt) %></dd></div>
-    <div><dt>Expiration</dt><dd><%= payment.expiresAt ? new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeStyle: 'short' }).format(payment.expiresAt) : 'Aucune' %></dd></div>
-  </dl>
+  <section class="payment-summary card">
+    <div><span>Formation</span><strong><%= money(payment.access.expectedTotalAmount) %></strong></div>
+    <div><span>Déjà payé</span><strong><%= money(payment.access.confirmedPaidAmount) %></strong></div>
+    <div><span>Reste à payer</span><strong><%= money(payment.access.remainingAmount) %></strong></div>
+    <div><span>Ce versement</span><strong><%= money(payment.amount) %></strong></div>
+    <div><span>Palier actuel</span><strong><%= payment.access.accessStage %></strong></div>
+    <div><span>Montant recommandé</span><strong><%= money(payment.access.nextRequiredPaymentAmount) %></strong></div>
+    <div class="payment-progress-block"><span>Progression du paiement</span><strong><%= payment.access.paidPercentage %> %</strong><progress max="100" value="<%= payment.access.paidPercentage %>"><%= payment.access.paidPercentage %> %</progress></div>
+  </section>
 
-  <% if (payment.failureReason) { %>
-    <p class="form-error" role="alert"><%= payment.failureReason %></p>
+  <% if (payment.provider === 'manual') { %>
+    <% if (payment.status === 'PENDING' && declared) { %>
+      <div class="payment-review-state" role="status"><strong>Votre paiement est en cours de vérification.</strong><span>La confirmation est effectuée uniquement par l’administration.</span><% if (payment.metadata?.proof?.key) { %><a href="/payments/<%= payment.reference %>/proof" target="_blank" rel="noopener">Voir ma preuve</a><% } %></div>
+    <% } else if (payment.status === 'SUCCESS') { %>
+      <div class="payment-review-state success" role="status"><strong>Paiement confirmé.</strong><span>Votre progression et votre accès ont été mis à jour.</span><% if (payment.metadata?.receiptNumber) { %><a href="/payments/<%= payment.reference %>/receipt">Télécharger le reçu <%= payment.metadata.receiptNumber %></a><% } %></div>
+    <% } else if (payment.status === 'FAILED') { %>
+      <div class="payment-review-state failed" role="alert"><strong>Paiement refusé.</strong><span><%= payment.failureReason %></span></div>
+    <% } else if (payment.status === 'PROCESSING') { %>
+      <section class="manual-payment-methods">
+        <div class="section-heading"><div><p class="eyebrow">Étape 1</p><h2>Choisissez votre moyen de paiement</h2></div></div>
+        <% if (!manualMethods.length) { %><p class="empty-state">Aucun moyen de paiement n’est actuellement disponible dans la devise <%= payment.currency %>.</p><% } %>
+        <div class="payment-method-grid">
+          <% manualMethods.forEach((method, index) => { %>
+            <label class="payment-method-card">
+              <input type="radio" name="method-preview" value="<%= method.code %>" <%= index === 0 ? 'checked' : '' %> data-method-choice>
+              <span class="payment-method-name"><%= method.label %></span>
+              <dl>
+                <div><dt>Bénéficiaire</dt><dd><%= method.beneficiaryName %></dd></div>
+                <div><dt>Numéro</dt><dd><code><%= method.accountNumber %></code> <button type="button" class="copy-button" data-copy="<%= method.accountNumber %>">Copier</button></dd></div>
+                <div><dt>Montant exact</dt><dd><code><%= money(payment.amount) %></code> <button type="button" class="copy-button" data-copy="<%= Number(payment.amount).toFixed(2) %>">Copier</button></dd></div>
+                <div><dt>Devise</dt><dd><%= method.currency %></dd></div>
+              </dl>
+              <% if (method.bankName) { %><p><strong>Banque :</strong> <%= method.bankName %><% if (method.swiftCode) { %> · SWIFT <%= method.swiftCode %><% } %></p><% } %>
+              <p lang="fr"><%= method.instructionsFr %></p><p lang="en"><%= method.instructionsEn %></p>
+              <a class="button button-small button-outline" href="#declare-payment">J’ai effectué mon paiement</a>
+            </label>
+          <% }) %>
+        </div>
+      </section>
+
+      <% if (manualMethods.length) { %>
+      <section class="manual-payment-declaration card" id="declare-payment">
+        <p class="eyebrow">Étape 3</p><h2>J’ai effectué mon paiement</h2>
+        <form method="post" action="/payments/<%= payment.reference %>/declare" enctype="multipart/form-data" class="form-stack">
+          <label>Moyen utilisé<select name="methodCode" required><% manualMethods.forEach(method => { %><option value="<%= method.code %>"><%= method.label %></option><% }) %></select></label>
+          <label>Numéro ayant effectué le paiement<input name="payerNumber" maxlength="100" autocomplete="tel" required></label>
+          <label>Montant envoyé<input name="amount" type="number" step="0.01" min="0.01" max="<%= payment.amount %>" value="<%= payment.amount %>" readonly required></label>
+          <label>Date du paiement<input name="paidDate" type="date" value="<%= new Date().toISOString().slice(0,10) %>" required></label>
+          <label>Heure <span>(facultative)</span><input name="paidTime" type="time"></label>
+          <label>Référence de transaction <span>(facultative)</span><input name="transactionReference" maxlength="160"></label>
+          <label>Commentaire <span>(facultatif)</span><textarea name="comment" maxlength="1000"></textarea></label>
+          <label>Capture ou reçu <span>(facultatif, recommandé)</span><input name="proof" type="file" accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"></label>
+          <button class="button button-large" type="submit">Envoyer la demande</button>
+        </form>
+      </section><% } %>
+    <% } %>
+  <% } else if (simulationEnabled && ['PENDING', 'PROCESSING'].includes(payment.status)) { %>
+    <section class="simulation-panel"><h2>Simulation de développement</h2><p>Ces actions sont désactivées en production.</p><div class="simulation-actions">
+      <form action="/payments/<%= payment.reference %>/simulate-success" method="post"><button class="button" type="submit">Simuler un paiement réussi</button></form>
+      <form action="/payments/<%= payment.reference %>/simulate-failure" method="post"><button class="button button-danger" type="submit">Simuler un paiement échoué</button></form>
+    </div></section>
   <% } %>
 
-  <% if (simulationEnabled && ['PENDING', 'PROCESSING'].includes(payment.status)) { %>
-    <section class="simulation-panel">
-      <h2>Simulation de développement</h2>
-      <p>Ces actions seront désactivées en production.</p>
-      <div class="simulation-actions">
-        <form action="/payments/<%= payment.reference %>/simulate-success" method="post">
-          <button class="button" type="submit">Simuler un paiement réussi</button>
-        </form>
-        <form action="/payments/<%= payment.reference %>/simulate-failure" method="post">
-          <button class="button button-danger" type="submit">Simuler un paiement échoué</button>
-        </form>
-      </div>
-    </section>
-  <% } %>
-
-  <p class="payment-security-note">Le montant est calculé et vérifié par le serveur. Aucune donnée bancaire n’est enregistrée sur cette page.</p>
+  <p class="payment-security-note">Aucun paiement ne devient confirmé automatiquement. Seule la validation de l’administration peut lui attribuer le statut SUCCESS.</p>
   <p><a href="/student/payments">← Retour à mes paiements</a></p>
 </section>
-
+<script>document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => { await navigator.clipboard.writeText(button.dataset.copy); button.textContent = 'Copié'; setTimeout(() => { button.textContent = 'Copier'; }, 1600); }));</script>
 <%- include('../../partials/footer') %>

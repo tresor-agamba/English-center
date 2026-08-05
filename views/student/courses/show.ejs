@@ -36,7 +36,7 @@
   <% if (!pricingAvailable || course.pricingMode !== 'ONE_TIME') { %><p class="empty-state" data-i18n="payment.priceUnavailable">Le tarif de cette formation n’est pas encore disponible. Veuillez contacter l’administration.</p>
   <% } else if (enrollment.payments.activePayment) { %><a class="button" href="/payments/<%= enrollment.payments.activePayment.reference %>">Reprendre le paiement</a>
   <% } else { %><form action="/payments" method="post" class="learning-form">
-    <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><input type="hidden" name="currency" value="<%= access.expectedCurrency %>">
+    <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>"><input type="hidden" name="currency" value="<%= access.expectedCurrency %>"><input type="hidden" name="flow" value="manual">
     <label for="payment-amount">Montant à payer (<%= access.expectedCurrency %>)</label>
     <input id="payment-amount" name="amount" type="number" min="0.01" step="0.01" max="<%= access.remainingAmount %>" value="<%= access.nextRequiredPaymentAmount %>" required>
     <p>Solde restant : <strong><%= access.remainingAmount %> <%= access.expectedCurrency %></strong></p>

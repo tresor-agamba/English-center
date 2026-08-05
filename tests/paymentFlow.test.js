@@ -20,6 +20,7 @@ test('architecture interne des paiements', async (t) => {
   let baseUrl;
   let student;
   let otherStudent;
+  let admin;
   let cookie;
 
   async function createUser(index) {
@@ -78,6 +79,16 @@ test('architecture interne des paiements', async (t) => {
     courseId = course.id;
     student = await createUser(1);
     otherStudent = await createUser(2);
+    admin = await prisma.user.create({
+      data: {
+        firstName: 'Administrateur',
+        lastName: 'Paiement',
+        phoneNumber: `+24398${suffix}`,
+        passwordHash: 'test',
+        role: 'ADMIN',
+      },
+    });
+    userIds.push(admin.id);
     server = app.listen(0);
     await new Promise((resolve) => server.once('listening', resolve));
     baseUrl = `http://127.0.0.1:${server.address().port}`;
@@ -163,7 +174,6 @@ test('architecture interne des paiements', async (t) => {
         paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: 999999999 }),
         (error) => error.code === 'ENROLLMENT_NOT_FOUND'
       );
-      const admin = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
       await assert.rejects(
         paymentService.createPaymentAttempt({ userId: admin.id, enrollmentId: firstEnrollment.id }),
         (error) => error.code === 'STUDENT_FORBIDDEN'

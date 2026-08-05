@@ -30,4 +30,25 @@ async function generate(receipt) {
     doc.end();
   });
 }
-module.exports = { generate };
+async function generateManual(payment) {
+  const settings = await centerSettings.getCenterSettings();
+  return new Promise((resolve) => {
+    const chunks = [], doc = new PDFDocument({ size: 'A4', margin: 56 });
+    doc.on('data', (chunk) => chunks.push(chunk)); doc.on('end', () => resolve(Buffer.concat(chunks)));
+    const student = payment.enrollment.user, course = payment.enrollment.trainingSession.course, meta = payment.metadata || {};
+    if (settings.documentShowCenterName) doc.fontSize(22).text(settings.officialName, { align: 'center' }).moveDown();
+    const coordinates = [settings.documentShowAddress && [settings.address, settings.city, settings.country].filter(Boolean).join(', '), settings.documentShowPhone && settings.primaryPhone, settings.documentShowEmail && settings.email].filter(Boolean).join(' • ');
+    if (coordinates) doc.fontSize(9).text(coordinates, { align: 'center' }).moveDown();
+    doc.fontSize(16).text(`Reçu ${meta.receiptNumber}`, { align: 'center' }).moveDown(2);
+    doc.fontSize(11).text(`Étudiant : ${student.firstName} ${student.lastName}`);
+    doc.text(`Formation : ${course.title}`); doc.text(`Niveau : ${course.level || '—'}`);
+    doc.text(`Montant : ${payment.amount.toFixed(2)} ${payment.currency}`);
+    if (settings.showPaymentMethod) doc.text(`Mode : ${meta.manualMethodLabel || meta.manualMethodCode || 'Paiement manuel'}`);
+    doc.text(`Date : ${payment.paidAt.toLocaleString('fr-FR')}`);
+    if (settings.showPaymentReference) doc.text(`Référence : ${payment.providerReference || payment.reference}`);
+    if (settings.documentThankYouText) doc.moveDown(2).text(settings.documentThankYouText, { align: 'center' });
+    if (settings.documentFooter) doc.moveDown().fontSize(9).text(settings.documentFooter, { align: 'center' });
+    doc.end();
+  });
+}
+module.exports = { generate, generateManual };

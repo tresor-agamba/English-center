@@ -40,7 +40,7 @@ function main(mode = process.argv[2]) {
   if (mode === 'reset') return reset(env);
   if (mode === 'test') {
     reset(env);
-    return runNode(['--test'], env);
+    return runNode(['--test', '--test-concurrency=1'], env);
   }
   if (mode === 'responsive') {
     reset(env);

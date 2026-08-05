@@ -66,6 +66,7 @@ function paymentPublicSelect() {
     paidAt: true,
     expiresAt: true,
     createdAt: true,
+    metadata: true,
     enrollmentId: true,
     enrollment: {
       select: {
@@ -173,7 +174,7 @@ function requestedPaymentAmount(value, access) {
   return amount;
 }
 
-async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amount: rawAmount, currency: rawCurrency }) {
+async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amount: rawAmount, currency: rawCurrency, flow }) {
   const enrollmentId = parseEnrollmentId(rawEnrollmentId);
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
@@ -198,7 +199,10 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amo
             await tx.payment.update({ where: { id: active.id }, data: { status: 'EXPIRED' } });
           }
 
-          const initialized = developmentProvider.initializePayment();
+          const isManual = flow === 'manual';
+          const initialized = isManual
+            ? { provider: 'manual', expiresAt: null }
+            : developmentProvider.initializePayment();
           const amount = requestedPaymentAmount(rawAmount, access);
           const payment = await tx.payment.create({
             data: {
@@ -209,7 +213,7 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amo
               registrationFee: 0,
               currency: access.expectedCurrency,
               pricingMode: 'ONE_TIME',
-              status: 'PENDING',
+              status: isManual ? 'PROCESSING' : 'PENDING',
               expiresAt: initialized.expiresAt,
               enrollmentId: enrollment.id,
               courseId: pricing.id,
@@ -217,6 +221,7 @@ async function createPaymentAttempt({ userId, enrollmentId: rawEnrollmentId, amo
                 pricingSnapshotVersion: 2,
                 expectedTotalAmount: access.expectedTotalAmount.toString(),
                 remainingBeforePayment: access.remainingAmount.toString(),
+                paymentChannel: isManual ? 'MANUAL_DECLARATION' : 'DEVELOPMENT_SIMULATION',
               },
             },
             select: { reference: true },

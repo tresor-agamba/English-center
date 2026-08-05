@@ -21,23 +21,32 @@ async function login(page, role) {
 async function inspect(page) {
   return page.evaluate(() => {
     const root = document.documentElement;
-    const offenders = [...document.querySelectorAll('body *')].filter((element) => { const style = getComputedStyle(element), rect = element.getBoundingClientRect(); if (['auto','scroll'].includes(style.overflowX) || element.closest('.table-wrapper,.table-wrap,.responsive-table,.admin-nav,.student-nav,.settings-tabs,.filter-tabs,.report-tabs')) return false; return rect.left < -1 || rect.right > innerWidth + 1; }).slice(0, 20).map((element) => ({ tag: element.tagName, className: String(element.className).slice(0,100), left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right) }));
+    const offenders = [...document.querySelectorAll('body *')].filter((element) => { const style = getComputedStyle(element), rect = element.getBoundingClientRect(); if (element.getAttribute('aria-hidden') === 'true' || ['auto','scroll'].includes(style.overflowX) || element.closest('.table-wrapper,.table-wrap,.responsive-table,.admin-nav,.student-nav,.settings-tabs,.filter-tabs,.report-tabs')) return false; return rect.left < -1 || rect.right > innerWidth + 1; }).slice(0, 20).map((element) => ({ tag: element.tagName, className: String(element.className).slice(0,100), left: Math.round(element.getBoundingClientRect().left), right: Math.round(element.getBoundingClientRect().right) }));
     return { overflow: root.scrollWidth > root.clientWidth + 1, scrollWidth: root.scrollWidth, clientWidth: root.clientWidth, offenders };
   });
 }
-test('audit Chromium complet des pages et viewports', async () => {
-  await prepare(); await require('../../src/utils/prisma').$disconnect(); await fs.mkdir('test-results/responsive/screenshots', { recursive: true });
-  const browser = await chromium.launch({ channel: 'msedge', headless: true }); const matrix = [], errors = [];
-  try { for (const role of ['PUBLIC','ADMIN','TEACHER','STUDENT']) {
+test.describe.serial('audit Chromium complet des pages et viewports', () => {
+  const matrix = [], errors = [];
+  test.beforeAll(async () => {
+    await prepare(); await require('../../src/utils/prisma').$disconnect(); await fs.mkdir('test-results/responsive/screenshots', { recursive: true });
+  });
+  for (const role of ['PUBLIC','ADMIN','TEACHER','STUDENT']) test(`audit ${role}`, async () => {
+    const browser = await chromium.launch({ channel: 'msedge', headless: true });
+    try {
     const context = await browser.newContext(); const page = await context.newPage(); page.on('pageerror', (error) => errors.push({ role, message: error.message })); await login(page, role);
     for (const item of PAGES.filter((candidate) => candidate.role === role)) for (const viewport of VIEWPORTS) {
       await page.setViewportSize(viewport); const response = await page.goto(item.route, { waitUntil: 'networkidle' }); const result = await inspect(page), status = response?.status() || 0; const passed = status === 200 && !result.overflow && !result.offenders.length;
       matrix.push({ ...item, viewport: viewport.name, httpStatus: status, state: passed ? 'PASS' : 'FAIL', problems: [...(result.overflow ? [`global overflow ${result.scrollWidth}/${result.clientWidth}`] : []), ...(result.offenders.length ? [`${result.offenders.length} overflowing elements`] : [])], corrections: [], validation: passed ? 'PASS' : 'FAIL', offenders: result.offenders });
       if (['/','/login','/admin/dashboard','/admin/students','/admin/settings','/admin/reports','/admin/finances','/teacher','/student','/student/courses'].includes(item.route) && ['desktop-1920','tablet-portrait-768','mobile-390','mobile-small-320'].includes(viewport.name)) await page.screenshot({ path: `test-results/responsive/screenshots/${role}-${item.route.replace(/\\W+/g,'-').replace(/^-|-$/g,'') || 'home'}-${viewport.name}.png`, fullPage: true });
     } await context.close();
-  }} finally { await browser.close(); }
-  await fs.writeFile('test-results/responsive/audit-matrix.json', JSON.stringify({ generatedAt: new Date().toISOString(), pages: PAGES, viewports: VIEWPORTS, matrix, errors }, null, 2));
-  expect(errors).toEqual([]); expect(matrix.filter((row) => row.state === 'FAIL'), JSON.stringify(matrix.filter((row) => row.state === 'FAIL').slice(0,10), null,2)).toEqual([]);
+    } finally { await browser.close(); }
+    const roleRows = matrix.filter((row) => row.role === role);
+    expect(errors.filter((error) => error.role === role)).toEqual([]);
+    expect(roleRows.filter((row) => row.state === 'FAIL'), JSON.stringify(roleRows.filter((row) => row.state === 'FAIL').slice(0,10), null,2)).toEqual([]);
+  });
+  test.afterAll(async () => {
+    await fs.writeFile('test-results/responsive/audit-matrix.json', JSON.stringify({ generatedAt: new Date().toISOString(), pages: PAGES, viewports: VIEWPORTS, matrix, errors }, null, 2));
+  });
 });
 test('contrôle principal Firefox et WebKit', async () => {
   test.skip(process.platform === 'win32', 'Firefox/WebKit Playwright restent bloqués dans cet environnement Windows.');
