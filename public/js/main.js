@@ -45,6 +45,16 @@ fetch('/settings/public', { headers: { Accept: 'application/json' } })
 
 const menuToggle = document.querySelector('[data-menu-toggle]');
 const navigation = document.querySelector('[data-public-navigation]');
+if (navigation) {
+  const currentPath = window.location.pathname;
+  navigation.querySelectorAll('a[href]').forEach((link) => {
+    const linkPath = new URL(link.href, window.location.origin).pathname;
+    const active = linkPath === '/'
+      ? currentPath === '/'
+      : currentPath === linkPath || currentPath.startsWith(`${linkPath}/`);
+    if (active) link.setAttribute('aria-current', 'page');
+  });
+}
 if (menuToggle && navigation) {
   const closeMenu = () => {
     navigation.classList.remove('is-open'); menuToggle.classList.remove('is-open');

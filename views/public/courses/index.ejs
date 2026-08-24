@@ -1,51 +1,32 @@
 <%- include('../../partials/header', { title }) %>
 
-<section class="catalog-hero polished-hero">
-  <p class="eyebrow" data-i18n="courses.eyebrow">Our programs</p>
-  <h1 data-i18n="courses.title">Find the course that fits your goals</h1>
-  <p data-i18n="courses.copy">Explore currently published programs and choose your next step.</p>
-  <a class="button button-large" href="/register" data-i18n="courses.register">Register</a>
-</section>
-
-<% if (!courses.length) { %>
-  <div class="empty-state catalog-empty">
-    <strong data-i18n="courses.empty.title">No courses are currently available.</strong>
-    <p data-i18n="courses.empty.copy">New programs will be published soon.</p>
-  </div>
-<% } else { %>
-  <section class="course-grid" aria-label="Course catalogue" data-i18n-aria="a11y.courseCatalogue">
-    <% courses.forEach((course) => { const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); %>
-      <article class="course-card" data-course-id="<%= course.id %>">
-        <div class="course-card-content">
-          <div class="course-meta">
-            <span <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span>
-            <% if (course.level) { %><span><%= course.level %></span><% } else { %><span data-i18n="fallback.level">Level not specified</span><% } %>
-            <span <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span>
-          </div>
-          <h2><%= course.title %></h2>
-          <p><%= course.shortDescription || course.description || 'Découvrez cette formation proposée par English Center.' %></p>
-          <% if (course.nextSessionStart) { %><small><span data-i18n="courses.nextSession">Next session</span> · <time data-local-date datetime="<%= course.nextSessionStart.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(course.nextSessionStart) %></time></small><% } %>
-        </div>
-        <div class="course-card-footer">
-          <div>
-            <% if (course.price !== null) { %>
-              <strong><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></strong>
-            <% } else { %>
-              <span>Prix sur demande</span>
-            <% } %>
-            <small><%= course.upcomingSessionCount %> session<%= course.upcomingSessionCount > 1 ? 's' : '' %> disponible<%= course.upcomingSessionCount > 1 ? 's' : '' %></small>
-          </div>
-          <a class="button button-small button-outline" href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a>
-          <% if (course.upcomingSessionCount > 0) { %>
-            <a class="button button-small" href="/register?course=<%= course.id %>" data-i18n="courses.register">Register</a>
-          <% } else { %>
-            <span class="button button-small button-disabled" aria-disabled="true">No open session</span>
-          <% } %>
-        </div>
-        <p class="online-course-label" data-i18n="benefits.online">100% online learning</p>
-      </article>
-    <% }) %>
+<div class="public-stitch-page catalogue-page">
+  <section class="public-page-intro">
+    <h1 data-i18n="catalogue.title">Our Courses</h1>
+    <p data-i18n="catalogue.intro">Discover our catalogue of courses designed to help you achieve academic and professional excellence.</p>
   </section>
-<% } %>
+
+  <% if (!courses.length) { %>
+    <div class="empty-state catalogue-empty"><strong data-i18n="courses.empty.title">No courses are currently available.</strong><p data-i18n="courses.empty.copy">New programs will be published soon.</p></div>
+  <% } else { %>
+    <section class="catalogue-grid" aria-label="Course catalogue" data-i18n-aria="a11y.courseCatalogue">
+      <% courses.forEach((course) => { const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); const registrationOpen = course.upcomingSessionCount > 0; %>
+        <article class="catalogue-course-card" data-course-id="<%= course.id %>">
+          <div class="catalogue-card-main">
+            <div class="public-chip-row"><span class="public-chip public-chip-teal" <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span><% if (course.level) { %><span class="public-chip"><%= course.level %></span><% } else { %><span class="public-chip" data-i18n="fallback.level">Level not specified</span><% } %><span class="public-chip" <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span></div>
+            <h2><%= course.title %></h2>
+            <p><%= course.shortDescription || course.description || '' %></p>
+            <div class="online-course-label"><span aria-hidden="true">▣</span><span data-i18n="benefits.online">100% online learning</span></div>
+            <% if (course.nextSessionStart) { %><small class="catalogue-next-session"><span data-i18n="courses.nextSession">Next session</span> · <time data-local-date datetime="<%= course.nextSessionStart.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(course.nextSessionStart) %></time></small><% } %>
+          </div>
+          <div class="catalogue-card-footer">
+            <div class="catalogue-price"><% if (course.price !== null) { %><strong data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></strong><% } else { %><strong data-i18n="detail.onRequest">On request</strong><% } %><small><%= course.upcomingSessionCount %> <span data-i18n="<%= course.upcomingSessionCount === 1 ? 'catalogue.session' : 'catalogue.sessions' %>"><%= course.upcomingSessionCount === 1 ? 'session available' : 'sessions available' %></span></small></div>
+            <div class="catalogue-actions"><a class="button button-small button-outline" href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a><% if (registrationOpen) { %><a class="button button-small button-coral" href="/register?course=<%= course.id %>" data-i18n="courses.register">Register</a><% } else { %><span class="button button-small button-disabled" aria-disabled="true" data-i18n="stitch.courses.closed">No open session</span><% } %></div>
+          </div>
+        </article>
+      <% }) %>
+    </section>
+  <% } %>
+</div>
 
 <%- include('../../partials/footer') %>

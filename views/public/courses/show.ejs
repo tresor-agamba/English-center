@@ -1,61 +1,31 @@
 <%- include('../../partials/header', { title }) %>
 
-<p class="back-link"><a href="/formations"><span aria-hidden="true">←</span> <span data-i18n="detail.back">All courses</span></a></p>
-
-<section class="course-detail-hero">
-  <% const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); %>
-  <p class="eyebrow" <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></p>
-  <h1><%= course.title %></h1>
-  <p class="course-lead"><%= course.shortDescription || course.description || '' %></p>
-  <div class="course-facts">
-    <span><strong data-i18n="detail.level">Level</strong><% if (course.level) { %><%= course.level %><% } else { %><span data-i18n="detail.tbc">To be confirmed</span><% } %></span>
-    <span><strong data-i18n="detail.duration">Duration</strong><em <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></em></span>
-    <span><strong data-i18n="detail.mode">Format</strong><span data-i18n="detail.online">100% online</span></span>
-    <span><strong data-i18n="detail.price">Indicative price</strong><% if (course.price !== null) { %><span data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></span><% } else { %><span data-i18n="detail.onRequest">On request</span><% } %></span>
-  </div>
-</section>
-
-<section class="course-detail-grid">
-  <section class="content-section">
-    <h2 data-i18n="detail.about">About this course</h2>
-    <p class="formatted-copy"><% if (course.description) { %><%= course.description %><% } else { %><span data-i18n="detail.comingSoon">Detailed information will be available soon.</span><% } %></p>
-  </section>
-  <section class="content-section detail-info-grid">
-    <article><h2 data-i18n="detail.objectives">Objectives</h2><p class="formatted-copy"><% if (course.objectives) { %><%= course.objectives %><% } else { %><span data-i18n="detail.tbc">To be confirmed.</span><% } %></p></article>
-    <article><h2 data-i18n="detail.audience">Who it is for</h2><p class="formatted-copy"><% if (course.targetAudience) { %><%= course.targetAudience %><% } else { %><span data-i18n="detail.defaultAudience">Anyone who wants to improve their English.</span><% } %></p></article>
-    <article><h2 data-i18n="detail.prerequisites">Prerequisites</h2><p class="formatted-copy"><% if (course.prerequisites) { %><%= course.prerequisites %><% } else { %><span data-i18n="detail.noPrerequisites">No specific prerequisites.</span><% } %></p></article>
-  </section>
-</section>
-
-<section class="section-block public-sessions" aria-labelledby="sessions-title">
-  <div class="section-heading"><div><p class="eyebrow" data-i18n="detail.calendar">Schedule</p><h2 id="sessions-title" data-i18n="detail.sessions">Upcoming sessions</h2></div></div>
-  <% if (!course.trainingSessions.length) { %>
-    <div class="empty-state"><strong data-i18n="detail.empty">No sessions scheduled</strong><p data-i18n="detail.emptyCopy">New dates will be published soon.</p></div>
-  <% } else { %>
-    <div class="public-session-grid">
-      <% course.trainingSessions.forEach((session) => { %>
-        <article class="public-session-card">
-          <span class="status <%= session.registrationOpen ? 'status-active' : 'status-inactive' %>" data-i18n="<%= session.registrationOpen ? 'detail.open' : 'detail.closed' %>"><%= session.registrationOpen ? 'Registration open' : 'Registration closed' %></span>
-          <h3><%= session.name %></h3>
-          <dl class="session-facts">
-            <div><dt data-i18n="detail.start">Start</dt><dd><time data-local-date datetime="<%= session.startDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.startDate) %></time></dd></div>
-            <div><dt data-i18n="detail.end">End</dt><dd><time data-local-date datetime="<%= session.endDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.endDate) %></time></dd></div>
-            <div><dt data-i18n="detail.seats">Seats</dt><dd><%= session.remainingPlaces %> / <%= session.capacity %></dd></div>
-            <div><dt data-i18n="detail.days">Days</dt><dd data-week-days="<%= session.weekDays.join(',') %>"><%= formatWeekDays(session.weekDays) %></dd></div>
-            <div><dt data-i18n="detail.hours">Hours</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
-            <div><dt data-i18n="detail.timezone">Time zone</dt><dd><%= session.timezone %></dd></div>
-            <div><dt data-i18n="detail.platform">Platform</dt><dd><%= session.platform || 'Online' %></dd></div>
-          </dl>
-          <% if (session.registrationOpen) { %>
-            <a class="button session-register-button" href="/register?session=<%= session.id %>" data-i18n="nav.register">Register</a>
-            <a class="existing-account-link" href="/login?session=<%= session.id %>" data-i18n="detail.account">Already have an account? Sign in</a>
-          <% } else { %>
-            <span class="button session-register-button button-disabled" aria-disabled="true" data-i18n="detail.closed">Registration closed</span>
-          <% } %>
-        </article>
-      <% }) %>
+<% const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); const openSessions = course.trainingSessions.filter((session) => session.registrationOpen); %>
+<div class="public-stitch-page course-detail-page">
+  <p class="back-link"><a href="/formations"><span aria-hidden="true">←</span> <span data-i18n="detail.back">All courses</span></a></p>
+  <div class="course-detail-layout">
+    <div class="course-detail-primary">
+      <div class="public-chip-row"><span class="public-chip public-chip-teal" <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span><% if (course.level) { %><span class="public-chip"><%= course.level %></span><% } %><span class="public-chip" <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span></div>
+      <h1><%= course.title %></h1><p class="course-detail-lead"><%= course.shortDescription || course.description || '' %></p>
+      <figure class="course-detail-image"><img src="/images/public/course-online-learning.jpg" alt="" width="512" height="341"><figcaption><span aria-hidden="true">▣</span><span data-i18n="benefits.online">100% online learning</span></figcaption></figure>
+      <div class="course-information-grid">
+        <article class="public-info-card"><span class="public-info-icon" aria-hidden="true">◎</span><h2 data-i18n="detail.objectives">Objectives</h2><p class="formatted-copy"><% if (course.objectives) { %><%= course.objectives %><% } else { %><span data-i18n="detail.tbc">To be confirmed.</span><% } %></p></article>
+        <article class="public-info-card"><span class="public-info-icon public-info-icon-navy" aria-hidden="true">i</span><h2 data-i18n="detail.details">Details</h2><dl class="detail-summary"><div><dt data-i18n="detail.level">Level</dt><dd><%= course.level || '' %><% if (!course.level) { %><span data-i18n="detail.tbc">To be confirmed</span><% } %></dd></div><div><dt data-i18n="detail.duration">Duration</dt><dd><%= durationLabel || '' %><% if (!durationLabel) { %><span data-i18n="fallback.duration">Duration not specified</span><% } %></dd></div><div><dt data-i18n="detail.mode">Format</dt><dd data-i18n="detail.online">100% online</dd></div></dl></article>
+        <article class="public-info-card"><span class="public-info-icon" aria-hidden="true">◇</span><h2 data-i18n="detail.audience">Who it is for</h2><p class="formatted-copy"><% if (course.targetAudience) { %><%= course.targetAudience %><% } else { %><span data-i18n="detail.defaultAudience">Anyone who wants to improve their English.</span><% } %></p></article>
+        <article class="public-info-card"><span class="public-info-icon public-info-icon-navy" aria-hidden="true">✓</span><h2 data-i18n="detail.prerequisites">Prerequisites</h2><p class="formatted-copy"><% if (course.prerequisites) { %><%= course.prerequisites %><% } else { %><span data-i18n="detail.noPrerequisites">No specific prerequisites.</span><% } %></p></article>
+      </div>
+      <% if (course.description) { %><section class="public-info-card course-about-card"><h2 data-i18n="detail.about">About this course</h2><p class="formatted-copy"><%= course.description %></p></section><% } %>
     </div>
-  <% } %>
-</section>
+    <aside class="course-enrolment-panel">
+      <div class="course-price-line"><% if (course.price !== null) { %><strong data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></strong><span data-i18n="detail.perCourse">/ course</span><% } else { %><strong data-i18n="detail.onRequest">On request</strong><% } %></div>
+      <p class="course-panel-status <%= openSessions.length ? 'is-open' : 'is-closed' %>" data-i18n="<%= openSessions.length ? 'stitch.courses.open' : 'stitch.courses.closed' %>"><%= openSessions.length ? 'Registration open' : 'No open session' %></p>
+      <% if (openSessions.length) { %><a class="button button-large button-coral" href="/register?session=<%= openSessions[0].id %>" data-i18n="nav.register">Register</a><% } else { %><span class="button button-large button-disabled" aria-disabled="true" data-i18n="stitch.courses.closed">No open session</span><% } %>
+      <div class="course-panel-includes"><h2 data-i18n="detail.includes">This course includes:</h2><ul><li><span aria-hidden="true">◷</span><span <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span></li><li><span aria-hidden="true">▣</span><span data-i18n="detail.devices">Accessible on mobile and computer</span></li><li><span aria-hidden="true">□</span><span data-i18n="detail.online">100% online</span></li></ul></div>
+    </aside>
+  </div>
+  <section class="public-sessions stitch-session-section" aria-labelledby="sessions-title"><div class="section-heading"><div><p class="eyebrow" data-i18n="detail.calendar">Schedule</p><h2 id="sessions-title" data-i18n="detail.sessions">Upcoming sessions</h2></div></div>
+    <% if (!course.trainingSessions.length) { %><div class="empty-state"><strong data-i18n="detail.empty">No sessions scheduled</strong><p data-i18n="detail.emptyCopy">New dates will be published soon.</p></div><% } else { %><div class="public-session-grid"><% course.trainingSessions.forEach((session) => { %><article class="public-session-card"><span class="status <%= session.registrationOpen ? 'status-active' : 'status-inactive' %>" data-i18n="<%= session.registrationOpen ? 'detail.open' : 'detail.closed' %>"><%= session.registrationOpen ? 'Registration open' : 'Registration closed' %></span><h3><%= session.name %></h3><dl class="session-facts"><div><dt data-i18n="detail.start">Start</dt><dd><time data-local-date datetime="<%= session.startDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.startDate) %></time></dd></div><div><dt data-i18n="detail.end">End</dt><dd><time data-local-date datetime="<%= session.endDate.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'long' }).format(session.endDate) %></time></dd></div><div><dt data-i18n="detail.seats">Seats</dt><dd><%= session.remainingPlaces %> / <%= session.capacity %></dd></div><div><dt data-i18n="detail.days">Days</dt><dd data-week-days="<%= session.weekDays.join(',') %>"><%= formatWeekDays(session.weekDays) %></dd></div><div><dt data-i18n="detail.hours">Hours</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div><div><dt data-i18n="detail.timezone">Time zone</dt><dd><%= session.timezone %></dd></div><div><dt data-i18n="detail.platform">Platform</dt><dd><%= session.platform || 'Online' %></dd></div></dl><% if (session.registrationOpen) { %><a class="button session-register-button button-coral" href="/register?session=<%= session.id %>" data-i18n="nav.register">Register</a><a class="existing-account-link" href="/login?session=<%= session.id %>" data-i18n="detail.account">Already have an account? Sign in</a><% } else { %><span class="button session-register-button button-disabled" aria-disabled="true" data-i18n="detail.closed">Registration closed</span><% } %></article><% }) %></div><% } %>
+  </section>
+</div>
 
 <%- include('../../partials/footer') %>

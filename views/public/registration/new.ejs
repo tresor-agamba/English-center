@@ -1,44 +1,21 @@
 <%- include('../../partials/header', { title }) %>
-<section class="card registration-form-card public-registration">
-  <p class="eyebrow">New Vision Academy</p>
-  <h1 data-i18n="form.title">Create your student account</h1>
-  <p data-i18n="form.copy">Choose your program and requested level. Your phone number will be your login.</p>
-  <% if (error) { %><div class="form-error" role="alert"><p data-public-error><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>" data-i18n="login.button">Sign In</a><% } %></div><% } %>
-  <form action="/register" method="post" data-public-registration-form>
-    <% if (session) { %>
-      <input type="hidden" name="sessionId" value="<%= session.id %>">
-      <input type="hidden" name="courseId" value="<%= session.course.id %>">
-      <div class="selected-course"><strong>Formation :</strong> <%= session.course.title %> — <%= session.name %></div>
-    <% } else { %>
-      <label for="courseId" data-i18n="form.course">Course</label>
-      <select id="courseId" name="courseId" required>
-        <option value="" data-i18n="form.course.placeholder">Select a course</option>
-        <% courses.forEach((course) => { %><option value="<%= course.id %>" <%= String(form.courseId) === String(course.id) ? 'selected' : '' %>><%= course.title %></option><% }) %>
-      </select>
-    <% } %>
-    <label for="fullName" data-i18n="form.name">Full name</label>
-    <input id="fullName" name="fullName" value="<%= form.fullName || [form.firstName, form.lastName].filter(Boolean).join(' ') %>" autocomplete="name" maxlength="200" required>
-    <div class="form-grid">
-      <div><label for="phoneNumber" data-i18n="form.phone">Phone number</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="0821671174" aria-describedby="phone-help" required><small id="phone-help" data-i18n="form.phone.help">This number will be used to sign in.</small></div>
-      <div><label for="email"><span data-i18n="form.email">Email address</span> <span class="optional" data-i18n="form.optional">(optional)</span></label><input id="email" name="email" type="email" autocomplete="email" value="<%= form.email || '' %>"></div>
-    </div>
-    <label for="requestedLevel" data-i18n="form.level">Requested level</label>
-    <select id="requestedLevel" name="requestedLevel" required data-requested-level>
-      <option value="LEVEL_1" <%= form.requestedLevel === 'LEVEL_1' ? 'selected' : '' %>>Level 1</option>
-      <option value="LEVEL_2" <%= form.requestedLevel === 'LEVEL_2' ? 'selected' : '' %>>Level 2</option>
-      <option value="LEVEL_3" <%= form.requestedLevel === 'LEVEL_3' ? 'selected' : '' %>>Level 3</option>
-    </select>
-    <div class="level-guidance" aria-live="polite">
-      <p data-level-message="LEVEL_1" data-i18n="form.level1">No placement test is required.</p>
-      <p data-level-message="LEVEL_2" data-i18n="form.level2" hidden>A placement test is required before admission to Level 2.</p>
-      <p data-level-message="LEVEL_3" data-i18n="form.level3" hidden>A placement test is required before admission to Level 3.</p>
-    </div>
-    <div class="form-grid">
-      <div><label for="password" data-i18n="form.password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div>
-      <div><label for="passwordConfirmation" data-i18n="form.confirm">Confirm password</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div>
-    </div>
-    <p class="form-hint" data-i18n="form.password.help">Use at least 8 characters. Passwords are never displayed again.</p>
-    <button class="button button-large" type="submit" data-registration-submit data-i18n="form.create">Create My Account</button>
-  </form>
+<section class="public-auth-shell public-registration-shell">
+  <div class="public-auth-visual registration-visual">
+    <div class="auth-visual-content"><img src="/images/logo/logo-with-tagline.png" alt="New Vision Academy" width="1057" height="937"><h2>New Vision<br>Academy</h2><p data-i18n="hero.title">Master Languages. Unlock Opportunities.</p><small data-i18n="auth.benefits">Live classes · Flexible programs · Real progress</small></div>
+  </div>
+  <div class="public-auth-form-panel">
+    <div class="public-auth-heading"><p class="eyebrow" data-i18n="nav.register">Register</p><h1 data-i18n="form.title">Create your student account</h1><p data-i18n="form.copy">Choose your program and requested level. Your phone number will be your login.</p></div>
+    <% if (error) { %><div class="form-error" role="alert"><p data-public-error><%= error %></p><% if (accountExists) { %><a href="/login<%= session ? `?session=${session.id}` : '' %>" data-i18n="login.button">Sign In</a><% } %></div><% } %>
+    <form class="public-stitch-form" action="/register" method="post" data-public-registration-form>
+      <% if (session) { %><input type="hidden" name="sessionId" value="<%= session.id %>"><input type="hidden" name="courseId" value="<%= session.course.id %>"><div class="selected-course"><strong data-i18n="form.course">Course</strong><span><%= session.course.title %> — <%= session.name %></span></div><% } else { %><label for="courseId" data-i18n="form.course">Course</label><select id="courseId" name="courseId" required><option value="" data-i18n="form.course.placeholder">Select a course</option><% courses.forEach((course) => { %><option value="<%= course.id %>" <%= String(form.courseId) === String(course.id) ? 'selected' : '' %>><%= course.title %></option><% }) %></select><% } %>
+      <label for="fullName" data-i18n="form.name">Full name</label><input id="fullName" name="fullName" value="<%= form.fullName || [form.firstName, form.lastName].filter(Boolean).join(' ') %>" autocomplete="name" maxlength="200" required>
+      <div class="public-form-grid"><div><label for="phoneNumber" data-i18n="form.phone">Phone number</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" value="<%= form.phoneNumber %>" placeholder="0821671174" aria-describedby="phone-help" required><small id="phone-help" data-i18n="form.phone.help">This number will be used to sign in.</small></div><div><label for="email"><span data-i18n="form.email">Email address</span> <span class="optional" data-i18n="form.optional">(optional)</span></label><input id="email" name="email" type="email" autocomplete="email" value="<%= form.email || '' %>"></div></div>
+      <label for="requestedLevel" data-i18n="form.level">Requested level</label><select id="requestedLevel" name="requestedLevel" required data-requested-level><option value="LEVEL_1" <%= form.requestedLevel === 'LEVEL_1' ? 'selected' : '' %>>Level 1</option><option value="LEVEL_2" <%= form.requestedLevel === 'LEVEL_2' ? 'selected' : '' %>>Level 2</option><option value="LEVEL_3" <%= form.requestedLevel === 'LEVEL_3' ? 'selected' : '' %>>Level 3</option></select>
+      <div class="level-guidance" aria-live="polite"><p data-level-message="LEVEL_1" data-i18n="form.level1">No placement test is required.</p><p data-level-message="LEVEL_2" data-i18n="form.level2" hidden>A placement test is required before admission to Level 2.</p><p data-level-message="LEVEL_3" data-i18n="form.level3" hidden>A placement test is required before admission to Level 3.</p></div>
+      <div class="public-form-grid"><div><label for="password" data-i18n="form.password">Password</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required></div><div><label for="passwordConfirmation" data-i18n="form.confirm">Confirm password</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required></div></div>
+      <p class="form-hint" data-i18n="form.password.help">Use at least 8 characters. Passwords are never displayed again.</p><button class="button button-large button-coral public-auth-submit" type="submit" data-registration-submit data-i18n="form.create">Create My Account</button>
+    </form>
+    <p class="auth-alternative"><span data-i18n="form.existing">Already have an account?</span> <a href="/login<%= session ? `?session=${session.id}` : '' %>" data-i18n="login.button">Sign In</a></p>
+  </div>
 </section>
 <%- include('../../partials/footer') %>

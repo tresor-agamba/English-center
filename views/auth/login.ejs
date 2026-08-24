@@ -1,23 +1,9 @@
 <%- include('../partials/header', { title }) %>
-<section class="auth-shell">
-  <div class="auth-brand-panel">
-    <img class="auth-brand-logo" src="/images/logo/logo-with-tagline.png" alt="New Vision Academy" width="1057" height="937">
-    <h2 data-i18n="hero.title">Master Languages.<br>Unlock Opportunities.</h2>
-    <small data-i18n="auth.benefits">Live classes · Flexible programs · Real progress</small>
-  </div>
-  <div class="card login-card">
-    <p class="eyebrow" data-i18n="nav.login">Login</p>
-    <h1 data-i18n="login.title">Welcome back</h1>
-    <% if (sessionId) { %><p data-i18n="login.continue">Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %>
+<section class="public-auth-shell public-login-shell">
+  <div class="public-auth-visual login-visual"><div class="auth-visual-content"><img src="/images/logo/logo-with-tagline.png" alt="New Vision Academy" width="1057" height="937"><h2 data-i18n="hero.title">Master Languages.<br>Unlock Opportunities.</h2><small data-i18n="auth.benefits">Live classes · Flexible programs · Real progress</small></div></div>
+  <div class="public-auth-form-panel"><div class="public-auth-heading"><p class="eyebrow" data-i18n="nav.login">Login</p><h1 data-i18n="login.title">Welcome back</h1><% if (sessionId) { %><p data-i18n="login.continue">Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %></div>
     <% if (error) { %><p class="form-error" role="alert" data-public-error><%= error %></p><% } %>
-    <form action="/login" method="post">
-      <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %>
-      <label for="phoneNumber" data-i18n="login.phone">Phone number</label>
-      <input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required>
-      <label for="password" data-i18n="login.password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required>
-      <button class="button button-large auth-submit" type="submit" data-i18n="login.button">Sign In</button>
-    </form>
+    <form class="public-stitch-form" action="/login" method="post"><% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %><label for="phoneNumber" data-i18n="login.phone">Phone number</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required><label for="password" data-i18n="login.password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required><button class="button button-large public-auth-submit" type="submit" data-i18n="login.button">Sign In</button></form>
     <p class="auth-alternative"><span data-i18n="login.new">New to New Vision Academy?</span> <a href="/register<%= sessionId ? `?session=${sessionId}` : '' %>" data-i18n="login.create">Create your student account</a></p>
   </div>
 </section>

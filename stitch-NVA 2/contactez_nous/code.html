@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact | New Vision Academy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Manrope:wght@700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#304670",
+                        "on-tertiary-container": "#f67a5b",
+                        "outline-variant": "#c4c6d0",
+                        "outline": "#74777f",
+                        "secondary": "#006a60",
+                        "secondary-container": "#8cf5e4",
+                        "on-secondary-fixed": "#00201c",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "primary-fixed": "#d7e2ff",
+                        "on-secondary-container": "#007166",
+                        "background": "#f7f9fb",
+                        "surface-container": "#eceef0",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#001a40",
+                        "surface-container-high": "#e6e8ea",
+                        "secondary-fixed": "#8cf5e4",
+                        "on-tertiary-fixed": "#3c0700",
+                        "on-surface": "#191c1e",
+                        "on-error-container": "#93000a",
+                        "on-primary-container": "#889ece",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#44474e",
+                        "inverse-primary": "#b0c7f8",
+                        "tertiary-fixed": "#ffdad2",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed-dim": "#ffb4a2",
+                        "tertiary": "#450900",
+                        "tertiary-container": "#6b1400",
+                        "on-secondary-fixed-variant": "#005048",
+                        "surface-variant": "#e0e3e5",
+                        "surface-tint": "#485e8a",
+                        "secondary-fixed-dim": "#6fd8c8",
+                        "on-tertiary-fixed-variant": "#83260e",
+                        "inverse-surface": "#2d3133",
+                        "error": "#ba1a1a",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-on-surface": "#eff1f3",
+                        "primary-container": "#1d355e",
+                        "primary-fixed-dim": "#b0c7f8",
+                        "on-background": "#191c1e",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#021f48",
+                        "surface-dim": "#d8dadc",
+                        "surface-container-low": "#f2f4f6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "section-padding-mobile": "40px",
+                        "margin-desktop": "auto",
+                        "gutter": "24px",
+                        "max-width": "1280px",
+                        "section-padding-desktop": "80px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "display-lg-mobile": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "display-lg": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "40px", "fontWeight": "800" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="bg-surface-container-lowest shadow-sm sticky top-0 z-50">
+<div class="flex justify-between items-center w-full px-base md:px-section-padding-desktop max-w-max-width mx-auto py-4">
+<div class="text-xl font-bold text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1; color: #021f48;">school</span>
+<span>New Vision Academy</span>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant font-body-md hover:text-secondary transition-colors duration-200" href="#">Accueil</a>
+<a class="text-on-surface-variant font-body-md hover:text-secondary transition-colors duration-200" href="#">Formations</a>
+<a class="text-on-surface-variant font-body-md hover:text-secondary transition-colors duration-200" href="#">À propos</a>
+<a class="text-primary font-bold border-b-2 border-secondary pb-1" href="#">Contact</a>
+<a class="text-on-surface-variant font-body-md hover:text-secondary transition-colors duration-200" href="#">Connexion</a>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-md hover:bg-primary-container transition-colors ml-4">S'inscrire</button>
+<div class="text-on-surface-variant font-label-md ml-2 border-l border-outline-variant pl-4">EN / FR</div>
+</div>
+<button class="md:hidden text-primary p-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-grow flex flex-col">
+<!-- Hero Section -->
+<section class="px-base md:px-section-padding-desktop py-section-padding-mobile md:py-section-padding-desktop max-w-max-width mx-auto w-full">
+<div class="max-w-3xl mb-12">
+<p class="text-secondary font-label-md uppercase tracking-wider mb-4">CONTACT</p>
+<h1 class="font-display-lg-mobile md:font-display-lg text-primary mb-6">Échangez avec l'académie</h1>
+<p class="font-body-lg text-on-surface-variant">Utilisez les coordonnées vérifiées ci-dessous pour vos questions sur les programmes, sessions ou inscriptions.</p>
+</div>
+</section>
+<!-- Contact Options Section -->
+<section class="px-base md:px-section-padding-desktop pb-section-padding-desktop max-w-max-width mx-auto w-full">
+<h2 class="font-label-md text-on-surface-variant uppercase tracking-wider mb-8">CANAUX DISPONIBLES</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Info Side -->
+<div class="flex flex-col gap-6">
+<h3 class="font-headline-md text-primary">Choisissez un moyen de contact configuré</h3>
+<p class="font-body-md text-on-surface-variant">Seules les coordonnées configurées par l'académie sont affichées.</p>
+<!-- Contact Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm hover:shadow-md transition-shadow">
+<div class="flex items-start gap-4">
+<div class="bg-primary-fixed text-primary p-3 rounded-full flex-shrink-0">
+<span class="material-symbols-outlined">location_on</span>
+</div>
+<div>
+<h4 class="font-headline-md text-primary mb-2">Localisation</h4>
+<p class="font-body-md text-on-surface-variant">Kinshasa, RDC</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Form Side -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 md:p-8 shadow-sm">
+<form class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<label class="block font-label-md text-on-surface mb-2" for="firstName">Prénom</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="firstName" placeholder="Votre prénom" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-on-surface mb-2" for="lastName">Nom</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="lastName" placeholder="Votre nom" type="text"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-on-surface mb-2" for="email">Email</label>
+<input class="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="email" placeholder="vous@exemple.com" type="email"/>
+</div>
+<div>
+<label class="block font-label-md text-on-surface mb-2" for="subject">Sujet</label>
+<select class="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none" id="subject">
+<option>Information sur les formations</option>
+<option>Inscription</option>
+<option>Support technique</option>
+<option>Autre</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-on-surface mb-2" for="message">Message</label>
+<textarea class="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" id="message" placeholder="Comment pouvons-nous vous aider ?" rows="4"></textarea>
+</div>
+<button class="w-full bg-primary text-on-primary font-label-md py-3 rounded-lg hover:bg-primary-container transition-colors flex justify-center items-center gap-2" type="submit">
+<span>Envoyer le message</span>
+<span class="material-symbols-outlined text-sm">send</span>
+</button>
+</form>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter px-base md:px-section-padding-desktop py-section-padding-desktop max-w-max-width mx-auto">
+<div class="flex flex-col gap-4">
+<div class="text-2xl font-black text-on-primary flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">school</span>
+<span>NEW VISION<br/><span class="text-sm font-normal tracking-widest text-secondary-container">ACADEMY</span></span>
+</div>
+<p class="text-on-primary/80 font-body-md text-sm mt-4">Des programmes de langues en ligne pour votre développement personnel et professionnel.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-secondary-container uppercase tracking-wider mb-2">Liens rapides</h4>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">Accueil</a>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">Formations</a>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">À propos</a>
+<a class="text-secondary-container font-bold" href="#">Contact</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-secondary-container uppercase tracking-wider mb-2">Apprendre</h4>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">S'inscrire</a>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">Connexion</a>
+<a class="text-on-primary/80 font-body-md hover:text-secondary-fixed-dim transition-colors" href="#">Vérifier un certificat</a>
+</div>
+<div class="flex flex-col gap-4">
+<h4 class="font-label-md text-secondary-container uppercase tracking-wider mb-2">Contact</h4>
+<p class="text-on-primary/80 font-body-md">Kinshasa, RDC</p>
+</div>
+</div>
+<div class="border-t border-on-primary/10">
+<div class="px-base md:px-section-padding-desktop py-6 max-w-max-width mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-on-primary/60 font-body-md text-sm">© 2024 New Vision Academy. Tous droits réservés.</p>
+</div>
+</div>
+</footer>
+</body></html>

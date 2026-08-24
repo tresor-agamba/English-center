@@ -2249,7 +2249,9 @@ body:has(.admin-nav) .dashboard-heading {
 .public-header .header-brand img { height: 46px; }
 .public-header .public-navigation { gap: 1.25rem; }
 .public-header .public-navigation > a:not(.button) { padding-block: .35rem; font-size: .88rem; }
+.public-header .public-navigation > a[aria-current="page"]:not(.button) { border-bottom: 2px solid var(--public-teal); color: var(--public-navy); }
 .public-header .nav-register { min-height: 38px; padding: .6rem 1rem; border-radius: 4px; }
+.public-header .nav-register { border-color: var(--public-navy); background: var(--public-navy); color: #fff; }
 .public-header .language-switcher { padding: .45rem .65rem; }
 
 .stitch-hero { min-height: min(75vh, 620px); }
@@ -2316,4 +2318,208 @@ body:has(.admin-nav) .dashboard-heading {
   .site-footer { padding-top: 2.5rem; }
   .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; }
   .footer-legal { align-items: flex-start; flex-wrap: wrap; gap: .5rem 1rem; }
+}
+
+/* Academic Vision: shared public pages from the final Stitch references. */
+:root {
+  --public-navy: #021f48;
+  --public-navy-soft: #1d355e;
+  --public-teal: #006a60;
+  --public-teal-soft: #8cf5e4;
+  --public-canvas: #f7f9fb;
+  --public-surface: #fff;
+  --public-surface-low: #f2f4f6;
+  --public-ink: #191c1e;
+  --public-muted: #44474e;
+  --public-outline: #c4c6d0;
+  --public-coral: #f67a5b;
+  --public-card-shadow: 0 10px 25px rgb(29 53 94 / 5%);
+}
+
+.public-main:has(.public-stitch-page),
+.public-main:has(.public-auth-shell) { width: 100%; max-width: none; padding: 0; background: var(--public-canvas); }
+.public-stitch-page,
+.public-auth-shell { color: var(--public-ink); font-family: Inter, "Segoe UI", Arial, sans-serif; }
+.public-stitch-page h1,
+.public-stitch-page h2,
+.public-stitch-page h3,
+.public-auth-shell h1,
+.public-auth-shell h2 { color: var(--public-navy); font-family: Manrope, "Segoe UI", Arial, sans-serif; letter-spacing: 0; }
+.public-stitch-page { min-height: 55vh; padding: 5rem max(1.25rem, calc((100% - 1280px) / 2)); }
+.public-page-intro { max-width: 920px; margin-bottom: 4rem; }
+.public-page-intro h1 { margin: 0 0 1rem; font-size: 3rem; line-height: 1.17; }
+.public-page-intro > p:last-child { margin: 0; color: var(--public-muted); font-size: 1.125rem; line-height: 1.55; }
+.public-page-intro .eyebrow { margin-bottom: 1rem; color: var(--public-teal); }
+.compact-intro { max-width: 760px; margin-bottom: 6.5rem; }
+.public-chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.public-chip { display: inline-flex; min-height: 30px; align-items: center; padding: .25rem .85rem; border-radius: 999px; background: #e0e3e5; color: var(--public-muted); font-size: .82rem; font-weight: 700; }
+.public-chip-teal { background: var(--public-teal-soft); color: #005048; }
+.button-coral { border-color: var(--public-coral); background: var(--public-coral); color: #fff; }
+.button-coral:hover { border-color: #dc6145; background: #dc6145; color: #fff; }
+.public-stitch-page .button-disabled { border-color: #e0e3e5; background: #e0e3e5; color: #74777f; box-shadow: none; }
+
+.catalogue-page { padding-bottom: 6.5rem; }
+.catalogue-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+.catalogue-course-card { display: flex; min-width: 0; min-height: 445px; flex-direction: column; overflow: hidden; border: 1px solid var(--public-outline); border-radius: 16px; background: var(--public-surface); box-shadow: var(--public-card-shadow); }
+.catalogue-card-main { display: flex; flex: 1; flex-direction: column; padding: 1.9rem; }
+.catalogue-course-card h2 { margin: 1.35rem 0 .75rem; font-size: 1.5rem; line-height: 1.32; }
+.catalogue-course-card p { margin: 0; color: var(--public-muted); font-size: 1rem; line-height: 1.55; }
+.catalogue-course-card .online-course-label { display: flex; align-items: center; gap: .65rem; margin-top: 1.5rem; color: var(--public-ink); font-size: .9rem; font-weight: 700; }
+.catalogue-next-session { margin-top: .75rem; color: var(--public-muted); }
+.catalogue-card-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.25rem; margin-inline: 1.9rem; padding-block: 1.4rem 1.9rem; border-top: 1px solid var(--public-outline); }
+.catalogue-price { display: flex; min-width: 130px; flex-direction: column; }
+.catalogue-price strong { color: var(--public-navy); font-family: Manrope, "Segoe UI", Arial, sans-serif; font-size: 1.7rem; line-height: 1.2; }
+.catalogue-price small { margin-top: .25rem; color: var(--public-muted); }
+.catalogue-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .75rem; }
+.catalogue-actions .button { white-space: nowrap; }
+.catalogue-empty { max-width: 800px; min-height: 260px; margin-inline: auto; }
+
+.course-detail-page { padding-top: 4rem; }
+.course-detail-page .back-link { max-width: 1280px; margin: 0 auto 2rem; }
+.course-detail-layout { display: grid; max-width: 1280px; grid-template-columns: minmax(0, 2fr) minmax(300px, .92fr); align-items: start; gap: 2.5rem; margin-inline: auto; }
+.course-detail-primary > h1 { max-width: 800px; margin: 1.25rem 0 .75rem; font-size: 3rem; line-height: 1.16; }
+.course-detail-lead { max-width: 790px; margin: 0 0 2rem; color: var(--public-muted); font-size: 1.125rem; line-height: 1.55; }
+.course-detail-image { position: relative; min-height: 390px; margin: 0 0 1.5rem; overflow: hidden; border-radius: 16px; background: var(--public-navy); }
+.course-detail-image img { width: 100%; height: 100%; min-height: 390px; object-fit: cover; }
+.course-detail-image figcaption { position: absolute; right: 0; bottom: 0; left: 0; display: flex; align-items: center; gap: .65rem; padding: 3rem 1.5rem 1.25rem; background: linear-gradient(transparent, rgb(2 31 72 / 78%)); color: #fff; font-weight: 700; }
+.course-information-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.public-info-card { padding: 1.5rem; border: 1px solid var(--public-outline); border-radius: 16px; background: #fff; box-shadow: var(--public-card-shadow); }
+.public-info-card h2 { display: inline; margin-left: .75rem; font-size: 1.35rem; }
+.public-info-card p { margin: 1.25rem 0 0; color: var(--public-muted); line-height: 1.55; white-space: pre-line; }
+.public-info-icon { display: inline-grid; width: 38px; height: 38px; place-items: center; border-radius: 8px; background: #e4f4f1; color: var(--public-teal); font-weight: 800; }
+.public-info-icon-navy { background: #e6e8ea; color: var(--public-navy); }
+.detail-summary { display: grid; gap: 1rem; margin: 1.25rem 0 0; }
+.detail-summary dt { color: #74777f; font-size: .78rem; font-weight: 700; text-transform: uppercase; }
+.detail-summary dd { margin: .2rem 0 0; color: var(--public-ink); }
+.course-about-card { margin-top: 1rem; }
+.course-about-card h2 { margin-left: 0; }
+.course-enrolment-panel { position: sticky; top: 88px; padding: 1.75rem; border: 1px solid var(--public-outline); border-radius: 16px; background: #fff; box-shadow: var(--public-card-shadow); }
+.course-price-line { display: flex; align-items: baseline; gap: .65rem; }
+.course-price-line strong { color: var(--public-navy); font-family: Manrope, "Segoe UI", Arial, sans-serif; font-size: 2rem; }
+.course-price-line span { color: var(--public-muted); }
+.course-panel-status { margin: .5rem 0 1.5rem; font-size: .9rem; font-weight: 700; }
+.course-panel-status.is-open { color: var(--public-teal); }
+.course-panel-status.is-closed { color: #ba1a1a; }
+.course-enrolment-panel > .button { width: 100%; margin-bottom: .75rem; }
+.course-panel-includes { margin-top: 1rem; padding-top: 1.25rem; border-top: 1px solid var(--public-outline); }
+.course-panel-includes h2 { font-size: .95rem; }
+.course-panel-includes ul { display: grid; gap: .8rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.course-panel-includes li { display: flex; gap: .7rem; color: var(--public-muted); }
+.course-panel-includes li > span:first-child { color: var(--public-teal); font-weight: 800; }
+.stitch-session-section { max-width: 1280px; margin: 4rem auto 0; }
+.stitch-session-section .public-session-card { border-color: var(--public-outline); border-radius: 16px; box-shadow: var(--public-card-shadow); }
+
+.public-auth-shell { display: grid; width: min(calc(100% - 4rem), 1480px); min-height: 760px; grid-template-columns: minmax(360px, 1fr) minmax(480px, 1fr); margin: 3rem auto 5rem; overflow: hidden; border: 1px solid #e0e3e5; border-radius: 20px; background: #fff; box-shadow: var(--public-card-shadow); }
+.public-auth-visual { position: relative; display: flex; min-height: 100%; align-items: center; justify-content: center; overflow: hidden; padding: 4rem; background: var(--public-navy); color: #fff; }
+.registration-visual::before { position: absolute; inset: 0; background: linear-gradient(rgb(2 31 72 / 82%), rgb(2 31 72 / 90%)), url('/images/public/registration-academic-pattern.jpg') center / cover; content: ""; }
+.auth-visual-content { position: relative; z-index: 1; display: flex; max-width: 460px; align-items: center; flex-direction: column; text-align: center; }
+.auth-visual-content img { width: 170px; height: auto; padding: .75rem; border-radius: 12px; background: #fff; }
+.auth-visual-content h2 { margin: 2rem 0 .75rem; color: #fff; font-size: 2.5rem; line-height: 1.2; text-transform: uppercase; }
+.auth-visual-content p { max-width: 420px; margin: 0; color: #fff; font-family: Manrope, "Segoe UI", Arial, sans-serif; font-size: 1.25rem; font-weight: 700; }
+.auth-visual-content small { margin-top: 5rem; color: var(--public-teal-soft); font-weight: 700; }
+.login-visual { align-items: stretch; justify-content: flex-start; }
+.login-visual .auth-visual-content { align-items: flex-start; justify-content: space-between; text-align: left; }
+.login-visual .auth-visual-content img { width: 145px; }
+.login-visual .auth-visual-content h2 { max-width: 440px; text-transform: none; }
+.public-auth-form-panel { display: flex; justify-content: center; flex-direction: column; padding: 4rem 5rem; }
+.public-auth-heading { margin-bottom: 2.5rem; }
+.public-auth-heading .eyebrow { color: var(--public-teal); }
+.public-auth-heading h1 { margin: .5rem 0 .75rem; font-size: 2.25rem; }
+.public-auth-heading > p:last-child { margin: 0; color: var(--public-muted); line-height: 1.5; }
+.public-stitch-form { display: grid; gap: .85rem; }
+.public-stitch-form label { margin-top: .4rem; color: var(--public-ink); font-size: .9rem; font-weight: 700; }
+.public-stitch-form input,
+.public-stitch-form select { width: 100%; min-height: 52px; padding: .8rem 1rem; border: 1px solid var(--public-outline); border-radius: 8px; background: var(--public-surface-low); color: var(--public-ink); }
+.public-stitch-form input:focus,
+.public-stitch-form select:focus { border-color: var(--public-navy); outline: 2px solid rgb(2 31 72 / 12%); outline-offset: 1px; }
+.public-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.public-form-grid > div { display: grid; gap: .85rem; align-content: start; }
+.public-stitch-form small,
+.public-stitch-form .form-hint { margin: 0; color: var(--public-muted); font-size: .78rem; }
+.public-stitch-form .level-guidance { padding: .75rem 1rem; border-left: 3px solid var(--public-teal); background: #eef9f7; }
+.public-stitch-form .level-guidance p { margin: 0; }
+.public-auth-submit { width: 100%; margin-top: 1rem; }
+.public-login-shell .public-auth-submit { border-color: var(--public-navy); background: var(--public-navy); color: #fff; }
+.auth-alternative { margin: 1.75rem 0 0; color: var(--public-muted); text-align: center; }
+.auth-alternative a { color: var(--public-navy); font-weight: 800; }
+.selected-course { display: flex; flex-direction: column; gap: .35rem; padding: 1rem; border: 1px solid var(--public-outline); border-radius: 8px; background: var(--public-surface-low); }
+
+.contact-page { padding-bottom: 6rem; }
+.contact-stitch-layout { display: grid; max-width: 1120px; grid-template-columns: .95fr 1.05fr; gap: 4rem; margin-inline: auto; }
+.contact-copy h2 { margin: .75rem 0 1rem; font-size: 1.5rem; }
+.contact-copy > p:last-child { color: var(--public-muted); }
+.contact-channel-panel { display: grid; gap: 1rem; padding: 2rem; border: 1px solid var(--public-outline); border-radius: 16px; background: #fff; box-shadow: var(--public-card-shadow); }
+.contact-channel { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border: 1px solid #e0e3e5; border-radius: 12px; }
+.contact-channel-icon { display: grid; width: 48px; height: 48px; flex: 0 0 48px; place-items: center; border-radius: 50%; background: #d7e2ff; color: var(--public-navy); font-weight: 800; }
+.contact-channel h3 { margin: 0 0 .25rem; font-size: 1rem; }
+.contact-channel a,
+.contact-channel div > span { color: var(--public-muted); }
+.contact-channel-panel .contact-empty { margin: 0; }
+
+.about-page { padding-bottom: 6rem; }
+.about-intro { max-width: 850px; }
+.about-pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin-bottom: 6.5rem; }
+.about-pillar-card { min-height: 235px; padding: 2rem; border: 1px solid #e0e3e5; border-radius: 16px; background: #fff; box-shadow: var(--public-card-shadow); }
+.about-pillar-card > span { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: #f2f4f6; color: var(--public-navy); font-weight: 700; }
+.about-pillar-card:nth-child(2) > span { background: #e4f8f5; color: var(--public-teal); }
+.about-pillar-card:nth-child(3) > span { background: #fff4f1; color: #83260e; }
+.about-pillar-card h2 { margin: 1.5rem 0 .75rem; font-size: 1.35rem; }
+.about-pillar-card p { margin: 0; color: var(--public-muted); line-height: 1.55; }
+.about-method { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 3rem; }
+.about-method figure { min-height: 470px; margin: 0; overflow: hidden; border-radius: 16px; box-shadow: var(--public-card-shadow); }
+.about-method img { width: 100%; height: 100%; min-height: 470px; object-fit: cover; }
+.about-method-copy { display: grid; gap: 2rem; }
+.about-method-copy h2 { margin: 0 0 .75rem; font-size: 1.65rem; }
+.about-method-copy p { margin: 0; color: var(--public-muted); line-height: 1.6; }
+.site-footer { background: var(--public-navy); }
+
+@media (max-width: 1024px) {
+  .public-stitch-page { padding-block: 4rem; }
+  .catalogue-grid { grid-template-columns: 1fr; }
+  .course-detail-layout { grid-template-columns: 1fr; }
+  .course-enrolment-panel { position: static; }
+  .public-auth-shell { width: min(calc(100% - 3rem), 900px); grid-template-columns: 1fr; }
+  .public-auth-visual { min-height: 360px; }
+  .login-visual .auth-visual-content { align-items: center; text-align: center; }
+  .auth-visual-content small { margin-top: 2rem; }
+  .contact-stitch-layout { gap: 2rem; }
+  .about-method { grid-template-columns: .9fr 1.1fr; gap: 2rem; }
+}
+
+@media (max-width: 700px) {
+  .public-stitch-page { padding: 3rem 1rem; }
+  .public-page-intro { margin-bottom: 2.5rem; }
+  .public-page-intro h1,
+  .course-detail-primary > h1 { font-size: 2rem; line-height: 1.25; }
+  .public-page-intro > p:last-child,
+  .course-detail-lead { font-size: 1rem; }
+  .compact-intro { margin-bottom: 3rem; }
+  .catalogue-course-card { min-height: 0; }
+  .catalogue-card-main { padding: 1.25rem; }
+  .catalogue-card-footer { align-items: stretch; flex-direction: column; margin-inline: 1.25rem; padding-bottom: 1.25rem; }
+  .catalogue-actions { justify-content: stretch; }
+  .catalogue-actions .button { flex: 1; }
+  .course-detail-page { padding-top: 2.5rem; }
+  .course-detail-page .back-link { margin-bottom: 1.5rem; }
+  .course-detail-image,
+  .course-detail-image img { min-height: 270px; }
+  .course-information-grid { grid-template-columns: 1fr; }
+  .course-enrolment-panel { padding: 1.25rem; }
+  .public-auth-shell { width: 100%; min-height: 0; margin: 0; border: 0; border-radius: 0; }
+  .public-auth-visual { min-height: 270px; padding: 2rem 1rem; }
+  .auth-visual-content img { width: 105px; }
+  .auth-visual-content h2 { margin-top: 1rem; font-size: 1.65rem; }
+  .auth-visual-content p { font-size: 1rem; }
+  .auth-visual-content small { margin-top: 1rem; }
+  .public-auth-form-panel { padding: 2.5rem 1rem 3rem; }
+  .public-auth-heading { margin-bottom: 1.5rem; }
+  .public-auth-heading h1 { font-size: 2rem; }
+  .public-form-grid { grid-template-columns: 1fr; }
+  .contact-stitch-layout { grid-template-columns: 1fr; }
+  .contact-channel-panel { padding: 1rem; }
+  .about-pillars { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 3rem; }
+  .about-pillar-card { min-height: 0; padding: 1.5rem; }
+  .about-method { grid-template-columns: 1fr; }
+  .about-method figure,
+  .about-method img { min-height: 320px; }
 }
