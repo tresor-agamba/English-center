@@ -77,17 +77,12 @@ test('la FAQ publique reste accessible au clavier et sans débordement', async (
   await page.setViewportSize({ width: 320, height: 568 });
   const response = await page.goto('/', { waitUntil: 'networkidle' });
   expect(response.status()).toBe(200);
-  const first = page.locator('[data-faq-button]').first();
-  const second = page.locator('[data-faq-button]').nth(1);
-  await first.focus();
-  await page.keyboard.press('Enter');
-  await expect(first).toHaveAttribute('aria-expanded', 'true');
-  await expect(page.locator('#faq-panel-1')).toBeVisible();
-  await second.focus();
-  await page.keyboard.press('Space');
-  await expect(second).toHaveAttribute('aria-expanded', 'true');
-  await expect(first).toHaveAttribute('aria-expanded', 'false');
-  await expect(page.locator('#faq-panel-1')).toBeHidden();
+  const catalogue = page.locator('.catalogue-card');
+  await expect(catalogue).toBeVisible();
+  await expect(catalogue).toHaveAttribute('href', '/formations');
+  await catalogue.focus();
+  await expect(catalogue).toBeFocused();
+  await expect(page.locator('.stitch-final-cta')).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
 });
 

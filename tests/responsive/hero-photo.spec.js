@@ -28,8 +28,8 @@ test('photo du Hero nette, cadree et sans debordement', async ({ page }) => {
       horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
     }));
     expect(metrics.complete).toBe(true);
-    expect(metrics.naturalWidth).toBe(1280);
-    expect(metrics.naturalHeight).toBe(853);
+    expect(metrics.naturalWidth).toBe(512);
+    expect(metrics.naturalHeight).toBe(286);
     expect(metrics.fit).toBe('cover');
     expect(metrics.horizontalOverflow).toBe(false);
     await expect(page.locator('.hero-actions')).toBeVisible();

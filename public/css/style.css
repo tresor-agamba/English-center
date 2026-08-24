@@ -2148,3 +2148,172 @@ body:has(.admin-nav) .dashboard-heading {
   .whatsapp-contact__label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .whatsapp-contact__icon { width: 28px; height: 28px; flex-basis: 28px; }
 }
+
+/* Strict Stitch homepage fidelity overrides */
+.public-header { min-height: 76px; padding-inline: max(2rem, calc((100% - 1280px) / 2)); }
+.public-header .header-brand img { width: auto; height: 52px; }
+.public-main { width: min(100% - 2rem, 1280px); padding-bottom: 0; }
+.stitch-hero { min-height: 540px; }
+.stitch-hero-media img { object-position: 52% 50%; }
+.stitch-hero-overlay { background: rgb(11 20 36 / 38%); }
+.stitch-hero-overlay::before { position: absolute; inset: 0 auto 0 0; width: 64%; background: rgb(11 20 36 / 76%); content: ""; }
+.stitch-hero-inner { width: min(100% - 4rem, 1280px); padding-block: 4rem; }
+.stitch-hero h1 { max-width: 650px; font-size: 3rem; line-height: 1.1; }
+.stitch-hero p { max-width: 610px; margin-top: 1.25rem; font-size: 1rem; line-height: 1.6; }
+.stitch-hero .hero-actions { display: flex; flex-direction: row; gap: 1rem; margin-top: 1.75rem; }
+.stitch-hero .button { min-width: 180px; min-height: 48px; border-radius: 8px; font-size: .82rem; text-transform: uppercase; }
+.stitch-benefits { padding-block: 4rem; }
+.stitch-benefits .centered-intro { max-width: 680px; }
+.stitch-benefits .section-intro h2,
+.stitch-courses .section-intro h2 { font-size: 2rem; line-height: 1.2; }
+.stitch-benefits .section-intro p { margin-top: .75rem; font-size: 1rem; }
+.stitch-bento { gap: 1.5rem; margin-top: 2.5rem; }
+.stitch-benefit-card { min-height: 174px; padding: 1.5rem; border-color: rgb(198 198 205 / 62%); border-radius: 16px; box-shadow: 0 4px 20px rgb(15 23 42 / 5%); }
+.stitch-benefit-card h3 { margin: 1rem 0 .4rem; font-size: 1rem; }
+.stitch-benefit-card p { font-size: .88rem; line-height: 1.55; }
+.stitch-benefit-wide { min-height: 174px; background: #fff; color: var(--stitch-ink); }
+.stitch-benefit-wide h3 { color: var(--stitch-ink); }
+.stitch-benefit-wide p { color: #526174; }
+.stitch-benefit-wide .stitch-benefit-icon { background: #86f2e4; color: #006f66; }
+.stitch-benefit-icon { width: 36px; height: 36px; background: #86f2e4; color: #006f66; }
+.stitch-benefit-card:nth-child(even) .stitch-benefit-icon { background: var(--stitch-navy); color: #fff; }
+.stitch-courses { padding-block: 4rem; }
+.stitch-courses .section-heading { align-items: flex-end; }
+.stitch-course-grid { gap: 1.5rem; margin-top: 2rem; }
+.stitch-course-grid-empty { grid-template-columns: 2fr 1fr; }
+.stitch-course-grid-empty .empty-state { display: flex; min-height: 260px; align-items: center; flex-direction: column; justify-content: center; margin: 0; }
+.stitch-course-card,
+.catalogue-card { min-height: 360px; border-radius: 16px; box-shadow: 0 4px 20px rgb(15 23 42 / 5%); }
+.stitch-course-top { position: relative; min-height: 180px; align-items: center; justify-content: center; overflow: hidden; background: var(--stitch-navy); }
+.stitch-course-top::before { position: absolute; width: 180px; height: 180px; border: 42px solid rgb(134 242 228 / 12%); border-radius: 50%; content: ""; }
+.stitch-course-top span { position: relative; color: rgb(255 255 255 / 42%); font-size: 1.5rem; }
+.stitch-course-body { min-height: 180px; padding: 1.5rem; }
+.stitch-course-body h3 { margin: 1.1rem 0; font-size: 1.15rem; }
+.stitch-course-footer { padding-top: 1rem; border-top: 1px solid var(--stitch-border); }
+.catalogue-card { align-items: center; flex-direction: column; justify-content: center; border-style: dashed; background: #e5eeff; color: var(--stitch-ink); text-align: center; }
+.catalogue-card:hover { background: #dce9ff; color: var(--stitch-ink); }
+.catalogue-card span { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 50%; background: #d3e4fe; }
+.catalogue-card strong { max-width: 240px; font-size: 1.15rem; }
+.stitch-final-cta { min-height: 190px; margin-top: 0; padding-block: 3.5rem; border-radius: 0; background: var(--stitch-navy); }
+.stitch-final-cta h2 { font-size: 2rem; }
+.site-footer { padding: 3.5rem max(2rem, calc((100% - 1280px) / 2)) 1.5rem; background: var(--stitch-navy); }
+.footer-grid { gap: 2rem; }
+.footer-brand { width: 170px; padding: .5rem; border-radius: 8px; }
+.footer-grid > div { gap: .4rem; }
+.footer-grid > div:first-child p { max-width: 280px; margin-top: .75rem; font-size: .85rem; line-height: 1.55; }
+.footer-grid h2 { margin-bottom: .35rem; }
+.footer-grid a,
+.footer-grid span { font-size: .85rem; }
+.footer-bottom { margin-top: 2rem; padding-top: 1rem; }
+
+@media (max-width: 1024px) {
+  .stitch-benefits { padding-block: 3.5rem; }
+  .stitch-benefit-card { grid-column: span 6; }
+  .stitch-benefit-wide { grid-column: span 12; }
+  .stitch-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalogue-card { grid-column: 1 / -1; min-height: 210px; }
+}
+
+@media (max-width: 700px) {
+  .public-header { min-height: 68px; padding-inline: 1rem; }
+  .public-header .header-brand img { height: 48px; }
+  .public-main { width: min(100% - 1rem, 1280px); }
+  .stitch-hero { min-height: 520px; }
+  .stitch-hero-media img { object-position: 56% 50%; }
+  .stitch-hero-overlay { background: rgb(11 20 36 / 72%); }
+  .stitch-hero-overlay::before { display: none; }
+  .stitch-hero-inner { width: min(100% - 2rem, 1280px); padding-block: 3rem; }
+  .stitch-hero h1 { font-size: 2rem; }
+  .stitch-hero .hero-actions { flex-direction: column; }
+  .stitch-hero .button { width: 100%; }
+  .stitch-benefits { padding-block: 3.5rem; }
+  .stitch-benefits .section-intro h2,
+  .stitch-courses .section-intro h2 { font-size: 1.75rem; }
+  .stitch-bento { gap: 1rem; margin-top: 2rem; }
+  .stitch-benefit-card,
+  .stitch-benefit-wide { grid-column: 1 / -1; min-height: 0; border-radius: 16px; }
+  .stitch-courses { padding: 3.5rem 1rem; }
+  .stitch-courses .section-heading { align-items: flex-start; }
+  .stitch-course-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .stitch-course-grid-empty { grid-template-columns: 1fr; }
+  .catalogue-card { grid-column: auto; min-height: 190px; }
+  .stitch-final-cta { min-height: 0; padding: 3rem 1rem; }
+  .stitch-final-cta .button { width: 100%; }
+  .site-footer { padding: 3rem 1rem 1.25rem; }
+}
+
+/* Final measured alignment with the approved Stitch homepage. */
+.public-header { min-height: 64px; padding-inline: max(2rem, calc((100% - 1280px) / 2)); }
+.public-header .header-brand,
+.public-header .header-brand picture { height: 48px; }
+.public-header .header-brand img { height: 46px; }
+.public-header .public-navigation { gap: 1.25rem; }
+.public-header .public-navigation > a:not(.button) { padding-block: .35rem; font-size: .88rem; }
+.public-header .nav-register { min-height: 38px; padding: .6rem 1rem; border-radius: 4px; }
+.public-header .language-switcher { padding: .45rem .65rem; }
+
+.stitch-hero { min-height: min(75vh, 620px); }
+.stitch-hero-overlay { background: linear-gradient(90deg, rgb(11 20 36 / 94%) 0%, rgb(11 20 36 / 90%) 34%, rgb(11 20 36 / 68%) 55%, rgb(11 20 36 / 24%) 78%, rgb(11 20 36 / 16%) 100%); }
+.stitch-hero-overlay::before { display: none; }
+.stitch-hero-inner { padding-block: 4rem; }
+.stitch-hero h1 { max-width: 660px; font-size: 3rem; }
+.stitch-hero p { max-width: 575px; margin-top: 1.5rem; font-size: 1.125rem; line-height: 1.6; }
+.stitch-hero .hero-actions { gap: 1.5rem; margin-top: 2.5rem; }
+
+.stitch-benefits { padding-block: 4rem; }
+.stitch-benefits .centered-intro { margin-bottom: 0; }
+.stitch-bento { gap: 1.5rem; margin-top: 4rem; }
+.stitch-benefit-card { min-height: 230px; padding: 2.5rem; border-color: #e2e8f0; border-radius: 16px; box-shadow: 0 4px 20px rgb(15 23 42 / 5%); }
+.stitch-benefit-card h3 { margin: 1.5rem 0 .5rem; font-size: 1.25rem; }
+.stitch-benefit-card p { font-size: 1rem; line-height: 1.5; }
+
+.stitch-courses { padding-block: 4rem; }
+.stitch-course-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; }
+.stitch-course-card,
+.catalogue-card { width: 100%; min-height: 350px; border-color: #c6c6cd; border-radius: 16px; box-shadow: 0 4px 20px rgb(15 23 42 / 5%); }
+.stitch-course-top { min-height: 192px; }
+.stitch-course-body { min-height: 158px; padding: 1.5rem; }
+.catalogue-card { max-width: 100%; }
+
+.stitch-final-cta { min-height: 156px; padding-block: 2.5rem; }
+.stitch-final-cta h2 { margin-bottom: .5rem; }
+.stitch-final-cta p { margin: 0; }
+.site-footer { padding-top: 3rem; }
+.footer-grid { grid-template-columns: 2fr repeat(3, 1fr); gap: 1.5rem; }
+.footer-bottom { margin-top: 2rem; }
+.footer-legal { display: flex; align-items: center; gap: 1.5rem; color: #b8c2d3; }
+.footer-legal p { margin: 0; }
+.footer-legal span { font-size: .8rem; }
+
+@media (max-width: 1024px) {
+  .stitch-benefit-card { min-height: 210px; padding: 2rem; }
+  .stitch-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .catalogue-card { grid-column: auto; }
+  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .public-header { min-height: 60px; padding-inline: 1rem; }
+  .public-header .header-brand,
+  .public-header .header-brand picture { height: 44px; }
+  .public-header .header-brand img { height: 42px; }
+  .stitch-hero { min-height: 520px; }
+  .stitch-hero-overlay { background: linear-gradient(90deg, rgb(11 20 36 / 86%) 0%, rgb(11 20 36 / 76%) 62%, rgb(11 20 36 / 54%) 100%); }
+  .stitch-hero-inner { padding-block: 2.75rem; }
+  .stitch-hero h1 { font-size: 2rem; }
+  .stitch-hero p { margin-top: 1.25rem; font-size: 1rem; }
+  .stitch-hero .hero-actions { gap: 1rem; margin-top: 2rem; }
+  .stitch-benefits { padding-block: 3rem; }
+  .stitch-bento { margin-top: 2rem; }
+  .stitch-benefit-card { min-height: 0; padding: 1.5rem; }
+  .stitch-benefit-card h3 { margin-top: 1rem; font-size: 1.1rem; }
+  .stitch-courses { padding-block: 3rem; }
+  .stitch-course-grid { grid-template-columns: 1fr; }
+  .stitch-course-card,
+  .catalogue-card { min-height: 0; }
+  .catalogue-card { min-height: 180px; }
+  .stitch-final-cta { min-height: 0; padding-block: 2.5rem; }
+  .site-footer { padding-top: 2.5rem; }
+  .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; }
+  .footer-legal { align-items: flex-start; flex-wrap: wrap; gap: .5rem 1rem; }
+}

@@ -104,12 +104,11 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
     });
     await t.test('présente les nouvelles sections sans contenu fictif', async () => {
       const { html } = await get('/');
-      assert.match(html, /class="journey-timeline"/);
-      assert.match(html, /data-faq-button/);
-      assert.match(html, /aria-controls="faq-panel-1"/);
-      assert.match(html, /class="dashboard-mock/);
-      assert.match(html, /data-i18n="dashboard\.preview"/);
-      assert.match(html, /class="[^"]*\bsessions-section\b[^"]*"/);
+      assert.match(html, /class="stitch-hero"/);
+      assert.match(html, /class="stitch-bento"/);
+      assert.match(html, /class="stitch-course-grid"/);
+      assert.match(html, /class="final-cta stitch-final-cta/);
+      assert.doesNotMatch(html, /journey-timeline|data-faq-button|dashboard-mock|sessions-section|trust-strip/);
       assert.doesNotMatch(html, /testimonial|partner-logo|app-store|google-play|chatbot/i);
     });
     await t.test('sert les pages À propos et Contact avec les coordonnées administrables', async () => {
