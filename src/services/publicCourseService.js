@@ -1,5 +1,5 @@
 const prisma = require('../utils/prisma');
-const { OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
+const { OCCUPYING_ENROLLMENT_STATUSES, remainingPlaces, isSessionOpenForRegistration } = require('./enrollmentPolicy');
 const { isPublicCourse } = require('./coursePublicationPolicy');
 
 const PUBLIC_SESSION_STATUSES = ['OPEN'];
@@ -55,12 +55,9 @@ async function listPublished() {
   });
 
   return courses.filter(isPublicCourse).map(({ trainingSessions, ...course }) => {
-    const availableSessions = trainingSessions.filter(
-      (session) =>
-        session.status === 'OPEN' &&
-        session.registrationDeadline >= now &&
-        session._count.enrollments < session.capacity
-    ).sort((left, right) => left.startDate - right.startDate || left.id - right.id);
+    const availableSessions = trainingSessions
+      .filter((session) => isSessionOpenForRegistration(session, now))
+      .sort((left, right) => left.startDate - right.startDate || left.id - right.id);
     return {
       ...course,
       upcomingSessionCount: availableSessions.length,
@@ -102,7 +99,7 @@ async function listUpcomingSessions(limit = 3) {
   return sessions
     .map(({ _count, ...session }) => ({
       ...session,
-      remainingPlaces: Math.max(0, session.capacity - _count.enrollments),
+      remainingPlaces: remainingPlaces({ ...session, _count }),
     }))
     .filter((session) => session.remainingPlaces > 0 && isPublicCourse(session.course));
 }
@@ -166,13 +163,13 @@ async function findPublishedBySlug(slug) {
   return {
     ...course,
     trainingSessions: course.trainingSessions.map((session) => {
-      const remainingPlaces = Math.max(0, session.capacity - session._count.enrollments);
+      const availablePlaces = remainingPlaces(session);
       const registrationOpen =
         session.status === 'OPEN' &&
         session.registrationDeadline >= now &&
-        remainingPlaces > 0;
+        availablePlaces > 0;
       const { _count, ...publicSession } = session;
-      return { ...publicSession, remainingPlaces, registrationOpen };
+      return { ...publicSession, remainingPlaces: availablePlaces, registrationOpen };
     }),
   };
 }

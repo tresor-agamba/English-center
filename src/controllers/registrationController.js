@@ -81,8 +81,12 @@ async function newForm(req, res) {
   try {
     const courses = await registrationService.listCoursesForPublicRegistration();
     if (!req.query.session) {
-      const selectedCourse = courses.some((course) => String(course.id) === String(req.query.course)) ? String(req.query.course) : '';
-      return renderForm(res, { courses, form: { ...emptyForm(), courseId: selectedCourse }, error: null });
+      const requestedCourse = req.query.course ? String(req.query.course) : '';
+      const selectedCourse = courses.some((course) => String(course.id) === requestedCourse) ? requestedCourse : '';
+      const error = requestedCourse && !selectedCourse
+        ? 'Cette formation n\u2019est actuellement pas ouverte aux inscriptions.'
+        : null;
+      return renderForm(res, { courses, form: { ...emptyForm(), courseId: selectedCourse }, error });
     }
     const session = await registrationService.getSessionForRegistration(req.query.session);
     return renderForm(res, { session, courses, form: { ...emptyForm(), courseId: session.course.id }, error: null });

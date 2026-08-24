@@ -2,20 +2,21 @@
 
 <div class="page-heading">
   <div><p class="eyebrow">Administration</p><h1>Formations</h1></div>
-  <a class="button" href="/admin/courses/new">Créer une formation</a>
+  <a class="button" href="/admin/courses/new">Cr&eacute;er une formation</a>
 </div>
 
+<% const registrationLabels = { READY: 'Pr&ecirc;te &agrave; publier', NO_OPEN_SESSION: 'Publi&eacute;e &mdash; aucune session ouverte', OPEN: 'Inscriptions ouvertes', FULL: 'Session compl&egrave;te', CLOSED: 'Inscriptions cl&ocirc;tur&eacute;es', ARCHIVED: 'Archiv&eacute;e' }; %>
 <% if (!courses.length) { %>
-  <div class="empty-state"><strong>Aucune formation</strong><p>Créez votre première formation pour alimenter le catalogue.</p></div>
+  <div class="empty-state"><strong>Aucune formation</strong><p>Cr&eacute;ez votre premi&egrave;re formation pour alimenter le catalogue.</p></div>
 <% } else { %>
   <div class="table-wrapper responsive-table"><table>
-    <thead><tr><th>Formation</th><th>Type</th><th>Prix</th><th>Sessions</th><th>Publication</th><th></th></tr></thead>
+    <thead><tr><th>Formation</th><th>Type</th><th>Prix</th><th>Sessions</th><th>Inscription publique</th><th></th></tr></thead>
     <tbody><% courses.forEach((course) => { %><tr>
       <td data-label="Formation"><strong><%= course.title %></strong><br /><small>/<%= course.slug %></small></td>
       <td data-label="Type"><%= typeLabels[course.courseType] %></td>
-      <td data-label="Prix"><% if (course.price === null || !course.pricingMode) { %>À définir<% } else if (!course.pricingActive) { %><%= course.price %> <%= course.currency %> · Inactif<% } else if (course.pricingMode === 'FREE') { %>Gratuite<% } else { %><%= Number(course.price) + Number(course.registrationFee || 0) %> <%= course.currency %><% } %></td>
+      <td data-label="Prix"><% if (course.price === null || !course.pricingMode) { %>&Agrave; d&eacute;finir<% } else if (!course.pricingActive) { %><%= course.price %> <%= course.currency %> &middot; Inactif<% } else if (course.pricingMode === 'FREE') { %>Gratuite<% } else { %><%= Number(course.price) + Number(course.registrationFee || 0) %> <%= course.currency %><% } %></td>
       <td data-label="Sessions"><%= course._count.trainingSessions %></td>
-      <td data-label="Publication"><span class="status <%= course.publicationState === 'PUBLISHED' ? 'status-active' : 'status-inactive' %>"><%= ({READY:'Prête à publier', PUBLISHED:'Publiée', ARCHIVED:'Archivée', INCOMPLETE:'Configuration incomplète'})[course.publicationState] || 'Brouillon' %></span><% if (course.publicationMissingFields.length) { %><br><small>Manque : <%= course.publicationMissingFields.join(', ') %></small><% } %></td>
+      <td data-label="Inscription publique"><span class="status <%= course.publicRegistrationState === 'OPEN' ? 'status-active' : 'status-inactive' %>"><%- registrationLabels[course.publicRegistrationState] %></span><% if (course.publicationMissingFields.length) { %><br><small>Manque : <%= course.publicationMissingFields.join(', ') %></small><% } %></td>
       <td data-label="Actions"><a href="/admin/courses/<%= course.id %>/edit">Modifier</a></td>
     </tr><% }) %></tbody>
   </table></div>

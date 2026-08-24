@@ -6,6 +6,9 @@
       <button class="button button-small <%= course.isPublished ? 'button-danger' : '' %>" type="submit"><%= course.isPublished ? 'Dépublier' : 'Publier' %></button>
     </form>
   </div>
+  <% const registrationLabels = { READY: 'Pr&ecirc;te &agrave; publier', NO_OPEN_SESSION: 'Publi&eacute;e &mdash; aucune session ouverte', OPEN: 'Inscriptions ouvertes', FULL: 'Session compl&egrave;te', CLOSED: 'Inscriptions cl&ocirc;tur&eacute;es', ARCHIVED: 'Archiv&eacute;e' }; %>
+  <p><strong>Inscription publique :</strong> <span class="status <%= course.publicRegistrationState === 'OPEN' ? 'status-active' : 'status-inactive' %>"><%- registrationLabels[course.publicRegistrationState] %></span></p>
+  <% if (course.publicRegistrationState === 'NO_OPEN_SESSION') { %><p class="form-error">Formation publi&eacute;e, mais aucune session ouverte &agrave; l&rsquo;inscription.</p><% } %>
   <p><strong>État :</strong> <%= ({READY:'Prête à publier', PUBLISHED:'Publiée', ARCHIVED:'Archivée', INCOMPLETE:'Configuration incomplète'})[course.publicationState] || 'Brouillon' %></p>
   <% if (course.publicationMissingFields.length) { %><p class="form-error">Informations manquantes avant publication : <%= course.publicationMissingFields.join(', ') %>.</p><% } %>
   <% if (course.publicationState !== 'ARCHIVED') { %><form action="/admin/courses/<%= course.id %>/archive" method="post" onsubmit="return confirm('Archiver cette formation et la retirer du catalogue public ?')"><button class="button button-small button-danger" type="submit">Archiver</button></form><% } %>

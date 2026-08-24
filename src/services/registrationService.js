@@ -1,6 +1,6 @@
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
-const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES } = require('./enrollmentPolicy');
+const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES, remainingPlaces, sessionRegistrationState, isSessionOpenForRegistration } = require('./enrollmentPolicy');
 const enrollmentReminders = require('./enrollmentReminderService');
 const whatsappPreferences = require('./whatsappPreferenceService');
 const placement = require('./placementTestService');
@@ -115,17 +115,18 @@ function validateSession(session, now = new Date(), options = {}) {
   if (!session || !isPublicCourse(session.course)) {
     throw new RegistrationError('SESSION_NOT_FOUND', messages.SESSION_NOT_FOUND, 404);
   }
-  if (session.startDate < now || !['OPEN'].includes(session.status)) {
+  const state = sessionRegistrationState(session, now);
+  if (state === 'UNAVAILABLE') {
     throw new RegistrationError('SESSION_UNAVAILABLE', messages.SESSION_UNAVAILABLE);
   }
-  if (session.registrationDeadline < now) {
+  if (state === 'CLOSED') {
     throw new RegistrationError('REGISTRATION_CLOSED', messages.REGISTRATION_CLOSED);
   }
-  const remainingPlaces = Math.max(0, session.capacity - session._count.enrollments);
-  if (checkCapacity && remainingPlaces < 1) {
+  const availablePlaces = remainingPlaces(session);
+  if (checkCapacity && state === 'FULL') {
     throw new RegistrationError('SESSION_FULL', messages.SESSION_FULL);
   }
-  return { ...session, remainingPlaces };
+  return { ...session, remainingPlaces: availablePlaces };
 }
 
 function enrollmentPricingSnapshot(session) {
@@ -159,10 +160,22 @@ async function listCoursesForPublicRegistration(client = prisma) {
       lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null,
       trainingSessions: { some: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } } },
     },
-    select: { id: true, title: true, slug: true, shortDescription: true, description: true, level: true, duration: true, durationValue: true, durationUnit: true, price: true, currency: true, pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true, archivedAt: true, closedAt: true, createdAt: true },
+    select: {
+      id: true, title: true, slug: true, shortDescription: true, description: true, level: true,
+      duration: true, durationValue: true, durationUnit: true, price: true, currency: true,
+      pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true,
+      archivedAt: true, closedAt: true, createdAt: true,
+      trainingSessions: {
+        where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },
+        select: { status: true, startDate: true, registrationDeadline: true, capacity: true,
+          _count: { select: { enrollments: { where: { status: { in: OCCUPYING_STATUSES } } } } } },
+      },
+    },
     orderBy: { title: 'asc' },
   });
-  return courses.filter(isPublicCourse).map(({ id, title, slug }) => ({ id, title, slug }));
+  return courses
+    .filter((course) => isPublicCourse(course) && course.trainingSessions.some((session) => isSessionOpenForRegistration(session, now)))
+    .map(({ id, title, slug }) => ({ id, title, slug }));
 }
 
 async function getCourseRegistrationSession(rawCourseId, client = prisma) {

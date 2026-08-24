@@ -1,15 +1,24 @@
 const prisma = require('../utils/prisma');
 const { publicationMissingFields, publicationState } = require('./coursePublicationPolicy');
+const { OCCUPYING_ENROLLMENT_STATUSES, sessionRegistrationState } = require('./enrollmentPolicy');
+
+const registrationSessions = {
+  orderBy: { startDate: 'asc' },
+  select: {
+    status: true, startDate: true, registrationDeadline: true, capacity: true,
+    _count: { select: { enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } } } },
+  },
+};
 
 function list() {
   return prisma.course.findMany({
     orderBy: { createdAt: 'desc' },
-    include: { _count: { select: { trainingSessions: true } } },
+    include: { _count: { select: { trainingSessions: true } }, trainingSessions: registrationSessions },
   });
 }
 
 function findById(id) {
-  return prisma.course.findUnique({ where: { id } });
+  return prisma.course.findUnique({ where: { id }, include: { trainingSessions: registrationSessions } });
 }
 
 function findSlug(slug) {
@@ -47,7 +56,16 @@ function archive(id) {
 }
 
 function decoratePublication(course) {
-  return { ...course, publicationState: publicationState(course), publicationMissingFields: publicationMissingFields(course) };
+  const state = publicationState(course);
+  let publicRegistrationState = state === 'ARCHIVED' ? 'ARCHIVED' : 'READY';
+  if (state === 'PUBLISHED') {
+    const sessionStates = (course.trainingSessions || []).map((session) => sessionRegistrationState(session));
+    if (sessionStates.includes('OPEN')) publicRegistrationState = 'OPEN';
+    else if (sessionStates.includes('FULL')) publicRegistrationState = 'FULL';
+    else if (sessionStates.includes('CLOSED')) publicRegistrationState = 'CLOSED';
+    else publicRegistrationState = 'NO_OPEN_SESSION';
+  }
+  return { ...course, publicationState: state, publicationMissingFields: publicationMissingFields(course), publicRegistrationState };
 }
 
 module.exports = { list, findById, findSlug, create, update, publish, unpublish, archive, decoratePublication };

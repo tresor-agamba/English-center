@@ -10,14 +10,16 @@ const VIEWPORTS = [
   [640, 900], [430, 932], [390, 844], [375, 812], [320, 568],
 ];
 
-test('photo du Hero nette, cadrée et sans débordement', async ({ page }) => {
+test('photo du Hero nette, cadree et sans debordement', async ({ page }) => {
   await fs.mkdir('audit-output/hero-photo', { recursive: true });
   for (const [width, height] of VIEWPORTS) {
     await page.setViewportSize({ width, height });
     await page.goto('/', { waitUntil: 'networkidle' });
-    const image = page.locator('.hero-student-photo');
+    const hero = page.locator('.stitch-hero');
+    const image = page.locator('.stitch-hero-media img');
+    await expect(hero).toBeVisible();
     await expect(image).toBeVisible();
-    await expect(image).toHaveAttribute('alt', /Étudiant congolais/);
+    await expect(image).toHaveAttribute('alt', '');
     const metrics = await image.evaluate((element) => ({
       complete: element.complete,
       naturalWidth: element.naturalWidth,
@@ -33,7 +35,7 @@ test('photo du Hero nette, cadrée et sans débordement', async ({ page }) => {
     await expect(page.locator('.hero-actions')).toBeVisible();
     await page.screenshot({ path: `audit-output/hero-photo/home-${width}.png`, fullPage: false });
     if ([1440, 1024, 768, 390, 320].includes(width)) {
-      await page.locator('.hero-visual').screenshot({ path: `audit-output/hero-photo/hero-${width}.png` });
+      await hero.screenshot({ path: `audit-output/hero-photo/hero-${width}.png` });
     }
   }
 });

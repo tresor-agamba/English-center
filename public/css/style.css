@@ -8,6 +8,83 @@
   --border: #dfe4ec;
 }
 
+/* Stitch-inspired public homepage */
+:root { --stitch-navy: #131b2e; --stitch-ink: #0b1c30; --stitch-teal: #006a61; --stitch-gold: #f59e0b; --stitch-surface: #f8f9ff; --stitch-surface-low: #eff4ff; --stitch-border: #c6c6cd; }
+.public-header { min-height: 72px; border-bottom: 1px solid rgb(198 198 205 / 58%); background: rgb(248 249 255 / 96%); box-shadow: 0 4px 18px rgb(11 28 48 / 5%); }
+.public-header .header-brand img { height: 52px; }
+.public-header .main-nav a { color: var(--stitch-ink); }
+.public-header .main-nav a:hover { color: var(--stitch-teal); }
+.stitch-hero { position: relative; isolation: isolate; display: flex; min-height: 560px; align-items: center; margin-inline: calc(50% - 50vw); overflow: hidden; background: var(--stitch-navy); color: #fff; }
+.stitch-hero-media, .stitch-hero-overlay { position: absolute; inset: 0; }
+.stitch-hero-media { z-index: -2; }
+.stitch-hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: 54% 48%; }
+.stitch-hero-overlay { z-index: -1; background: rgb(11 28 48 / 72%); }
+.stitch-hero-inner { width: min(100% - 4rem, 1280px); margin-inline: auto; padding-block: 5rem; }
+.stitch-hero h1 { max-width: 760px; margin: 0; color: #fff; font-size: 3.25rem; line-height: 1.08; letter-spacing: 0; }
+.stitch-hero .hero-accent { display: block; margin-top: .25rem; color: var(--stitch-gold); }
+.stitch-hero p { max-width: 650px; margin: 1.5rem 0 0; color: rgb(255 255 255 / 88%); font-size: 1.12rem; line-height: 1.72; }
+.stitch-hero .hero-actions { margin-top: 2rem; }
+.stitch-hero .button-gold { border-color: var(--stitch-gold); background: var(--stitch-gold); color: var(--stitch-ink); }
+.stitch-hero .hero-secondary { border: 1px solid rgb(255 255 255 / 72%); background: transparent; color: #fff; }
+.stitch-hero .hero-secondary:hover { background: #fff; color: var(--stitch-ink); }
+.stitch-hero + .trust-strip { width: 100%; margin: 0 0 5.5rem; border: 0; border-bottom: 1px solid var(--stitch-border); border-radius: 0; background: var(--stitch-surface-low); box-shadow: none; }
+.stitch-benefits { max-width: 1280px; margin-inline: auto; }
+.stitch-benefits .centered-intro { max-width: 720px; margin-inline: auto; text-align: center; }
+.stitch-benefits .section-intro h2 { color: var(--stitch-ink); font-size: 2.35rem; letter-spacing: 0; }
+.stitch-bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 1rem; margin-top: 2.5rem; }
+.stitch-benefit-card { grid-column: span 4; min-height: 230px; padding: 1.75rem; border: 1px solid rgb(198 198 205 / 72%); border-radius: 8px; background: #fff; box-shadow: 0 12px 30px rgb(11 28 48 / 7%); }
+.stitch-benefit-card:nth-child(2), .stitch-benefit-card:nth-child(4) { background: var(--stitch-surface-low); }
+.stitch-benefit-card h3 { margin: 1.4rem 0 .6rem; color: var(--stitch-ink); font-size: 1.22rem; letter-spacing: 0; }
+.stitch-benefit-card p { margin: 0; color: #526174; line-height: 1.65; }
+.stitch-benefit-wide { grid-column: span 8; min-height: 210px; background: var(--stitch-navy); color: #fff; }
+.stitch-benefit-wide h3 { color: #fff; }
+.stitch-benefit-wide p { max-width: 650px; color: rgb(255 255 255 / 75%); }
+.stitch-benefit-icon { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 50%; background: var(--stitch-teal); color: #fff; font-size: .78rem; font-weight: 800; }
+.stitch-benefit-wide .stitch-benefit-icon { background: var(--stitch-gold); color: var(--stitch-ink); }
+.stitch-courses { width: auto; max-width: none; margin-inline: calc(50% - 50vw); padding: 5.5rem max(2rem, calc((100vw - 1280px) / 2)); background: var(--stitch-surface-low); }
+.stitch-courses .section-heading { max-width: 1280px; margin-inline: auto; }
+.stitch-course-grid { display: grid; max-width: 1280px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.25rem; margin: 2.5rem auto 0; }
+.stitch-course-card, .catalogue-card { min-height: 310px; overflow: hidden; border: 1px solid var(--stitch-border); border-radius: 8px; background: #fff; box-shadow: 0 10px 25px rgb(11 28 48 / 7%); }
+.stitch-course-top { display: flex; min-height: 78px; align-items: flex-end; padding: 1rem 1.25rem; background: var(--stitch-navy); color: #fff; }
+.stitch-course-top span { font-size: .82rem; font-weight: 750; }
+.stitch-course-body { display: flex; min-height: 230px; flex-direction: column; padding: 1.35rem; }
+.stitch-course-body h3 { margin: 1rem 0; color: var(--stitch-ink); font-size: 1.25rem; letter-spacing: 0; }
+.stitch-course-footer { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-top: auto; }
+.stitch-course-footer a { color: var(--stitch-teal); font-weight: 800; }
+.course-availability { color: #667080; font-size: .82rem; font-weight: 750; }
+.course-availability.is-open { color: var(--stitch-teal); }
+.catalogue-card { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; padding: 1.5rem; background: var(--stitch-teal); color: #fff; text-decoration: none; }
+.catalogue-card:hover { background: #00574f; color: #fff; }
+.catalogue-card span { font-size: 2rem; }
+.catalogue-card strong { max-width: 210px; font-size: 1.35rem; line-height: 1.3; }
+.stitch-final-cta { width: auto; max-width: none; margin: 5.5rem calc(50% - 50vw) 0; padding: 3.5rem max(2rem, calc((100vw - 1280px) / 2)); border-radius: 0; background: var(--stitch-navy); box-shadow: none; }
+.stitch-final-cta h2 { color: #fff; letter-spacing: 0; }
+.stitch-final-cta p { max-width: 700px; color: rgb(255 255 255 / 72%); }
+.stitch-final-cta .button-gold { border-color: var(--stitch-gold); background: var(--stitch-gold); color: var(--stitch-ink); }
+.public-footer { background: var(--stitch-navy); }
+@media (max-width: 1024px) {
+  .stitch-hero { min-height: 520px; }
+  .stitch-hero h1 { max-width: 680px; font-size: 2.8rem; }
+  .stitch-benefit-card { grid-column: span 6; }
+  .stitch-benefit-wide { grid-column: span 12; }
+  .stitch-course-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 700px) {
+  .stitch-hero { min-height: 500px; }
+  .stitch-hero-media img { object-position: 62% 50%; }
+  .stitch-hero-inner { width: min(100% - 2rem, 1280px); padding-block: 3.5rem; }
+  .stitch-hero h1 { font-size: 2.25rem; }
+  .stitch-hero p { font-size: 1rem; }
+  .stitch-hero .hero-actions { align-items: stretch; flex-direction: column; }
+  .stitch-hero .hero-actions .button { width: 100%; }
+  .stitch-hero + .trust-strip { margin-bottom: 4rem; }
+  .stitch-benefits .section-intro h2 { font-size: 1.85rem; }
+  .stitch-benefit-card, .stitch-benefit-wide { grid-column: 1 / -1; min-height: 0; }
+  .stitch-courses { padding-block: 4rem; padding-inline: 1rem; }
+  .stitch-course-grid { grid-template-columns: 1fr; }
+  .stitch-final-cta { margin-top: 4rem; padding: 3rem 1rem; }
+}
+
 *,
 *::before,
 *::after {

@@ -8,7 +8,9 @@ const fs = require('fs/promises');
 const receiptPdf = require('../src/services/paymentReceiptPdfService');
 
 test('paiements manuels : déclaration, validation, refus et paliers existants', async (t) => {
-  const key = `${Date.now()}-${process.pid}`;
+  const referenceTime = Date.now();
+  const key = `${referenceTime}-${process.pid}`;
+  const declaredPaidDate = new Date(referenceTime - 86400000).toISOString().slice(0, 10);
   let student;
   let admin;
   let otherStudent;
@@ -44,7 +46,7 @@ test('paiements manuels : déclaration, validation, refus et paliers existants',
     assert.equal(created.provider, 'manual');
     await manualPayments.declarePayment(attempt.paymentReference, student.id, {
       methodCode: 'MPESA', payerNumber: `+24397000${suffix}`, amount: String(amount), transactionReference: `TX-${suffix}`,
-      paidDate: new Date().toISOString().slice(0, 10),
+      paidDate: declaredPaidDate,
     });
     const declared = await prisma.payment.findUnique({ where: { reference: attempt.paymentReference } });
     assert.equal(declared.status, 'PENDING');
@@ -81,7 +83,7 @@ test('paiements manuels : déclaration, validation, refus et paliers existants',
       const row = await enrollment('pending', 5);
       const payment = await createAndDeclare(row, 50, '01');
       assert.equal((await manualPayments.listPending()).some((item) => item.id === payment.id), true);
-      await manualPayments.declarePayment(payment.reference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000001', amount: '50', paidDate: new Date().toISOString().slice(0, 10) });
+      await manualPayments.declarePayment(payment.reference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000001', amount: '50', paidDate: declaredPaidDate });
       assert.equal(await prisma.notification.count({ where: { deduplicationKey: `MANUAL_PAYMENT_PENDING:payment-${payment.id}` } }), 1);
       assert.equal((await accessService.calculateTrialAccess(row.id)).accessStage, 'PAYMENT_REQUIRED_50');
     });
@@ -90,7 +92,7 @@ test('paiements manuels : déclaration, validation, refus et paliers existants',
       const row = await enrollment('proof', 5);
       const attempt = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: row.id, amount: 50, currency: 'USD', flow: 'manual' });
       const buffer = await fs.readFile('public/icons/icon-192.png');
-      await manualPayments.declarePayment(attempt.paymentReference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000099', amount: '50', paidDate: new Date().toISOString().slice(0, 10) }, { buffer, size: buffer.length, mimetype: 'image/png', originalname: 'preuve.png' });
+      await manualPayments.declarePayment(attempt.paymentReference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000099', amount: '50', paidDate: declaredPaidDate }, { buffer, size: buffer.length, mimetype: 'image/png', originalname: 'preuve.png' });
       const ownerProof = await manualPayments.proof(attempt.paymentReference, { id: student.id, role: 'STUDENT' }); proofPath = ownerProof.absolutePath;
       assert.doesNotMatch(ownerProof.absolutePath, /public[\\/]/); assert.equal((await manualPayments.proof(attempt.paymentReference, { id: admin.id, role: 'ADMIN' })).absolutePath, ownerProof.absolutePath);
       await assert.rejects(() => manualPayments.proof(attempt.paymentReference, { id: otherStudent.id, role: 'STUDENT' }), (error) => error.code === 'PROOF_NOT_FOUND');
@@ -136,7 +138,7 @@ test('paiements manuels : déclaration, validation, refus et paliers existants',
     await t.test('refuse montant falsifié et confirmation avant déclaration', async () => {
       const row = await enrollment('security', 5);
       const attempt = await paymentService.createPaymentAttempt({ userId: student.id, enrollmentId: row.id, amount: 50, currency: 'USD', flow: 'manual' });
-      await assert.rejects(() => manualPayments.declarePayment(attempt.paymentReference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000001', amount: '49', paidDate: new Date().toISOString().slice(0, 10) }), (error) => error.code === 'AMOUNT_MISMATCH');
+      await assert.rejects(() => manualPayments.declarePayment(attempt.paymentReference, student.id, { methodCode: 'MPESA', payerNumber: '+243970000001', amount: '49', paidDate: declaredPaidDate }), (error) => error.code === 'AMOUNT_MISMATCH');
       await assert.rejects(() => manualPayments.confirm(attempt.paymentReference, admin.id), (error) => error.code === 'PAYMENT_NOT_CONFIRMABLE');
       assert.equal((await prisma.payment.findUnique({ where: { reference: attempt.paymentReference } })).status, 'PROCESSING');
     });
