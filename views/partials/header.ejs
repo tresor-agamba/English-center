@@ -14,27 +14,28 @@
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="stylesheet" href="/css/style.css?v=nva-public-stitch-20260824-3">
+    <link rel="stylesheet" href="/css/arena-public.css?v=nva-arena-foundation-20260826-1">
     <script src="/js/i18n.js?v=nva-public-stitch-20260824-1"></script>
   </head>
-  <body>
+  <body class="nva-public-body">
     <a class="skip-link" href="#main-content" data-i18n="a11y.skip">Skip to content</a>
-    <header class="site-header public-header" data-public-header>
+    <header class="site-header public-header nva-public-header" data-public-header>
       <a class="brand official-brand header-brand" href="/" aria-label="New Vision Academy — Home" data-i18n-aria="a11y.brandHome">
         <picture>
           <source media="(max-width: 360px)" srcset="/images/logo/logo-icon.png">
           <img src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697">
         </picture>
       </a>
-      <button class="mobile-menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" data-i18n-aria="nav.open">
+      <button class="mobile-menu-toggle nva-public-menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" data-i18n-aria="nav.open">
         <span></span><span></span><span></span>
       </button>
-      <nav id="public-navigation" class="public-navigation" data-public-navigation aria-label="Primary navigation" data-i18n-aria="a11y.primaryNav">
+      <nav id="public-navigation" class="public-navigation nva-public-navigation" data-public-navigation aria-label="Primary navigation" data-i18n-aria="a11y.primaryNav">
         <a href="/" data-i18n="nav.home">Home</a>
         <a href="/formations" data-i18n="nav.courses">Courses</a>
         <a href="/about" data-i18n="nav.about">About</a>
         <a href="/contact" data-i18n="nav.contact">Contact</a>
-        <a href="/login" data-i18n="nav.login">Login</a>
-        <a class="button button-small nav-register" href="/register" data-i18n="nav.register">Register</a>
+        <a class="nva-public-login-link" href="/login" data-i18n="nav.login">Login</a>
+        <a class="button button-small nav-register nva-public-button nva-public-button-primary" href="/register" data-i18n="nav.register">Register</a>
         <div class="language-switcher" aria-label="Language" data-i18n-aria="a11y.language">
           <button type="button" data-language="en" aria-pressed="true">EN</button>
           <span aria-hidden="true">/</span>
@@ -48,4 +49,4 @@
       <span data-i18n="pwa.iosHelp">Use Share, choose “Add to Home Screen”, then confirm.</span>
       <button type="button" data-pwa-ios-dismiss aria-label="Close" data-i18n-aria="a11y.close">×</button>
     </aside>
-    <main class="container public-main" id="main-content">
+    <main class="container public-main nva-public-main" id="main-content">

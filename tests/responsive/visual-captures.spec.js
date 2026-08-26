@@ -77,7 +77,7 @@ test('la FAQ publique reste accessible au clavier et sans débordement', async (
   await page.setViewportSize({ width: 320, height: 568 });
   const response = await page.goto('/', { waitUntil: 'networkidle' });
   expect(response.status()).toBe(200);
-  const catalogue = page.locator('.catalogue-card');
+  const catalogue = page.locator('.nva-home-courses__all a');
   await expect(catalogue).toBeVisible();
   await expect(catalogue).toHaveAttribute('href', '/formations');
   await catalogue.focus();

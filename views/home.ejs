@@ -1,38 +1,46 @@
 <%- include('partials/header', { title }) %>
 
-<section class="stitch-hero" aria-labelledby="home-hero-title">
-  <picture class="stitch-hero-media" aria-hidden="true">
-    <img src="/images/hero/stitch-classroom-learners.jpg" width="512" height="286" alt="" loading="eager" fetchpriority="high" decoding="async">
-  </picture>
-  <div class="stitch-hero-overlay" aria-hidden="true"></div>
-  <div class="stitch-hero-inner reveal">
-    <h1 id="home-hero-title"><span data-i18n="stitch.hero.before">Master your future with</span> <span class="hero-accent" data-i18n="stitch.hero.accent">100% online training</span></h1>
-    <p data-i18n="stitch.hero.copy">Language and professional development programs designed for your success. Learn at your pace, wherever you are.</p>
-    <div class="hero-actions"><a class="button button-large button-gold" href="/formations" data-i18n="stitch.hero.courses">Explore courses</a><a class="button button-large hero-secondary" href="/register" data-i18n="nav.register">Register</a></div>
-  </div>
-</section>
-
-<section class="stitch-benefits" id="why-us" aria-labelledby="why-title">
-  <div class="section-intro centered-intro reveal"><h2 id="why-title" data-i18n="stitch.why.title">Why choose New Vision Academy?</h2><p data-i18n="stitch.why.copy">A modern teaching approach focused on practice and adapted to your professional needs.</p></div>
-  <div class="stitch-bento">
-    <% [['online','01'],['practice','02'],['support','03'],['flexibility','04'],['professional','05']].forEach(([key, number], index) => { %>
-      <article class="stitch-benefit-card <%= index === 4 ? 'stitch-benefit-wide' : '' %> reveal"><span class="stitch-benefit-icon" aria-hidden="true"><%= number %></span><h3 data-i18n="stitch.why.<%= key %>.title"></h3><p data-i18n="stitch.why.<%= key %>.copy"></p></article>
-    <% }) %>
-  </div>
-</section>
-
-<section class="stitch-courses" aria-labelledby="featured-courses-title">
-  <div class="section-heading section-intro reveal"><div><p class="eyebrow" data-i18n="courses.eyebrow">Our programs</p><h2 id="featured-courses-title" data-i18n="courses.title">Find the course that fits your goals</h2></div><a class="button button-small button-outline" href="/formations" data-i18n="courses.all">Explore all courses</a></div>
-  <% if (!courses.length) { %><div class="stitch-course-grid stitch-course-grid-empty"><div class="empty-state polished-empty"><strong data-i18n="courses.empty.title">No courses are currently available.</strong><p data-i18n="courses.empty.copy">New programs will be published soon.</p></div><a class="catalogue-card reveal" href="/formations"><span aria-hidden="true">&rarr;</span><strong data-i18n="stitch.courses.catalogue">Discover our full catalogue</strong></a></div><% } else { %>
-    <div class="stitch-course-grid">
-      <% courses.slice(0, 2).forEach((course) => { const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); const isOpen = course.upcomingSessionCount > 0; %>
-        <article class="stitch-course-card reveal" data-course-id="<%= course.id %>"><div class="stitch-course-top" aria-hidden="true"><span>NVA</span></div><div class="stitch-course-body"><div class="course-meta"><span <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span><span <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span></div><h3><%= course.title %></h3><div class="stitch-course-footer"><span class="course-availability <%= isOpen ? 'is-open' : '' %>" data-i18n="<%= isOpen ? 'stitch.courses.open' : 'stitch.courses.closed' %>"><%= isOpen ? 'Registration open' : 'No open session' %></span><a href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a></div></div></article>
-      <% }) %>
-      <a class="catalogue-card reveal" href="/formations"><span aria-hidden="true">&rarr;</span><strong data-i18n="stitch.courses.catalogue">Discover our full catalogue</strong></a>
+<div class="nva-home">
+  <section class="stitch-hero" aria-labelledby="home-hero-title">
+    <picture class="stitch-hero-media" aria-hidden="true">
+      <source srcset="/images/hero/young-congolese-learner-online-english.webp" type="image/webp">
+      <img src="/images/hero/stitch-classroom-learners.jpg" width="512" height="286" alt="" loading="eager" fetchpriority="high" decoding="async">
+    </picture>
+    <div class="stitch-hero-overlay" aria-hidden="true"></div>
+    <div class="stitch-hero-inner nva-home-hero__inner reveal">
+      <img class="nva-home-hero__logo" src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697">
+      <h1 id="home-hero-title" data-i18n="arena.home.hero.title">New Vision Academy</h1>
+      <p data-i18n="arena.home.hero.copy">Des formations pratiques, 100% en ligne, pour apprendre utilement depuis Kinshasa et partout en RDC.</p>
+      <div class="hero-actions"><a class="nva-public-button nva-public-button-primary nva-home-button-large" href="/formations" data-i18n="arena.home.hero.primary">Découvrir les formations</a><a class="nva-public-button nva-home-button-large nva-home-button-dark-outline" href="/register" data-i18n="arena.home.hero.secondary">S'inscrire</a></div>
     </div>
-  <% } %>
-</section>
+  </section>
 
-<section class="final-cta stitch-final-cta reveal"><div><h2 data-i18n="stitch.cta.title">Ready to develop your skills?</h2><p data-i18n="stitch.cta.copy">Join New Vision Academy and begin your 100% online learning journey.</p></div><a class="button button-large button-gold" href="/register" data-i18n="cta.button">Create My Account</a></section>
+  <section class="nva-home-academy" aria-labelledby="academy-title"><div class="nva-home-container nva-home-academy__grid reveal"><h2 id="academy-title" data-i18n="arena.home.academy.title">Une académie en ligne pour apprendre utilement, pas seulement regarder des cours.</h2><p data-i18n="arena.home.academy.copy">NVA vous aide à passer des explications à l'action grâce à des formations courtes, suivies et adaptées aux réalités des apprenants en RDC.</p></div></section>
+
+  <section class="nva-home-approach" id="approche" aria-labelledby="approach-title"><div class="nva-home-container"><div class="nva-home-approach__composition reveal"><div class="nva-home-approach__photo-frame"><img src="/images/public/about-collaborative-learners.jpg" width="1200" height="800" alt="Des apprenants collaborent dans un environnement de formation." loading="lazy" decoding="async"></div><article class="nva-home-approach__card"><p class="nva-home-eyebrow" data-i18n="arena.home.approach.eyebrow">Approche NVA</p><h2 id="approach-title" data-i18n="arena.home.approach.title">Un cours doit produire une capacité réelle.</h2><p data-i18n="arena.home.approach.copy">Chaque module relie les notions à une action concrète : parler, produire, organiser, résoudre ou présenter quelque chose d'utile.</p></article></div></div></section>
+
+  <section class="nva-home-practice" aria-labelledby="practice-title"><div class="nva-home-container nva-home-practice__grid"><div class="nva-home-section-copy reveal"><p class="nva-home-eyebrow nva-home-eyebrow--blue" data-i18n="arena.home.practice.eyebrow">Apprentissage pratique</p><h2 id="practice-title" data-i18n="arena.home.practice.title">La pratique avant la théorie passive.</h2><p data-i18n="arena.home.practice.copy">Nous transformons les explications en pratique pour vous aider à utiliser réellement ce que vous apprenez.</p></div><ol class="nva-home-practice__timeline"><% ["Des explications courtes pour comprendre l'essentiel.", "Des exercices guidés pour transformer le cours en action.", "Des retours pour progresser avec plus de confiance."].forEach((point, index) => { %><li class="reveal"><span aria-hidden="true"><%= index + 1 %></span><p data-i18n="arena.home.practice.step<%= index + 1 %>"><%= point %></p></li><% }) %></ol></div></section>
+
+  <section class="nva-home-courses" aria-labelledby="featured-courses-title"><div class="nva-home-container"><div class="nva-home-section-copy nva-home-section-copy--wide reveal"><p class="nva-home-eyebrow" data-i18n="arena.home.courses.eyebrow">Formations</p><h2 id="featured-courses-title" data-i18n="arena.home.courses.title">Programmes à découvrir</h2><p data-i18n="arena.home.courses.copy">Découvrez nos formations pratiques et trouvez celle qui correspond à vos objectifs.</p></div><% if (!courseCards.length) { %><div class="nva-home-empty reveal"><strong data-i18n="courses.empty.title">Aucune formation n'est actuellement disponible.</strong><p data-i18n="courses.empty.copy">De nouveaux programmes seront publiés prochainement.</p></div><% } else { %><div class="stitch-course-grid"><% courseCards.forEach((courseCard) => { %><%- include('partials/public-course-card', { courseCard }) %><% }) %></div><% } %><div class="nva-home-courses__all reveal"><a class="nva-public-button nva-public-button-primary" href="/formations" data-i18n="arena.home.courses.all">Voir toutes les formations</a></div></div></section>
+
+  <section class="nva-home-path" aria-labelledby="path-title"><div class="nva-home-container"><div class="nva-home-section-copy nva-home-section-copy--wide reveal"><p class="nva-home-eyebrow" data-i18n="arena.home.path.eyebrow">Comment ça marche</p><h2 id="path-title" data-i18n="arena.home.path.title">Un parcours clair, de l'inscription à la progression.</h2></div><ol class="nva-home-path__steps"><% [
+    ['Choisissez votre formation', 'Consultez les programmes publiés et leurs prochaines sessions.'],
+    ['Inscrivez-vous', 'Créez votre compte et choisissez le niveau adapté.'],
+    ['Suivez vos cours en ligne', 'Accédez à votre parcours depuis votre espace apprenant.'],
+    ['Pratiquez', 'Réalisez les activités prévues dans votre formation.'],
+    ['Progressez', 'Suivez vos acquis et avancez avec des retours utiles.']
+  ].forEach(([stepTitle, stepCopy], index) => { %><li class="reveal"><span aria-hidden="true"><%= index + 1 %></span><h3 data-i18n="arena.home.path.step<%= index + 1 %>.title"><%= stepTitle %></h3><p data-i18n="arena.home.path.step<%= index + 1 %>.copy"><%= stepCopy %></p></li><% }) %></ol></div></section>
+
+  <section class="nva-home-activities" aria-labelledby="activities-title"><div class="nva-home-container"><div class="nva-home-section-copy nva-home-section-copy--wide reveal"><p class="nva-home-eyebrow nva-home-eyebrow--blue" data-i18n="arena.home.activities.eyebrow">Apprentissage pratique</p><h2 id="activities-title" data-i18n="arena.home.activities.title">Des activités qui ressemblent à de vraies situations.</h2><p data-i18n="arena.home.activities.copy">Chaque activité vous aide à appliquer une compétence dans un contexte concret.</p></div><div class="nva-home-activities__grid"><% ['Exercices guidés', 'Mises en situation', 'Études de cas', 'Projets pratiques', 'Simulations', 'Feedback', 'Application dans des situations réelles'].forEach((activity, index) => { %><div class="reveal"><span aria-hidden="true"></span><strong data-i18n="arena.home.activities.<%= index + 1 %>"><%= activity %></strong></div><% }) %></div></div></section>
+
+  <section class="nva-home-benefits" id="why-us" aria-labelledby="why-title"><div class="nva-home-container"><div class="nva-home-section-copy nva-home-section-copy--wide reveal"><p class="nva-home-eyebrow" data-i18n="arena.home.why.eyebrow">Pourquoi NVA</p><h2 id="why-title" data-i18n="arena.home.why.title">Pourquoi apprendre avec NVA ?</h2></div><div class="stitch-bento"><% [
+    ['100% en ligne', 'Apprenez depuis Kinshasa ou partout en RDC avec des outils accessibles.'],
+    ['Accompagnement et feedback', 'Recevez des retours structurés pour progresser avec confiance.'],
+    ['Rythme adapté aux personnes occupées', 'Organisez votre apprentissage autour de vos engagements.'],
+    ['Compétences directement applicables', 'Transformez chaque notion en capacité utile dans des situations réelles.']
+  ].forEach(([benefitTitle, benefitCopy], index) => { %><article class="nva-home-benefit reveal"><span aria-hidden="true"></span><h3 data-i18n="arena.home.why.<%= index + 1 %>.title"><%= benefitTitle %></h3><p data-i18n="arena.home.why.<%= index + 1 %>.copy"><%= benefitCopy %></p></article><% }) %></div></div></section>
+
+  <section class="final-cta stitch-final-cta reveal"><div><h2 data-i18n="arena.home.cta.title">Prêt à développer de nouvelles compétences ?</h2><p data-i18n="arena.home.cta.copy">Découvrez nos formations, choisissez celle qui correspond à vos objectifs et rejoignez la prochaine session disponible.</p></div><div class="nva-home-final-cta__actions"><a class="nva-public-button nva-public-button-primary nva-home-button-large" href="/formations" data-i18n="arena.home.cta.primary">Voir les formations</a><a class="nva-public-button nva-home-button-large nva-home-button-dark-outline" href="/contact" data-i18n="arena.home.cta.secondary">Nous contacter</a></div></section>
+</div>
 
 <%- include('partials/footer') %>

@@ -1,0 +1,21 @@
+<article class="nva-public-course-card nva-public-course-card--<%= courseCard.status %>" data-public-course-card data-course-category="<%= courseCard.category %>" data-course-search="<%= courseCard.searchText %>">
+  <div class="nva-public-course-card__badges">
+    <span class="nva-public-badge nva-public-badge--category"><%= courseCard.categoryLabel %></span>
+    <span class="nva-public-badge nva-public-badge--<%= courseCard.status %>">
+      <span class="nva-public-badge__dot" aria-hidden="true"></span><%= courseCard.statusLabel %>
+    </span>
+  </div>
+  <h3 class="nva-public-course-card__title"><%= courseCard.title %></h3>
+  <p class="nva-public-course-card__description"><%= courseCard.description %></p>
+  <dl class="nva-public-course-card__facts">
+    <% courseCard.facts.forEach((fact) => { %>
+      <div><dt><%= fact.label %></dt><dd><%= fact.value %></dd></div>
+    <% }) %>
+  </dl>
+  <div class="nva-public-course-card__actions">
+    <a class="nva-public-button nva-public-button-secondary" href="/formations/<%= courseCard.slug %>"><%= courseCard.detailsLabel %></a>
+    <% if (courseCard.canRegister) { %>
+      <a class="nva-public-button nva-public-button-primary" href="/register?course=<%= courseCard.id %>"><%= courseCard.registerLabel %></a>
+    <% } %>
+  </div>
+</article>

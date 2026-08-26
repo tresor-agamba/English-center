@@ -18,8 +18,8 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
       assert.equal(response.status, 200);
       assert.match(html, /New Vision Academy/);
       assert.match(html, /src="\/images\/logo\/logo-navigation\.png"/);
-      assert.match(html, /Master your future with/);
-      assert.match(html, /100% online training/);
+      assert.match(html, /data-i18n="arena\.home\.hero\.title">New Vision Academy/);
+      assert.match(html, /Des formations pratiques, 100% en ligne/);
       assert.match(html, /href="\/register"/);
       assert.match(html, /href="\/formations"/);
       assert.match(html, /data-language="en"/);

@@ -24,6 +24,7 @@ async function listPublished() {
       description: true,
       courseType: true,
       level: true,
+      trainingMode: true,
       duration: true,
       durationValue: true,
       durationUnit: true,

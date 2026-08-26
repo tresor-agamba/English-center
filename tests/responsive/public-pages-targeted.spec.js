@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs/promises');
 
-const VIEWPORTS = [1920, 1440, 1366, 1024, 768, 640, 430, 390, 375, 320];
+const VIEWPORTS = [1920, 1440, 1366, 1280, 1024, 768, 640, 430, 412, 390, 375, 360, 320];
 
 async function inspectOverflow(page) {
   return page.evaluate(() => {

@@ -7,13 +7,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 1280,
-        "scrollWidth": 1600,
-        "left": 320,
-        "right": 1600,
-        "width": 1280,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 1920,
+        "scrollWidth": 1942,
+        "left": 0,
+        "right": 1920,
+        "width": 1920,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 1920,
+        "scrollWidth": 1942,
+        "left": 0,
+        "right": 1920,
+        "width": 1920,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -29,7 +40,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 1920,
+        "scrollWidth": 1920,
+        "left": -21.95,
+        "right": 1941.95,
+        "width": 1963.91,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -60,13 +83,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 1280,
-        "scrollWidth": 1360,
-        "left": 80,
-        "right": 1360,
-        "width": 1280,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 1440,
+        "scrollWidth": 1456,
+        "left": 0,
+        "right": 1440,
+        "width": 1440,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 1440,
+        "scrollWidth": 1456,
+        "left": 0,
+        "right": 1440,
+        "width": 1440,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -82,7 +116,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 1440,
+        "scrollWidth": 1440,
+        "left": -16.47,
+        "right": 1456.47,
+        "width": 1472.93,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -113,13 +159,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 1280,
-        "scrollWidth": 1323,
-        "left": 43,
-        "right": 1323,
-        "width": 1280,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 1366,
+        "scrollWidth": 1382,
+        "left": 0,
+        "right": 1366,
+        "width": 1366,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 1366,
+        "scrollWidth": 1382,
+        "left": 0,
+        "right": 1366,
+        "width": 1366,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -135,7 +192,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 1366,
+        "scrollWidth": 1366,
+        "left": -15.62,
+        "right": 1381.62,
+        "width": 1397.24,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -160,19 +229,30 @@
   },
   {
     "route": "/",
-    "width": 1024,
-    "scrollWidth": 1024,
-    "clientWidth": 1024,
+    "width": 1280,
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 992,
-        "scrollWidth": 1008,
-        "left": 16,
-        "right": 1008,
-        "width": 992,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 1280,
+        "scrollWidth": 1295,
+        "left": 0,
+        "right": 1280,
+        "width": 1280,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 1280,
+        "scrollWidth": 1295,
+        "left": 0,
+        "right": 1280,
+        "width": 1280,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -188,13 +268,25 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 1280,
+        "scrollWidth": 1280,
+        "left": -14.64,
+        "right": 1294.64,
+        "width": 1309.27,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
-    "width": 1024,
-    "scrollWidth": 1024,
-    "clientWidth": 1024,
+    "width": 1280,
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
     "overflow": false,
     "internalOverflow": [
       {
@@ -213,19 +305,30 @@
   },
   {
     "route": "/",
-    "width": 768,
-    "scrollWidth": 768,
-    "clientWidth": 768,
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 736,
-        "scrollWidth": 752,
-        "left": 16,
-        "right": 752,
-        "width": 736,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 1024,
+        "scrollWidth": 1036,
+        "left": 0,
+        "right": 1024,
+        "width": 1024,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 1024,
+        "scrollWidth": 1036,
+        "left": 0,
+        "right": 1024,
+        "width": 1024,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -233,8 +336,41 @@
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
-        "left": 39,
-        "right": 40,
+        "left": 37.72,
+        "right": 38.72,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 1024,
+        "scrollWidth": 1024,
+        "left": -11.71,
+        "right": 1035.71,
+        "width": 1047.42,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
+  },
+  {
+    "route": "/formations",
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 37.72,
+        "right": 38.72,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -242,6 +378,61 @@
       }
     ],
     "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 768,
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "section.stitch-hero",
+        "clientWidth": 768,
+        "scrollWidth": 777,
+        "left": 0,
+        "right": 768,
+        "width": 768,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 768,
+        "scrollWidth": 777,
+        "left": 0,
+        "right": 768,
+        "width": 768,
+        "position": "absolute",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 30.03,
+        "right": 31.03,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 768,
+        "scrollWidth": 768,
+        "left": -8.78,
+        "right": 776.78,
+        "width": 785.56,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -254,8 +445,8 @@
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
-        "left": 39,
-        "right": 40,
+        "left": 30.03,
+        "right": 31.03,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -272,13 +463,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 624,
-        "scrollWidth": 632,
-        "left": 8,
-        "right": 632,
-        "width": 624,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 640,
+        "scrollWidth": 647,
+        "left": 0,
+        "right": 640,
+        "width": 640,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 640,
+        "scrollWidth": 647,
+        "left": 0,
+        "right": 640,
+        "width": 640,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -286,15 +488,27 @@
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
-        "left": 23,
-        "right": 24,
+        "left": 26.19,
+        "right": 27.19,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 640,
+        "scrollWidth": 640,
+        "left": -7.35,
+        "right": 647.35,
+        "width": 654.69,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -307,8 +521,8 @@
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
-        "left": 23,
-        "right": 24,
+        "left": 26.19,
+        "right": 27.19,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -325,13 +539,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 414,
-        "scrollWidth": 422,
-        "left": 8,
-        "right": 422,
-        "width": 414,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 430,
+        "scrollWidth": 435,
+        "left": 0,
+        "right": 430,
+        "width": 430,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 430,
+        "scrollWidth": 435,
+        "left": 0,
+        "right": 430,
+        "width": 430,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -358,7 +583,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 430,
+        "scrollWidth": 430,
+        "left": -4.9,
+        "right": 434.9,
+        "width": 439.79,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -384,6 +621,104 @@
         "scrollWidth": 145,
         "left": 389.91,
         "right": 390.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 412,
+    "scrollWidth": 412,
+    "clientWidth": 412,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "section.stitch-hero",
+        "clientWidth": 412,
+        "scrollWidth": 417,
+        "left": 0,
+        "right": 412,
+        "width": 412,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 412,
+        "scrollWidth": 417,
+        "left": 0,
+        "right": 412,
+        "width": 412,
+        "position": "absolute",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 371.91,
+        "right": 372.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 412,
+        "scrollWidth": 412,
+        "left": -4.71,
+        "right": 416.71,
+        "width": 421.42,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
+  },
+  {
+    "route": "/formations",
+    "width": 412,
+    "scrollWidth": 412,
+    "clientWidth": 412,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 371.91,
+        "right": 372.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -400,13 +735,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 374,
-        "scrollWidth": 382,
-        "left": 8,
-        "right": 382,
-        "width": 374,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 390,
+        "scrollWidth": 394,
+        "left": 0,
+        "right": 390,
+        "width": 390,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 390,
+        "scrollWidth": 394,
+        "left": 0,
+        "right": 390,
+        "width": 390,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -433,7 +779,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 390,
+        "scrollWidth": 390,
+        "left": -4.44,
+        "right": 394.44,
+        "width": 398.88,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -475,13 +833,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 359,
-        "scrollWidth": 367,
-        "left": 8,
-        "right": 367,
-        "width": 359,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 375,
+        "scrollWidth": 379,
+        "left": 0,
+        "right": 375,
+        "width": 375,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 375,
+        "scrollWidth": 379,
+        "left": 0,
+        "right": 375,
+        "width": 375,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -508,7 +877,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 375,
+        "scrollWidth": 375,
+        "left": -4.29,
+        "right": 379.29,
+        "width": 383.58,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
@@ -534,6 +915,104 @@
         "scrollWidth": 145,
         "left": 334.91,
         "right": 335.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/",
+    "width": 360,
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "section.stitch-hero",
+        "clientWidth": 360,
+        "scrollWidth": 364,
+        "left": 0,
+        "right": 360,
+        "width": 360,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 360,
+        "scrollWidth": 364,
+        "left": 0,
+        "right": 360,
+        "width": 360,
+        "position": "absolute",
+        "overflowX": "visible",
+        "transform": "none"
+      },
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 319.91,
+        "right": 320.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 360,
+        "scrollWidth": 360,
+        "left": -4.12,
+        "right": 364.12,
+        "width": 368.23,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+      }
+    ]
+  },
+  {
+    "route": "/formations",
+    "width": 360,
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 319.91,
+        "right": 320.91,
         "width": 1,
         "position": "absolute",
         "overflowX": "hidden",
@@ -550,13 +1029,24 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "#main-content",
-        "clientWidth": 304,
-        "scrollWidth": 312,
-        "left": 8,
-        "right": 312,
-        "width": 304,
-        "position": "static",
+        "selector": "section.stitch-hero",
+        "clientWidth": 320,
+        "scrollWidth": 324,
+        "left": 0,
+        "right": 320,
+        "width": 320,
+        "position": "relative",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "picture.stitch-hero-media",
+        "clientWidth": 320,
+        "scrollWidth": 324,
+        "left": 0,
+        "right": 320,
+        "width": 320,
+        "position": "absolute",
         "overflowX": "visible",
         "transform": "none"
       },
@@ -583,7 +1073,19 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": []
+    "viewportOffenders": [
+      {
+        "selector": "img",
+        "clientWidth": 320,
+        "scrollWidth": 320,
+        "left": -3.67,
+        "right": 323.67,
+        "width": 327.35,
+        "position": "static",
+        "overflowX": "clip",
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
+      }
+    ]
   },
   {
     "route": "/formations",
