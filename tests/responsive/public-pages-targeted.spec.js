@@ -31,13 +31,24 @@ async function inspectOverflow(page) {
   });
 }
 
+async function loadLazyImages(page) {
+  await page.evaluate(async () => {
+    for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight) {
+      window.scrollTo(0, y);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForFunction(() => [...document.images].every((image) => image.complete && image.naturalWidth > 0));
+}
+
 test('pages publiques ciblées sans débordement ni identifiants dupliqués', async ({ page }) => {
   test.setTimeout(180_000);
   await fs.mkdir('test-results/public-pages', { recursive: true });
   const audit = [];
   for (const width of VIEWPORTS) {
     await page.setViewportSize({ width, height: width <= 640 ? 900 : 1000 });
-    for (const route of ['/', '/formations', '/register', '/login']) {
+    for (const route of ['/', '/formations', '/about', '/register', '/login']) {
       const response = await page.goto(route, { waitUntil: 'networkidle' });
       expect(response.status()).toBe(200);
       const result = await inspectOverflow(page);
@@ -57,23 +68,32 @@ test('pages publiques ciblées sans débordement ni identifiants dupliqués', as
       }
       if ((route === '/' && [1440, 1024, 768, 640, 390, 320].includes(width)) ||
           (route === '/formations' && [1440, 640, 390].includes(width))) {
+        await loadLazyImages(page);
         await page.screenshot({
           path: `test-results/public-pages/${route === '/' ? 'home' : 'formations'}-${width}.png`,
           fullPage: true,
         });
       }
       if (route === '/register' && [1440, 390].includes(width)) {
+        await loadLazyImages(page);
         await page.screenshot({ path: `test-results/public-pages/register-${width}.png`, fullPage: true });
         await expect(page.locator('[name="courseId"]')).toBeVisible();
         await expect(page.locator('[name="passwordConfirmation"]')).toBeVisible();
         await expect(page.locator('[name="learningObjective"]')).toBeVisible();
+      }
+      if (route === '/about' && [1440, 390].includes(width)) {
+        await loadLazyImages(page);
+        await page.screenshot({ path: `test-results/public-pages/about-${width}.png`, fullPage: true });
       }
       if (route === '/login') {
         const password = page.locator('[name="password"]'); const toggle = page.locator('[data-password-toggle]');
         await expect(toggle).toBeVisible(); await password.fill('test-secret'); await toggle.click();
         await expect(password).toHaveAttribute('type', 'text'); await expect(toggle).toHaveAttribute('aria-pressed', 'true');
         await toggle.press('Enter'); await expect(password).toHaveAttribute('type', 'password');
-        if ([1440, 390].includes(width)) await page.screenshot({ path: `test-results/public-pages/login-${width}.png`, fullPage: true });
+        if ([1440, 390].includes(width)) {
+          await loadLazyImages(page);
+          await page.screenshot({ path: `test-results/public-pages/login-${width}.png`, fullPage: true });
+        }
       }
     }
   }

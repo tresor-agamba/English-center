@@ -14,6 +14,7 @@ function buildPublicCourseCard(course) {
   const hasPlannedSession = !canRegister && Boolean(course.nextPlannedSessionStart);
   const status = canRegister ? 'open' : (hasPlannedSession ? 'soon' : 'closed');
   const categoryLabel = formatCourseType(course.courseType) || 'Catégorie à préciser';
+  const isGeneralEnglish = course.courseType === 'GENERAL_ENGLISH';
   const facts = [
     { label: 'Durée', labelKey: 'course.fact.duration', value: formatDuration(course) || 'Durée à préciser', durationValue: course.durationValue || null, durationUnit: course.durationUnit || null },
     { label: 'Mode', labelKey: 'course.fact.mode', value: course.trainingMode || 'Mode à préciser', valueKey: /en ligne|online/i.test(course.trainingMode || '') ? 'course.mode.online' : null },
@@ -30,6 +31,8 @@ function buildPublicCourseCard(course) {
     searchText: `${course.title} ${categoryLabel} ${course.level || ''}`.toLocaleLowerCase('fr'),
     status, statusLabel: canRegister ? 'Inscriptions ouvertes' : (hasPlannedSession ? 'Bientôt disponible' : 'Aucune session ouverte'),
     statusKey: `course.status.${status}`, canRegister, facts,
+    imageSrc: isGeneralEnglish ? '/images/nva/pic-5.jpeg' : '/images/public/course-online-learning.jpg',
+    imageAlt: isGeneralEnglish ? "Apprenante participant à une formation d'anglais en ligne New Vision Academy" : '',
     detailsLabel: 'Voir la formation', registerLabel: "S'inscrire",
   };
 }
