@@ -7,28 +7,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 1920,
-        "scrollWidth": 1942,
-        "left": 0,
-        "right": 1920,
-        "width": 1920,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 1920,
-        "scrollWidth": 1942,
-        "left": 0,
-        "right": 1920,
-        "width": 1920,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -40,19 +18,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 1920,
-        "scrollWidth": 1920,
-        "left": -22.22,
-        "right": 1942.22,
-        "width": 1964.43,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02314, 0, 0, 1.02314, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -125,28 +91,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 1440,
-        "scrollWidth": 1457,
-        "left": 0,
-        "right": 1440,
-        "width": 1440,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 1440,
-        "scrollWidth": 1457,
-        "left": 0,
-        "right": 1440,
-        "width": 1440,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -158,19 +102,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 1440,
-        "scrollWidth": 1440,
-        "left": -16.53,
-        "right": 1456.53,
-        "width": 1473.06,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -243,28 +175,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 1366,
-        "scrollWidth": 1382,
-        "left": 0,
-        "right": 1366,
-        "width": 1366,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 1366,
-        "scrollWidth": 1382,
-        "left": 0,
-        "right": 1366,
-        "width": 1366,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -276,19 +186,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 1366,
-        "scrollWidth": 1366,
-        "left": -15.62,
-        "right": 1381.62,
-        "width": 1397.24,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -361,28 +259,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 1280,
-        "scrollWidth": 1295,
-        "left": 0,
-        "right": 1280,
-        "width": 1280,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 1280,
-        "scrollWidth": 1295,
-        "left": 0,
-        "right": 1280,
-        "width": 1280,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -394,19 +270,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 1280,
-        "scrollWidth": 1280,
-        "left": -14.69,
-        "right": 1294.69,
-        "width": 1309.39,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -479,28 +343,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 1024,
-        "scrollWidth": 1036,
-        "left": 0,
-        "right": 1024,
-        "width": 1024,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 1024,
-        "scrollWidth": 1036,
-        "left": 0,
-        "right": 1024,
-        "width": 1024,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -512,19 +354,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 1024,
-        "scrollWidth": 1024,
-        "left": -11.71,
-        "right": 1035.71,
-        "width": 1047.42,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -597,28 +427,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 768,
-        "scrollWidth": 777,
-        "left": 0,
-        "right": 768,
-        "width": 768,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 768,
-        "scrollWidth": 777,
-        "left": 0,
-        "right": 768,
-        "width": 768,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -630,19 +438,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 768,
-        "scrollWidth": 768,
-        "left": -8.82,
-        "right": 776.82,
-        "width": 785.63,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -715,28 +511,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 640,
-        "scrollWidth": 647,
-        "left": 0,
-        "right": 640,
-        "width": 640,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 640,
-        "scrollWidth": 647,
-        "left": 0,
-        "right": 640,
-        "width": 640,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -748,19 +522,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 640,
-        "scrollWidth": 640,
-        "left": -7.35,
-        "right": 647.35,
-        "width": 654.69,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -833,28 +595,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 430,
-        "scrollWidth": 435,
-        "left": 0,
-        "right": 430,
-        "width": 430,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 430,
-        "scrollWidth": 435,
-        "left": 0,
-        "right": 430,
-        "width": 430,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -877,19 +617,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 430,
-        "scrollWidth": 430,
-        "left": -4.94,
-        "right": 434.94,
-        "width": 439.87,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -995,28 +723,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 412,
-        "scrollWidth": 417,
-        "left": 0,
-        "right": 412,
-        "width": 412,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 412,
-        "scrollWidth": 417,
-        "left": 0,
-        "right": 412,
-        "width": 412,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -1039,19 +745,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 412,
-        "scrollWidth": 412,
-        "left": -4.71,
-        "right": 416.71,
-        "width": 421.42,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -1157,28 +851,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 390,
-        "scrollWidth": 394,
-        "left": 0,
-        "right": 390,
-        "width": 390,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 390,
-        "scrollWidth": 394,
-        "left": 0,
-        "right": 390,
-        "width": 390,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -1201,19 +873,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 390,
-        "scrollWidth": 390,
-        "left": -4.46,
-        "right": 394.46,
-        "width": 398.92,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -1319,28 +979,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 375,
-        "scrollWidth": 379,
-        "left": 0,
-        "right": 375,
-        "width": 375,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 375,
-        "scrollWidth": 379,
-        "left": 0,
-        "right": 375,
-        "width": 375,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -1363,19 +1001,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 375,
-        "scrollWidth": 375,
-        "left": -4.27,
-        "right": 379.27,
-        "width": 383.54,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -1481,28 +1107,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 360,
-        "scrollWidth": 364,
-        "left": 0,
-        "right": 360,
-        "width": 360,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 360,
-        "scrollWidth": 364,
-        "left": 0,
-        "right": 360,
-        "width": 360,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -1525,19 +1129,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 360,
-        "scrollWidth": 360,
-        "left": -4.13,
-        "right": 364.13,
-        "width": 368.27,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
@@ -1643,28 +1235,6 @@
     "overflow": false,
     "internalOverflow": [
       {
-        "selector": "section.stitch-hero",
-        "clientWidth": 320,
-        "scrollWidth": 324,
-        "left": 0,
-        "right": 320,
-        "width": 320,
-        "position": "relative",
-        "overflowX": "hidden",
-        "transform": "none"
-      },
-      {
-        "selector": "picture.stitch-hero-media",
-        "clientWidth": 320,
-        "scrollWidth": 324,
-        "left": 0,
-        "right": 320,
-        "width": 320,
-        "position": "absolute",
-        "overflowX": "visible",
-        "transform": "none"
-      },
-      {
         "selector": "span.sr-only",
         "clientWidth": 1,
         "scrollWidth": 135,
@@ -1687,19 +1257,7 @@
         "transform": "none"
       }
     ],
-    "viewportOffenders": [
-      {
-        "selector": "img",
-        "clientWidth": 320,
-        "scrollWidth": 320,
-        "left": -3.64,
-        "right": 323.64,
-        "width": 327.29,
-        "position": "static",
-        "overflowX": "clip",
-        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
-      }
-    ]
+    "viewportOffenders": []
   },
   {
     "route": "/formations",
