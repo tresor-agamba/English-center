@@ -38,7 +38,7 @@ async function listPublished() {
       closedAt: true,
       createdAt: true,
       trainingSessions: {
-        where: futureSessionWhere(now),
+        where: { startDate: { gte: now }, status: { in: ['OPEN', 'DRAFT'] } },
         select: {
           id: true,
           startDate: true,
@@ -59,10 +59,14 @@ async function listPublished() {
     const availableSessions = trainingSessions
       .filter((session) => isSessionOpenForRegistration(session, now))
       .sort((left, right) => left.startDate - right.startDate || left.id - right.id);
+    const plannedSessions = trainingSessions
+      .filter((session) => session.status === 'DRAFT')
+      .sort((left, right) => left.startDate - right.startDate || left.id - right.id);
     return {
       ...course,
       upcomingSessionCount: availableSessions.length,
       nextSessionStart: availableSessions[0]?.startDate || null,
+      nextPlannedSessionStart: plannedSessions[0]?.startDate || null,
     };
   });
 }

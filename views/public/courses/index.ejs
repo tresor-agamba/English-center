@@ -1,32 +1,13 @@
 <%- include('../../partials/header', { title }) %>
-
-<div class="public-stitch-page catalogue-page">
-  <section class="public-page-intro">
-    <h1 data-i18n="catalogue.title">Our Courses</h1>
-    <p data-i18n="catalogue.intro">Discover our catalogue of courses designed to help you achieve academic and professional excellence.</p>
-  </section>
-
-  <% if (!courses.length) { %>
-    <div class="empty-state catalogue-empty"><strong data-i18n="courses.empty.title">No courses are currently available.</strong><p data-i18n="courses.empty.copy">New programs will be published soon.</p></div>
-  <% } else { %>
-    <section class="catalogue-grid" aria-label="Course catalogue" data-i18n-aria="a11y.courseCatalogue">
-      <% courses.forEach((course) => { const typeLabel = formatCourseType(course.courseType); const durationLabel = formatDuration(course); const registrationOpen = course.upcomingSessionCount > 0; %>
-        <article class="catalogue-course-card" data-course-id="<%= course.id %>">
-          <div class="catalogue-card-main">
-            <div class="public-chip-row"><span class="public-chip public-chip-teal" <% if (!typeLabel) { %>data-i18n="fallback.category"<% } %>><%= typeLabel || 'Category not specified' %></span><% if (course.level) { %><span class="public-chip"><%= course.level %></span><% } else { %><span class="public-chip" data-i18n="fallback.level">Level not specified</span><% } %><span class="public-chip" <% if (!durationLabel) { %>data-i18n="fallback.duration"<% } %>><%= durationLabel || 'Duration not specified' %></span></div>
-            <h2><%= course.title %></h2>
-            <p><%= course.shortDescription || course.description || '' %></p>
-            <div class="online-course-label"><span aria-hidden="true">▣</span><span data-i18n="benefits.online">100% online learning</span></div>
-            <% if (course.nextSessionStart) { %><small class="catalogue-next-session"><span data-i18n="courses.nextSession">Next session</span> · <time data-local-date datetime="<%= course.nextSessionStart.toISOString() %>"><%= new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(course.nextSessionStart) %></time></small><% } %>
-          </div>
-          <div class="catalogue-card-footer">
-            <div class="catalogue-price"><% if (course.price !== null) { %><strong data-local-price data-amount="<%= Number(course.price) %>" data-currency="<%= course.currency %>"><%= new Intl.NumberFormat('fr-FR', { style: 'currency', currency: course.currency }).format(Number(course.price)) %></strong><% } else { %><strong data-i18n="detail.onRequest">On request</strong><% } %><small><%= course.upcomingSessionCount %> <span data-i18n="<%= course.upcomingSessionCount === 1 ? 'catalogue.session' : 'catalogue.sessions' %>"><%= course.upcomingSessionCount === 1 ? 'session available' : 'sessions available' %></span></small></div>
-            <div class="catalogue-actions"><a class="button button-small button-outline" href="/formations/<%= course.slug %>" data-i18n="courses.view">View course</a><% if (registrationOpen) { %><a class="button button-small button-coral" href="/register?course=<%= course.id %>" data-i18n="courses.register">Register</a><% } else { %><span class="button button-small button-disabled" aria-disabled="true" data-i18n="stitch.courses.closed">No open session</span><% } %></div>
-          </div>
-        </article>
-      <% }) %>
+<div class="nva-catalog" data-course-catalog>
+  <section class="nva-catalog-hero"><div class="nva-catalog-container nva-catalog-hero__grid"><div><p class="nva-catalog-eyebrow" data-i18n="catalog.hero.eyebrow">Catalogue des formations</p><h1 data-i18n="catalogue.title">Nos formations</h1><p data-i18n="catalog.hero.copy">Des parcours pratiques et structurés pour progresser avec confiance, où que vous soyez.</p></div><img src="/images/public/course-online-learning.jpg" alt="" width="760" height="506"></div></section>
+  <div class="nva-catalog-container nva-catalog-content">
+    <section class="nva-catalog-tools" aria-labelledby="catalog-tools-title">
+      <div class="nva-catalog-tools__heading"><div><p class="nva-catalog-eyebrow" data-i18n="catalog.tools.eyebrow">Trouvez votre parcours</p><h2 id="catalog-tools-title" data-i18n="catalog.tools.title">Explorez les programmes</h2></div><ul class="nva-catalog-legend" aria-label="Statut des inscriptions" data-i18n-aria="catalog.legend.label"><li><span class="nva-public-badge__dot nva-dot--open"></span><span data-i18n="course.status.open">Inscriptions ouvertes</span></li><li><span class="nva-public-badge__dot nva-dot--soon"></span><span data-i18n="course.status.soon">Bientôt disponible</span></li><li><span class="nva-public-badge__dot nva-dot--closed"></span><span data-i18n="course.status.closed">Aucune session ouverte</span></li></ul></div>
+      <div class="nva-catalog-search"><label for="course-search" data-i18n="catalog.search.label">Rechercher une formation</label><input id="course-search" type="search" data-course-search-input data-i18n-placeholder="catalog.search.placeholder" placeholder="Titre, catégorie ou niveau…" autocomplete="off"></div>
+      <div class="nva-catalog-filters" aria-label="Filtrer par catégorie" data-i18n-aria="catalog.filters.label"><button type="button" class="is-active" data-course-category-filter="ALL" aria-pressed="true" data-i18n="catalog.filters.all">Toutes</button><% categories.forEach((category) => { %><button type="button" data-course-category-filter="<%= category.value %>" aria-pressed="false" data-i18n="<%= category.labelKey %>"><%= category.label %></button><% }) %></div>
     </section>
-  <% } %>
+    <% if (!courseCards.length) { %><div class="nva-catalog-empty"><strong data-i18n="courses.empty.title">Aucune formation n'est actuellement disponible.</strong><p data-i18n="courses.empty.copy">De nouveaux programmes seront publiés prochainement.</p></div><% } else { %><section class="nva-catalog-grid" aria-label="Catalogue des formations" data-i18n-aria="a11y.courseCatalogue"><% courseCards.forEach((courseCard) => { %><%- include('../../partials/public-course-card', { courseCard }) %><% }) %></section><div class="nva-catalog-empty" data-course-no-results hidden><strong data-i18n="catalog.noResults.title">Aucune formation ne correspond.</strong><p data-i18n="catalog.noResults.copy">Essayez une autre recherche ou affichez toutes les catégories.</p></div><% } %>
+  </div>
 </div>
-
 <%- include('../../partials/footer') %>

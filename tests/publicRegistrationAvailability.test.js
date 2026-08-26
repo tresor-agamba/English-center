@@ -8,6 +8,7 @@ const courseService = require('../src/services/courseService');
 const { isPublicCourse } = require('../src/services/coursePublicationPolicy');
 const { sessionRegistrationState } = require('../src/services/enrollmentPolicy');
 const { formatCourseType, formatDuration } = require('../src/utils/catalogFormat.util');
+const { buildPublicCourseCard } = require('../src/utils/publicCoursePresentation.util');
 
 const DAY = 24 * 60 * 60 * 1000;
 const now = new Date();
@@ -48,7 +49,8 @@ test('la liste /register exclut absence de session et session pleine', async () 
     course({ id: 3, title: 'Complet', trainingSessions: [session({ capacity: 1, _count: { enrollments: 1 } })] }),
   ];
   const client = { course: { findMany: async () => rows } };
-  assert.deepEqual(await registrationService.listCoursesForPublicRegistration(client), [
+  const available = await registrationService.listCoursesForPublicRegistration(client);
+  assert.deepEqual(available.map(({ id, title, slug }) => ({ id, title, slug })), [
     { id: 1, title: 'Visible', slug: 'english-level-1' },
   ]);
 });
@@ -69,11 +71,12 @@ test('le paramètre course est présélectionné ou expliqué sans être perdu s
 });
 
 test('le catalogue ne propose aucun CTA trompeur sans session ouverte', async () => {
+  const closedCourse = { ...course(), courseType: 'GENERAL_ENGLISH', upcomingSessionCount: 0, nextSessionStart: null };
   const html = await ejs.renderFile(path.resolve('views/public/courses/index.ejs'), {
-    title: 'Courses', courses: [{ ...course(), courseType: 'GENERAL_ENGLISH', upcomingSessionCount: 0, nextSessionStart: null }],
+    title: 'Courses', courses: [closedCourse], courseCards: [buildPublicCourseCard(closedCourse)], categories: [],
     formatCourseType, formatDuration,
   });
-  assert.match(html, /No open session/);
+  assert.match(html, /No open session|Aucune session ouverte/);
   assert.doesNotMatch(html, /href="\/register\?course=1"/);
 });
 

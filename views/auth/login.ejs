@@ -1,10 +1,26 @@
 <%- include('../partials/header', { title }) %>
-<section class="public-auth-shell public-login-shell">
-  <div class="public-auth-visual login-visual"><div class="auth-visual-content"><img src="/images/logo/logo-with-tagline.png" alt="New Vision Academy" width="1057" height="937"><h2 data-i18n="hero.title">Master Languages.<br>Unlock Opportunities.</h2><small data-i18n="auth.benefits">Live classes · Flexible programs · Real progress</small></div></div>
-  <div class="public-auth-form-panel"><div class="public-auth-heading"><p class="eyebrow" data-i18n="nav.login">Login</p><h1 data-i18n="login.title">Welcome back</h1><% if (sessionId) { %><p data-i18n="login.continue">Sign in to continue your selected registration.</p><% } else { %><p data-i18n="login.copy">Sign in with your phone number and password.</p><% } %></div>
-    <% if (error) { %><p class="form-error" role="alert" data-public-error><%= error %></p><% } %>
-    <form class="public-stitch-form" action="/login" method="post"><% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %><label for="phoneNumber" data-i18n="login.phone">Phone number</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required><label for="password" data-i18n="login.password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required><button class="button button-large public-auth-submit" type="submit" data-i18n="login.button">Sign In</button></form>
-    <p class="auth-alternative"><span data-i18n="login.new">New to New Vision Academy?</span> <a href="/register<%= sessionId ? `?session=${sessionId}` : '' %>" data-i18n="login.create">Create your student account</a></p>
+<section class="nva-login">
+  <div class="nva-login-container nva-login-layout">
+    <aside class="nva-login-visual">
+      <img class="nva-login-visual__background" src="/images/public/course-online-learning.jpg" alt="" width="1200" height="800">
+      <div class="nva-login-visual__content">
+        <img class="nva-login-logo" src="/images/logo/logo-with-tagline.png" alt="New Vision Academy" width="1057" height="937">
+        <div><p class="nva-login-eyebrow" data-i18n="login.arena.eyebrow">Espace apprenant</p><h1 data-i18n="login.arena.hero">Connectez-vous à votre parcours NVA.</h1><p data-i18n="login.arena.copy">Retrouvez vos cours, vos activités et votre progression dans un espace simple à utiliser.</p></div>
+      </div>
+    </aside>
+
+    <div class="nva-login-card">
+      <header class="nva-login-heading"><p class="nva-login-eyebrow" data-i18n="nav.login">Connexion</p><h2 data-i18n="login.title">Heureux de vous revoir</h2><% if (sessionId) { %><p data-i18n="login.continue">Connectez-vous pour poursuivre l’inscription sélectionnée.</p><% } else { %><p data-i18n="login.copy">Connectez-vous avec votre téléphone et votre mot de passe.</p><% } %></header>
+      <% if (error) { %><div class="nva-login-alert" role="alert"><strong data-i18n="login.error.title">Connexion impossible</strong><p data-public-error><%= error %></p></div><% } %>
+      <form class="nva-login-form" action="/login" method="post" data-login-form>
+        <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %>
+        <div class="nva-login-field"><label for="phoneNumber" data-i18n="login.phone">Numéro de téléphone</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required></div>
+        <div class="nva-login-field"><label for="password" data-i18n="login.password">Mot de passe</label><div class="nva-login-password"><input id="password" name="password" type="password" autocomplete="current-password" required data-login-password><button type="button" data-password-toggle aria-controls="password" aria-pressed="false" data-i18n="login.password.show">Afficher</button></div></div>
+        <button class="nva-public-button nva-public-button-primary nva-login-submit" type="submit" data-i18n="login.button">Se connecter</button>
+      </form>
+      <p class="nva-login-new"><span data-i18n="login.new.simple">Pas encore inscrit ?</span> <a href="/formations" data-i18n="login.discover">Découvrir les formations</a></p>
+      <p class="nva-login-support" data-i18n="login.support">Besoin d’aide pour accéder à votre compte ? Contactez l’académie.</p>
+    </div>
   </div>
 </section>
 <%- include('../partials/footer') %>

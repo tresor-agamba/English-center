@@ -122,6 +122,29 @@ if (registrationForm) {
   level.addEventListener('change', updateLevelGuidance);
   document.addEventListener('gli:languagechange', updateLevelGuidance);
   updateLevelGuidance();
+  const courseSelect = registrationForm.querySelector('[data-register-course]');
+  const sessionSummary = registrationForm.querySelector('[data-register-session]');
+  const updateRegistrationSession = () => {
+    if (!courseSelect || !sessionSummary) return;
+    const option = courseSelect.selectedOptions[0];
+    const name = sessionSummary.querySelector('[data-register-session-name]');
+    const date = sessionSummary.querySelector('[data-register-session-date]');
+    const language = window.GLI_I18N?.language || 'en';
+    const dictionary = window.GLI_I18N?.translations[language] || {};
+    if (!option?.value) {
+      name.textContent = dictionary['register.session.choose'] || 'Choose a course first';
+      date.hidden = true; return;
+    }
+    name.textContent = option.dataset.sessionName || dictionary['register.session.available'] || 'Next eligible session';
+    if (option.dataset.sessionStart) {
+      date.setAttribute('datetime', option.dataset.sessionStart); date.hidden = false;
+      const parsed = new Date(option.dataset.sessionStart);
+      date.textContent = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-US', { dateStyle: 'long' }).format(parsed);
+    } else date.hidden = true;
+  };
+  courseSelect?.addEventListener('change', updateRegistrationSession);
+  document.addEventListener('gli:languagechange', updateRegistrationSession);
+  updateRegistrationSession();
 }
 
 const localizePublicValues = () => {
@@ -135,6 +158,14 @@ const localizePublicValues = () => {
     const amount = Number(node.dataset.amount);
     if (Number.isFinite(amount)) node.textContent = new Intl.NumberFormat(locale, { style: 'currency', currency: node.dataset.currency }).format(amount);
   });
+  const durationUnits = {
+    en: { HOURS: ['hour', 'hours'], DAYS: ['day', 'days'], WEEKS: ['week', 'weeks'], MONTHS: ['month', 'months'] },
+    fr: { HOURS: ['heure', 'heures'], DAYS: ['jour', 'jours'], WEEKS: ['semaine', 'semaines'], MONTHS: ['mois', 'mois'] },
+  };
+  document.querySelectorAll('[data-local-duration]').forEach((node) => {
+    const value = Number(node.dataset.value); const labels = durationUnits[language][node.dataset.unit];
+    if (Number.isFinite(value) && labels) node.textContent = `${value} ${value > 1 ? labels[1] : labels[0]}`;
+  });
   const weekDays = {
     en: { MONDAY: 'Monday', TUESDAY: 'Tuesday', WEDNESDAY: 'Wednesday', THURSDAY: 'Thursday', FRIDAY: 'Friday', SATURDAY: 'Saturday', SUNDAY: 'Sunday' },
     fr: { MONDAY: 'lundi', TUESDAY: 'mardi', WEDNESDAY: 'mercredi', THURSDAY: 'jeudi', FRIDAY: 'vendredi', SATURDAY: 'samedi', SUNDAY: 'dimanche' },
@@ -146,3 +177,50 @@ const localizePublicValues = () => {
 };
 document.addEventListener('gli:languagechange', localizePublicValues);
 document.addEventListener('DOMContentLoaded', localizePublicValues);
+
+const courseCatalog = document.querySelector('[data-course-catalog]');
+if (courseCatalog) {
+  const input = courseCatalog.querySelector('[data-course-search-input]');
+  const filters = [...courseCatalog.querySelectorAll('[data-course-category-filter]')];
+  const cards = [...courseCatalog.querySelectorAll('[data-public-course-card]')];
+  const noResults = courseCatalog.querySelector('[data-course-no-results]');
+  let category = 'ALL';
+  const normalize = (value) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  const update = () => {
+    const query = normalize(input?.value || ''); let visible = 0;
+    cards.forEach((card) => {
+      const matchesCategory = category === 'ALL' || card.dataset.courseCategory === category;
+      const matchesQuery = !query || normalize(`${card.dataset.courseSearch} ${card.textContent}`).includes(query);
+      card.hidden = !(matchesCategory && matchesQuery); if (!card.hidden) visible += 1;
+    });
+    if (noResults) noResults.hidden = visible !== 0;
+  };
+  input?.addEventListener('input', update);
+  filters.forEach((button) => button.addEventListener('click', () => {
+    category = button.dataset.courseCategoryFilter;
+    filters.forEach((item) => { const active = item === button; item.classList.toggle('is-active', active); item.setAttribute('aria-pressed', String(active)); });
+    update();
+  }));
+}
+
+const loginPassword = document.querySelector('[data-login-password]');
+const loginPasswordToggle = document.querySelector('[data-password-toggle]');
+if (loginPassword && loginPasswordToggle) {
+  const updatePasswordToggle = () => {
+    const visible = loginPassword.type === 'text';
+    const language = window.GLI_I18N?.language || 'en';
+    const dictionary = window.GLI_I18N?.translations[language] || {};
+    loginPasswordToggle.textContent = dictionary[visible ? 'login.password.hide' : 'login.password.show'] || (visible ? 'Hide' : 'Show');
+    loginPasswordToggle.setAttribute('aria-pressed', String(visible));
+    loginPasswordToggle.setAttribute('aria-label', loginPasswordToggle.textContent);
+  };
+  loginPasswordToggle.addEventListener('click', () => {
+    const start = loginPassword.selectionStart; const end = loginPassword.selectionEnd;
+    loginPassword.type = loginPassword.type === 'password' ? 'text' : 'password';
+    loginPassword.focus();
+    if (start !== null && end !== null) loginPassword.setSelectionRange(start, end);
+    updatePasswordToggle();
+  });
+  document.addEventListener('gli:languagechange', updatePasswordToggle);
+  updatePasswordToggle();
+}

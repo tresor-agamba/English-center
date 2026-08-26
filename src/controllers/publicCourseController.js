@@ -1,11 +1,18 @@
 const publicCourseService = require('../services/publicCourseService');
 const { formatCourseType, formatDuration, formatWeekDays } = require('../utils/catalogFormat.util');
+const { buildPublicCourseCard } = require('../utils/publicCoursePresentation.util');
 
 async function index(req, res) {
   const courses = await publicCourseService.listPublished();
+  const courseCards = courses.map(buildPublicCourseCard);
+  const categories = [...new Map(courseCards.map((card) => [card.category, {
+    value: card.category, label: card.categoryLabel, labelKey: card.categoryKey,
+  }])).values()];
   return res.render('public/courses/index', {
     title: 'Nos formations',
     courses,
+    courseCards,
+    categories,
     formatCourseType,
     formatDuration,
   });

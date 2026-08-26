@@ -167,7 +167,8 @@ async function listCoursesForPublicRegistration(client = prisma) {
       archivedAt: true, closedAt: true, createdAt: true,
       trainingSessions: {
         where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },
-        select: { status: true, startDate: true, registrationDeadline: true, capacity: true,
+        orderBy: { startDate: 'asc' },
+        select: { id: true, name: true, status: true, startDate: true, endDate: true, registrationDeadline: true, capacity: true,
           _count: { select: { enrollments: { where: { status: { in: OCCUPYING_STATUSES } } } } } },
       },
     },
@@ -175,7 +176,10 @@ async function listCoursesForPublicRegistration(client = prisma) {
   });
   return courses
     .filter((course) => isPublicCourse(course) && course.trainingSessions.some((session) => isSessionOpenForRegistration(session, now)))
-    .map(({ id, title, slug }) => ({ id, title, slug }));
+    .map(({ id, title, slug, trainingSessions }) => {
+      const session = trainingSessions.find((candidate) => isSessionOpenForRegistration(candidate, now));
+      return { id, title, slug, session: session ? { id: session.id, name: session.name, startDate: session.startDate, endDate: session.endDate } : null };
+    });
 }
 
 async function getCourseRegistrationSession(rawCourseId, client = prisma) {

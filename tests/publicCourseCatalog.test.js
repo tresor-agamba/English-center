@@ -8,6 +8,7 @@ const app = require('../src/app');
 const publicCourseService = require('../src/services/publicCourseService');
 const publicCourseController = require('../src/controllers/publicCourseController');
 const { formatCourseType, formatDuration } = require('../src/utils/catalogFormat.util');
+const { buildPublicCourseCard } = require('../src/utils/publicCoursePresentation.util');
 
 function addDays(date, days) {
   return new Date(date.getTime() + days * 24 * 60 * 60 * 1000);
@@ -30,9 +31,9 @@ test('catalogue public des formations', async (t) => {
     await t.test('rend clairement un catalogue vide', async () => {
       const html = await renderFile('views/public/courses/index.ejs', {
         title: 'Nos formations',
-        courses: [],
+        courses: [], courseCards: [], categories: [],
       });
-      assert.match(html, /No courses are currently available|Aucune formation disponible/);
+      assert.match(html, /Aucune formation n'est actuellement disponible/);
     });
 
     await t.test('prépare formations et sessions de contrôle', async () => {
@@ -177,13 +178,16 @@ test('catalogue public des formations', async (t) => {
           durationUnit: null, shortDescription: null, description: null, price: null,
           currency: 'USD', upcomingSessionCount: 0, nextSessionStart: null,
         }],
-        formatCourseType,
+        courseCards: [buildPublicCourseCard({
+          id: 999999, slug: 'fallback-test', title: 'Formation sans métadonnées', courseType: 'OTHER',
+          durationValue: null, durationUnit: null, price: null, pricingActive: false,
+          upcomingSessionCount: 0, nextPlannedSessionStart: null,
+        })], categories: [], formatCourseType,
         formatDuration,
       });
       assert.match(html, /data-i18n="fallback\.category"/);
-      assert.match(html, /data-i18n="fallback\.level"/);
-      assert.match(html, /data-i18n="fallback\.duration"/);
-      assert.doesNotMatch(html, /Autre formation|À préciser/);
+      assert.match(html, /data-i18n="course\.fact\.duration"/);
+      assert.doesNotMatch(html, /Autre formation/);
     });
 
     await t.test('renvoie une page 404 claire pour un slug inexistant', async () => {

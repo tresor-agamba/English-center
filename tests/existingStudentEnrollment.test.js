@@ -128,7 +128,8 @@ test('inscription d’un étudiant existant', async (t) => {
       const loginPage = await fetch(`${baseUrl}/login?session=${validSession.id}`);
       const html = await loginPage.text();
       assert.match(html, new RegExp(`name="sessionId" value="${validSession.id}"`));
-      assert.match(html, new RegExp(`/register\\?session=${validSession.id}`));
+      assert.match(html, /href="\/formations"/);
+      assert.doesNotMatch(html, new RegExp(`/register\\?session=${validSession.id}`));
     });
 
     let cookie;

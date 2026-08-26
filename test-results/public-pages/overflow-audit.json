@@ -45,17 +45,59 @@
         "selector": "img",
         "clientWidth": 1920,
         "scrollWidth": 1920,
-        "left": -21.95,
-        "right": 1941.95,
-        "width": 1963.91,
+        "left": -22.22,
+        "right": 1942.22,
+        "width": 1964.43,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02314, 0, 0, 1.02314, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 1920,
+    "scrollWidth": 1920,
+    "clientWidth": 1920,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 327,
+        "right": 328,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 1920,
+    "scrollWidth": 1920,
+    "clientWidth": 1920,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 327,
+        "right": 328,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 1920,
     "scrollWidth": 1920,
     "clientWidth": 1920,
@@ -85,7 +127,7 @@
       {
         "selector": "section.stitch-hero",
         "clientWidth": 1440,
-        "scrollWidth": 1456,
+        "scrollWidth": 1457,
         "left": 0,
         "right": 1440,
         "width": 1440,
@@ -96,7 +138,7 @@
       {
         "selector": "picture.stitch-hero-media",
         "clientWidth": 1440,
-        "scrollWidth": 1456,
+        "scrollWidth": 1457,
         "left": 0,
         "right": 1440,
         "width": 1440,
@@ -121,17 +163,59 @@
         "selector": "img",
         "clientWidth": 1440,
         "scrollWidth": 1440,
-        "left": -16.47,
-        "right": 1456.47,
-        "width": 1472.93,
+        "left": -16.53,
+        "right": 1456.53,
+        "width": 1473.06,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 87,
+        "right": 88,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 1440,
+    "scrollWidth": 1440,
+    "clientWidth": 1440,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 87,
+        "right": 88,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 1440,
     "scrollWidth": 1440,
     "clientWidth": 1440,
@@ -228,6 +312,48 @@
     "viewportOffenders": []
   },
   {
+    "route": "/register",
+    "width": 1366,
+    "scrollWidth": 1366,
+    "clientWidth": 1366,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 50,
+        "right": 51,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
+    "width": 1366,
+    "scrollWidth": 1366,
+    "clientWidth": 1366,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 50,
+        "right": 51,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
     "route": "/",
     "width": 1280,
     "scrollWidth": 1280,
@@ -273,17 +399,59 @@
         "selector": "img",
         "clientWidth": 1280,
         "scrollWidth": 1280,
-        "left": -14.64,
-        "right": 1294.64,
-        "width": 1309.27,
+        "left": -14.69,
+        "right": 1294.69,
+        "width": 1309.39,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 1280,
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 39,
+        "right": 40,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 1280,
+    "scrollWidth": 1280,
+    "clientWidth": 1280,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 39,
+        "right": 40,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 1280,
     "scrollWidth": 1280,
     "clientWidth": 1280,
@@ -380,6 +548,48 @@
     "viewportOffenders": []
   },
   {
+    "route": "/register",
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 37.72,
+        "right": 38.72,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
+    "width": 1024,
+    "scrollWidth": 1024,
+    "clientWidth": 1024,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 37.72,
+        "right": 38.72,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
     "route": "/",
     "width": 768,
     "scrollWidth": 768,
@@ -425,17 +635,59 @@
         "selector": "img",
         "clientWidth": 768,
         "scrollWidth": 768,
-        "left": -8.78,
-        "right": 776.78,
-        "width": 785.56,
+        "left": -8.82,
+        "right": 776.82,
+        "width": 785.63,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 768,
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 30.03,
+        "right": 31.03,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 768,
+    "scrollWidth": 768,
+    "clientWidth": 768,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 30.03,
+        "right": 31.03,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 768,
     "scrollWidth": 768,
     "clientWidth": 768,
@@ -532,6 +784,48 @@
     "viewportOffenders": []
   },
   {
+    "route": "/register",
+    "width": 640,
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 26.19,
+        "right": 27.19,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
+    "width": 640,
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 26.19,
+        "right": 27.19,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
     "route": "/",
     "width": 430,
     "scrollWidth": 430,
@@ -588,17 +882,81 @@
         "selector": "img",
         "clientWidth": 430,
         "scrollWidth": 430,
-        "left": -4.9,
-        "right": 434.9,
-        "width": 439.79,
+        "left": -4.94,
+        "right": 434.94,
+        "width": 439.87,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 430,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 389.91,
+        "right": 390.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 430,
+    "scrollWidth": 430,
+    "clientWidth": 430,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 389.91,
+        "right": 390.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 430,
     "scrollWidth": 430,
     "clientWidth": 430,
@@ -728,6 +1086,70 @@
     "viewportOffenders": []
   },
   {
+    "route": "/register",
+    "width": 412,
+    "scrollWidth": 412,
+    "clientWidth": 412,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 371.91,
+        "right": 372.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
+    "width": 412,
+    "scrollWidth": 412,
+    "clientWidth": 412,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 371.91,
+        "right": 372.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
     "route": "/",
     "width": 390,
     "scrollWidth": 390,
@@ -784,17 +1206,81 @@
         "selector": "img",
         "clientWidth": 390,
         "scrollWidth": 390,
-        "left": -4.44,
-        "right": 394.44,
-        "width": 398.88,
+        "left": -4.46,
+        "right": 394.46,
+        "width": 398.92,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
+        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 390,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 349.91,
+        "right": 350.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 390,
+    "scrollWidth": 390,
+    "clientWidth": 390,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 349.91,
+        "right": 350.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 390,
     "scrollWidth": 390,
     "clientWidth": 390,
@@ -882,17 +1368,81 @@
         "selector": "img",
         "clientWidth": 375,
         "scrollWidth": 375,
-        "left": -4.29,
-        "right": 379.29,
-        "width": 383.58,
+        "left": -4.27,
+        "right": 379.27,
+        "width": 383.54,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 375,
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 334.91,
+        "right": 335.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 375,
+    "scrollWidth": 375,
+    "clientWidth": 375,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 334.91,
+        "right": 335.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 375,
     "scrollWidth": 375,
     "clientWidth": 375,
@@ -980,17 +1530,81 @@
         "selector": "img",
         "clientWidth": 360,
         "scrollWidth": 360,
-        "left": -4.12,
-        "right": 364.12,
-        "width": 368.23,
+        "left": -4.13,
+        "right": 364.13,
+        "width": 368.27,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02287, 0, 0, 1.02287, 0, 0)"
+        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 360,
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 319.91,
+        "right": 320.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 360,
+    "scrollWidth": 360,
+    "clientWidth": 360,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 319.91,
+        "right": 320.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 360,
     "scrollWidth": 360,
     "clientWidth": 360,
@@ -1078,17 +1692,81 @@
         "selector": "img",
         "clientWidth": 320,
         "scrollWidth": 320,
-        "left": -3.67,
-        "right": 323.67,
-        "width": 327.35,
+        "left": -3.64,
+        "right": 323.64,
+        "width": 327.29,
         "position": "static",
         "overflowX": "clip",
-        "transform": "matrix(1.02296, 0, 0, 1.02296, 0, 0)"
+        "transform": "matrix(1.02278, 0, 0, 1.02278, 0, 0)"
       }
     ]
   },
   {
     "route": "/formations",
+    "width": 320,
+    "scrollWidth": 320,
+    "clientWidth": 320,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 279.91,
+        "right": 280.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/register",
+    "width": 320,
+    "scrollWidth": 320,
+    "clientWidth": 320,
+    "overflow": false,
+    "internalOverflow": [
+      {
+        "selector": "span.sr-only",
+        "clientWidth": 1,
+        "scrollWidth": 135,
+        "left": 23,
+        "right": 24,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      },
+      {
+        "selector": "span.whatsapp-contact__label",
+        "clientWidth": 1,
+        "scrollWidth": 145,
+        "left": 279.91,
+        "right": 280.91,
+        "width": 1,
+        "position": "absolute",
+        "overflowX": "hidden",
+        "transform": "none"
+      }
+    ],
+    "viewportOffenders": []
+  },
+  {
+    "route": "/login",
     "width": 320,
     "scrollWidth": 320,
     "clientWidth": 320,

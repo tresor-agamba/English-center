@@ -21,6 +21,8 @@ function cleanForm(body) {
     email: body.email?.trim().toLowerCase().slice(0, 254) || null,
     courseId: body.courseId || '',
     requestedLevel: body.requestedLevel || '',
+    whatsappConsent: body.whatsappConsent === 'yes',
+    learningObjective: body.learningObjective?.trim().slice(0, 1000) || '',
   };
   if (!form.firstName || !form.lastName || !form.phoneNumber) {
     throw new registrationService.RegistrationError('INVALID_FORM', 'Tous les champs sont obligatoires.');
@@ -107,6 +109,7 @@ async function create(req, res) {
     courseId: req.body.courseId || '',
     requestedLevel: req.body.requestedLevel || 'LEVEL_1',
     whatsappConsent: req.body.whatsappConsent === 'yes',
+    learningObjective: req.body.learningObjective?.trim().slice(0, 1000) || '',
   };
   try {
     courses = await registrationService.listCoursesForPublicRegistration();
