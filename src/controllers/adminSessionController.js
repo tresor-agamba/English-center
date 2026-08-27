@@ -164,4 +164,22 @@ async function toggleStatus(req, res) {
   return res.redirect(`/admin/sessions/${session.id}`);
 }
 
-module.exports = { index, newForm, create, show, editForm, update, cancel, toggleStatus, parseForm, weekDays };
+async function createGroup(req, res) {
+  const session = await getSession(req.params.id);
+  const capacity = Number(req.body.capacity);
+  const startTime = req.body.startTime?.trim(); const endTime = req.body.endTime?.trim();
+  const days = Array.isArray(req.body.weekDays) ? req.body.weekDays : [req.body.weekDays].filter(Boolean);
+  if (!req.body.name?.trim() || !Number.isInteger(capacity) || capacity < 1 || !timePattern.test(startTime) || !timePattern.test(endTime) || endTime <= startTime || !days.length || days.some(day => !weekDays[day])) throw validationError('Informations du groupe invalides.');
+  await sessionService.createRegistrationGroup({ trainingSessionId: session.id, name: req.body.name.trim(), capacity, startTime, endTime, weekDays: days, isActive: true });
+  return res.redirect(`/admin/sessions/${session.id}`);
+}
+
+async function toggleGroup(req, res) {
+  const session = await getSession(req.params.id); const groupId = parseId(req.params.groupId);
+  const group = session.registrationGroups.find(item => item.id === groupId);
+  if (!group) throw validationError('Groupe introuvable.');
+  await sessionService.setRegistrationGroupActive(group.id, !group.isActive);
+  return res.redirect(`/admin/sessions/${session.id}`);
+}
+
+module.exports = { index, newForm, create, show, editForm, update, cancel, toggleStatus, createGroup, toggleGroup, parseForm, weekDays };

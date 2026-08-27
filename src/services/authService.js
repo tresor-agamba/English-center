@@ -17,6 +17,7 @@ async function authenticate(rawPhoneNumber, password) {
     lastName: user.lastName,
     phoneNumber: user.phoneNumber,
     role: user.role,
+    mustChangePassword: user.mustChangePassword,
   };
 }
 

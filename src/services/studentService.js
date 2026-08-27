@@ -6,32 +6,49 @@ const publicStudentSelect = {
   firstName: true,
   lastName: true,
   phoneNumber: true,
+  email: true,
+  whatsappNumber: true,
   role: true,
   isActive: true,
   createdAt: true,
   updatedAt: true,
 };
 
-function buildSearchWhere(search) {
+function buildSearchWhere(search, filters = {}) {
   const value = search.trim();
-  if (!value) return { role: 'STUDENT' };
+  const where = { role: 'STUDENT' };
 
   const phonePart = value.replace(/\D/g, '');
-  const or = [
+  const or = value ? [
     { firstName: { contains: value, mode: 'insensitive' } },
     { lastName: { contains: value, mode: 'insensitive' } },
-  ];
-  if (phonePart) or.push({ phoneNumber: { contains: phonePart } });
-
-  return { role: 'STUDENT', OR: or };
+  ] : [];
+  if (value && phonePart) or.push({ phoneNumber: { contains: phonePart } });
+  if (value) or.push({ email: { contains: value, mode: 'insensitive' } }, { whatsappNumber: { contains: value } });
+  if (or.length) where.OR = or;
+  const enrollment = {};
+  if (filters.courseId) enrollment.trainingSession = { courseId: filters.courseId };
+  if (filters.sessionId) enrollment.trainingSessionId = filters.sessionId;
+  if (filters.groupId) enrollment.registrationGroupId = filters.groupId;
+  if (filters.level) enrollment.approvedLevel = filters.level;
+  if (filters.status) enrollment.status = filters.status;
+  if (Object.keys(enrollment).length) where.enrollments = { some: enrollment };
+  return where;
 }
 
-async function list({ search = '', page = 1 }) {
-  const where = buildSearchWhere(search);
+async function filterOptions() {
+  const courses = await prisma.course.findMany({ select: { id: true, title: true, trainingSessions: { select: { id: true, name: true, registrationGroups: { select: { id: true, name: true } } } } }, orderBy: { title: 'asc' } });
+  return { courses };
+}
+
+async function list({ search = '', page = 1, filters = {} }) {
+  const where = buildSearchWhere(search, filters);
   const [students, total] = await Promise.all([
     prisma.user.findMany({
       where,
-      select: publicStudentSelect,
+      select: { ...publicStudentSelect, enrollments: { where: Object.keys(filters).length ? {
+        ...(filters.courseId ? { trainingSession: { courseId: filters.courseId } } : {}), ...(filters.sessionId ? { trainingSessionId: filters.sessionId } : {}), ...(filters.groupId ? { registrationGroupId: filters.groupId } : {}), ...(filters.level ? { approvedLevel: filters.level } : {}), ...(filters.status ? { status: filters.status } : {}),
+      } : {}, take: 3, orderBy: { enrolledAt: 'desc' }, select: { id: true, status: true, approvedLevel: true, trainingSession: { select: { name: true, course: { select: { title: true } } } }, registrationGroup: { select: { name: true } } } } },
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
@@ -98,7 +115,7 @@ function setActive(id, isActive) {
 }
 
 function resetPassword(id, passwordHash) {
-  return prisma.user.updateMany({ where: { id, role: 'STUDENT' }, data: { passwordHash } });
+  return prisma.user.updateMany({ where: { id, role: 'STUDENT' }, data: { passwordHash, mustChangePassword: true } });
 }
 
-module.exports = { list, findById, create, update, setActive, resetPassword };
+module.exports = { list, filterOptions, findById, create, update, setActive, resetPassword };

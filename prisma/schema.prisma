@@ -413,6 +413,8 @@ model User {
   phoneNumber                  String                      @unique @map("phone_number")
   email                        String?                     @unique
   passwordHash                 String                      @map("password_hash")
+  whatsappNumber               String?                     @map("whatsapp_number")
+  mustChangePassword           Boolean                     @default(false) @map("must_change_password")
   role                         Role                        @default(STUDENT)
   isActive                     Boolean                     @default(true) @map("is_active")
   createdAt                    DateTime                    @default(now()) @map("created_at")
@@ -421,6 +423,8 @@ model User {
   progress                     Progress[]
   enrollments                  Enrollment[]
   teachingAssignments          TrainingSessionTeacher[]
+  registrationGroupsTaught     RegistrationGroup[]
+  passwordResetTokens          PasswordResetToken[]
   notifications                Notification[]
   scheduledReminders           ScheduledReminder[]
   createdAnnouncements         Announcement[]              @relation("AnnouncementCreator")
@@ -458,6 +462,20 @@ model User {
   backupAuditEvents            BackupAuditLog[]            @relation("BackupAuditActor")
 
   @@map("users")
+}
+
+model PasswordResetToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([expiresAt, usedAt])
+  @@map("password_reset_tokens")
 }
 
 model Notification {
@@ -604,10 +622,33 @@ model TrainingSession {
   certificateFee       Decimal?                 @map("certificate_fee") @db.Decimal(10, 2)
   assessments          Assessment[]
   liveOralSessions     LiveOralSession[]
+  registrationGroups   RegistrationGroup[]
 
   @@index([courseId])
   @@index([status])
   @@map("training_sessions")
+}
+
+model RegistrationGroup {
+  id                Int             @id @default(autoincrement())
+  trainingSessionId Int             @map("training_session_id")
+  name              String
+  weekDays          String[]        @default([]) @map("week_days")
+  startTime         String          @map("start_time")
+  endTime           String          @map("end_time")
+  capacity          Int
+  isActive          Boolean         @default(true) @map("is_active")
+  teacherId         Int?            @map("teacher_id")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  teacher           User?           @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  enrollments       Enrollment[]
+
+  @@unique([trainingSessionId, name])
+  @@index([trainingSessionId, isActive])
+  @@index([teacherId])
+  @@map("registration_groups")
 }
 
 model Course {
@@ -1269,6 +1310,7 @@ model Enrollment {
   id                       Int                    @id @default(autoincrement())
   userId                   Int                    @map("user_id")
   trainingSessionId        Int                    @map("training_session_id")
+  registrationGroupId      Int?                   @map("registration_group_id")
   status                   EnrollmentStatus       @default(TRIAL_ACTIVE)
   enrolledAt               DateTime               @default(now()) @map("enrolled_at")
   requestedLevel           AcademicLevel?         @map("requested_level")
@@ -1285,6 +1327,7 @@ model Enrollment {
   accessUnlockedAt         DateTime?              @map("access_unlocked_at")
   user                     User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   trainingSession          TrainingSession        @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  registrationGroup        RegistrationGroup?     @relation(fields: [registrationGroupId], references: [id], onDelete: Restrict)
   course                   Course?                @relation(fields: [courseId], references: [id])
   courseId                 Int?
   payments                 Payment[]
@@ -1299,6 +1342,7 @@ model Enrollment {
 
   @@unique([userId, trainingSessionId])
   @@index([trainingSessionId])
+  @@index([registrationGroupId, status])
   @@map("enrollments")
 }
 

@@ -3,6 +3,8 @@ const { Prisma } = require('@prisma/client');
 const studentService = require('../services/studentService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
 const trialAccessService = require('../services/trialAccessService');
+const registrationService = require('../services/registrationService');
+const crypto = require('crypto');
 
 const PASSWORD_COST = 12;
 const DUPLICATE_PHONE_MESSAGE = 'Ce numéro de téléphone est déjà utilisé.';
@@ -58,24 +60,33 @@ async function index(req, res) {
   const search = typeof req.query.search === 'string' ? req.query.search.trim().slice(0, 100) : '';
   const requestedPage = Number(req.query.page);
   const page = Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-  const result = await studentService.list({ search, page });
+  const parseFilterId = (value) => { const id = Number(value); return Number.isInteger(id) && id > 0 ? id : null; };
+  const filters = { courseId: parseFilterId(req.query.courseId), sessionId: parseFilterId(req.query.sessionId), groupId: parseFilterId(req.query.groupId), level: ['LEVEL_1','LEVEL_2','LEVEL_3'].includes(req.query.level) ? req.query.level : null, status: ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED','CANCELLED','PAYMENT_FAILED'].includes(req.query.status) ? req.query.status : null };
+  const [result, options] = await Promise.all([studentService.list({ search, page, filters }), studentService.filterOptions()]);
+  const query = new URLSearchParams(Object.entries({ search, ...filters }).filter(([, value]) => value).map(([key, value]) => [key, String(value)])).toString();
   if (page > result.totalPages) {
-    return res.redirect(`/admin/students?search=${encodeURIComponent(search)}&page=${result.totalPages}`);
+    return res.redirect(`/admin/students?${query}&page=${result.totalPages}`);
   }
   return res.render('admin/students/index', {
     title: 'Étudiants',
     search,
+    filters, options, query,
     success: req.query.success || '',
     ...result,
   });
 }
 
-function newForm(req, res) {
+async function newForm(req, res) {
+  const courses = await registrationService.listCoursesForPublicRegistration();
   return res.render('admin/students/new', {
-    title: 'Ajouter un étudiant',
-    form: { firstName: '', lastName: '', phoneNumber: '' },
+    title: 'Inscrire un étudiant', courses,
+    form: { firstName: '', lastName: '', phoneNumber: '', whatsappNumber: '', email: '', courseId: '', groupId: '', requestedLevel: 'LEVEL_1' },
     error: null,
   });
+}
+
+function temporaryPassword() {
+  return `Nva!${crypto.randomBytes(9).toString('base64url')}`;
 }
 
 async function create(req, res) {
@@ -83,22 +94,40 @@ async function create(req, res) {
     firstName: req.body.firstName?.trim() || '',
     lastName: req.body.lastName?.trim() || '',
     phoneNumber: req.body.phoneNumber?.trim() || '',
+    whatsappNumber: req.body.whatsappNumber?.trim() || '', email: req.body.email?.trim() || '',
+    courseId: req.body.courseId || '', groupId: req.body.groupId || '', requestedLevel: req.body.requestedLevel || 'LEVEL_1',
   };
   try {
     form = cleanIdentity(req.body);
-    validatePassword(req.body.password, req.body.passwordConfirmation);
-    const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
-    const student = await studentService.create({ ...form, passwordHash });
-    return res.redirect(`/admin/students/${student.id}?success=created`);
+    if (!req.body.courseId) {
+      validatePassword(req.body.password, req.body.passwordConfirmation);
+      const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
+      const student = await studentService.create({ ...form, passwordHash, mustChangePassword: true });
+      return res.redirect(`/admin/students/${student.id}?success=created`);
+    }
+    form = { ...form, whatsappNumber: req.body.whatsappNumber?.trim() || '', email: req.body.email?.trim() || '', courseId: req.body.courseId, groupId: req.body.groupId, requestedLevel: req.body.requestedLevel };
+    const generatedPassword = temporaryPassword();
+    const passwordHash = await bcrypt.hash(generatedPassword, PASSWORD_COST);
+    const result = await registrationService.createStudentEnrollment({
+      ...form, courseId: registrationService.parseCourseId(form.courseId), groupId: form.groupId,
+      requestedLevel: registrationService.validateLevel(form.requestedLevel), passwordHash,
+      allowExistingUser: true, mustChangePassword: true,
+    });
+    const enrollment = await registrationService.findEnrollmentForViewer(result.enrollment.id);
+    return res.render('admin/students/enrollment-confirmation', {
+      title: 'Inscription confirmée', enrollment, temporaryPassword: result.accountCreated ? generatedPassword : null,
+      loginUrl: `${req.protocol}://${req.get('host')}/login`,
+    });
   } catch (error) {
+    const courses = await registrationService.listCoursesForPublicRegistration();
     const message = isDuplicatePhone(error) ? DUPLICATE_PHONE_MESSAGE : error.message;
     if (error.statusCode === 400 || isDuplicatePhone(error) || message === INVALID_PHONE_MESSAGE) {
       return res.status(400).render('admin/students/new', {
-        title: 'Ajouter un étudiant',
-        form,
+        title: 'Inscrire un étudiant', courses, form,
         error: message,
       });
     }
+    if (error instanceof registrationService.RegistrationError) return res.status(400).render('admin/students/new', { title: 'Inscrire un étudiant', courses, form, error: error.message });
     throw error;
   }
 }

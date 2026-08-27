@@ -7,7 +7,7 @@ const placementTestService = require('../services/placementTestService');
 const PASSWORD_COST = 12;
 
 function emptyForm() {
-  return { fullName: '', firstName: '', lastName: '', phoneNumber: '', email: '', courseId: '', requestedLevel: 'LEVEL_1' };
+  return { fullName: '', firstName: '', lastName: '', phoneNumber: '', whatsappNumber: '', email: '', courseId: '', groupId: '', requestedLevel: 'LEVEL_1' };
 }
 
 function cleanForm(body) {
@@ -18,9 +18,11 @@ function cleanForm(body) {
     firstName: body.firstName?.trim().slice(0, 100) || nameParts.shift() || '',
     lastName: body.lastName?.trim().slice(0, 100) || nameParts.join(' ').slice(0, 100) || '',
     phoneNumber: body.phoneNumber?.trim().slice(0, 30) || '',
+    whatsappNumber: body.whatsappNumber?.trim().slice(0, 30) || '',
     email: body.email?.trim().toLowerCase().slice(0, 254) || null,
     courseId: body.courseId || '',
     requestedLevel: body.requestedLevel || '',
+    groupId: body.groupId || '',
     whatsappConsent: body.whatsappConsent === 'yes',
     learningObjective: body.learningObjective?.trim().slice(0, 1000) || '',
   };
@@ -35,6 +37,8 @@ function cleanForm(body) {
     form.requestedLevel = registrationService.validateLevel(form.requestedLevel);
   }
   form.phoneNumber = normalizePhoneNumber(form.phoneNumber);
+  if (form.whatsappNumber) form.whatsappNumber = normalizePhoneNumber(form.whatsappNumber);
+  if (body.termsPresented === 'yes' && body.termsAccepted !== 'yes') throw new registrationService.RegistrationError('TERMS_REQUIRED', 'Vous devez accepter les conditions d’inscription.');
   return form;
 }
 
@@ -105,9 +109,11 @@ async function create(req, res) {
     firstName: req.body.firstName?.trim() || '',
     lastName: req.body.lastName?.trim() || '',
     phoneNumber: req.body.phoneNumber?.trim() || '',
+    whatsappNumber: req.body.whatsappNumber?.trim() || '',
     email: req.body.email?.trim() || '',
     courseId: req.body.courseId || '',
     requestedLevel: req.body.requestedLevel || 'LEVEL_1',
+    groupId: req.body.groupId || '',
     whatsappConsent: req.body.whatsappConsent === 'yes',
     learningObjective: req.body.learningObjective?.trim().slice(0, 1000) || '',
   };
@@ -117,7 +123,7 @@ async function create(req, res) {
     form = cleanForm(req.body);
     validatePassword(req.body.password, req.body.passwordConfirmation);
     const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
-    const result = await registrationService.createRegistration({
+    const result = await registrationService.createStudentEnrollment({
       sessionId: session?.id,
       ...form,
       passwordHash,

@@ -2,16 +2,17 @@
 
 <section class="card wide-card">
   <p class="eyebrow">Administration</p>
-  <h1>Ajouter un étudiant</h1>
-  <p class="heading-copy">Créez un compte étudiant avec un mot de passe temporaire.</p>
-  <%- include('_form', {
-    action: '/admin/students',
-    form,
-    error,
-    includePassword: true,
-    submitLabel: 'Créer le compte',
-    cancelUrl: '/admin/students'
-  }) %>
+  <h1>Inscrire un étudiant</h1>
+  <p class="heading-copy">Le compte et l’inscription sont créés ensemble. Un mot de passe temporaire sécurisé sera généré.</p>
+  <form action="/admin/students" method="post" class="student-form">
+    <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
+    <div class="form-grid"><div><label for="firstName">Prénom</label><input id="firstName" name="firstName" value="<%= form.firstName || '' %>" required></div><div><label for="lastName">Nom</label><input id="lastName" name="lastName" value="<%= form.lastName || '' %>" required></div></div>
+    <div class="form-grid"><div><label for="phoneNumber">Téléphone / identifiant</label><input id="phoneNumber" name="phoneNumber" type="tel" value="<%= form.phoneNumber || '' %>" required></div><div><label for="whatsappNumber">WhatsApp</label><input id="whatsappNumber" name="whatsappNumber" type="tel" value="<%= form.whatsappNumber || '' %>"></div></div>
+    <label for="email">E-mail</label><input id="email" name="email" type="email" value="<%= form.email || '' %>">
+    <div class="form-grid"><div><label for="courseId">Formation</label><select id="courseId" name="courseId" required><option value="">Sélectionner</option><% courses.forEach(course => { %><option value="<%= course.id %>" <%= String(form.courseId) === String(course.id) ? 'selected' : '' %>><%= course.title %> — <%= course.session?.name || '' %></option><% }) %></select></div><div><label for="requestedLevel">Niveau</label><select id="requestedLevel" name="requestedLevel" required><% ['LEVEL_1','LEVEL_2','LEVEL_3'].forEach(level => { %><option value="<%= level %>" <%= form.requestedLevel === level ? 'selected' : '' %>><%= level.replace('_', ' ') %></option><% }) %></select></div></div>
+    <label for="groupId">Groupe / créneau</label><select id="groupId" name="groupId" <%= courses.some(c => c.session?.registrationGroups?.length) ? 'required' : '' %>><option value="">Sélectionner</option><% courses.forEach(course => { (course.session?.registrationGroups || []).forEach(group => { %><option value="<%= group.id %>" <%= group.isFull ? 'disabled' : '' %>><%= course.title %> — <%= group.name %> — <%= group.weekDays.join(' + ') %> <%= group.startTime %>–<%= group.endTime %> — <%= group.isFull ? 'Complet' : `${group.remainingPlaces} places` %></option><% }); }); %></select>
+    <div class="form-actions"><button class="button" type="submit">Confirmer l’inscription</button><a href="/admin/students">Annuler</a></div>
+  </form>
 </section>
 
 <%- include('../../partials/footer') %>

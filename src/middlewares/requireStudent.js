@@ -7,14 +7,19 @@ async function requireStudent(req, res, next) {
     error.statusCode = 403;
     return next(error);
   }
+  if (req.session.user.mustChangePassword) return res.redirect('/change-password');
 
   try {
     const student = await prisma.user.findFirst({
       where: { id: req.session.user.id, role: 'STUDENT', isActive: true },
-      select: { id: true, firstName: true, lastName: true, phoneNumber: true, role: true },
+      select: { id: true, firstName: true, lastName: true, phoneNumber: true, role: true, mustChangePassword: true },
     });
     if (!student) {
       return req.session.destroy(() => res.redirect('/login'));
+    }
+    if (student.mustChangePassword) {
+      req.session.user.mustChangePassword = true;
+      return res.redirect('/change-password');
     }
     req.student = student;
     return next();

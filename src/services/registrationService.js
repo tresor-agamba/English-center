@@ -28,6 +28,9 @@ const messages = {
   SESSION_UNAVAILABLE: 'Cette session n’est plus disponible aux inscriptions.',
   REGISTRATION_CLOSED: 'La date limite d’inscription est dépassée.',
   SESSION_FULL: 'Cette session est complète.',
+  GROUP_REQUIRED: 'Veuillez sélectionner un créneau.',
+  GROUP_UNAVAILABLE: 'Ce créneau n’est plus disponible.',
+  GROUP_FULL: 'Ce créneau est complet.',
   ACCOUNT_EXISTS: 'Un compte existe déjà avec ce numéro. Connectez-vous pour continuer votre inscription.',
   DUPLICATE_ENROLLMENT: 'Vous êtes déjà inscrit à cette session.',
 };
@@ -45,6 +48,12 @@ function parseCourseId(value) {
   if (!Number.isInteger(id) || id <= 0) {
     throw new RegistrationError('COURSE_REQUIRED', 'Veuillez sélectionner une formation.');
   }
+  return id;
+}
+
+function parseGroupId(value) {
+  const id = Number(value);
+  if (!Number.isInteger(id) || id <= 0) throw new RegistrationError('GROUP_REQUIRED', messages.GROUP_REQUIRED);
   return id;
 }
 
@@ -107,7 +116,32 @@ function sessionSelect(now) {
         enrollments: { where: { status: { in: OCCUPYING_STATUSES } } },
       },
     },
+    registrationGroups: {
+      where: { isActive: true },
+      orderBy: [{ startTime: 'asc' }, { name: 'asc' }],
+      select: {
+        id: true, name: true, weekDays: true, startTime: true, endTime: true, capacity: true, isActive: true,
+        _count: { select: { enrollments: { where: { status: { in: OCCUPYING_STATUSES } } } } },
+      },
+    },
   };
+}
+
+function availableGroups(session) {
+  return (session.registrationGroups || []).map((group) => ({
+    ...group,
+    remainingPlaces: Math.max(0, group.capacity - group._count.enrollments),
+    isFull: group._count.enrollments >= group.capacity,
+  }));
+}
+
+function validateGroup(session, rawGroupId, { checkCapacity = true } = {}) {
+  const groups = availableGroups(session);
+  if (!groups.length) return null;
+  const group = groups.find((item) => item.id === parseGroupId(rawGroupId));
+  if (!group || !group.isActive) throw new RegistrationError('GROUP_UNAVAILABLE', messages.GROUP_UNAVAILABLE);
+  if (checkCapacity && group.isFull) throw new RegistrationError('GROUP_FULL', messages.GROUP_FULL);
+  return group;
 }
 
 function validateSession(session, now = new Date(), options = {}) {
@@ -126,7 +160,7 @@ function validateSession(session, now = new Date(), options = {}) {
   if (checkCapacity && state === 'FULL') {
     throw new RegistrationError('SESSION_FULL', messages.SESSION_FULL);
   }
-  return { ...session, remainingPlaces: availablePlaces };
+  return { ...session, remainingPlaces: availablePlaces, registrationGroups: availableGroups(session) };
 }
 
 function enrollmentPricingSnapshot(session) {
@@ -168,17 +202,16 @@ async function listCoursesForPublicRegistration(client = prisma) {
       trainingSessions: {
         where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },
         orderBy: { startDate: 'asc' },
-        select: { id: true, name: true, status: true, startDate: true, endDate: true, registrationDeadline: true, capacity: true,
-          _count: { select: { enrollments: { where: { status: { in: OCCUPYING_STATUSES } } } } } },
+        select: sessionSelect(now),
       },
     },
     orderBy: { title: 'asc' },
   });
   return courses
     .filter((course) => isPublicCourse(course) && course.trainingSessions.some((session) => isSessionOpenForRegistration(session, now)))
-    .map(({ id, title, slug, trainingSessions }) => {
-      const session = trainingSessions.find((candidate) => isSessionOpenForRegistration(candidate, now));
-      return { id, title, slug, session: session ? { id: session.id, name: session.name, startDate: session.startDate, endDate: session.endDate } : null };
+    .map((course) => {
+      const session = course.trainingSessions.find((candidate) => isSessionOpenForRegistration(candidate, now));
+      return { id: course.id, title: course.title, slug: course.slug, price: course.price, currency: course.currency, registrationFee: course.registrationFee, session: session ? validateSession({ ...session, course }, now) : null };
     });
 }
 
@@ -232,7 +265,8 @@ async function getEnrollmentIntent(userId, rawSessionId) {
 }
 
 async function runRegistrationTransaction({
-  sessionId, courseId, firstName, lastName, phoneNumber, email = null, passwordHash, requestedLevel = null,
+  sessionId, courseId, groupId, firstName, lastName, phoneNumber, whatsappNumber = null, email = null,
+  passwordHash, requestedLevel = null, allowExistingUser = false, mustChangePassword = false,
 }) {
   return prisma.$transaction(
     async (tx) => {
@@ -240,10 +274,11 @@ async function runRegistrationTransaction({
         ? await getCourseRegistrationSession(courseId, tx)
         : await getSessionForRegistration(sessionId, tx);
       const level = requestedLevel ? validateLevel(requestedLevel) : null;
+      const group = validateGroup(session, groupId);
       const normalizedEmail = normalizeEmail(email);
       const existingUser = await tx.user.findUnique({
         where: { phoneNumber },
-        select: { id: true },
+        select: { id: true, role: true },
       });
       if (existingUser) {
         const duplicate = await tx.enrollment.findUnique({
@@ -255,25 +290,30 @@ async function runRegistrationTransaction({
           },
           select: { id: true },
         });
-        throw new RegistrationError(
-          duplicate ? 'DUPLICATE_ENROLLMENT' : 'ACCOUNT_EXISTS',
-          duplicate ? messages.DUPLICATE_ENROLLMENT : messages.ACCOUNT_EXISTS
-        );
+        if (duplicate) throw new RegistrationError('DUPLICATE_ENROLLMENT', messages.DUPLICATE_ENROLLMENT);
+        if (!allowExistingUser || existingUser.role !== 'STUDENT') throw new RegistrationError('ACCOUNT_EXISTS', messages.ACCOUNT_EXISTS);
       }
 
-      if (normalizedEmail && await tx.user.findUnique({ where: { email: normalizedEmail }, select: { id: true } })) {
-        throw new RegistrationError('EMAIL_EXISTS', 'Cette adresse email est déjà utilisée.');
+      if (normalizedEmail) {
+        const emailOwner = await tx.user.findUnique({ where: { email: normalizedEmail }, select: { id: true } });
+        if (emailOwner && emailOwner.id !== existingUser?.id) throw new RegistrationError('EMAIL_EXISTS', 'Cette adresse email est déjà utilisée.');
       }
 
-      const user = await tx.user.create({
+      const user = existingUser ? await tx.user.update({
+        where: { id: existingUser.id },
+        data: { firstName, lastName, email: normalizedEmail || undefined, whatsappNumber: whatsappNumber || undefined },
+        select: { id: true, firstName: true, lastName: true, phoneNumber: true, email: true, role: true, isActive: true },
+      }) : await tx.user.create({
         data: {
           firstName,
           lastName,
           phoneNumber,
           email: normalizedEmail,
+          whatsappNumber: whatsappNumber || null,
           passwordHash,
           role: 'STUDENT',
           isActive: true,
+          mustChangePassword,
         },
         select: {
           id: true,
@@ -290,6 +330,7 @@ async function runRegistrationTransaction({
         data: {
           userId: user.id,
           trainingSessionId: session.id,
+          registrationGroupId: group?.id || null,
           status: level && level !== 'LEVEL_1' ? 'PLACEMENT_TEST_REQUIRED' : 'TRIAL_ACTIVE',
           requestedLevel: level,
           recommendedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
@@ -298,12 +339,12 @@ async function runRegistrationTransaction({
           ...enrollmentPricingSnapshot(session),
         },
         select: {
-          id: true, status: true, requestedLevel: true, recommendedLevel: true,
+          id: true, status: true, registrationGroupId: true, requestedLevel: true, recommendedLevel: true,
           approvedLevel: true, placementTestRequired: true,
         },
       });
 
-      return { user, enrollment };
+      return { user, enrollment, accountCreated: !existingUser };
     },
     { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
   );
@@ -334,6 +375,9 @@ async function createRegistration(data) {
   }
   throw new RegistrationError('SESSION_UNAVAILABLE', messages.SESSION_UNAVAILABLE);
 }
+
+// Point d’entrée métier commun aux contrôleurs public et administrateur.
+const createStudentEnrollment = createRegistration;
 
 async function runExistingStudentTransaction({ userId, sessionId }) {
   return prisma.$transaction(
@@ -419,7 +463,7 @@ function findEnrollmentForViewer(enrollmentId) {
       approvedLevel: true,
       placementTestRequired: true,
       placementTestScore: true,
-      user: { select: { id: true, firstName: true, lastName: true } },
+      user: { select: { id: true, firstName: true, lastName: true, phoneNumber: true, whatsappNumber: true } },
       trainingSession: {
         select: {
           id: true,
@@ -439,6 +483,7 @@ function findEnrollmentForViewer(enrollmentId) {
           },
         },
       },
+      registrationGroup: { select: { id: true, name: true, weekDays: true, startTime: true, endTime: true } },
       payments: {
         orderBy: { createdAt: 'desc' },
         take: 5,
@@ -463,6 +508,7 @@ module.exports = {
   messages,
   parseSessionId,
   parseCourseId,
+  parseGroupId,
   validateLevel,
   normalizeEmail,
   validateSession,
@@ -471,6 +517,7 @@ module.exports = {
   getCourseRegistrationSession,
   getEnrollmentIntent,
   createRegistration,
+  createStudentEnrollment,
   enrollExistingStudent,
   findEnrollmentForViewer,
 };

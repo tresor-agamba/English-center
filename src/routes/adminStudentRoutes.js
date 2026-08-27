@@ -6,7 +6,7 @@ const limits = require('../middlewares/rateLimits');
 const router = express.Router();
 
 router.get('/', asyncHandler(controller.index));
-router.get('/new', controller.newForm);
+router.get('/new', asyncHandler(controller.newForm));
 router.post('/', asyncHandler(controller.create));
 router.get('/:id', asyncHandler(controller.show));
 router.get('/:id/edit', asyncHandler(controller.editForm));

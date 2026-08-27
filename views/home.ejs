@@ -14,11 +14,30 @@
     </div>
   </section>
 
-  <section class="nva-home-academy" aria-labelledby="academy-title"><div class="nva-home-container nva-home-academy__grid reveal"><h2 id="academy-title" data-i18n="arena.home.academy.title">Une académie en ligne pour apprendre utilement, pas seulement regarder des cours.</h2><p data-i18n="arena.home.academy.copy">NVA vous aide à passer des explications à l'action grâce à des formations courtes, suivies et adaptées aux réalités des apprenants en RDC.</p><figure class="nva-home-academy__visual"><img src="/images/nva/pic-2.jpeg" width="1024" height="1024" alt="Apprenants New Vision Academy utilisant un ordinateur, une tablette et un téléphone" loading="lazy" decoding="async"></figure></div></section>
+  <section class="nva-home-academy" aria-labelledby="academy-title">
+    <div class="nva-home-container nva-home-academy__grid reveal">
+      <div class="nva-home-academy__copy">
+        <p class="nva-home-eyebrow">New Vision Academy</p>
+        <h2 id="academy-title" data-i18n="arena.home.academy.title">Une académie en ligne pour apprendre utilement, pas seulement regarder des cours.</h2>
+        <p data-i18n="arena.home.academy.copy">NVA vous aide à passer des explications à l'action grâce à des formations courtes, suivies et adaptées aux réalités des apprenants en RDC.</p>
+      </div>
+      <figure class="nva-home-academy__visual"><img src="/images/nva/pic-2.jpeg" width="1024" height="1024" alt="Apprenants New Vision Academy utilisant un ordinateur, une tablette et un téléphone" loading="lazy" decoding="async"></figure>
+    </div>
+  </section>
 
   <section class="nva-home-approach" id="approche" aria-labelledby="approach-title"><div class="nva-home-container"><div class="nva-home-approach__composition reveal"><div class="nva-home-approach__photo-frame"><img src="/images/nva/pic-3.png" width="1024" height="1024" alt="Apprenante New Vision Academy suivant une formation en ligne" loading="lazy" decoding="async"></div><article class="nva-home-approach__card"><p class="nva-home-eyebrow" data-i18n="arena.home.approach.eyebrow">Approche NVA</p><h2 id="approach-title" data-i18n="arena.home.approach.title">Un cours doit produire une capacité réelle.</h2><p data-i18n="arena.home.approach.copy">Chaque module relie les notions à une action concrète : parler, produire, organiser, résoudre ou présenter quelque chose d'utile.</p></article></div></div></section>
 
-  <section class="nva-home-practice" aria-labelledby="practice-title"><div class="nva-home-container nva-home-practice__grid"><div class="nva-home-section-copy reveal"><p class="nva-home-eyebrow nva-home-eyebrow--blue" data-i18n="arena.home.practice.eyebrow">Apprentissage pratique</p><h2 id="practice-title" data-i18n="arena.home.practice.title">La pratique avant la théorie passive.</h2><p data-i18n="arena.home.practice.copy">Nous transformons les explications en pratique pour vous aider à utiliser réellement ce que vous apprenez.</p><figure class="nva-home-practice__visual"><img src="/images/nva/pic-4.jpeg" width="1024" height="1024" alt="Apprenant mettant en pratique une activité sur son ordinateur" loading="lazy" decoding="async"></figure></div><ol class="nva-home-practice__timeline"><% ["Des explications courtes pour comprendre l'essentiel.", "Des exercices guidés pour transformer le cours en action.", "Des retours pour progresser avec plus de confiance."].forEach((point, index) => { %><li class="reveal"><span aria-hidden="true"><%= index + 1 %></span><p data-i18n="arena.home.practice.step<%= index + 1 %>"><%= point %></p></li><% }) %></ol></div></section>
+  <section class="nva-home-practice" aria-labelledby="practice-title">
+    <div class="nva-home-container nva-home-practice__grid">
+      <div class="nva-home-practice__copy reveal">
+        <p class="nva-home-eyebrow nva-home-eyebrow--blue" data-i18n="arena.home.practice.eyebrow">Apprentissage pratique</p>
+        <h2 id="practice-title" data-i18n="arena.home.practice.title">La pratique avant la théorie passive.</h2>
+        <p class="nva-home-practice__intro" data-i18n="arena.home.practice.copy">Nous transformons les explications en pratique pour vous aider à utiliser réellement ce que vous apprenez.</p>
+        <ol class="nva-home-practice__timeline"><% ["Des explications courtes pour comprendre l'essentiel.", "Des exercices guidés pour transformer le cours en action.", "Des retours pour progresser avec plus de confiance."].forEach((point, index) => { %><li><span aria-hidden="true"><%= String(index + 1).padStart(2, '0') %></span><p data-i18n="arena.home.practice.step<%= index + 1 %>"><%= point %></p></li><% }) %></ol>
+      </div>
+      <figure class="nva-home-practice__visual reveal"><img src="/images/nva/pic-4.jpeg" width="1024" height="1024" alt="Apprenant mettant en pratique une activité sur son ordinateur" loading="lazy" decoding="async"></figure>
+    </div>
+  </section>
 
   <section class="nva-home-courses" aria-labelledby="featured-courses-title"><div class="nva-home-container"><div class="nva-home-section-copy nva-home-section-copy--wide reveal"><p class="nva-home-eyebrow" data-i18n="arena.home.courses.eyebrow">Formations</p><h2 id="featured-courses-title" data-i18n="arena.home.courses.title">Programmes à découvrir</h2><p data-i18n="arena.home.courses.copy">Découvrez nos formations pratiques et trouvez celle qui correspond à vos objectifs.</p></div><% if (!courseCards.length) { %><div class="nva-home-empty reveal"><strong data-i18n="courses.empty.title">Aucune formation n'est actuellement disponible.</strong><p data-i18n="courses.empty.copy">De nouveaux programmes seront publiés prochainement.</p></div><% } else { %><div class="stitch-course-grid"><% courseCards.forEach((courseCard) => { %><%- include('partials/public-course-card', { courseCard }) %><% }) %></div><% } %><div class="nva-home-courses__all reveal"><a class="nva-public-button nva-public-button-primary" href="/formations" data-i18n="arena.home.courses.all">Voir toutes les formations</a></div></div></section>
 

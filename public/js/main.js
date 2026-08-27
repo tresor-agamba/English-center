@@ -116,7 +116,7 @@ if (registrationForm) {
       node.hidden = node.dataset.levelMessage !== level.value;
     });
     const lang = window.GLI_I18N?.language || 'en';
-    submit.textContent = window.GLI_I18N?.translations[lang][needsTest ? 'form.createTest' : 'form.create']
+    if (!registrationForm.matches('[data-multistep-register]')) submit.textContent = window.GLI_I18N?.translations[lang][needsTest ? 'form.createTest' : 'form.create']
       || (needsTest ? 'Create My Account and Take the Test' : 'Create My Account');
   };
   level.addEventListener('change', updateLevelGuidance);
@@ -145,6 +145,44 @@ if (registrationForm) {
   courseSelect?.addEventListener('change', updateRegistrationSession);
   document.addEventListener('gli:languagechange', updateRegistrationSession);
   updateRegistrationSession();
+
+  const multiStep = registrationForm.matches('[data-multistep-register]');
+  if (multiStep) {
+    const direct = [...registrationForm.children];
+    const courseField = direct.find(node => node.querySelector?.('[name="courseId"]'));
+    const personalGrid = direct.find(node => node.classList?.contains('nva-register-grid') && node.querySelector('[name="firstName"]'));
+    const groupField = direct.find(node => node.querySelector?.('[name="groupId"]'));
+    const levelField = personalGrid?.querySelector('[name="requestedLevel"]')?.closest('.nva-register-field');
+    const passwordGrid = direct.find(node => node.classList?.contains('nva-register-passwords'));
+    const passwordHint = passwordGrid?.nextElementSibling;
+    const guidance = direct.find(node => node.classList?.contains('level-guidance'));
+    const objective = direct.find(node => node.querySelector?.('[name="learningObjective"]'));
+    const consents = direct.filter(node => node.classList?.contains('nva-register-consent') || node.matches?.('input[name="termsPresented"]'));
+    const steps = [
+      { title: 'Informations personnelles', nodes: [personalGrid, passwordGrid, passwordHint] },
+      { title: 'Formation et créneau', nodes: [courseField, sessionSummary, levelField, groupField, guidance, objective] },
+      { title: 'Récapitulatif', nodes: [] },
+      { title: 'Confirmation', nodes: consents },
+    ];
+    const progress = document.createElement('ol'); progress.className = 'register-progress';
+    steps.forEach((step, index) => { const li = document.createElement('li'); li.textContent = `${index + 1}. ${step.title}`; progress.append(li); });
+    registrationForm.prepend(progress);
+    const sections = steps.map((step, index) => { const section = document.createElement('section'); section.className = 'register-step'; section.dataset.registerStep = index + 1; section.innerHTML = `<h3>${step.title}</h3>`; step.nodes.filter(Boolean).forEach(node => section.append(node)); registrationForm.insertBefore(section, submit); return section; });
+    const recap = document.createElement('dl'); recap.className = 'register-recap'; sections[2].append(recap);
+    let current = 0;
+    const courseInput = registrationForm.querySelector('[name="courseId"]'); const groupInput = registrationForm.querySelector('[name="groupId"]');
+    const updateRecap = () => {
+      const courseOption = courseInput.tagName === 'SELECT' ? courseInput.selectedOptions[0] : courseInput;
+      const groupOption = groupInput?.selectedOptions[0]; const price = Number(courseOption?.dataset.price || 0); const fee = Number(courseOption?.dataset.fee || 0); const currency = courseOption?.dataset.currency || 'USD';
+      const rows = [['Formation', courseOption?.textContent?.trim() || courseInput.dataset.courseTitle || '—'], ['Niveau', level.value.replace('_', ' ')], ['Session', courseOption?.dataset.sessionName || '—'], ['Jours', groupOption?.dataset.days || 'Selon la session'], ['Horaire', groupOption?.dataset.time || 'Selon la session'], ['Programme', '16 séances · 1 h 30 · 2 séances/semaine · environ 8 semaines'], ['Prix du niveau', `${price} ${currency}`], ['Frais supplémentaires', `${fee} ${currency}`], ['Total à payer', `${price + fee} ${currency}`]];
+      recap.replaceChildren(...rows.flatMap(([key, value]) => { const dt = document.createElement('dt'); dt.textContent = key; const dd = document.createElement('dd'); dd.textContent = value; return [dt, dd]; }));
+    };
+    const show = (index) => { current = index; sections.forEach((section, i) => section.hidden = i !== current); [...progress.children].forEach((item, i) => item.classList.toggle('is-active', i === current)); updateRecap(); };
+    sections.forEach((section, index) => { const actions = document.createElement('div'); actions.className = 'register-step-actions'; if (index) { const back = document.createElement('button'); back.type = 'button'; back.textContent = 'Retour'; back.className = 'nva-public-button'; back.onclick = () => show(index - 1); actions.append(back); } if (index < 3) { const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Continuer'; next.className = 'nva-public-button nva-public-button-primary'; next.onclick = () => { const invalid = [...section.querySelectorAll('input,select,textarea')].find(field => !field.checkValidity()); if (invalid) return invalid.reportValidity(); show(index + 1); }; actions.append(next); } section.append(actions); });
+    sections[3].append(submit); submit.textContent = 'Confirmer mon inscription';
+    courseInput.addEventListener('change', () => { if (groupInput) { [...groupInput.options].forEach(option => { option.hidden = Boolean(option.value && option.dataset.courseId !== courseInput.value); }); groupInput.value = ''; } updateRecap(); });
+    groupInput?.addEventListener('change', updateRecap); level.addEventListener('change', updateRecap); show(error ? 0 : 0);
+  }
 }
 
 const localizePublicValues = () => {

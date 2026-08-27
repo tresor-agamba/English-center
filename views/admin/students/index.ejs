@@ -6,18 +6,22 @@
     <h1>Étudiants</h1>
     <p class="heading-copy"><%= total %> compte<%= total > 1 ? 's' : '' %> étudiant<%= total > 1 ? 's' : '' %></p>
   </div>
-  <a class="button" href="/admin/students/new">Ajouter un étudiant</a>
+  <a class="button" href="/admin/students/new">Inscrire un étudiant</a>
 </div>
 
 <% if (success) { %>
   <p class="success-message" role="status">L’opération a été effectuée avec succès.</p>
 <% } %>
 
-<form class="search-form" action="/admin/students" method="get" role="search">
-  <label class="sr-only" for="student-search">Rechercher un étudiant</label>
-  <input id="student-search" name="search" type="search" value="<%= search %>" placeholder="Prénom, nom ou téléphone" />
+<form class="search-form student-filters" action="/admin/students" method="get" role="search">
+  <label for="student-search">Recherche</label><input id="student-search" name="search" type="search" value="<%= search %>" placeholder="Nom, e-mail, téléphone ou WhatsApp" />
+  <label>Formation<select name="courseId"><option value="">Toutes</option><% options.courses.forEach(course => { %><option value="<%= course.id %>" <%= filters.courseId === course.id ? 'selected' : '' %>><%= course.title %></option><% }) %></select></label>
+  <label>Session<select name="sessionId"><option value="">Toutes</option><% options.courses.forEach(course => course.trainingSessions.forEach(session => { %><option value="<%= session.id %>" <%= filters.sessionId === session.id ? 'selected' : '' %>><%= course.title %> — <%= session.name %></option><% })) %></select></label>
+  <label>Créneau<select name="groupId"><option value="">Tous</option><% options.courses.forEach(course => course.trainingSessions.forEach(session => session.registrationGroups.forEach(group => { %><option value="<%= group.id %>" <%= filters.groupId === group.id ? 'selected' : '' %>><%= session.name %> — <%= group.name %></option><% }))) %></select></label>
+  <label>Niveau<select name="level"><option value="">Tous</option><% ['LEVEL_1','LEVEL_2','LEVEL_3'].forEach(level => { %><option value="<%= level %>" <%= filters.level === level ? 'selected' : '' %>><%= level.replace('_', ' ') %></option><% }) %></select></label>
+  <label>Statut<select name="status"><option value="">Tous</option><% ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED','CANCELLED','PAYMENT_FAILED'].forEach(status => { %><option value="<%= status %>" <%= filters.status === status ? 'selected' : '' %>><%= status %></option><% }) %></select></label>
   <button class="button button-small" type="submit">Rechercher</button>
-  <% if (search) { %><a href="/admin/students">Effacer</a><% } %>
+  <% if (query) { %><a href="/admin/students">Effacer les filtres</a><% } %>
 </form>
 
 <% if (!students.length) { %>
@@ -30,13 +34,14 @@
   <div class="table-wrapper responsive-table">
     <table>
       <thead>
-        <tr><th>Étudiant</th><th>Téléphone</th><th>Statut</th><th>Création</th><th>Actions</th></tr>
+        <tr><th>Étudiant</th><th>Contacts</th><th>Inscriptions</th><th>Statut compte</th><th>Création</th><th>Actions</th></tr>
       </thead>
       <tbody>
         <% students.forEach((student) => { %>
           <tr>
             <td data-label="Étudiant"><strong><%= student.firstName %> <%= student.lastName %></strong></td>
-            <td data-label="Téléphone"><%= student.phoneNumber %></td>
+            <td data-label="Contacts"><%= student.phoneNumber %><% if (student.whatsappNumber) { %><br>WA: <%= student.whatsappNumber %><% } %><% if (student.email) { %><br><%= student.email %><% } %></td>
+            <td data-label="Inscriptions"><% student.enrollments.forEach(item => { %><div><strong><%= item.trainingSession.course.title %></strong> — <%= item.trainingSession.name %><%= item.registrationGroup ? ` — ${item.registrationGroup.name}` : '' %><br><small><%= item.approvedLevel || 'Niveau à confirmer' %> · <%= item.status %></small></div><% }) %></td>
             <td data-label="Statut"><span class="status <%= student.isActive ? 'status-active' : 'status-inactive' %>"><%= student.isActive ? 'Actif' : 'Désactivé' %></span></td>
             <td data-label="Création"><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(student.createdAt) %></td>
             <td data-label="Actions" class="table-actions">
@@ -51,9 +56,9 @@
 
   <% if (totalPages > 1) { %>
     <nav class="pagination" aria-label="Pagination">
-      <% if (page > 1) { %><a href="/admin/students?search=<%= encodeURIComponent(search) %>&page=<%= page - 1 %>">← Précédent</a><% } %>
+      <% if (page > 1) { %><a href="/admin/students?<%= query %>&page=<%= page - 1 %>">← Précédent</a><% } %>
       <span>Page <%= page %> sur <%= totalPages %></span>
-      <% if (page < totalPages) { %><a href="/admin/students?search=<%= encodeURIComponent(search) %>&page=<%= page + 1 %>">Suivant →</a><% } %>
+      <% if (page < totalPages) { %><a href="/admin/students?<%= query %>&page=<%= page + 1 %>">Suivant →</a><% } %>
     </nav>
   <% } %>
 <% } %>

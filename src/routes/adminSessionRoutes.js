@@ -12,5 +12,7 @@ router.get('/:id/edit', asyncHandler(controller.editForm));
 router.post('/:id', asyncHandler(controller.update));
 router.post('/:id/cancel', asyncHandler(controller.cancel));
 router.post('/:id/toggle-status', asyncHandler(controller.toggleStatus));
+router.post('/:id/groups', asyncHandler(controller.createGroup));
+router.post('/:id/groups/:groupId/toggle', asyncHandler(controller.toggleGroup));
 
 module.exports = router;

@@ -16,9 +16,10 @@ function findById(id) {
     include: {
       course: true,
       enrollments: {
-        include: { user: true },
+        include: { user: true, registrationGroup: true },
         orderBy: { enrolledAt: 'desc' },
       },
+      registrationGroups: { include: { teacher: true, _count: { select: { enrollments: { where: { status: { in: ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED'] } } } } } }, orderBy: { startTime: 'asc' } },
     },
   });
 }
@@ -46,4 +47,7 @@ function cancel(id) {
   });
 }
 
-module.exports = { list, findById, listCourses, findCourse, create, update, cancel };
+function createRegistrationGroup(data) { return prisma.registrationGroup.create({ data }); }
+function setRegistrationGroupActive(id, isActive) { return prisma.registrationGroup.update({ where: { id }, data: { isActive } }); }
+
+module.exports = { list, findById, listCourses, findCourse, create, update, cancel, createRegistrationGroup, setRegistrationGroupActive };
