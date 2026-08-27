@@ -64,7 +64,7 @@
 
   <div class="success-actions">
     <% if (['TRIAL_ACTIVE', 'PAYMENT_REQUIRED'].includes(enrollment.status)) { %>
-      <form action="/payments" method="post">
+      <form action="/payments" method="post"><%- csrfField() %>
         <input type="hidden" name="enrollmentId" value="<%= enrollment.id %>" />
         <input type="hidden" name="currency" value="<%= trialAccess.expectedCurrency %>" />
         <label for="payment-amount">Montant à payer (<%= trialAccess.expectedCurrency %>)</label>

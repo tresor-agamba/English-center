@@ -1,4 +1,4 @@
-<form method="post" action="<%= action %>" class="card assessment-form" id="assessment-form">
+<form method="post" action="<%= action %>" class="card assessment-form" id="assessment-form"><%- csrfField() %>
   <label>Titre <input name="title" maxlength="200" required value="<%= assessment?.title || '' %>"></label>
   <label>Description <textarea name="description" maxlength="5000"><%= assessment?.description || '' %></textarea></label>
   <label>Formation

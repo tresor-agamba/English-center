@@ -4,7 +4,7 @@
     <p class="eyebrow" data-i18n="certificate.eyebrow">Service public</p>
     <h1 data-i18n="certificate.title">Vérifier un certificat</h1>
     <p data-i18n="certificate.copy">Saisissez le numéro du certificat ou son code de vérification exact.</p>
-    <form method="post" action="/certificates/verify" class="certificate-search" aria-describedby="certificate-search-help">
+    <form method="post" action="/certificates/verify" class="certificate-search" aria-describedby="certificate-search-help"><%- csrfField() %>
       <label for="query" data-i18n="certificate.label">Numéro ou code de vérification</label>
       <p id="certificate-search-help" class="form-hint" data-i18n="certificate.help">The value is checked securely and is not stored in your browser.</p>
       <div>

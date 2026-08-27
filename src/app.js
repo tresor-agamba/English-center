@@ -58,6 +58,7 @@ const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const requestContext = require('./middlewares/requestContext');
 const pwaRoutes = require('./routes/pwaRoutes');
+const csrfProtection = require('./middlewares/csrfProtection');
 
 const app = express();
 app.disable('x-powered-by');
@@ -75,6 +76,11 @@ app.use(helmet({
   } },
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
+app.use((req, res, next) => {
+  res.locals.csrfToken = '';
+  res.locals.csrfField = () => '';
+  next();
+});
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ verify: (req, res, buffer) => {
   if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
@@ -95,6 +101,7 @@ app.use(
     },
   })
 );
+app.use(csrfProtection.protect);
 app.use(notificationLocals);
 app.use((req, res, next) => {
   const publicPrefixes = ['/', '/about', '/contact', '/login', '/register', '/formations', '/certificates'];

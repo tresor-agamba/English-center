@@ -129,6 +129,7 @@ test('inscription autonome à une session', async (t) => {
         phoneNumber: existingPhone,
         password: 'Nouveau@2026',
         passwordConfirmation: 'Nouveau@2026',
+        termsAccepted: 'yes',
       });
       const response = await fetch(`${baseUrl}/register`, { method: 'POST', body });
       assert.equal(response.status, 400);
@@ -140,6 +141,21 @@ test('inscription autonome à une session', async (t) => {
       assert.equal(await prisma.enrollment.count({ where: { userId: existingUserId, trainingSessionId: validSessionId } }), 0);
     });
 
+    await t.test('refuse une inscription HTTP sans acceptation des conditions', async () => {
+      const body = new URLSearchParams({
+        sessionId: String(validSessionId),
+        firstName: 'Sans',
+        lastName: 'Consentement',
+        phoneNumber: registrationPhone,
+        password,
+        passwordConfirmation: password,
+      });
+      const response = await fetch(`${baseUrl}/register`, { method: 'POST', body });
+      assert.equal(response.status, 400);
+      assert.match(await response.text(), /accepter les conditions/i);
+      assert.equal(await prisma.user.count({ where: { phoneNumber: normalizedPhone } }), 0);
+    });
+
     await t.test('crée compte et inscription atomiquement puis connecte automatiquement', async () => {
       const body = new URLSearchParams({
         sessionId: String(validSessionId),
@@ -148,6 +164,7 @@ test('inscription autonome à une session', async (t) => {
         phoneNumber: registrationPhone,
         password,
         passwordConfirmation: password,
+        termsAccepted: 'yes',
         role: 'ADMIN',
         status: 'CONFIRMED',
       });

@@ -1,6 +1,6 @@
 <%- include('../../partials/header', { title }) %><%- include('../_nav') %>
 <section class="form-card"><h1><%= title %></h1><% if (error) { %><p class="form-error"><%= error %></p><% } %>
-<form method="post" action="<%= teacher && teacher.id ? `/admin/teachers/${teacher.id}` : '/admin/teachers' %>">
+<form method="post" action="<%= teacher && teacher.id ? `/admin/teachers/${teacher.id}` : '/admin/teachers' %>"><%- csrfField() %>
 <label>Prénom</label><input name="firstName" required value="<%= teacher?.firstName || '' %>"><label>Nom</label><input name="lastName" required value="<%= teacher?.lastName || '' %>"><label>Téléphone</label><input name="phoneNumber" required value="<%= teacher?.phoneNumber || '' %>">
 <% if (!teacher?.id) { %><label>Mot de passe</label><input type="password" name="password" minlength="8" required><label>Confirmation</label><input type="password" name="passwordConfirmation" required><% } %>
 <button class="button">Enregistrer</button></form></section><%- include('../../partials/footer') %>

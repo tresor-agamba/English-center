@@ -4,7 +4,7 @@
 
 <section class="card">
   <h2>Configuration générale</h2>
-  <form method="post" action="/admin/certificates/config" class="certificate-config">
+  <form method="post" action="/admin/certificates/config" class="certificate-config"><%- csrfField() %>
     <label><input type="checkbox" name="certificatesPaid" <%= settings.certificatesPaid ? 'checked' : '' %>> Les certificats sont payants</label>
     <label>Montant général <input type="number" min="0" step=".01" name="generalAmount" value="<%= settings.generalAmount %>" required></label>
     <label>Devise <input name="currency" maxlength="3" value="<%= settings.currency %>" required></label>
@@ -20,10 +20,10 @@
 </section>
 
 <details class="card"><summary>Prix par formation</summary>
-  <% courses.forEach(c => { %><form class="list-row" method="post" action="/admin/certificates/courses/<%= c.id %>/fee"><span><%= c.title %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= c.certificateFee ?? '' %>" placeholder="Montant général"><button>Enregistrer</button></form><% }) %>
+  <% courses.forEach(c => { %><form class="list-row" method="post" action="/admin/certificates/courses/<%= c.id %>/fee"><%- csrfField() %><span><%= c.title %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= c.certificateFee ?? '' %>" placeholder="Montant général"><button>Enregistrer</button></form><% }) %>
 </details>
 <details class="card"><summary>Prix par session</summary>
-  <% sessions.forEach(s => { %><form class="list-row" method="post" action="/admin/certificates/sessions/<%= s.id %>/fee"><span><%= s.course.title %> — <%= s.name %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= s.certificateFee ?? '' %>" placeholder="Prix formation/général"><button>Enregistrer</button></form><% }) %>
+  <% sessions.forEach(s => { %><form class="list-row" method="post" action="/admin/certificates/sessions/<%= s.id %>/fee"><%- csrfField() %><span><%= s.course.title %> — <%= s.name %></span><input name="certificateFee" type="number" min="0" step=".01" value="<%= s.certificateFee ?? '' %>" placeholder="Prix formation/général"><button>Enregistrer</button></form><% }) %>
 </details>
 
 <section><h2>Inscriptions</h2><div class="table-wrap"><table>
@@ -37,11 +37,11 @@
     <td><%= r.status %><% if (r.request?.certificate) { %><br><small>N° <%= r.request.certificate.serialNumber %></small><div><a href="/admin/certificates/<%= r.request.certificate.id %>/download">Télécharger PDF</a> · <a href="/certificates/verify/<%= r.request.certificate.verificationCode %>">Vérifier</a></div><% } %></td>
     <td>
       <% if (r.eligibility.valid && !r.payment && !r.fee.amount.isZero()) { %>
-        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/confirm-payment"><input name="paymentMethod" placeholder="Moyen de paiement" required><button>Confirmer paiement</button></form>
-        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/waive"><input name="reason" placeholder="Motif obligatoire" required><button>Exonérer</button></form>
+        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/confirm-payment"><%- csrfField() %><input name="paymentMethod" placeholder="Moyen de paiement" required><button>Confirmer paiement</button></form>
+        <form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/waive"><%- csrfField() %><input name="reason" placeholder="Motif obligatoire" required><button>Exonérer</button></form>
       <% } %>
-      <% if (r.status === 'ELIGIBLE_PAYMENT_CONFIRMED') { %><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/issue"><button class="button button-small">Générer manuellement</button></form><% } %>
-      <% if (r.status === 'ISSUED') { %><form method="post" action="/admin/certificates/<%= r.request.certificate.id %>/revoke"><input name="reason" placeholder="Motif de révocation" required><button>Révoquer</button></form><% } %>
+      <% if (r.status === 'ELIGIBLE_PAYMENT_CONFIRMED') { %><form method="post" action="/admin/certificates/enrollments/<%= r.enrollment.id %>/issue"><%- csrfField() %><button class="button button-small">Générer manuellement</button></form><% } %>
+      <% if (r.status === 'ISSUED') { %><form method="post" action="/admin/certificates/<%= r.request.certificate.id %>/revoke"><%- csrfField() %><input name="reason" placeholder="Motif de révocation" required><button>Révoquer</button></form><% } %>
     </td>
   </tr><% }) %></tbody>
 </table></div></section>

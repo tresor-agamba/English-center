@@ -4,7 +4,7 @@
   <p class="eyebrow">Administration</p>
   <h1>Inscrire un étudiant</h1>
   <p class="heading-copy">Le compte et l’inscription sont créés ensemble. Un mot de passe temporaire sécurisé sera généré.</p>
-  <form action="/admin/students" method="post" class="student-form">
+  <form action="/admin/students" method="post" class="student-form"><%- csrfField() %>
     <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
     <div class="form-grid"><div><label for="firstName">Prénom</label><input id="firstName" name="firstName" value="<%= form.firstName || '' %>" required></div><div><label for="lastName">Nom</label><input id="lastName" name="lastName" value="<%= form.lastName || '' %>" required></div></div>
     <div class="form-grid"><div><label for="phoneNumber">Téléphone / identifiant</label><input id="phoneNumber" name="phoneNumber" type="tel" value="<%= form.phoneNumber || '' %>" required></div><div><label for="whatsappNumber">WhatsApp</label><input id="whatsappNumber" name="whatsappNumber" type="tel" value="<%= form.whatsappNumber || '' %>"></div></div>

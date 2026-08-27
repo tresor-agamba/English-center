@@ -4,7 +4,7 @@
   <p class="eyebrow" data-i18n="test.eyebrow">Placement assessment</p>
   <h1 data-i18n="test.title">Your placement test</h1>
   <p><span data-i18n="test.copy">Answer every question. Your result will help us recommend the most suitable level.</span> <strong><%= enrollment.trainingSession.course.title %> · <%= enrollment.requestedLevel.replace('_', ' ') %></strong></p>
-  <form method="post" action="/placement-test/<%= enrollment.id %>">
+  <form method="post" action="/placement-test/<%= enrollment.id %>"><%- csrfField() %>
     <% questions.forEach((question, index) => { %>
       <fieldset class="card placement-question"><legend><%= index + 1 %>. <%= question.prompt %></legend>
         <% question.options.forEach((option) => { %><label><input type="radio" name="<%= question.id %>" value="<%= option %>" required> <%= option %></label><% }) %>

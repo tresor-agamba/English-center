@@ -16,7 +16,7 @@
 <% if (!rows.length) { %>
   <div class="empty-state"><strong>Aucun étudiant</strong><p>Aucune inscription active n’appartient à cette session.</p></div>
 <% } else { %>
-  <form action="/admin/class-meetings/<%= meeting.id %>/attendance" method="post">
+  <form action="/admin/class-meetings/<%= meeting.id %>/attendance" method="post"><%- csrfField() %>
     <div class="attendance-cards">
       <% rows.forEach((row) => { %>
         <article class="attendance-card">

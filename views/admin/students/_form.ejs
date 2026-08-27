@@ -1,4 +1,4 @@
-<form action="<%= action %>" method="post" class="student-form">
+<form action="<%= action %>" method="post" class="student-form"><%- csrfField() %>
   <% if (error) { %>
     <p class="form-error" role="alert"><%= error %></p>
   <% } %>

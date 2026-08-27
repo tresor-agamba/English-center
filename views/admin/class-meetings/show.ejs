@@ -12,7 +12,7 @@
     <a class="button" href="/admin/class-meetings/<%= meeting.id %>/attendance">Gérer les présences</a>
     <a class="button" href="/admin/class-meetings/<%= meeting.id %>/edit">Modifier</a>
     <% if (meeting.status !== 'CANCELLED') { %>
-      <form action="/admin/class-meetings/<%= meeting.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette séance ?')">
+      <form action="/admin/class-meetings/<%= meeting.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette séance ?')"><%- csrfField() %>
         <button class="button button-danger" type="submit">Annuler</button>
       </form>
     <% } %>

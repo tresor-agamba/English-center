@@ -38,7 +38,7 @@ function cleanForm(body) {
   }
   form.phoneNumber = normalizePhoneNumber(form.phoneNumber);
   if (form.whatsappNumber) form.whatsappNumber = normalizePhoneNumber(form.whatsappNumber);
-  if (body.termsPresented === 'yes' && body.termsAccepted !== 'yes') throw new registrationService.RegistrationError('TERMS_REQUIRED', 'Vous devez accepter les conditions d’inscription.');
+  if (body.termsAccepted !== 'yes') throw new registrationService.RegistrationError('TERMS_REQUIRED', 'Vous devez accepter les conditions d’inscription.');
   return form;
 }
 

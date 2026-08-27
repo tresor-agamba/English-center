@@ -181,7 +181,7 @@ if (registrationForm) {
     sections.forEach((section, index) => { const actions = document.createElement('div'); actions.className = 'register-step-actions'; if (index) { const back = document.createElement('button'); back.type = 'button'; back.textContent = 'Retour'; back.className = 'nva-public-button'; back.onclick = () => show(index - 1); actions.append(back); } if (index < 3) { const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Continuer'; next.className = 'nva-public-button nva-public-button-primary'; next.onclick = () => { const invalid = [...section.querySelectorAll('input,select,textarea')].find(field => !field.checkValidity()); if (invalid) return invalid.reportValidity(); show(index + 1); }; actions.append(next); } section.append(actions); });
     sections[3].append(submit); submit.textContent = 'Confirmer mon inscription';
     courseInput.addEventListener('change', () => { if (groupInput) { [...groupInput.options].forEach(option => { option.hidden = Boolean(option.value && option.dataset.courseId !== courseInput.value); }); groupInput.value = ''; } updateRecap(); });
-    groupInput?.addEventListener('change', updateRecap); level.addEventListener('change', updateRecap); show(error ? 0 : 0);
+    groupInput?.addEventListener('change', updateRecap); level.addEventListener('change', updateRecap); show(0);
   }
 }
 

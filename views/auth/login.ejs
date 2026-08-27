@@ -12,7 +12,7 @@
     <div class="nva-login-card">
       <header class="nva-login-heading"><p class="nva-login-eyebrow" data-i18n="nav.login">Connexion</p><h2 data-i18n="login.title">Heureux de vous revoir</h2><% if (sessionId) { %><p data-i18n="login.continue">Connectez-vous pour poursuivre l’inscription sélectionnée.</p><% } else { %><p data-i18n="login.copy">Connectez-vous avec votre téléphone et votre mot de passe.</p><% } %></header>
       <% if (error) { %><div class="nva-login-alert" role="alert"><strong data-i18n="login.error.title">Connexion impossible</strong><p data-public-error><%= error %></p></div><% } %>
-      <form class="nva-login-form" action="/login" method="post" data-login-form>
+      <form class="nva-login-form" action="/login" method="post" data-login-form><%- csrfField() %>
         <% if (sessionId) { %><input type="hidden" name="sessionId" value="<%= sessionId %>"><% } %>
         <div class="nva-login-field"><label for="phoneNumber" data-i18n="login.phone">Numéro de téléphone</label><input id="phoneNumber" name="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" placeholder="+243812345678" value="<%= phoneNumber %>" required></div>
         <div class="nva-login-field"><label for="password" data-i18n="login.password">Mot de passe</label><div class="nva-login-password"><input id="password" name="password" type="password" autocomplete="current-password" required data-login-password><button type="button" data-password-toggle aria-controls="password" aria-pressed="false" data-i18n="login.password.show">Afficher</button></div></div>

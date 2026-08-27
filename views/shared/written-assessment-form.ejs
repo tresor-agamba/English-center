@@ -1,4 +1,4 @@
-<form method="post" action="<%= action %>" class="card form-stack">
+<form method="post" action="<%= action %>" class="card form-stack"><%- csrfField() %>
 <label>Titre<input name="title" value="<%= item?.title || '' %>" required></label><label>Formation<select name="courseId" required><% courses.forEach(c => { %><option value="<%= c.id %>" <%= item?.courseId === c.id ? 'selected' : '' %>><%= c.title %></option><% }) %></select></label>
 <label>Session<select name="trainingSessionId"><option value="">Toutes les sessions</option><% sessions.forEach(s => { %><option value="<%= s.id %>" <%= item?.trainingSessionId === s.id ? 'selected' : '' %>><%= s.name %></option><% }) %></select></label>
 <label>Consignes<textarea name="instructions" required><%= item?.instructions || '' %></textarea></label><label>Description<textarea name="description"><%= item?.description || '' %></textarea></label>

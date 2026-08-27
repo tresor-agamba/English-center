@@ -1,7 +1,7 @@
 <%- include('../partials/header', { title }) %>
 <%- include('_nav') %>
 <h1>Nouvelle séance</h1>
-<form class="form-card" method="post" action="/teacher/sessions/<%= session.id %>/meetings">
+<form class="form-card" method="post" action="/teacher/sessions/<%= session.id %>/meetings"><%- csrfField() %>
   <label>Leçon</label>
   <select name="lessonId"><option value="">Séance générale</option><% lessons.forEach(l => { %><option value="<%= l.id %>"><%= l.courseModule.title %> — <%= l.title %></option><% }) %></select>
   <label>Titre</label><input name="title">

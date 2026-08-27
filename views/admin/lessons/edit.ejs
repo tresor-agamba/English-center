@@ -1,5 +1,5 @@
 <%- include('../../partials/header', { title }) %><%- include('../_nav') %>
 <section class="card wide-card"><div class="page-heading compact-heading"><div><p class="eyebrow"><%= lesson.courseModule.title %></p><h1>Modifier la leçon</h1></div><a class="button" href="/admin/lessons/<%= lesson.id %>/resources">Gérer les ressources</a></div>
 <%- include('_form', { action:`/admin/lessons/${lesson.id}`, form, error, submitLabel:'Enregistrer' }) %>
-<form method="post" action="/admin/lessons/<%= lesson.id %>/toggle-published"><button class="button button-small" type="submit"><%= lesson.isPublished ? 'Masquer' : 'Publier' %></button></form></section>
+<form method="post" action="/admin/lessons/<%= lesson.id %>/toggle-published"><%- csrfField() %><button class="button button-small" type="submit"><%= lesson.isPublished ? 'Masquer' : 'Publier' %></button></form></section>
 <%- include('../../partials/footer') %>

@@ -7,35 +7,36 @@
     </picture>
     <div class="stitch-hero-overlay" aria-hidden="true"></div>
     <div class="stitch-hero-inner nva-home-hero__inner reveal">
-      <img class="nva-home-hero__logo" src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697">
       <h1 id="home-hero-title" data-i18n="arena.home.hero.title">New Vision Academy</h1>
       <p data-i18n="arena.home.hero.copy">Des formations pratiques, 100% en ligne, pour apprendre utilement depuis Kinshasa et partout en RDC.</p>
       <div class="hero-actions"><a class="nva-public-button nva-public-button-primary nva-home-button-large" href="/formations" data-i18n="arena.home.hero.primary">Découvrir les formations</a><a class="nva-public-button nva-home-button-large nva-home-button-dark-outline" href="/register" data-i18n="arena.home.hero.secondary">S'inscrire</a></div>
     </div>
   </section>
 
-  <section class="nva-home-academy" aria-labelledby="academy-title">
-    <div class="nva-home-container nva-home-academy__grid reveal">
-      <div class="nva-home-academy__copy">
+  <section class="nva-home-visual-story nva-home-visual-story--academy" aria-labelledby="academy-title">
+    <img class="nva-home-visual-story__bg" src="/images/nva/pic-2.jpeg" width="1024" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async">
+    <div class="nva-home-visual-story__overlay" aria-hidden="true"></div>
+    <div class="nva-home-visual-story__inner reveal">
+      <article class="nva-home-visual-story__copy">
         <p class="nva-home-eyebrow">New Vision Academy</p>
         <h2 id="academy-title" data-i18n="arena.home.academy.title">Une académie en ligne pour apprendre utilement, pas seulement regarder des cours.</h2>
         <p data-i18n="arena.home.academy.copy">NVA vous aide à passer des explications à l'action grâce à des formations courtes, suivies et adaptées aux réalités des apprenants en RDC.</p>
-      </div>
-      <figure class="nva-home-academy__visual"><img src="/images/nva/pic-2.jpeg" width="1024" height="1024" alt="Apprenants New Vision Academy utilisant un ordinateur, une tablette et un téléphone" loading="lazy" decoding="async"></figure>
+      </article>
     </div>
   </section>
 
   <section class="nva-home-approach" id="approche" aria-labelledby="approach-title"><div class="nva-home-container"><div class="nva-home-approach__composition reveal"><div class="nva-home-approach__photo-frame"><img src="/images/nva/pic-3.png" width="1024" height="1024" alt="Apprenante New Vision Academy suivant une formation en ligne" loading="lazy" decoding="async"></div><article class="nva-home-approach__card"><p class="nva-home-eyebrow" data-i18n="arena.home.approach.eyebrow">Approche NVA</p><h2 id="approach-title" data-i18n="arena.home.approach.title">Un cours doit produire une capacité réelle.</h2><p data-i18n="arena.home.approach.copy">Chaque module relie les notions à une action concrète : parler, produire, organiser, résoudre ou présenter quelque chose d'utile.</p></article></div></div></section>
 
-  <section class="nva-home-practice" aria-labelledby="practice-title">
-    <div class="nva-home-container nva-home-practice__grid">
-      <div class="nva-home-practice__copy reveal">
+  <section class="nva-home-visual-story nva-home-visual-story--practice" aria-labelledby="practice-title">
+    <img class="nva-home-visual-story__bg" src="/images/nva/pic-4.jpeg" width="1024" height="1024" alt="" aria-hidden="true" loading="lazy" decoding="async">
+    <div class="nva-home-visual-story__overlay" aria-hidden="true"></div>
+    <div class="nva-home-visual-story__inner reveal">
+      <article class="nva-home-visual-story__copy">
         <p class="nva-home-eyebrow nva-home-eyebrow--blue" data-i18n="arena.home.practice.eyebrow">Apprentissage pratique</p>
         <h2 id="practice-title" data-i18n="arena.home.practice.title">La pratique avant la théorie passive.</h2>
-        <p class="nva-home-practice__intro" data-i18n="arena.home.practice.copy">Nous transformons les explications en pratique pour vous aider à utiliser réellement ce que vous apprenez.</p>
-        <ol class="nva-home-practice__timeline"><% ["Des explications courtes pour comprendre l'essentiel.", "Des exercices guidés pour transformer le cours en action.", "Des retours pour progresser avec plus de confiance."].forEach((point, index) => { %><li><span aria-hidden="true"><%= String(index + 1).padStart(2, '0') %></span><p data-i18n="arena.home.practice.step<%= index + 1 %>"><%= point %></p></li><% }) %></ol>
-      </div>
-      <figure class="nva-home-practice__visual reveal"><img src="/images/nva/pic-4.jpeg" width="1024" height="1024" alt="Apprenant mettant en pratique une activité sur son ordinateur" loading="lazy" decoding="async"></figure>
+        <p class="nva-home-visual-story__intro" data-i18n="arena.home.practice.copy">Nous transformons les explications en pratique pour vous aider à utiliser réellement ce que vous apprenez.</p>
+        <ol class="nva-home-visual-story__timeline"><% ["Des explications courtes pour comprendre l'essentiel.", "Des exercices guidés pour transformer le cours en action.", "Des retours pour progresser avec plus de confiance."].forEach((point, index) => { %><li><span aria-hidden="true"><%= String(index + 1).padStart(2, '0') %></span><p data-i18n="arena.home.practice.step<%= index + 1 %>"><%= point %></p></li><% }) %></ol>
+      </article>
     </div>
   </section>
 

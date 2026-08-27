@@ -1,5 +1,5 @@
 <%- include('../../partials/header', { title }) %><%- include('../_nav') %>
-<h1><%= title %></h1><form method="post" action="/admin/live-oral-sessions" class="card form-stack">
+<h1><%= title %></h1><form method="post" action="/admin/live-oral-sessions" class="card form-stack"><%- csrfField() %>
 <label>Évaluation<select name="assessmentId" required><% assessments.forEach(a => { %><option value="<%= a.id %>"><%= a.title %></option><% }) %></select></label>
 <label>Session de formation<select name="trainingSessionId" required><% trainingSessions.forEach(s => { %><option value="<%= s.id %>"><%= s.course.title %> — <%= s.name %></option><% }) %></select></label>
 <label>Début (UTC)<input type="datetime-local" name="scheduledStartAt" required></label><label>Fin (UTC)<input type="datetime-local" name="scheduledEndAt" required></label>

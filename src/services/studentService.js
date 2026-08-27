@@ -92,7 +92,7 @@ function findById(id) {
             select: {
               id: true,
               title: true,
-              course: { select: { id: true, title: true } },
+              courseModule: { select: { course: { select: { id: true, title: true } } } },
             },
           },
         },

@@ -54,7 +54,7 @@
       <% if (manualMethods.length) { %>
       <section class="manual-payment-declaration card" id="declare-payment">
         <p class="eyebrow">Étape 3</p><h2>J’ai effectué mon paiement</h2>
-        <form method="post" action="/payments/<%= payment.reference %>/declare" enctype="multipart/form-data" class="form-stack">
+        <form method="post" action="/payments/<%= payment.reference %>/declare" enctype="multipart/form-data" class="form-stack"><%- csrfField() %>
           <label>Moyen utilisé<select name="methodCode" required><% manualMethods.forEach(method => { %><option value="<%= method.code %>"><%= method.label %></option><% }) %></select></label>
           <label>Numéro ayant effectué le paiement<input name="payerNumber" maxlength="100" autocomplete="tel" required></label>
           <label>Montant envoyé<input name="amount" type="number" step="0.01" min="0.01" max="<%= payment.amount %>" value="<%= payment.amount %>" readonly required></label>
@@ -69,8 +69,8 @@
     <% } %>
   <% } else if (simulationEnabled && ['PENDING', 'PROCESSING'].includes(payment.status)) { %>
     <section class="simulation-panel"><h2>Simulation de développement</h2><p>Ces actions sont désactivées en production.</p><div class="simulation-actions">
-      <form action="/payments/<%= payment.reference %>/simulate-success" method="post"><button class="button" type="submit">Simuler un paiement réussi</button></form>
-      <form action="/payments/<%= payment.reference %>/simulate-failure" method="post"><button class="button button-danger" type="submit">Simuler un paiement échoué</button></form>
+      <form action="/payments/<%= payment.reference %>/simulate-success" method="post"><%- csrfField() %><button class="button" type="submit">Simuler un paiement réussi</button></form>
+      <form action="/payments/<%= payment.reference %>/simulate-failure" method="post"><%- csrfField() %><button class="button button-danger" type="submit">Simuler un paiement échoué</button></form>
     </div></section>
   <% } %>
 

@@ -1,5 +1,5 @@
 <% if (error) { %><p class="form-error"><%= error %></p><% } %>
-<form method="post" action="<%= action %>" class="learning-form">
+<form method="post" action="<%= action %>" class="learning-form"><%- csrfField() %>
   <label>Titre<input name="title" maxlength="180" required value="<%= form.title || '' %>"></label>
   <label>Description<textarea name="description" maxlength="2000" rows="4"><%= form.description || '' %></textarea></label>
   <label>Contenu texte<textarea name="content" maxlength="50000" rows="12"><%= form.content || '' %></textarea></label>

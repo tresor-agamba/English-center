@@ -1,4 +1,4 @@
-<form action="<%= action %>" method="post" class="course-admin-form">
+<form action="<%= action %>" method="post" class="course-admin-form"><%- csrfField() %>
   <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
 
   <label for="title">Titre</label>

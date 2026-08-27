@@ -8,7 +8,7 @@
   <div class="heading-actions">
     <a class="button" href="/admin/sessions/<%= session.id %>/edit">Modifier</a>
     <% if (session.status !== 'CANCELLED') { %>
-      <form action="/admin/sessions/<%= session.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette session ?')">
+      <form action="/admin/sessions/<%= session.id %>/cancel" method="post" onsubmit="return confirm('Annuler cette session ?')"><%- csrfField() %>
         <button class="button button-danger" type="submit">Annuler la session</button>
       </form>
     <% } %>
@@ -30,7 +30,7 @@
   <div class="status-actions">
     <% ['DRAFT', 'OPEN', 'FULL', 'ONGOING', 'COMPLETED', 'CANCELLED'].forEach((status) => { %>
       <% if (status !== session.status) { %>
-        <form action="/admin/sessions/<%= session.id %>/toggle-status" method="post">
+        <form action="/admin/sessions/<%= session.id %>/toggle-status" method="post"><%- csrfField() %>
           <input type="hidden" name="status" value="<%= status %>" />
           <button class="button button-small" type="submit"><%= status %></button>
         </form>
@@ -40,8 +40,8 @@
 </section>
 
 <section class="section-block"><h2>Groupes et créneaux</h2>
-  <% if (session.registrationGroups.length) { %><div class="table-wrapper"><table><thead><tr><th>Groupe</th><th>Jours</th><th>Horaire</th><th>Capacité</th><th>Places restantes</th><th>Statut</th></tr></thead><tbody><% session.registrationGroups.forEach(group => { const remaining = Math.max(0, group.capacity - group._count.enrollments); %><tr><td><%= group.name %></td><td><%= group.weekDays.join(', ') %></td><td><%= group.startTime %>–<%= group.endTime %></td><td><%= group._count.enrollments %> / <%= group.capacity %></td><td><%= remaining ? remaining : 'Complet' %></td><td><form method="post" action="/admin/sessions/<%= session.id %>/groups/<%= group.id %>/toggle"><button class="button button-small"><%= group.isActive ? 'Actif' : 'Inactif' %></button></form></td></tr><% }) %></tbody></table></div><% } %>
-  <form method="post" action="/admin/sessions/<%= session.id %>/groups" class="session-form"><h3>Ajouter un groupe</h3><label>Nom<input name="name" placeholder="Groupe A" required></label><fieldset><legend>Jours</legend><label><input type="checkbox" name="weekDays" value="FRIDAY" checked> Vendredi</label><label><input type="checkbox" name="weekDays" value="SATURDAY" checked> Samedi</label></fieldset><div class="form-grid"><label>Début<input name="startTime" type="time" required></label><label>Fin<input name="endTime" type="time" required></label><label>Capacité<input name="capacity" type="number" min="1" required></label></div><button class="button" type="submit">Ajouter le groupe</button></form>
+  <% if (session.registrationGroups.length) { %><div class="table-wrapper"><table><thead><tr><th>Groupe</th><th>Jours</th><th>Horaire</th><th>Capacité</th><th>Places restantes</th><th>Statut</th></tr></thead><tbody><% session.registrationGroups.forEach(group => { const remaining = Math.max(0, group.capacity - group._count.enrollments); %><tr><td><%= group.name %></td><td><%= group.weekDays.join(', ') %></td><td><%= group.startTime %>–<%= group.endTime %></td><td><%= group._count.enrollments %> / <%= group.capacity %></td><td><%= remaining ? remaining : 'Complet' %></td><td><form method="post" action="/admin/sessions/<%= session.id %>/groups/<%= group.id %>/toggle"><%- csrfField() %><button class="button button-small"><%= group.isActive ? 'Actif' : 'Inactif' %></button></form></td></tr><% }) %></tbody></table></div><% } %>
+  <form method="post" action="/admin/sessions/<%= session.id %>/groups" class="session-form"><%- csrfField() %><h3>Ajouter un groupe</h3><label>Nom<input name="name" placeholder="Groupe A" required></label><fieldset><legend>Jours</legend><label><input type="checkbox" name="weekDays" value="FRIDAY" checked> Vendredi</label><label><input type="checkbox" name="weekDays" value="SATURDAY" checked> Samedi</label></fieldset><div class="form-grid"><label>Début<input name="startTime" type="time" required></label><label>Fin<input name="endTime" type="time" required></label><label>Capacité<input name="capacity" type="number" min="1" required></label></div><button class="button" type="submit">Ajouter le groupe</button></form>
 </section>
 
 <section class="section-block">

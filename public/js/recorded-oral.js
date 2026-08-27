@@ -75,7 +75,8 @@
     const extension = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'm4a' : 'webm';
     form.append('audio', card._recordedBlob, `recording.${extension}`);
     try {
-      const response = await fetch(card.dataset.upload, { method: 'POST', body: form, credentials: 'same-origin' });
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+      const response = await fetch(card.dataset.upload, { method: 'POST', body: form, credentials: 'same-origin', headers: { 'X-CSRF-Token': csrfToken } });
       if (!response.ok) throw new Error();
       window.location.reload();
     } catch {

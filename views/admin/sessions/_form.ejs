@@ -1,5 +1,5 @@
 <% const selectedDays = Array.isArray(form.weekDays) ? form.weekDays : form.weekDays ? [form.weekDays] : []; %>
-<form action="<%= action %>" method="post" class="session-form">
+<form action="<%= action %>" method="post" class="session-form"><%- csrfField() %>
   <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
 
   <label for="name">Nom de la session</label>

@@ -2,6 +2,7 @@ const express = require('express');
 const controller = require('../controllers/adminLearningController');
 const asyncHandler = require('../middlewares/asyncHandler');
 const upload = require('../middlewares/lmsResourceUpload');
+const csrf = require('../middlewares/csrfProtection');
 
 const router = express.Router();
 router.get('/courses/:courseId/modules', asyncHandler(controller.modules));
@@ -28,7 +29,7 @@ router.post('/lessons/:id/move-up', asyncHandler(controller.moveLessonUp));
 router.post('/lessons/:id/move-down', asyncHandler(controller.moveLessonDown));
 router.get('/lessons/:lessonId/resources', asyncHandler(controller.resources));
 router.post('/lessons/:lessonId/resources', asyncHandler(controller.createResource));
-router.post('/lessons/:lessonId/resources/private', upload, asyncHandler(controller.createPrivateResource));
+router.post('/lessons/:lessonId/resources/private', upload, csrf.verify, asyncHandler(controller.createPrivateResource));
 router.post('/resources/:id', asyncHandler(controller.updateResource));
 router.post('/resources/:id/delete', asyncHandler(controller.deleteResource));
 router.post('/resources/:id/move-up', asyncHandler(controller.moveResourceUp));

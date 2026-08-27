@@ -9,7 +9,7 @@
       <strong>Formation 100 % en ligne</strong>
       <span>Aucun lien privé de cours n’est affiché à cette étape.</span>
     </div>
-    <form action="/enroll" method="post">
+    <form action="/enroll" method="post"><%- csrfField() %>
       <input type="hidden" name="sessionId" value="<%= session.id %>" />
       <button class="button" type="submit">Confirmer mon inscription</button>
       <a href="/formations/<%= session.course.slug %>">Annuler</a>

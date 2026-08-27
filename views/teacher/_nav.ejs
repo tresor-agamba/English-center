@@ -2,6 +2,6 @@
   <a href="/teacher">Tableau de bord</a><a href="/teacher/sessions">Mes sessions</a>
   <a href="/teacher/profile">Mon profil</a>
   <a href="/notifications">Notifications (<%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %>)</a>
-  <form method="post" action="/logout"><button>Déconnexion</button></form>
+  <form method="post" action="/logout"><%- csrfField() %><button>Déconnexion</button></form>
   <a href="/teacher/oral-assessments">Évaluations orales</a>
 </nav>
