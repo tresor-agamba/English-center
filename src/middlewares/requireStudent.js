@@ -22,6 +22,9 @@ async function requireStudent(req, res, next) {
       return res.redirect('/change-password');
     }
     req.student = student;
+    res.locals.layoutContext = 'student';
+    res.locals.studentNavigationUser = student;
+    res.locals.studentNavigationPath = req.originalUrl.split('?')[0];
     return next();
   } catch (error) {
     return next(error);

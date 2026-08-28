@@ -1,4 +1,4 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow">Parcours</p><h1>Mon inscription académique</h1></div></header>
 <% if (!enrollments.length) { %><div class="empty-state">Aucune inscription académique.</div><% } %>
 <% enrollments.forEach(item=>{ %><section class="card"><h2><%= item.cohort.name %></h2><p><%= item.cohort.level %> · <%= item.status %></p><p>Groupe : <%= item.group?.name || 'Non attribué' %></p><% if(item.group){ %><h3>Enseignants</h3><ul><% item.group.teachers.forEach(a=>{ %><li><%= a.teacher.firstName %> <%= a.teacher.lastName %> · <%= a.role %></li><% }) %></ul><h3>Prochaines séances</h3><ul><% item.group.sessions.forEach(s=>{ %><li><%= s.startsAt.toLocaleString('fr-FR') %> · <%= s.title %> · <%= s.status %></li><% }) %></ul><h3>Mes présences</h3><ul><% item.attendances.forEach(a=>{ %><li><%= a.session.title %> · <%= a.status %></li><% }) %></ul><% } %></section><% }) %>

@@ -77,6 +77,31 @@ if (menuToggle && navigation) {
   window.addEventListener('resize', () => { if (window.innerWidth > 900) closeMenu(); });
 }
 
+const studentMenuToggle = document.querySelector('[data-student-menu-toggle]');
+const studentNavigation = document.querySelector('[data-student-navigation]');
+if (studentMenuToggle && studentNavigation) {
+  const closeStudentMenu = (returnFocus = false) => {
+    studentNavigation.classList.remove('is-open');
+    studentMenuToggle.classList.remove('is-open');
+    studentMenuToggle.setAttribute('aria-expanded', 'false');
+    studentMenuToggle.setAttribute('aria-label', 'Ouvrir la navigation étudiante');
+    if (returnFocus) studentMenuToggle.focus();
+  };
+  studentMenuToggle.addEventListener('click', () => {
+    const open = studentNavigation.classList.toggle('is-open');
+    studentMenuToggle.classList.toggle('is-open', open);
+    studentMenuToggle.setAttribute('aria-expanded', String(open));
+    studentMenuToggle.setAttribute('aria-label', open ? 'Fermer la navigation étudiante' : 'Ouvrir la navigation étudiante');
+    if (open) studentNavigation.querySelector('a')?.focus();
+  });
+  studentNavigation.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => closeStudentMenu()));
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && studentNavigation.classList.contains('is-open')) closeStudentMenu(true); });
+  document.addEventListener('click', (event) => {
+    if (studentNavigation.classList.contains('is-open') && !studentNavigation.contains(event.target) && !studentMenuToggle.contains(event.target)) closeStudentMenu();
+  });
+  window.addEventListener('resize', () => { if (window.innerWidth > 768) closeStudentMenu(); });
+}
+
 document.querySelectorAll('[data-faq-button]').forEach((button) => {
   button.addEventListener('click', () => {
     const faq = button.closest('[data-faq]');

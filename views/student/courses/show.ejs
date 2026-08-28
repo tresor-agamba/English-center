@@ -1,5 +1,4 @@
-<%- include('../../partials/header', { title }) %>
-<%- include('../_nav') %>
+<%- include('../_header') %>
 <% const course = enrollment.trainingSession.course; const access = enrollment.trialAccess; const labels = { TRIAL_ACTIVE:'Accès actif', PAYMENT_REQUIRED:'Paiement requis', CONFIRMED:'Accès complet', CANCELLED:'Annulée', PAYMENT_FAILED:'Paiement échoué' }; const stageLabels = { FREE_TRIAL:'5 séances gratuites', PAYMENT_REQUIRED_50:'Paiement de 50 % requis', PARTIAL_ACCESS:'Accès aux séances 6 à 10', PAYMENT_REQUIRED_FULL:'Solde complet requis', FULL_ACCESS:'Paiement total confirmé', COMPLETED:'Niveau terminé', PLACEMENT_TEST_REQUIRED:'Test de placement requis' }; %>
 <header class="page-heading"><div><p class="eyebrow">Ma formation</p><h1><%= course.title %></h1><p class="heading-copy"><%= enrollment.trainingSession.name %></p></div><span class="status enrollment-status-<%= enrollment.status.toLowerCase() %>"><%= labels[enrollment.status] %></span></header>
 <section class="trial-notice trial-notice-<%= enrollment.status === 'CONFIRMED' ? 'confirmed' : (enrollment.status === 'TRIAL_ACTIVE' ? 'active' : 'blocked') %>">

@@ -108,6 +108,12 @@ test('espace étudiant', async (t) => {
       const dashboard = await fetch(`${baseUrl}/student`, { headers: { Cookie: cookie } });
       const dashboardHtml = await dashboard.text();
       assert.match(dashboardHtml, /Bonjour Aline|Séance accessible/);
+      assert.equal((dashboardHtml.match(/class="student-header"/g) || []).length, 1);
+      assert.match(dashboardHtml, /New Vision Academy — Tableau de bord étudiant/);
+      assert.match(dashboardHtml, /Mes formations|Mon calendrier|Mes paiements|Mes devoirs|Mes certificats/);
+      assert.match(dashboardHtml, /data-student-menu-toggle[^>]+aria-expanded="false"/);
+      assert.match(dashboardHtml, /href="\/student" aria-current="page">Tableau de bord/);
+      assert.doesNotMatch(dashboardHtml, /data-public-header|id="public-navigation"|nav-register/);
       assert.match(dashboardHtml, new RegExp(`/class-meetings/${openMeeting.id}/join\\?enrollment=${own.id}`));
       assert.doesNotMatch(dashboardHtml, /meet\.example\.test|zoom\.example\.test|Séance annulée/);
 

@@ -14,12 +14,16 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="stylesheet" href="/css/style.css?v=nva-public-stitch-20260824-3">
+    <link rel="stylesheet" href="/css/style.css?v=nva-student-navigation-20260827-1">
     <link rel="stylesheet" href="/css/arena-public.css?v=nva-visual-stories-20260827-1">
     <script src="/js/i18n.js?v=nva-public-stitch-20260824-1"></script>
   </head>
-  <body class="nva-public-body">
+  <% const isStudentLayout = typeof layoutContext !== 'undefined' && layoutContext === 'student'; %>
+  <body class="<%= isStudentLayout ? 'nva-private-body nva-student-body' : 'nva-public-body' %>">
     <a class="skip-link" href="#main-content" data-i18n="a11y.skip">Skip to content</a>
+    <% if (isStudentLayout) { %>
+      <%- include('../student/_nav') %>
+    <% } else { %>
     <header class="site-header public-header nva-public-header" data-public-header>
       <a class="brand official-brand header-brand" href="/" aria-label="New Vision Academy — Home" data-i18n-aria="a11y.brandHome">
         <picture>
@@ -44,10 +48,11 @@
         </div>
       </nav>
     </header>
+    <% } %>
     <aside class="pwa-message" data-pwa-messages role="status" aria-live="polite" hidden></aside>
     <aside class="pwa-ios-help" data-pwa-ios-help hidden>
       <strong data-i18n="pwa.installTitle">Install this application</strong>
       <span data-i18n="pwa.iosHelp">Use Share, choose “Add to Home Screen”, then confirm.</span>
       <button type="button" data-pwa-ios-dismiss aria-label="Close" data-i18n-aria="a11y.close">×</button>
     </aside>
-    <main class="container public-main nva-public-main" id="main-content">
+    <main class="container <%= isStudentLayout ? 'private-main student-main' : 'public-main nva-public-main' %>" id="main-content">

@@ -190,7 +190,7 @@ async function listAvailable(studentId) {
     include: {
       course: true,
       trainingSession: true,
-      attempts: { where: { enrollment: { userId } }, include: { evaluation: true }, orderBy: { attemptNumber: 'desc' } },
+      attempts: { where: { enrollment: { userId: studentId } }, include: { evaluation: true }, orderBy: { attemptNumber: 'desc' } },
       _count: { select: { questions: true } },
     },
     orderBy: { createdAt: 'desc' },

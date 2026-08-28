@@ -1,4 +1,4 @@
-<%- include('../../partials/header',{title}) %><%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow"><%= course.title %></p><h1><%= assignment.title %></h1><p><%= assignment.lesson?.title||assignment.courseModule?.title||'Devoir de formation' %></p></div><span class="status"><%= submission?.status||'À faire' %></span></header>
 <section class="assignment-meta"><span><strong><%= assignment.maxScore %></strong> points</span><span><strong><%= assignment.dueAt?assignment.dueAt.toLocaleString('fr-FR'):'Aucune' %></strong> date limite</span><span><strong><%= assignment.allowLateSubmission?'Oui':'Non' %></strong> retard autorisé</span></section>
 <section><h2>Consignes</h2><div class="lesson-content"><%= assignment.instructions %></div></section>

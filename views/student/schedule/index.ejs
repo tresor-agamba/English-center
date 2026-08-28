@@ -1,5 +1,4 @@
-<%- include('../../partials/header', { title }) %>
-<%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow">Agenda</p><h1>Mon calendrier</h1></div></header>
 <form class="student-filters" method="get">
   <select name="course" aria-label="Formation"><option value="">Toutes les formations</option><% enrollments.forEach(item => { %><option value="<%= item.id %>" <%= filters.selectedEnrollmentId === item.id ? 'selected' : '' %>><%= item.trainingSession.course.title %></option><% }) %></select>

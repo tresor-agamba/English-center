@@ -1,4 +1,4 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<%- include('../_header') %>
 <article class="lesson-page"><p class="eyebrow"><%= course.title %></p><h1><%= lesson.title %></h1><p class="heading-copy"><%= lesson.description || '' %></p>
 <div class="lesson-content"><%- lesson.content || 'Aucun contenu texte.' %></div>
 <% if (lesson.externalUrl) { %><p><a class="button" href="<%= lesson.externalUrl %>" target="_blank" rel="noopener noreferrer">Ouvrir le contenu externe</a></p><% } %>

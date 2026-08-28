@@ -1,12 +1,30 @@
-<nav class="student-nav" aria-label="Navigation étudiante">
-  <a href="/student">Tableau de bord</a>
-  <a href="/student/courses">Mes formations</a>
-  <a href="/student/schedule">Mon calendrier</a>
-  <a href="/student/payments">Mes paiements</a>
-  <a href="/student/assignments">Mes devoirs</a>
-  <a href="/student/certificates">Mes certificats</a>
-  <a href="/student/profile">Mon profil</a>
-  <a href="/notifications">Notifications (<%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %>)</a>
-  <form method="post" action="/logout"><%- csrfField() %><button type="submit">Déconnexion</button></form>
-  <a href="/student/oral-assessments">Évaluations orales</a>
-</nav>
+<% const activeStudentPath = typeof studentNavigationPath === 'string' ? studentNavigationPath : '/student'; %>
+<% const isStudentActive = (href) => href === '/student' ? activeStudentPath === href : (activeStudentPath === href || activeStudentPath.startsWith(`${href}/`)); %>
+<header class="student-header">
+  <a class="student-brand" href="/student" aria-label="New Vision Academy — Tableau de bord étudiant">
+    <img src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697">
+  </a>
+  <button class="student-menu-toggle" type="button" data-student-menu-toggle aria-expanded="false" aria-controls="student-navigation" aria-label="Ouvrir la navigation étudiante">
+    <span></span><span></span><span></span>
+  </button>
+  <nav id="student-navigation" class="student-nav" data-student-navigation aria-label="Navigation étudiante">
+    <a href="/student"<% if (isStudentActive('/student')) { %> aria-current="page"<% } %>>Tableau de bord</a>
+    <a href="/student/courses"<% if (isStudentActive('/student/courses')) { %> aria-current="page"<% } %>>Mes formations</a>
+    <a href="/student/schedule"<% if (isStudentActive('/student/schedule')) { %> aria-current="page"<% } %>>Mon calendrier</a>
+    <a href="/student/payments"<% if (isStudentActive('/student/payments')) { %> aria-current="page"<% } %>>Mes paiements</a>
+    <a href="/student/assignments"<% if (isStudentActive('/student/assignments')) { %> aria-current="page"<% } %>>Mes devoirs</a>
+    <a href="/student/certificates"<% if (isStudentActive('/student/certificates')) { %> aria-current="page"<% } %>>Mes certificats</a>
+    <a href="/student/profile"<% if (isStudentActive('/student/profile')) { %> aria-current="page"<% } %>>Mon profil</a>
+    <a href="/student/oral-assessments"<% if (isStudentActive('/student/oral-assessments')) { %> aria-current="page"<% } %>>Évaluations orales</a>
+    <a href="/notifications"<% if (activeStudentPath === '/notifications') { %> aria-current="page"<% } %>>Notifications (<%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %>)</a>
+    <form class="student-mobile-logout" method="post" action="/logout"><%- csrfField() %><button type="submit">Déconnexion</button></form>
+  </nav>
+  <div class="student-account">
+    <% if (typeof studentNavigationUser !== 'undefined' && studentNavigationUser) { %>
+      <a href="/student/profile"<% if (isStudentActive('/student/profile')) { %> aria-current="page"<% } %>><span>Mon profil</span><strong><%= studentNavigationUser.firstName %> <%= studentNavigationUser.lastName %></strong></a>
+    <% } else { %>
+      <a href="/student/profile">Mon profil</a>
+    <% } %>
+    <form method="post" action="/logout"><%- csrfField() %><button type="submit">Déconnexion</button></form>
+  </div>
+</header>

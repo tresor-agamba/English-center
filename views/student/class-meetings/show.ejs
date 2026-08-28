@@ -1,4 +1,4 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="live-detail-hero"><div><p class="eyebrow">Cours en direct</p><h1><%= meeting.title || lesson?.title || 'Séance générale' %></h1><p><%= course.title %> — <%= session.name %></p></div><span class="status meeting-status-<%= meeting.status.toLowerCase() %>"><%= meeting.status %></span></header>
 <section class="details-grid">
   <article class="card"><strong>Date</strong><span><%= meeting.startsAt.toLocaleDateString('fr-FR', { timeZone: session.timezone }) %></span></article>

@@ -1,5 +1,4 @@
-<%- include('../../partials/header', { title }) %>
-<%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow">Facturation</p><h1>Mes paiements</h1></div></header>
 <% const labels={PENDING:'En attente',PROCESSING:'En traitement',SUCCESS:'Réussi',FAILED:'Échoué',CANCELLED:'Annulé',EXPIRED:'Expiré',REFUNDED:'Remboursé'}; %>
 <% if (!payments.length) { %><div class="empty-state"><strong>Aucun paiement</strong><p>Votre historique de paiements apparaîtra ici.</p></div><% } else { %><div class="table-wrapper responsive-table"><table><thead><tr><th>Référence</th><th>Formation</th><th>Montant</th><th>Statut</th><th>Créé</th><th>Expiration / paiement</th><th></th></tr></thead><tbody>

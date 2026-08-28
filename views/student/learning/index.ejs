@@ -1,4 +1,4 @@
-<%- include('../../partials/header', { title }) %><%- include('../_nav') %>
+<%- include('../_header') %>
 <header class="learning-hero"><div><p class="eyebrow">Apprentissage</p><h1><%= course.title %></h1></div><div class="progress-ring"><strong><%= progress.progressPercentage %>%</strong><span>progression</span></div></header>
 <section class="learning-overview"><span><strong><%= progress.completedLessons %></strong> terminée(s)</span><span><strong><%= progress.remainingLessons %></strong> restante(s)</span><span><strong><%= progress.estimatedMinutes %></strong> minutes</span></section>
 <% if (!access.canViewContent) { %><div class="trial-notice trial-notice-blocked">Le contenu reste verrouillé jusqu’à l’activation de l’inscription.</div><% } %>
