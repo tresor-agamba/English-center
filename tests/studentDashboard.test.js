@@ -46,9 +46,10 @@ test('espace étudiant', async (t) => {
         startTime: '18:00', endTime: '20:00', platform: 'Google Meet', status: 'ONGOING',
       },
     });
-    return prisma.enrollment.create({
+    const created = await prisma.enrollment.create({
       data: { userId: owner.id, trainingSessionId: session.id, status: 'TRIAL_ACTIVE' },
     });
+    return { ...created, courseId: course.id };
   }
 
   async function login(baseUrl, account, pass = password) {
@@ -64,8 +65,20 @@ test('espace étudiant', async (t) => {
     const student = await user(1);
     const other = await user(2);
     const admin = await user(3, 'ADMIN');
+    const emptyStudent = await user(4);
     const own = await enrollment(student, 'principale');
     const foreign = await enrollment(other, 'privée');
+    await prisma.assignment.create({
+      data: {
+        courseId: own.courseId,
+        trainingSessionId: own.trainingSessionId,
+        title: 'Devoir prioritaire',
+        instructions: 'Répondez aux questions.',
+        maxScore: 20,
+        dueAt: shift(2880),
+        isPublished: true,
+      },
+    });
     const openMeeting = await prisma.classMeeting.create({
       data: {
         title: 'Séance accessible', startsAt: shift(10), endsAt: shift(70),
@@ -108,6 +121,9 @@ test('espace étudiant', async (t) => {
       const dashboard = await fetch(`${baseUrl}/student`, { headers: { Cookie: cookie } });
       const dashboardHtml = await dashboard.text();
       assert.match(dashboardHtml, /Bonjour Aline|Séance accessible/);
+      assert.match(dashboardHtml, /Voici votre parcours aujourd’hui/);
+      assert.match(dashboardHtml, /Prochaine séance|Ma progression/);
+      assert.match(dashboardHtml, /0 \/ 16 séances|1 à remettre|À jour/);
       assert.equal((dashboardHtml.match(/class="student-header"/g) || []).length, 1);
       assert.match(dashboardHtml, /New Vision Academy — Tableau de bord étudiant/);
       assert.match(dashboardHtml, /Mes formations|Mon calendrier|Mes paiements|Mes devoirs|Mes certificats/);
@@ -116,6 +132,14 @@ test('espace étudiant', async (t) => {
       assert.doesNotMatch(dashboardHtml, /data-public-header|id="public-navigation"|nav-register/);
       assert.match(dashboardHtml, new RegExp(`/class-meetings/${openMeeting.id}/join\\?enrollment=${own.id}`));
       assert.doesNotMatch(dashboardHtml, /meet\.example\.test|zoom\.example\.test|Séance annulée/);
+
+      const emptyCookie = (await login(baseUrl, emptyStudent)).cookie;
+      const emptyDashboard = await fetch(`${baseUrl}/student`, { headers: { Cookie: emptyCookie } });
+      const emptyHtml = await emptyDashboard.text();
+      assert.equal(emptyDashboard.status, 200);
+      assert.match(emptyHtml, /Aucune séance programmée pour le moment/);
+      assert.match(emptyHtml, /Aucune progression disponible pour le moment/);
+      assert.match(emptyHtml, /Aucun devoir à remettre/);
 
       const listHtml = await (await fetch(`${baseUrl}/student/courses`, { headers: { Cookie: cookie } })).text();
       assert.match(listHtml, /Formation principale/);
@@ -159,6 +183,8 @@ test('espace étudiant', async (t) => {
       assert.match(html, new RegExp(attempt.paymentReference));
       assert.match(html, /Reprendre/);
       assert.doesNotMatch(html, /metadata|providerReference|passwordHash|privateMeetingUrl/i);
+      const dashboardWithRequiredPayment = await (await fetch(`${baseUrl}/student`, { headers: { Cookie: cookie } })).text();
+      assert.match(dashboardWithRequiredPayment, /Paiement requis/);
       await paymentService.simulateSuccess(attempt.paymentReference, student.id);
       const confirmedHtml = await (await fetch(`${baseUrl}/student/courses/${own.id}`, { headers: { Cookie: cookie } })).text();
       assert.match(confirmedHtml, /Accès aux séances 6 à 10/);

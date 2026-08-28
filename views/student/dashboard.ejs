@@ -1,40 +1,49 @@
-<%- include('_header') %>
-<header class="page-heading">
-  <div><p class="eyebrow">Espace étudiant</p><h1>Bonjour <%= student.firstName %></h1><p class="heading-copy">Retrouvez votre parcours et vos prochaines séances.</p></div>
+﻿<%- include('_header') %>
+<header class="page-heading student-dashboard-intro">
+  <div><h1>Bonjour <%= student.firstName %></h1><p class="heading-copy">Voici votre parcours aujourd’hui.</p></div>
 </header>
-<section class="student-stats" aria-label="Résumé">
-  <% const cards = [
-    ['Inscriptions actives', stats.activeEnrollments], ['Accès complets', stats.confirmed],
-    ['Essais actifs', stats.trials], ['Paiements requis', stats.paymentRequired],
-    ['Prochaines séances', stats.upcomingMeetings], ['Paiements réussis', stats.successfulPayments],
-    ['Paiements en attente', stats.pendingPayments]
-  ]; %>
-  <% cards.forEach(([label, value]) => { %><article class="stat-card"><span class="stat-label"><%= label %></span><strong class="stat-value"><%= value %></strong></article><% }) %>
-</section>
-<section class="next-access-card">
-  <div>
-    <span class="stat-label">Prochain cours accessible</span>
-    <% if (nextAccessibleMeeting) { %>
-      <strong><%= nextAccessibleMeeting.course.title %> — <%= nextAccessibleMeeting.lesson?.title || nextAccessibleMeeting.title || 'Séance générale' %></strong>
-      <small>La fenêtre d’accès est ouverte maintenant.</small>
+
+<section class="student-dashboard-next" aria-labelledby="next-meeting-title">
+  <div class="student-dashboard-next__content">
+    <p class="eyebrow">Prochaine séance</p>
+    <% if (nextMeeting) { %>
+      <p class="student-dashboard-course"><%= nextMeeting.course.title %><% if (progress?.level) { %> — <%= String(progress.level).replaceAll('_', ' ') %><% } %></p>
+      <h2 id="next-meeting-title"><%= nextMeeting.lesson?.title || nextMeeting.title || 'Séance générale' %></h2>
+      <p class="student-dashboard-date"><%= nextMeeting.startsAt.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: nextMeeting.session.timezone }) %> · <%= nextMeeting.startsAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: nextMeeting.session.timezone }) %>–<%= nextMeeting.endsAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: nextMeeting.session.timezone }) %></p>
+      <% if (nextMeeting.access.canJoin) { %><p class="student-dashboard-access is-open">La fenêtre d’accès est ouverte maintenant.</p>
+      <% } else if (nextMeeting.access.code === 'UPCOMING') { %><p class="student-dashboard-access">Le bouton Rejoindre sera disponible à l’ouverture de la fenêtre d’accès.</p>
+      <% } else { %><p class="student-dashboard-access"><%= nextMeeting.access.label %></p><% } %>
     <% } else { %>
-      <strong>Aucun accès ouvert actuellement</strong>
-      <small>Le bouton apparaîtra automatiquement pendant la fenêtre autorisée.</small>
+      <h2 id="next-meeting-title">Aucune séance programmée pour le moment.</h2>
+      <p class="student-dashboard-access">Votre prochaine séance apparaîtra ici dès qu’elle sera planifiée.</p>
     <% } %>
   </div>
-  <% if (nextAccessibleMeeting) { %>
-    <a class="button button-small" href="/class-meetings/<%= nextAccessibleMeeting.id %>/join?enrollment=<%= nextAccessibleMeeting.enrollmentId %>">Rejoindre le cours</a>
-  <% } %>
+  <% if (nextMeeting?.access.canJoin) { %><a class="button student-dashboard-join" href="/class-meetings/<%= nextMeeting.id %>/join?enrollment=<%= nextMeeting.enrollmentId %>">Rejoindre</a><% } %>
 </section>
-<section class="dashboard-panel">
-  <div class="section-heading"><div><p class="eyebrow">Agenda</p><h2>Mes prochaines séances</h2></div><a href="/student/schedule">Tout voir</a></div>
+
+<section class="student-dashboard-progress" aria-labelledby="student-progress-title">
+  <div class="section-heading"><div><p class="eyebrow">Mon parcours</p><h2 id="student-progress-title">Ma progression</h2></div><% if (progress) { %><a href="/student/courses/<%= progress.enrollmentId %>">Voir la formation</a><% } %></div>
+  <% if (progress) { %>
+    <div class="student-dashboard-progress__summary"><strong><%= progress.courseTitle %><% if (progress.level) { %> — <%= String(progress.level).replaceAll('_', ' ') %><% } %></strong><% if (progress.completedSessions !== null && progress.totalSessions !== null) { %><span><%= progress.completedSessions %> / <%= progress.totalSessions %> séances</span><% } %></div>
+    <% if (progress.percentage !== null) { %><progress value="<%= progress.percentage %>" max="100"><%= progress.percentage %> %</progress><p><strong><%= progress.percentage %> %</strong> terminé</p><% } else { %><p class="student-dashboard-muted">La progression sera affichée dès que des séances terminées seront disponibles.</p><% } %>
+  <% } else { %><p class="student-dashboard-muted">Aucune progression disponible pour le moment.</p><% } %>
+</section>
+
+<section class="student-dashboard-actions" aria-label="Actions prioritaires">
+  <article><p class="eyebrow">Devoirs</p><strong><%= priorities.assignments.todo ? `${priorities.assignments.todo} à remettre` : 'Aucun devoir à remettre' %></strong><% if (priorities.assignments.nextDueAt) { %><small>Prochaine échéance : <%= priorities.assignments.nextDueAt.toLocaleDateString('fr-FR') %></small><% } %><a href="/student/assignments">Voir mes devoirs →</a></article>
+  <article><p class="eyebrow">Paiement</p><strong><%= priorities.payment.required ? 'Paiement requis' : (priorities.payment.pending ? `${priorities.payment.pending} paiement${priorities.payment.pending > 1 ? 's' : ''} en attente` : 'À jour ✓') %></strong><small><%= priorities.payment.required ? 'Une action est nécessaire pour poursuivre le parcours.' : (priorities.payment.pending ? 'Votre paiement est en cours de traitement.' : 'Aucune action requise actuellement.') %></small><a href="/student/payments">Voir mes paiements →</a></article>
+  <article><p class="eyebrow">Certificat</p><strong><%= priorities.certificate.available ? 'Disponible' : 'En progression' %></strong><small><%= priorities.certificate.available ? `${priorities.certificate.available} certificat${priorities.certificate.available > 1 ? 's' : ''} disponible${priorities.certificate.available > 1 ? 's' : ''}.` : 'Continuez votre parcours pour devenir éligible.' %></small><a href="/student/certificates">Voir mes certificats →</a></article>
+</section>
+
+<section class="student-dashboard-schedule">
+  <div class="section-heading"><div><p class="eyebrow">Agenda</p><h2>Mes prochaines séances</h2></div><a href="/student/schedule">Voir le calendrier</a></div>
   <% if (!upcomingMeetings.length) { %><div class="empty-state"><strong>Aucune séance à venir</strong><p>Vos prochaines séances apparaîtront ici.</p></div><% } else { %>
-    <div class="student-meeting-list">
+    <div class="student-dashboard-meetings">
       <% upcomingMeetings.forEach(meeting => { %><article>
-        <div><strong><%= meeting.course.title %></strong><span><%= meeting.lesson?.title || meeting.title || 'Séance générale' %> · <%= meeting.startsAt.toLocaleString('fr-FR', { timeZone: meeting.session.timezone }) %></span><small><%= meeting.session.name %> · <%= meeting.session.platform.replaceAll('_', ' ') %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div>
-        <% if (meeting.access.canJoin) { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= meeting.enrollmentId %>">Accéder</a><% } %>
+        <time datetime="<%= meeting.startsAt.toISOString() %>"><strong><%= meeting.startsAt.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: meeting.session.timezone }) %></strong><span><%= meeting.startsAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: meeting.session.timezone }) %> – <%= meeting.endsAt.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: meeting.session.timezone }) %></span></time>
+        <div><strong><%= meeting.lesson?.title || meeting.title || 'Séance générale' %></strong><span><%= meeting.course.title %></span></div><a href="/student/class-meetings/<%= meeting.id %>">Détails</a>
       </article><% }) %>
     </div>
   <% } %>
 </section>
-<%- include('../partials/footer') %>
+<%- include('_footer') %>

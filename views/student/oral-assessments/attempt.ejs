@@ -1,4 +1,4 @@
-<%- include('../_header') %>
+﻿<%- include('../_header') %>
 <h1><%= attempt.assessment.title %></h1><p>Tentative <%= attempt.attemptNumber %> — <strong><%= attempt.status %></strong></p>
 <div id="recorder-message" class="recorder-message" role="status"></div>
 <section class="response-list">
@@ -22,4 +22,4 @@
 <% }) %>
 </section>
 <% if (attempt.status === 'DRAFT') { %><form method="post" action="/student/oral-attempts/<%= attempt.id %>/submit" onsubmit="return confirm('Soumettre définitivement ? Les réponses ne pourront plus être modifiées.')"><%- csrfField() %><button class="button">Soumettre définitivement</button></form><% } else { %><p class="card">Cette tentative est verrouillée et ne peut plus être modifiée.</p><% } %>
-<script src="/js/recorded-oral.js" defer></script><%- include('../../partials/footer') %>
+<script src="/js/recorded-oral.js" defer></script><%- include('../_footer') %>

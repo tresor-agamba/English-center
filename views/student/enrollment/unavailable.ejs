@@ -1,9 +1,7 @@
-<%- include('../../partials/header', { title }) %>
-
+<% const useStudentShell = typeof layoutContext !== 'undefined' && layoutContext === 'student'; %>
+<% if (useStudentShell) { %><%- include('../_header') %><% } else { %><%- include('../../partials/header', { title }) %><% } %>
 <section class="card enrollment-unavailable">
-  <p class="eyebrow">Inscription</p>
-  <h1><%= title %></h1>
-  <p><%= message %></p>
+  <p class="eyebrow">Inscription</p><h1><%= title %></h1><p><%= message %></p>
   <% if (typeof access !== 'undefined' && access) { %>
     <dl class="payment-details">
       <div><dt>Prix total</dt><dd><%= access.expectedTotalAmount %> <%= access.expectedCurrency %></dd></div>
@@ -12,7 +10,7 @@
       <div><dt>Solde total</dt><dd><%= access.remainingAmount %> <%= access.expectedCurrency %></dd></div>
     </dl>
     <a class="button" href="/student/courses/<%= access.enrollmentId || '' %>">Payer maintenant</a>
+  <% } else if (useStudentShell) { %><a class="button" href="/student">Retour au tableau de bord</a>
   <% } else { %><a class="button" href="/formations">Retourner au catalogue</a><% } %>
 </section>
-
-<%- include('../../partials/footer') %>
+<% if (useStudentShell) { %><%- include('../_footer') %><% } else { %><%- include('../../partials/footer') %><% } %>

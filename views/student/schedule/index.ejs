@@ -1,4 +1,4 @@
-<%- include('../_header') %>
+﻿<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow">Agenda</p><h1>Mon calendrier</h1></div></header>
 <form class="student-filters" method="get">
   <select name="course" aria-label="Formation"><option value="">Toutes les formations</option><% enrollments.forEach(item => { %><option value="<%= item.id %>" <%= filters.selectedEnrollmentId === item.id ? 'selected' : '' %>><%= item.trainingSession.course.title %></option><% }) %></select>
@@ -7,4 +7,4 @@
 </form>
 <% if (!groups.length) { %><div class="empty-state"><strong>Aucune séance</strong><p>Aucune séance ne correspond à ces filtres.</p></div><% } %>
 <% groups.forEach(group => { %><section class="schedule-day"><h2><%= group.date %></h2><div class="student-meeting-list"><% group.meetings.forEach(meeting => { %><article><div><strong><%= meeting.course.title %> — <%= meeting.lesson?.title || meeting.title || 'Séance générale' %></strong><span><%= meeting.startsAt.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', timeZone: meeting.session.timezone }) %> · <%= meeting.session.timezone %></span><small><%= meeting.session.platform.replaceAll('_', ' ') %> · <%= meeting.access.label %></small><a href="/student/class-meetings/<%= meeting.id %>">Voir le détail</a></div><% if (meeting.access.canJoin) { %><a class="button button-small" href="/class-meetings/<%= meeting.id %>/join?enrollment=<%= meeting.enrollmentId %>">Rejoindre</a><% } %></article><% }) %></div></section><% }) %>
-<%- include('../../partials/footer') %>
+<%- include('../_footer') %>

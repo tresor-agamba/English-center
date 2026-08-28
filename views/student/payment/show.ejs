@@ -1,5 +1,4 @@
-<%- include('../../partials/header', { title }) %>
-<%- include('../_nav') %>
+﻿<%- include('../_header') %>
 <% const money = (value) => `${Number(value).toFixed(2)} ${payment.currency}`; const declared = payment.metadata?.manualDeclaredAt; %>
 <section class="payment-page manual-payment-page">
   <header class="payment-heading">
@@ -78,4 +77,4 @@
   <p><a href="/student/payments">← Retour à mes paiements</a></p>
 </section>
 <script>document.querySelectorAll('[data-copy]').forEach((button) => button.addEventListener('click', async () => { await navigator.clipboard.writeText(button.dataset.copy); button.textContent = 'Copié'; setTimeout(() => { button.textContent = 'Copier'; }, 1600); }));</script>
-<%- include('../../partials/footer') %>
+<%- include('../_footer') %>

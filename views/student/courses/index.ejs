@@ -1,4 +1,4 @@
-<%- include('../_header') %>
+﻿<%- include('../_header') %>
 <header class="page-heading"><div><p class="eyebrow">Mon parcours</p><h1>Mes formations</h1></div></header>
 <% const labels = { TRIAL_ACTIVE:'Essai gratuit actif', PAYMENT_REQUIRED:'Paiement requis', CONFIRMED:'Accès complet', CANCELLED:'Annulée', PAYMENT_FAILED:'Paiement échoué' }; %>
 <% if (!enrollments.length) { %><div class="empty-state"><strong>Aucune formation</strong><p>Vous n’êtes inscrit à aucune formation pour le moment.</p><a class="button" href="/formations">Voir les formations</a></div><% } else { %>
@@ -19,4 +19,4 @@
     </dl><a class="button" href="/student/courses/<%= item.id %>">Voir le détail</a>
   </article><% }) %>
 </section><% } %>
-<%- include('../../partials/footer') %>
+<%- include('../_footer') %>

@@ -1,4 +1,4 @@
-<%- include('../_header') %>
+﻿<%- include('../_header') %>
 <header class="learning-hero"><div><p class="eyebrow">Apprentissage</p><h1><%= course.title %></h1></div><div class="progress-ring"><strong><%= progress.progressPercentage %>%</strong><span>progression</span></div></header>
 <section class="learning-overview"><span><strong><%= progress.completedLessons %></strong> terminée(s)</span><span><strong><%= progress.remainingLessons %></strong> restante(s)</span><span><strong><%= progress.estimatedMinutes %></strong> minutes</span></section>
 <% if (!access.canViewContent) { %><div class="trial-notice trial-notice-blocked">Le contenu reste verrouillé jusqu’à l’activation de l’inscription.</div><% } %>
@@ -9,4 +9,4 @@
   <% module.chapters.forEach(chapter => { %><div class="learning-chapter"><h3><%= chapter.position %>. <%= chapter.title %></h3><p><%= chapter.description || '' %></p><ol class="learning-lessons"><% chapter.lessons.forEach(lesson => { %><%- include('_lesson-item', { lesson, enrollment, access }) %><% }) %></ol></div><% }) %>
   </section><% }) %></div>
 <% if(progress.nextLesson && access.canViewContent){%><a class="button" href="/student/courses/<%= enrollment.id %>/lessons/<%= progress.nextLesson.id %>">Reprendre : <%= progress.nextLesson.title %></a><%}%>
-<%- include('../../partials/footer') %>
+<%- include('../_footer') %>

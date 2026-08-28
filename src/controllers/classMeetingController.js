@@ -15,6 +15,7 @@ async function join(req, res) {
         title: 'Accès au cours bloqué',
         message: paymentMessage,
         access: access.trialAccess,
+        layoutContext: 'student',
       });
     }
     return res.redirect(access.meeting.privateMeetingUrl);
@@ -23,6 +24,7 @@ async function join(req, res) {
       return res.status(error.statusCode || 400).render('student/enrollment/unavailable', {
         title: 'Accès au cours indisponible',
         message: error.message,
+        layoutContext: 'student',
       });
     }
     throw error;

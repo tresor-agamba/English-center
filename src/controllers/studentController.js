@@ -104,7 +104,7 @@ async function learn(req, res) {
   } catch (error) {
     if (error instanceof learningAccessService.LearningAccessError) {
       return res.status(error.statusCode).render('student/enrollment/unavailable', {
-        title: 'Contenu indisponible', message: error.message,
+        title: 'Contenu indisponible', message: error.message, layoutContext: 'student',
       });
     }
     throw error;
@@ -118,7 +118,7 @@ async function lesson(req, res) {
   } catch (error) {
     if (error instanceof learningAccessService.LearningAccessError) {
       return res.status(error.statusCode).render('student/enrollment/unavailable', {
-        title: 'Leçon indisponible', message: error.message,
+        title: 'Leçon indisponible', message: error.message, layoutContext: 'student',
       });
     }
     throw error;
@@ -132,7 +132,7 @@ async function setLessonCompletion(req, res, completed) {
   } catch (error) {
     if (error instanceof learningAccessService.LearningAccessError) {
       return res.status(error.statusCode).render('student/enrollment/unavailable', {
-        title: 'Progression indisponible', message: error.message,
+        title: 'Progression indisponible', message: error.message, layoutContext: 'student',
       });
     }
     throw error;
@@ -146,7 +146,7 @@ async function classMeeting(req, res) {
   } catch (error) {
     if (error instanceof studentClassMeetingService.StudentClassMeetingError) {
       return res.status(error.statusCode).render('student/enrollment/unavailable', {
-        title: 'Séance indisponible', message: error.message,
+        title: 'Séance indisponible', message: error.message, layoutContext: 'student',
       });
     }
     throw error;

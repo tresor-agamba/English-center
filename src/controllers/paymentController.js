@@ -6,6 +6,7 @@ function renderPaymentError(res, error) {
   return res.status(error.statusCode || 400).render('student/payment/error', {
     title: 'Paiement indisponible',
     message: error.message || 'Cette opération de paiement est indisponible.',
+    paymentErrorContext: 'student',
   });
 }
 

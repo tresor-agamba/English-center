@@ -1,4 +1,4 @@
-<%- include('../_header') %><div class="section-heading"><h1><%= item.assessment.title %></h1><p id="written-timer" data-expires="<%= item.expiresAt ? item.expiresAt.toISOString() : '' %>">Temps restant</p></div>
+﻿<%- include('../_header') %><div class="section-heading"><h1><%= item.assessment.title %></h1><p id="written-timer" data-expires="<%= item.expiresAt ? item.expiresAt.toISOString() : '' %>">Temps restant</p></div>
 <div class="progress-bar"><span style="width:0" id="written-progress"></span></div><p id="written-status">0 réponse sauvegardée</p>
 <% const responseByQuestion = new Map(item.responses.map(r => [r.assessmentQuestionId, r])); item.assessment.questions.forEach((q, index) => { const response = responseByQuestion.get(q.id); %><article class="card written-question" data-question="<%= q.id %>"><p class="eyebrow">Question <%= index + 1 %> / <%= item.assessment.questions.length %> · <%= q.points %> point(s)</p><h2><%= q.prompt %></h2>
 <% if (q.mediaStorageKey) { %><audio controls preload="none" src="/student/written-attempts/<%= item.id %>/questions/<%= q.id %>/audio"></audio><% } %>
@@ -8,4 +8,4 @@
 <% } else if (['MATCHING','ORDERING'].includes(q.type)) { %><label>Réponse structurée<textarea name="selectedOptions"><%= response?.selectedOptions ? JSON.stringify(response.selectedOptions) : '' %></textarea></label>
 <% } else if (!['LISTENING','READING'].includes(q.type)) { %><label>Votre réponse<textarea name="textResponse"><%= response?.textResponse || '' %></textarea></label><% } %>
 <% if (!['LISTENING','READING'].includes(q.type)) { %><button class="button button-secondary">Sauvegarder</button><% } %></form></article><% }) %>
-<form id="written-submit" method="post" action="/student/written-attempts/<%= item.id %>/submit"><%- csrfField() %><button class="button">Soumettre définitivement</button></form><script src="/js/written-assessment.js" defer></script><%- include('../../partials/footer') %>
+<form id="written-submit" method="post" action="/student/written-attempts/<%= item.id %>/submit"><%- csrfField() %><button class="button">Soumettre définitivement</button></form><script src="/js/written-assessment.js" defer></script><%- include('../_footer') %>

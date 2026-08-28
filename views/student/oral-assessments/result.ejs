@@ -1,3 +1,3 @@
-<%- include('../_header') %>
+﻿<%- include('../_header') %>
 <article class="card"><p class="eyebrow">Résultat publié</p><h1><%= attempt.assessment.title %></h1><p class="assessment-score"><%= attempt.evaluation.overallScore %> / <%= attempt.assessment.totalPoints %></p><p>Décision : <strong><%= attempt.evaluation.decision %></strong></p><% if (attempt.evaluation.feedback) { %><h2>Feedback</h2><p><%= attempt.evaluation.feedback %></p><% } %><% if (attempt.evaluation.strengths) { %><h2>Points forts</h2><p><%= attempt.evaluation.strengths %></p><% } %><% if (attempt.evaluation.improvements) { %><h2>Axes d’amélioration</h2><p><%= attempt.evaluation.improvements %></p><% } %><h2>Détail de la grille</h2><dl><% attempt.evaluation.criterionScores.forEach(score => { %><div><dt><%= score.criterionLabelSnapshot %></dt><dd><%= score.score %> / <%= score.criterionMaxScoreSnapshot %><%= score.comment ? ` — ${score.comment}` : '' %></dd></div><% }) %></dl></article>
-<%- include('../../partials/footer') %>
+<%- include('../_footer') %>

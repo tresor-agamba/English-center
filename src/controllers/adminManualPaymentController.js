@@ -3,7 +3,7 @@ const prisma = require('../utils/prisma');
 const receiptPdf = require('../services/paymentReceiptPdfService');
 
 function handle(res, error) {
-  if (error instanceof service.ManualPaymentError) return res.status(error.statusCode).render('student/payment/error', { title: 'Paiement manuel', message: error.message });
+  if (error instanceof service.ManualPaymentError) return res.status(error.statusCode).render('student/payment/error', { title: 'Paiement manuel', message: error.message, paymentErrorContext: 'admin' });
   throw error;
 }
 async function pending(req, res) {

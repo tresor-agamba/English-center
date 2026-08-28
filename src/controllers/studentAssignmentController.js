@@ -4,7 +4,7 @@ const { AssignmentError } = require('../services/assignmentService');
 function errorPage(error, res) {
   if (error instanceof AssignmentError) {
     return res.status(error.statusCode).render('student/enrollment/unavailable', {
-      title: 'Devoir indisponible', message: error.message,
+      title: 'Devoir indisponible', message: error.message, layoutContext: 'student',
     });
   }
   throw error;
