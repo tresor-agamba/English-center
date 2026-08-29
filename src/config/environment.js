@@ -12,6 +12,8 @@ function validateEnvironment(env = process.env, { production = env.NODE_ENV === 
   if (!Number.isInteger(port) || port < (production ? 1 : 0) || port > 65535) errors.push('PORT invalide');
   const sessionSecret = String(env.SESSION_SECRET || '');
   if (production && (sessionSecret.length < 32 || DEFAULT_SECRETS.includes(sessionSecret.toLowerCase()))) errors.push('SESSION_SECRET de production absent, faible ou par défaut');
+  const sessionPoolMax = Number(env.SESSION_POOL_MAX || 5);
+  if (!Number.isInteger(sessionPoolMax) || sessionPoolMax < 1 || sessionPoolMax > 20) errors.push('SESSION_POOL_MAX invalide');
   if (env.PUBLIC_APP_URL) { try { const url = new URL(env.PUBLIC_APP_URL); if (!['http:', 'https:'].includes(url.protocol)) throw new Error(); } catch { errors.push('PUBLIC_APP_URL invalide'); } }
   if (env.TRUST_PROXY && !/^(true|false|\d+|loopback|linklocal|uniquelocal)$/i.test(env.TRUST_PROXY)) errors.push('TRUST_PROXY invalide');
   const backupMaxMb = Number(env.BACKUP_MAX_SIZE_MB || 2048);
@@ -19,7 +21,7 @@ function validateEnvironment(env = process.env, { production = env.NODE_ENV === 
   const privateRoot = path.resolve(env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'));
   if (errors.length) throw new EnvironmentError(errors.join('; '));
   return {
-    nodeEnv, production, port, sessionSecret, databaseUrl: env.DATABASE_URL,
+    nodeEnv, production, port, sessionSecret, sessionPoolMax, databaseUrl: env.DATABASE_URL,
     publicAppUrl: env.PUBLIC_APP_URL || `http://localhost:${port}`,
     trustProxy: env.TRUST_PROXY || false, privateRoot, backupMaxBytes: Math.floor(backupMaxMb * 1024 * 1024),
     pgDumpPath: env.PG_DUMP_PATH || 'pg_dump', pgRestorePath: env.PG_RESTORE_PATH || 'pg_restore',

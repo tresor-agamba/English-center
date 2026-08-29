@@ -77,7 +77,7 @@ async function postgresVersion() {
 }
 async function defaultDumpRunner(target) {
   const { args, env } = databaseProcessEnv();
-  await run(config().pgDumpPath, [...args, '--format=custom', '--no-owner', '--no-privileges', '--file', target], { env });
+  await run(config().pgDumpPath, [...args, '--format=custom', '--no-owner', '--no-privileges', '--exclude-table=http_sessions', '--file', target], { env });
 }
 async function createBackup({ actorId = null, type = 'MANUAL', requestId, ipAddress, dumpRunner = defaultDumpRunner } = {}) {
   if (!['MANUAL', 'SCHEDULED', 'PRE_RESTORE'].includes(type)) throw new BackupError('INVALID_TYPE', 'Type de sauvegarde invalide.');

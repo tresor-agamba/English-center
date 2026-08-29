@@ -1,6 +1,7 @@
 require('dotenv').config();
 const { spawnSync } = require('node:child_process');
 const { assertSafeTestDatabase } = require('../src/utils/testDatabaseGuard');
+const { runPrismaGenerate } = require('./generatePrismaClient');
 
 function runNode(args, env) {
   const result = spawnSync(process.execPath, args, { cwd: process.cwd(), env, stdio: 'inherit' });
@@ -27,11 +28,13 @@ function isolatedEnvironment() {
 }
 
 function prepare(env) {
+  runPrismaGenerate(env);
   runNode(prismaArgs('migrate', 'deploy'), env);
 }
 
 function reset(env) {
-  runNode(prismaArgs('migrate', 'reset', '--force', '--skip-seed'), env);
+  runPrismaGenerate(env);
+  runNode(prismaArgs('migrate', 'reset', '--force', '--skip-seed', '--skip-generate'), env);
 }
 
 function main(mode = process.argv[2]) {

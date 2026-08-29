@@ -15,6 +15,12 @@ npm run production:check
 npm test
 ```
 
+## Sessions PostgreSQL
+
+Les sessions HTTP sont stockées dans PostgreSQL, dans la table technique `http_sessions` créée automatiquement au premier démarrage. `SESSION_POOL_MAX` limite le pool dédié (5 par défaut, valeur autorisée de 1 à 20). Le démarrage et `npm run production:check` échouent si le store n'est pas joignable; aucune bascule vers `MemoryStore` n'est autorisée en production. Les sessions expirent après 8 heures et sont nettoyées automatiquement toutes les 15 minutes environ.
+
+Le store PostgreSQL conserve les sessions lors d'un redémarrage et permet leur partage entre plusieurs processus. Le mode cluster reste désactivé dans ce lot, car les autres opérations internes n'ont pas été auditées pour une exécution distribuée.
+
 ## PM2
 
 `ecosystem.config.cjs` démarre une seule instance, impose une limite mémoire de 512 Mo et laisse PM2 gérer les redémarrages. Créer le dossier `logs` avec des droits réservés au compte de service.
@@ -24,7 +30,7 @@ pm2 start ecosystem.config.cjs --env production
 pm2 save
 ```
 
-Le mode cluster reste désactivé car les sessions et opérations internes ne sont pas encore distribuées.
+Le mode cluster reste désactivé pour les autres opérations internes non encore auditées en exécution distribuée.
 
 ## Exemple Nginx
 
@@ -54,6 +60,22 @@ server {
 ```
 
 Limiter l’accès SSH, activer le pare-feu, HTTPS et la rotation des journaux. Le répertoire privé et les sauvegardes doivent appartenir uniquement au compte de service.
+
+## Sauvegardes PostgreSQL
+
+Le serveur et les outils `pg_dump` / `pg_restore` doivent avoir la même version majeure. `npm run production:check` refuse désormais une combinaison incompatible avant le lancement d'une sauvegarde. Sur Ubuntu avec PostgreSQL 18, installer le paquet système officiel `postgresql-client-18`, puis renseigner `PG_DUMP_PATH` et `PG_RESTORE_PATH` si les outils ne sont pas résolus sans ambiguïté.
+
+Les dumps NVA utilisent le format custom PostgreSQL, un SHA-256 et une validation par `pg_restore --list`. La table technique `http_sessions` est volontairement exclue : après une restauration majeure, les utilisateurs doivent se reconnecter et `connect-pg-simple` recrée automatiquement la table au démarrage.
+
+Pour tester la chaîne complète sans toucher aux bases active ou de test :
+
+```bash
+npm run backup:validate-restore
+```
+
+Cette commande crée un dump conservé selon la politique de rétention, restaure dans une base aléatoire `nva_restore_validation_*`, compare des compteurs non sensibles avec Prisma, puis supprime uniquement cette base temporaire après vérification.
+
+Un dump PostgreSQL n'est pas une sauvegarde complète de l'application. Le répertoire `storage/private` doit être sauvegardé séparément sur le VPS, notamment les preuves de paiement, audios, reçus, signatures et autres fichiers privés. Le sous-répertoire contenant les dumps doit lui aussi être répliqué vers un stockage distinct de la machine.
 
 ## Exploitation
 

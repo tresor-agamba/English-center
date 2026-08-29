@@ -12,7 +12,7 @@
     "fixtures:audit": "node scripts/cleanupTestFixtures.js audit",
     "fixtures:cleanup:dry-run": "node scripts/cleanupTestFixtures.js dry-run",
     "fixtures:cleanup": "node scripts/cleanupTestFixtures.js cleanup",
-    "prisma:generate": "prisma generate",
+    "prisma:generate": "node scripts/generatePrismaClient.js",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "node prisma/seed.js",
     "notifications:process": "node src/jobs/processScheduledReminders.js",
@@ -24,6 +24,7 @@
     "backup:verify": "node scripts/backupCli.js verify",
     "backup:cleanup": "node scripts/backupCli.js cleanup",
     "backup:restore": "node scripts/backupCli.js restore",
+    "backup:validate-restore": "node scripts/validateBackupRestore.js",
     "production:check": "node scripts/productionCheck.js",
     "test:responsive": "node scripts/runWithTestDatabase.js responsive",
     "test:pwa": "node --test tests/pwa/phase11.test.js",
@@ -40,24 +41,31 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "allowScripts": {
+    "@prisma/client@6.19.3": true,
+    "@prisma/engines@6.19.3": true,
+    "bcrypt@6.0.0": true,
+    "prisma@6.19.3": true
+  },
   "dependencies": {
-    "@prisma/client": "^6.12.0",
+    "@prisma/client": "6.19.3",
     "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
     "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
-    "express-rate-limit": "^8.1.0",
+    "express-rate-limit": "^8.7.0",
     "express-session": "^1.18.2",
-    "file-type": "^20.5.0",
+    "file-type": "^22.0.2",
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
-    "music-metadata": "^11.8.3",
+    "music-metadata": "^11.15.0",
     "pdfkit": "^0.19.1",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.62.1",
     "nodemon": "^3.1.10",
-    "prisma": "^6.12.0"
+    "prisma": "6.19.3"
   }
 }

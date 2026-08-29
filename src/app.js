@@ -59,8 +59,11 @@ const errorHandler = require('./middlewares/errorHandler');
 const requestContext = require('./middlewares/requestContext');
 const pwaRoutes = require('./routes/pwaRoutes');
 const csrfProtection = require('./middlewares/csrfProtection');
+const { getSessionStore } = require('./config/sessionStore');
 
 const app = express();
+const configuredSessionStore = getSessionStore();
+app.locals.sessionStore = configuredSessionStore;
 app.disable('x-powered-by');
 if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY);
 
@@ -90,6 +93,7 @@ app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.use(
   session({
+    store: configuredSessionStore,
     secret: process.env.SESSION_SECRET || 'development-secret-change-me',
     resave: false,
     saveUninitialized: false,

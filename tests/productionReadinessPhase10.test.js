@@ -83,6 +83,7 @@ test('Phase 10 — préparation production, sauvegardes et sécurité', async (t
   });
   await t.test('valide strictement les variables de production', () => {
     assert.throws(() => validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'your-session-secret', PORT: '3000' }, { production: true }), /SESSION_SECRET/);
+    assert.throws(() => validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'a'.repeat(48), SESSION_POOL_MAX: '0', PORT: '3000' }, { production: true }), /SESSION_POOL_MAX/);
     const valid = validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'a'.repeat(48), PORT: '3000', PUBLIC_APP_URL: 'https://example.org' }, { production: true });
     assert.equal(valid.production, true);
   });
@@ -112,8 +113,7 @@ test('Phase 10 — préparation production, sauvegardes et sécurité', async (t
     const source = await fs.readFile('src/server.js', 'utf8');
     assert.match(source, /SIGTERM/); assert.match(source, /SIGINT/); assert.match(source, /\$disconnect/);
     const previousPort = process.env.PORT; process.env.PORT = '0';
-    const serverModule = require('../src/server'); const instance = serverModule.start();
-    await new Promise((resolve) => instance.once('listening', resolve));
+    const serverModule = require('../src/server'); const instance = await serverModule.start();
     await serverModule.shutdown('TEST', { exit: false });
     assert.equal(instance.listening, false);
     process.env.PORT = previousPort;
