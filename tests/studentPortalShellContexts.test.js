@@ -37,6 +37,11 @@ test('les erreurs de paiement séparent strictement Student et Admin', () => {
 
 test('la navigation conserve toutes les routes réelles et clarifie les groupes', () => {
   const nav = read('views/student/_nav.ejs');
+  const studentCss = read('public/css/student.css');
+  assert.equal((nav.match(/src="\/images\/logo\/logo-navigation\.png"/g) || []).length, 2);
+  assert.doesNotMatch(studentCss, /filter:\s*brightness\(0\)\s*invert\(1\)/);
+  assert.match(studentCss, /\.nva-student-body \.student-brand[^}]+background:\s*#fff/s);
+  assert.match(studentCss, /\.nva-student-body \.student-brand img[^}]+object-fit:\s*contain/s);
   assert.match(nav, />Évaluations</);
   for (const route of [
     '/student/oral-assessments',
@@ -57,6 +62,21 @@ test('les états vides certificats et académique restent contextuels', () => {
   assert.match(academic, /Aucun enseignant assigné pour le moment/);
   assert.match(academic, /Aucune séance enregistrée/);
   assert.match(academic, /Aucune présence enregistrée/);
+});
+
+test('le dashboard premium conserve des badges fondés sur les données existantes', () => {
+  const dashboard = read('views/student/dashboard.ejs');
+  const studentCss = read('public/css/student.css');
+  assert.match(dashboard, /nextMeeting\.access\.label/);
+  assert.match(dashboard, /nextMeeting\?\.access\.canJoin/);
+  assert.match(dashboard, /progress\.level/);
+  assert.match(dashboard, /priorities\.assignments\.todo/);
+  assert.match(dashboard, /priorities\.payment\.pending/);
+  assert.match(dashboard, /priorities\.certificate\.available/);
+  assert.doesNotMatch(dashboard, /class="student-ui-badge[^"%]*">Nouveau</);
+  assert.match(studentCss, /--student-primary-soft:/);
+  assert.match(studentCss, /--student-purple-soft:/);
+  assert.match(studentCss, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
 test('le HTML final des erreurs ne mélange aucun shell', async () => {

@@ -123,7 +123,7 @@ test('espace étudiant', async (t) => {
       assert.match(dashboardHtml, /Bonjour Aline|Séance accessible/);
       assert.match(dashboardHtml, /Voici votre parcours aujourd’hui/);
       assert.match(dashboardHtml, /Prochaine séance|Ma progression/);
-      assert.match(dashboardHtml, /0 \/ 16 séances|1 à remettre|À jour/);
+      assert.match(dashboardHtml, /0 séances sur 16|1 à remettre|À jour/);
       assert.equal((dashboardHtml.match(/class="student-header"/g) || []).length, 1);
       assert.match(dashboardHtml, /New Vision Academy — Tableau de bord étudiant/);
       assert.match(dashboardHtml, /Mes formations|Mon calendrier|Mes paiements|Mes devoirs|Mes certificats/);
@@ -137,7 +137,7 @@ test('espace étudiant', async (t) => {
       const emptyDashboard = await fetch(`${baseUrl}/student`, { headers: { Cookie: emptyCookie } });
       const emptyHtml = await emptyDashboard.text();
       assert.equal(emptyDashboard.status, 200);
-      assert.match(emptyHtml, /Aucune séance programmée pour le moment/);
+      assert.match(emptyHtml, /Aucune séance programmée/);
       assert.match(emptyHtml, /Aucune progression disponible pour le moment/);
       assert.match(emptyHtml, /Aucun devoir à remettre/);
 
