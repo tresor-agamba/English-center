@@ -38,7 +38,7 @@ test('les erreurs de paiement séparent strictement Student et Admin', () => {
 test('la navigation conserve toutes les routes réelles et clarifie les groupes', () => {
   const nav = read('views/student/_nav.ejs');
   const studentCss = read('public/css/student.css');
-  assert.equal((nav.match(/src="\/images\/logo\/logo-navigation\.png"/g) || []).length, 2);
+  assert.equal((nav.match(/src="\/images\/optimized\/logo-navigation-320\.png"/g) || []).length, 2);
   assert.doesNotMatch(studentCss, /filter:\s*brightness\(0\)\s*invert\(1\)/);
   assert.match(studentCss, /\.nva-student-body \.student-brand[^}]+background:\s*#fff/s);
   assert.match(studentCss, /\.nva-student-body \.student-brand img[^}]+object-fit:\s*contain/s);

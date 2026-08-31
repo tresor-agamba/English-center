@@ -26,6 +26,8 @@
     "backup:restore": "node scripts/backupCli.js restore",
     "backup:validate-restore": "node scripts/validateBackupRestore.js",
     "production:check": "node scripts/productionCheck.js",
+    "production:smoke": "node scripts/productionSmokeCheck.js",
+    "images:optimize": "node scripts/optimizeImages.js",
     "test:responsive": "node scripts/runWithTestDatabase.js responsive",
     "test:pwa": "node --test tests/pwa/phase11.test.js",
     "test:pwa:e2e": "playwright test tests/pwa/pwa.spec.js --config=playwright.pwa.config.js",
@@ -66,6 +68,7 @@
   "devDependencies": {
     "@playwright/test": "^1.62.1",
     "nodemon": "^3.1.10",
-    "prisma": "6.19.3"
+    "prisma": "6.19.3",
+    "sharp": "^0.35.4"
   }
 }

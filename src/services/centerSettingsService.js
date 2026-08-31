@@ -5,7 +5,7 @@ const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 
 const MAIN_ID = 'MAIN';
-const PRIVATE_ROOT = path.resolve(__dirname, '..', '..', 'storage', 'private', 'settings');
+const PRIVATE_ROOT = path.resolve(process.env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'), 'settings');
 const CURRENCIES = ['USD', 'CDF'];
 const LEVELS = ['LEVEL_1', 'LEVEL_2', 'LEVEL_3'];
 const MODES = ['ONLINE', 'IN_PERSON', 'HYBRID'];

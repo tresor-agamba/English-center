@@ -14,7 +14,7 @@ async function start() {
     throw new Error('Stockage PostgreSQL des sessions indisponible au démarrage', { cause: error });
   }
   const app = require('./app');
-  server = app.listen(config.port, () => logger.info('APPLICATION_STARTED', { port: config.port, environment: config.nodeEnv }));
+  server = app.listen(config.port, config.host, () => logger.info('APPLICATION_STARTED', { host: config.host, port: config.port, environment: config.nodeEnv }));
   return server;
 }
 async function shutdown(signal, { exit = true } = {}) {

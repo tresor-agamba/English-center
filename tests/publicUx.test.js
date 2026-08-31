@@ -17,7 +17,7 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
       const { response, html } = await get('/');
       assert.equal(response.status, 200);
       assert.match(html, /New Vision Academy/);
-      assert.match(html, /src="\/images\/logo\/logo-navigation\.png"/);
+      assert.match(html, /src="\/images\/optimized\/logo-navigation-320\.png"/);
       assert.match(html, /data-i18n="arena\.home\.hero\.title">New Vision Academy/);
       assert.match(html, /Des formations pratiques, 100% en ligne/);
       assert.match(html, /href="\/register"/);
@@ -28,9 +28,9 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
     });
     await t.test('utilise chaque variante officielle du logo au bon emplacement', async () => {
       const { html } = await get('/');
-      assert.match(html, /<header[\s\S]*logo-navigation\.png/);
-      assert.match(html, /<source[^>]+logo-icon\.png/);
-      assert.match(html, /<footer[\s\S]*logo-with-tagline\.png/);
+      assert.match(html, /<header[\s\S]*logo-navigation-320\.png/);
+      assert.match(html, /<source[^>]+logo-icon-192\.png/);
+      assert.match(html, /<footer[\s\S]*logo-with-tagline-480\.png/);
       assert.match(html, /alt="New Vision Academy"/);
       assert.doesNotMatch(html, /[A-Z]:\\[^"<]+/);
       for (const path of [
@@ -40,6 +40,9 @@ test('interface publique New Vision Academy bilingue et orientée conversion', a
         'public/images/logo/logo-with-tagline.png',
         'public/images/logo/logo-navigation.png',
         'public/images/logo/logo-icon.png',
+        'public/images/optimized/logo-with-tagline-480.png',
+        'public/images/optimized/logo-navigation-320.png',
+        'public/images/optimized/logo-icon-192.png',
         'public/favicon.ico',
         'public/icons/apple-touch-icon.png',
       ]) await fs.access(path);

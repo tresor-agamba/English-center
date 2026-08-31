@@ -84,7 +84,7 @@ test('Phase 10 — préparation production, sauvegardes et sécurité', async (t
   await t.test('valide strictement les variables de production', () => {
     assert.throws(() => validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'your-session-secret', PORT: '3000' }, { production: true }), /SESSION_SECRET/);
     assert.throws(() => validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'a'.repeat(48), SESSION_POOL_MAX: '0', PORT: '3000' }, { production: true }), /SESSION_POOL_MAX/);
-    const valid = validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'a'.repeat(48), PORT: '3000', PUBLIC_APP_URL: 'https://example.org' }, { production: true });
+    const valid = validateEnvironment({ NODE_ENV: 'production', DATABASE_URL: 'postgresql://u:p@localhost/db', SESSION_SECRET: 'a'.repeat(48), PORT: '3000', PUBLIC_APP_URL: 'https://example.org', TRUST_PROXY: '1' }, { production: true });
     assert.equal(valid.production, true);
   });
   await t.test('expurge les secrets des logs et ajoute requestId', () => {

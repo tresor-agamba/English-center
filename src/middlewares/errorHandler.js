@@ -15,7 +15,10 @@ function errorHandler(error, req, res, next) {
 
   if (req.accepts(['html', 'json']) === 'json') return res.status(statusCode).json({ error: message, requestId: req.requestId });
   const view = [403, 404, 429, 500, 503].includes(statusCode) ? `errors/${statusCode}` : 'error';
-  return res.status(statusCode).render(view, { title: statusCode >= 500 ? 'Service indisponible' : 'Erreur', message, requestId: req.requestId });
+  return res.status(statusCode).render(view, {
+    title: statusCode >= 500 ? 'Service indisponible' : 'Erreur', message, requestId: req.requestId,
+    seo: { ...(res.locals?.seo || {}), pageTitle: `${statusCode >= 500 ? 'Service indisponible' : 'Erreur'} | New Vision Academy`, robotsMeta: 'noindex, nofollow' },
+  });
 }
 
 module.exports = errorHandler;

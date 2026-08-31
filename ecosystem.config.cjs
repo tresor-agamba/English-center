@@ -7,6 +7,7 @@ module.exports = {
     autorestart: true,
     max_memory_restart: '512M',
     kill_timeout: 20000,
+    listen_timeout: 15000,
     wait_ready: false,
     time: true,
     out_file: 'logs/application.log',

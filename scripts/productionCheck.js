@@ -8,6 +8,7 @@ const sessionStore = require('../src/config/sessionStore');
 const expressSession = require('express-session');
 const { commandVersion, assertToolCompatibility } = require('../src/utils/postgresTools');
 const path = require('path');
+const healthService = require('../src/services/systemHealthService');
 
 function runPrisma(...args) {
   const result = spawnSync(process.execPath, [require.resolve('prisma/build/index.js'), ...args], {
@@ -24,6 +25,14 @@ async function main() {
     try { await fn(); results.push({ name, status: 'OK', detail: detail ? String(detail()).slice(0, 120) : '' }); } catch (error) { results.push({ name, status: required ? 'FAIL' : 'WARN', detail: error.message }); }
   };
   await check('Variables de production', () => validateEnvironment(process.env, { production: true }));
+  await check('Configuration HTTP de production', () => {
+    const cfg = validateEnvironment(process.env, { production: true });
+    const app = require('../src/app');
+    const runtime = app.locals.runtimeSecurity;
+    if (cfg.host !== '127.0.0.1' || cfg.trustProxy !== '1') throw new Error('Binding local ou reverse proxy invalide');
+    if (!runtime?.sessionCookie?.httpOnly || !runtime.sessionCookie.secure || runtime.sessionCookie.sameSite !== 'lax') throw new Error('Cookie de session production invalide');
+    if (runtime.bodyLimit !== '1mb') throw new Error('Limite HTTP inattendue');
+  });
   await check('Schéma Prisma', () => runPrisma('validate'));
   await check('Client Prisma généré', async () => {
     await prisma.$queryRawUnsafe('SELECT 1');
@@ -37,6 +46,7 @@ async function main() {
     const rows = await prisma.$queryRawUnsafe('SHOW server_version');
     serverVersion = rows[0].server_version;
   });
+  await check('Readiness', async () => { if ((await healthService.readiness()).status !== 'ok') throw new Error('Readiness indisponible'); });
   await check('PostgreSQL server version', () => { if (!serverVersion) throw new Error('Version serveur indisponible'); }, { detail: () => serverVersion });
   await check('Migrations Prisma', () => {
     const migrationEnv = { ...process.env };

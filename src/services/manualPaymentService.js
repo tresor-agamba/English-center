@@ -16,7 +16,7 @@ const METHOD_DEFINITIONS = [
 ];
 const CURRENCIES = ['USD', 'CDF'];
 const METHOD_TYPES = ['MOBILE_MONEY', 'BANK_TRANSFER', 'OTHER'];
-const PROOF_ROOT = path.resolve(__dirname, '..', '..', 'storage', 'private', 'payment-proofs');
+const PROOF_ROOT = path.resolve(process.env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'), 'payment-proofs');
 
 class ManualPaymentError extends Error {
   constructor(code, message, statusCode = 400) {

@@ -1,11 +1,31 @@
-<% const isStudentLayout = typeof layoutContext !== 'undefined' && layoutContext === 'student'; %>
+<%
+  const isStudentLayout = typeof layoutContext !== 'undefined' && layoutContext === 'student';
+  const activeLanguage = typeof documentLanguage === 'string' ? documentLanguage : 'en';
+  const pageSeo = typeof seo === 'object' && seo ? seo : {};
+  const resolvedTitle = pageSeo.pageTitle || `${title} | New Vision Academy`;
+  const resolvedDescription = pageSeo.metaDescription || 'Practical online language courses with New Vision Academy.';
+%>
 <!DOCTYPE html>
-<html lang="en" data-environment="<%= process.env.NODE_ENV || 'development' %>">
+<html lang="<%= activeLanguage %>" data-language="<%= activeLanguage %>" data-environment="<%= process.env.NODE_ENV || 'development' %>">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title><%= title %> | New Vision Academy</title>
-    <meta name="description" content="Live online language programs for personal and professional growth.">
+    <title><%= resolvedTitle %></title>
+    <meta name="description" content="<%= resolvedDescription %>">
+    <meta name="robots" content="<%= pageSeo.robotsMeta || 'noindex, nofollow' %>">
+    <% if (pageSeo.canonicalUrl) { %><link rel="canonical" href="<%= pageSeo.canonicalUrl %>"><% } %>
+    <% if (pageSeo.ogTitle) { %>
+    <meta property="og:title" content="<%= pageSeo.ogTitle %>">
+    <meta property="og:description" content="<%= pageSeo.ogDescription || resolvedDescription %>">
+    <meta property="og:type" content="<%= pageSeo.ogType || 'website' %>">
+    <meta property="og:site_name" content="New Vision Academy">
+    <% if (pageSeo.ogUrl) { %><meta property="og:url" content="<%= pageSeo.ogUrl %>"><% } %>
+    <% if (pageSeo.ogImage) { %><meta property="og:image" content="<%= pageSeo.ogImage %>"><% } %>
+    <meta name="twitter:card" content="<%= pageSeo.twitterCard || 'summary_large_image' %>">
+    <meta name="twitter:title" content="<%= pageSeo.ogTitle %>">
+    <meta name="twitter:description" content="<%= pageSeo.ogDescription || resolvedDescription %>">
+    <% if (pageSeo.ogImage) { %><meta name="twitter:image" content="<%= pageSeo.ogImage %>"><% } %>
+    <% } %>
     <meta name="theme-color" content="#17105C">
     <meta name="csrf-token" content="<%= typeof csrfToken === 'string' ? csrfToken : '' %>">
     <meta name="mobile-web-app-capable" content="yes">
@@ -15,21 +35,22 @@
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
     <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="stylesheet" href="/css/style.css?v=nva-student-navigation-20260827-1">
-    <link rel="stylesheet" href="/css/arena-public.css?v=nva-visual-stories-20260827-1">
+    <% if (pageSeo.structuredDataJson) { %><script type="application/ld+json"><%- pageSeo.structuredDataJson %></script><% } %>
+    <link rel="stylesheet" href="/css/style.css?v=nva-performance-20260830-1">
+    <link rel="stylesheet" href="/css/arena-public.css?v=nva-performance-20260830-1">
     <% if (isStudentLayout) { %><link rel="stylesheet" href="/css/student.css?v=nva-student-premium-20260829-1"><% } %>
-    <script src="/js/i18n.js?v=nva-public-stitch-20260824-1"></script>
+    <script src="/js/i18n.js?v=nva-public-stitch-20260824-1" defer></script>
   </head>
   <body class="<%= isStudentLayout ? 'nva-private-body nva-student-body' : 'nva-public-body' %>">
-    <a class="skip-link" href="#main-content" data-i18n="a11y.skip">Skip to content</a>
+    <a class="skip-link" href="#main-content" data-i18n="a11y.skip"><%= activeLanguage === 'fr' ? 'Aller au contenu principal' : 'Skip to content' %></a>
     <% if (isStudentLayout) { %>
       <%- include('../student/_nav') %>
     <% } else { %>
     <header class="site-header public-header nva-public-header" data-public-header>
       <a class="brand official-brand header-brand" href="/" aria-label="New Vision Academy — Home" data-i18n-aria="a11y.brandHome">
         <picture>
-          <source media="(max-width: 360px)" srcset="/images/logo/logo-icon.png">
-          <img src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697">
+          <source media="(max-width: 360px)" srcset="/images/optimized/logo-icon-192.png">
+          <img src="/images/optimized/logo-navigation-320.png" alt="New Vision Academy" width="320" height="237">
         </picture>
       </a>
       <button class="mobile-menu-toggle nva-public-menu-toggle" type="button" data-menu-toggle aria-expanded="false" aria-controls="public-navigation" data-i18n-aria="nav.open">
@@ -43,9 +64,9 @@
         <a class="nva-public-login-link" href="/login" data-i18n="nav.login">Login</a>
         <a class="button button-small nav-register nva-public-button nva-public-button-primary" href="/register" data-i18n="nav.register">Register</a>
         <div class="language-switcher" aria-label="Language" data-i18n-aria="a11y.language">
-          <button type="button" data-language="en" aria-pressed="true">EN</button>
+          <button type="button" data-language="en" aria-pressed="<%= activeLanguage === 'en' %>">EN</button>
           <span aria-hidden="true">/</span>
-          <button type="button" data-language="fr" aria-pressed="false">FR</button>
+          <button type="button" data-language="fr" aria-pressed="<%= activeLanguage === 'fr' %>">FR</button>
         </div>
       </nav>
     </header>

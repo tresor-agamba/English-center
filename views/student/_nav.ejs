@@ -2,12 +2,12 @@
 <% const isStudentActive = (href) => href === '/student' ? activeStudentPath === href : (activeStudentPath === href || activeStudentPath.startsWith(`${href}/`)); %>
 <% const studentNavUser = typeof studentNavigationUser !== 'undefined' ? studentNavigationUser : null; %>
 <header class="student-header">
-  <a class="student-brand" href="/student" aria-label="New Vision Academy — Tableau de bord étudiant"><img src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697"></a>
+  <a class="student-brand" href="/student" aria-label="New Vision Academy — Tableau de bord étudiant"><img src="/images/optimized/logo-navigation-320.png" alt="New Vision Academy" width="320" height="237"></a>
   <span class="student-mobile-title">Espace étudiant</span>
   <button class="student-menu-toggle" type="button" data-student-menu-toggle aria-expanded="false" aria-controls="student-navigation" aria-label="Ouvrir la navigation étudiante"><span></span><span></span><span></span></button>
 </header>
 <aside id="student-navigation" class="student-sidebar" data-student-navigation aria-label="Navigation étudiante">
-  <div class="student-sidebar-brand"><a class="student-brand" href="/student" aria-label="New Vision Academy — Tableau de bord étudiant"><img src="/images/logo/logo-navigation.png" alt="New Vision Academy" width="941" height="697"></a><span>Espace étudiant</span></div>
+  <div class="student-sidebar-brand"><a class="student-brand" href="/student" aria-label="New Vision Academy — Tableau de bord étudiant"><img src="/images/optimized/logo-navigation-320.png" alt="New Vision Academy" width="320" height="237"></a><span>Espace étudiant</span></div>
   <nav class="student-nav">
     <p class="student-nav-label">Essentiel</p>
     <a href="/student"<% if (isStudentActive('/student')) { %> aria-current="page"<% } %>>Tableau de bord</a>

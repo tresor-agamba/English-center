@@ -504,11 +504,12 @@
       menuToggle.setAttribute('aria-label', translations[lang][open ? 'nav.close' : 'nav.open']);
     }
     localStorage.setItem('gli-language', lang);
+    document.cookie = `nva-language=${encodeURIComponent(lang)}; Path=/; Max-Age=31536000; SameSite=Lax`;
     document.dispatchEvent(new CustomEvent('gli:languagechange', { detail: { language: lang } }));
   };
   window.GLI_I18N = { applyLanguage, translations, get language() { return document.documentElement.dataset.language || 'en'; } };
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-language]').forEach((button) => button.addEventListener('click', () => applyLanguage(button.dataset.language)));
-    applyLanguage(localStorage.getItem('gli-language') || 'en');
+    applyLanguage(document.documentElement.dataset.language || localStorage.getItem('gli-language') || 'en');
   });
 })();

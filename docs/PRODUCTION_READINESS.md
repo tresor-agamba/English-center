@@ -10,6 +10,7 @@ Exécuter avant chaque mise en production :
 
 ```bash
 npm ci
+npx prisma generate
 npx prisma migrate deploy
 npm run production:check
 npm test
@@ -34,30 +35,10 @@ Le mode cluster reste désactivé pour les autres opérations internes non encor
 
 ## Exemple Nginx
 
-```nginx
-server {
-  listen 80;
-  server_name example.org;
-  return 301 https://$host$request_uri;
-}
-server {
-  listen 443 ssl http2;
-  server_name example.org;
-  # ssl_certificate et ssl_certificate_key sont configurés sur le VPS.
-  client_max_body_size 30m;
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-    proxy_connect_timeout 15s;
-    proxy_read_timeout 120s;
-  }
-  location ^~ /storage/private/ { deny all; return 404; }
-}
-```
+Le modèle versionné est `deploy/nginx/nva.conf.example`. Il lie Nginx à Node sur
+`127.0.0.1`, redirige HTTP vers HTTPS, transmet les en-têtes de proxy, refuse le
+stockage privé, active gzip au niveau du proxy et limite les requêtes à 25 Mo.
+Remplacer ses placeholders avant `nginx -t` ; ne pas l'utiliser tel quel.
 
 Limiter l’accès SSH, activer le pare-feu, HTTPS et la rotation des journaux. Le répertoire privé et les sauvegardes doivent appartenir uniquement au compte de service.
 

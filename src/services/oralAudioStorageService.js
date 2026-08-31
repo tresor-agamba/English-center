@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs/promises');
 const path = require('path');
 
-const PRIVATE_ROOT = path.resolve(__dirname, '..', '..', 'storage', 'private', 'oral-audio');
+const PRIVATE_ROOT = path.resolve(process.env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'), 'oral-audio');
 const TEMP_ROOT = path.join(PRIVATE_ROOT, '.tmp');
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 const SUPPORTED_AUDIO = Object.freeze({

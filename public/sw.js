@@ -1,25 +1,28 @@
 'use strict';
 
-const CACHE_VERSION = 'new-vision-academy-v15';
+const CACHE_VERSION = 'new-vision-academy-v16';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PUBLIC_CACHE = `${CACHE_VERSION}-public`;
 const ALLOWED_CACHES = new Set([STATIC_CACHE, PUBLIC_CACHE]);
 const ESSENTIAL_ASSETS = [
   '/offline',
   '/offline.html',
-  '/css/style.css?v=nva-public-stitch-20260824-3',
-  '/js/main.js?v=nva-public-stitch-20260824-1',
+  '/css/style.css?v=nva-performance-20260830-1',
+  '/css/arena-public.css?v=nva-performance-20260830-1',
+  '/js/i18n.js?v=nva-public-stitch-20260824-1',
+  '/js/main.js?v=nva-student-navigation-20260827-1',
   '/js/pwa.js?v=nva-ui-20260730-3',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-512-maskable.png',
   '/icons/apple-touch-icon.png',
-  '/images/logo/logo-icon.png',
+  '/images/optimized/logo-icon-192.png',
   '/favicon.ico',
 ];
 const PRIVATE_PREFIXES = [
-  '/admin', '/teacher', '/student', '/api', '/health', '/notifications',
+  '/admin', '/teacher', '/student', '/api', '/health', '/ready', '/notifications',
   '/settings/public/logo', '/webhooks', '/payments', '/payment', '/enrollment',
+  '/login', '/register', '/forgot-password', '/reset-password', '/change-password',
 ];
 const PRIVATE_FILE_PATTERN = /\.(?:pdf|mp3|m4a|wav|ogg|mp4|webm|mov|avi|docx?|xlsx?|zip)(?:$|\?)/i;
 const STATIC_PATTERN = /\.(?:css|js|png|jpe?g|gif|webp|svg|ico|woff2?|ttf)(?:$|\?)/i;
@@ -31,7 +34,7 @@ function isPrivate(url) {
 }
 
 function isPublicPage(url) {
-  return url.pathname === '/' || url.pathname === '/login' || url.pathname === '/formations'
+  return url.pathname === '/' || url.pathname === '/formations' || url.pathname === '/about' || url.pathname === '/contact'
     || url.pathname.startsWith('/formations/') || url.pathname.startsWith('/certificates/verify');
 }
 

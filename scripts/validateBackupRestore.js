@@ -31,8 +31,8 @@ function run(binary, args, env) {
   return new Promise((resolve, reject) => {
     const child = spawn(binary, args, { env, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = '', stderr = '';
-    child.stdout.on('data', (chunk) => { stdout += chunk.toString().slice(0, 20_000); });
-    child.stderr.on('data', (chunk) => { stderr += chunk.toString().slice(0, 20_000); });
+    child.stdout.on('data', (chunk) => { if (stdout.length < 200_000) stdout += chunk.toString().slice(0, 200_000 - stdout.length); });
+    child.stderr.on('data', (chunk) => { if (stderr.length < 20_000) stderr += chunk.toString().slice(0, 20_000 - stderr.length); });
     child.once('error', reject);
     child.once('close', (code) => code === 0 ? resolve({ code, stdout, stderr }) : reject(new Error(`Commande PostgreSQL échouée avec le code ${code}: ${stderr.slice(0, 500)}`)));
   });

@@ -57,21 +57,40 @@ const notificationLocals = require('./middlewares/notificationLocals');
 const studentRoutes = require('./routes/studentRoutes');
 const errorHandler = require('./middlewares/errorHandler');
 const requestContext = require('./middlewares/requestContext');
+const seoContext = require('./middlewares/seoContext');
+const seoRoutes = require('./routes/seoRoutes');
 const pwaRoutes = require('./routes/pwaRoutes');
 const csrfProtection = require('./middlewares/csrfProtection');
 const { getSessionStore } = require('./config/sessionStore');
 
 const app = express();
 const configuredSessionStore = getSessionStore();
+const production = process.env.NODE_ENV === 'production';
 app.locals.sessionStore = configuredSessionStore;
+app.locals.runtimeSecurity = {
+  production,
+  trustProxy: process.env.TRUST_PROXY || false,
+  sessionCookie: { httpOnly: true, secure: production, sameSite: 'lax', maxAge: 1000 * 60 * 60 * 8 },
+  bodyLimit: '1mb',
+  staticMaxAge: production ? '1h' : 0,
+};
 app.disable('x-powered-by');
-if (process.env.TRUST_PROXY) app.set('trust proxy', process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY);
+if (process.env.TRUST_PROXY) {
+  const trustProxy = /^\d+$/.test(process.env.TRUST_PROXY)
+    ? Number(process.env.TRUST_PROXY)
+    : process.env.TRUST_PROXY === 'true' ? 1 : process.env.TRUST_PROXY;
+  app.set('trust proxy', trustProxy);
+  app.locals.runtimeSecurity.trustProxy = trustProxy;
+}
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '..', 'views'));
 
 app.use(requestContext);
+app.use(seoContext);
 app.use(helmet({
+  // HSTS sera activé au niveau Nginx uniquement après validation durable du HTTPS réel.
+  strictTransportSecurity: false,
   contentSecurityPolicy: { directives: {
     defaultSrc: ["'self'"], baseUri: ["'self'"], objectSrc: ["'none'"], frameAncestors: ["'none'"],
     imgSrc: ["'self'", 'data:'], styleSrc: ["'self'", "'unsafe-inline'"], scriptSrc: ["'self'", "'unsafe-inline'"],
@@ -84,12 +103,16 @@ app.use((req, res, next) => {
   res.locals.csrfField = () => '';
   next();
 });
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json({ verify: (req, res, buffer) => {
+app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 2000 }));
+app.use(express.json({ limit: '1mb', verify: (req, res, buffer) => {
   if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
 } }));
 app.use(pwaRoutes);
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.static(path.join(__dirname, '..', 'public'), {
+  etag: true,
+  maxAge: production ? '1h' : 0,
+  immutable: false,
+}));
 
 app.use(
   session({
@@ -100,7 +123,7 @@ app.use(
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: production,
       maxAge: 1000 * 60 * 60 * 8,
     },
   })
@@ -116,6 +139,7 @@ app.use((req, res, next) => {
 });
 
 app.use(healthRoutes);
+app.use(seoRoutes);
 app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
 app.use(webRoutes);
 app.use(authRoutes);
@@ -168,6 +192,7 @@ app.use((req, res) => {
     title: 'Page introuvable',
     message: 'La page demandée est introuvable.',
     requestId: req.requestId,
+    seo: { ...res.locals.seo, pageTitle: 'Page introuvable | New Vision Academy', robotsMeta: 'noindex, nofollow' },
   });
 });
 
