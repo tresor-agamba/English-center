@@ -5,6 +5,11 @@ function requireAdmin(req, res, next) {
     error.statusCode = 403;
     return next(error);
   }
+  res.locals = res.locals || {};
+  res.locals.layoutContext = 'admin';
+  const requestPath = req.originalUrl || req.url || req.path || '/admin/dashboard';
+  res.locals.adminNavigationPath = requestPath.split('?')[0].replace(/^\/admin/, '') || '/dashboard';
+  res.locals.adminNavigationUser = req.session.user;
   return next();
 }
 

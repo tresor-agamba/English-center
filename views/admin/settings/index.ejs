@@ -1,5 +1,5 @@
 <%- include('../../partials/header', { title }) %>
-<main class="container settings-page">
+<div class="settings-page">
   <%- include('../_nav') %>
   <div class="page-heading"><div><p class="eyebrow">Administration</p><h1>Paramètres du centre</h1><p>Configuration centralisée utilisée par les modules du centre.</p></div></div>
   <% if (success) { %><div class="alert alert-success" role="status">Modifications enregistrées.</div><% } %>
@@ -131,5 +131,5 @@
     <% history.forEach(item => { %><tr><td data-label="Date"><%= item.createdAt.toLocaleString('fr-FR') %></td><td data-label="Catégorie"><%= item.category %></td><td data-label="Champ"><%= item.field %></td><td data-label="Administrateur"><%= item.actor.firstName %> <%= item.actor.lastName %></td><td data-label="Avant"><%= JSON.stringify(item.oldValue) %></td><td data-label="Après"><%= JSON.stringify(item.newValue) %></td></tr><% }) %>
     </tbody></table></div><% } %>
   </section><% } %>
-</main>
+</div>
 <%- include('../../partials/footer') %>

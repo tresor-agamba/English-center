@@ -1,0 +1,36 @@
+<% const activeAdminPath = typeof adminNavigationPath === 'string' ? adminNavigationPath : '/dashboard'; %>
+<% const adminNavUser = typeof adminNavigationUser !== 'undefined' ? adminNavigationUser : null; %>
+<% const isAdminActive = (...prefixes) => prefixes.some((prefix) => activeAdminPath === prefix || activeAdminPath.startsWith(`${prefix}/`)); %>
+<header class="admin-mobile-header">
+  <a class="admin-brand" href="/admin/dashboard" aria-label="New Vision Academy — Tableau de bord administrateur"><img src="/images/optimized/logo-navigation-320.png" alt="New Vision Academy" width="320" height="237"></a>
+  <span>Administration NVA</span>
+  <button class="admin-menu-toggle" type="button" data-admin-menu-toggle aria-expanded="false" aria-controls="admin-navigation" aria-label="Ouvrir la navigation d’administration"><span></span><span></span><span></span></button>
+</header>
+<aside id="admin-navigation" class="admin-sidebar" data-admin-navigation aria-label="Navigation administration">
+  <div class="admin-sidebar-brand"><a class="admin-brand" href="/admin/dashboard" aria-label="New Vision Academy — Tableau de bord administrateur"><img src="/images/optimized/logo-navigation-320.png" alt="New Vision Academy" width="320" height="237"></a><span>Administration NVA</span></div>
+  <nav class="admin-shell-nav">
+    <p class="admin-nav-label">Principal</p>
+    <a href="/admin/dashboard"<% if (isAdminActive('/dashboard')) { %> aria-current="page"<% } %>><span aria-hidden="true">⌂</span>Tableau de bord</a>
+    <p class="admin-nav-label">Académique</p>
+    <a href="/admin/courses"<% if (isAdminActive('/courses', '/modules', '/chapters', '/lessons', '/resources', '/assignments')) { %> aria-current="page"<% } %>><span aria-hidden="true">▤</span>Formations</a>
+    <a href="/admin/sessions"<% if (isAdminActive('/sessions', '/academic')) { %> aria-current="page"<% } %>><span aria-hidden="true">□</span>Sessions</a>
+    <a href="/admin/students"<% if (isAdminActive('/students')) { %> aria-current="page"<% } %>><span aria-hidden="true">◉</span>Étudiants</a>
+    <a href="/admin/teachers"<% if (isAdminActive('/teachers')) { %> aria-current="page"<% } %>><span aria-hidden="true">◇</span>Enseignants</a>
+    <a href="/admin/class-meetings"<% if (isAdminActive('/class-meetings', '/live-oral-sessions', '/live-oral-assessments')) { %> aria-current="page"<% } %>><span aria-hidden="true">◌</span>Séances live</a>
+    <p class="admin-nav-label">Communication</p>
+    <a href="/notifications"<% if (activeAdminPath === '/notifications') { %> aria-current="page"<% } %>><span aria-hidden="true">●</span>Notifications<% if (unreadNotificationCount) { %><b class="admin-nav-count"><%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %></b><% } %></a>
+    <a href="/admin/notifications/announcements"<% if (isAdminActive('/notifications/announcements')) { %> aria-current="page"<% } %>><span aria-hidden="true">✦</span>Annonces</a>
+    <a href="/admin/whatsapp/deliveries"<% if (isAdminActive('/whatsapp')) { %> aria-current="page"<% } %>><span aria-hidden="true">◍</span>WhatsApp</a>
+    <p class="admin-nav-label">Gestion</p>
+    <a href="/admin/finances/manual-payments"<% if (isAdminActive('/finances')) { %> aria-current="page"<% } %>><span aria-hidden="true">$</span>Paiements manuels</a>
+    <a href="/admin/certificates"<% if (isAdminActive('/certificates')) { %> aria-current="page"<% } %>><span aria-hidden="true">☆</span>Certificats</a>
+    <a href="/admin/oral-assessments"<% if (isAdminActive('/oral-assessments', '/written-assessments')) { %> aria-current="page"<% } %>><span aria-hidden="true">✓</span>Évaluations</a>
+    <p class="admin-nav-label">Configuration</p>
+    <a href="/admin/settings"<% if (isAdminActive('/settings')) { %> aria-current="page"<% } %>><span aria-hidden="true">⚙</span>Paramètres</a>
+    <a href="/admin/system/backups"<% if (isAdminActive('/system')) { %> aria-current="page"<% } %>><span aria-hidden="true">≡</span>Système</a>
+  </nav>
+  <div class="admin-account">
+    <div><span class="admin-avatar" aria-hidden="true"><%= adminNavUser?.firstName?.charAt(0) || 'A' %></span><span><small>Administrateur</small><strong><%= adminNavUser ? `${adminNavUser.firstName} ${adminNavUser.lastName}` : 'Admin NVA' %></strong></span></div>
+    <form method="post" action="/logout"><%- csrfField() %><button type="submit">Déconnexion</button></form>
+  </div>
+</aside>

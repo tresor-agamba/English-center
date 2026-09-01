@@ -1,6 +1,7 @@
 module.exports = {
   apps: [{
     name: 'english-center',
+    cwd: __dirname,
     script: 'src/server.js',
     instances: 1,
     exec_mode: 'fork',

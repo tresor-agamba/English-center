@@ -4,7 +4,10 @@ const path = require('path');
 const prisma = require('../utils/prisma');
 const learningAccess = require('./learningAccessService');
 
-const PRIVATE_ROOT = path.resolve(__dirname, '..', '..', 'storage', 'private', 'lms');
+const PRIVATE_ROOT = path.resolve(
+  process.env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'),
+  'lms',
+);
 const ALLOWED_MIME = new Set(['application/pdf', 'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/webm', 'video/mp4', 'text/plain']);
 
 class LmsResourceError extends Error {

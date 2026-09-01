@@ -63,3 +63,5 @@ Un dump PostgreSQL n'est pas une sauvegarde complète de l'application. Le répe
 Surveiller `/health` de façon externe. Consulter `/admin/system/health` et `/admin/system/backups` uniquement avec un compte administrateur. Une réponse publique de santé ne révèle ni version, ni base, ni chemin local.
 
 Pour un arrêt, envoyer `SIGTERM` à PM2. L’application cesse d’accepter de nouvelles connexions, attend les opérations critiques dans la limite configurée, ferme Prisma et journalise la fin.
+
+`POST /register` est limité à 10 tentatives par heure et par adresse IP. Cette limite vise les inscriptions automatisées sans gêner un parcours humain normal. Elle repose sur `TRUST_PROXY=1` derrière l'unique proxy Nginx ; ne jamais exposer directement le port Node.

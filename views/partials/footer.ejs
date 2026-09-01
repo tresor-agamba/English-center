@@ -1,4 +1,10 @@
     </main>
+    <% if (typeof layoutContext !== 'undefined' && layoutContext === 'admin') { %>
+    <footer class="admin-footer"><span>&copy; <%= new Date().getFullYear() %> New Vision Academy</span><span>Administration NVA</span></footer>
+    <script src="/js/admin.js?v=nva-admin-shell-20260831-1"></script>
+    </body>
+</html>
+    <% } else { %>
     <footer class="site-footer brand-footer nva-public-footer" id="contact">
       <div class="footer-grid nva-public-footer-grid">
         <div class="nva-public-footer-intro">
@@ -21,3 +27,4 @@
     <script src="/js/pwa.js?v=nva-ui-20260730-3"></script>
   </body>
 </html>
+    <% } %>

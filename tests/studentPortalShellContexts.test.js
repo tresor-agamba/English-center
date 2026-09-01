@@ -31,7 +31,7 @@ test('les erreurs de paiement séparent strictement Student et Admin', () => {
   assert.match(studentController, /paymentErrorContext:\s*'student'/);
   assert.match(adminController, /paymentErrorContext:\s*'admin'/);
   assert.match(view, /include\('\.\.\/_header'\)/);
-  assert.match(view, /include\('\.\.\/\.\.\/admin\/_nav'\)/);
+  assert.match(view, /include\('\.\.\/\.\.\/partials\/header'/);
   assert.match(view, /useAdminShell[^?]+\?[^:]+admin\/finances\/manual-payments/s);
 });
 
@@ -96,7 +96,7 @@ test('le HTML final des erreurs ne mélange aucun shell', async () => {
   assert.match(studentPaymentHtml, /class="student-sidebar"/);
   assert.doesNotMatch(studentPaymentHtml, /data-admin-navigation|data-public-header/);
 
-  const adminHtml = await ejs.renderFile('views/student/payment/error.ejs', { ...common, paymentErrorContext: 'admin' });
+  const adminHtml = await ejs.renderFile('views/student/payment/error.ejs', { ...common, paymentErrorContext: 'admin', layoutContext: 'admin', adminNavigationPath: '/finances/manual-payments', adminNavigationUser: { firstName: 'Admin', lastName: 'NVA' } });
   assert.match(adminHtml, /data-admin-navigation/);
   assert.doesNotMatch(adminHtml, /class="student-sidebar"|nva-student-body/);
 });

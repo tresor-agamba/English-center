@@ -1,5 +1,5 @@
 <% const useAdminShell = typeof paymentErrorContext !== 'undefined' && paymentErrorContext === 'admin'; %>
-<% if (useAdminShell) { %><%- include('../../partials/header', { title }) %><%- include('../../admin/_nav') %><% } else { %><%- include('../_header') %><% } %>
+<% if (useAdminShell) { %><%- include('../../partials/header', { title }) %><% } else { %><%- include('../_header') %><% } %>
 <section class="card payment-error">
   <p class="eyebrow">Paiement</p><h1><%= title %></h1><p><%= message %></p>
   <a class="button" href="<%= useAdminShell ? '/admin/finances/manual-payments' : '/student/payments' %>"><%= useAdminShell ? 'Retour aux paiements manuels' : 'Retour à mes paiements' %></a>

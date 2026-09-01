@@ -3,6 +3,7 @@ const handler = (req, res) => res.status(429).render('errors/429', { title: 'Tro
 const make = (windowMs, limit) => rateLimit({ windowMs, limit, standardHeaders: 'draft-8', legacyHeaders: false, handler });
 module.exports = {
   login: make(15 * 60 * 1000, 20), privateDownload: make(15 * 60 * 1000, 60),
+  register: make(60 * 60 * 1000, 10),
   backupCreate: make(60 * 60 * 1000, 5), restore: make(24 * 60 * 60 * 1000, 2),
   exportCsv: make(15 * 60 * 1000, 30), payment: make(15 * 60 * 1000, 20),
   assessmentSubmit: make(15 * 60 * 1000, 30),

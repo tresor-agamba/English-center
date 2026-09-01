@@ -124,3 +124,25 @@ Conserver l'artifact ou commit précédent, le dump pré-déploiement et le snap
 - PostgreSQL : `/ready`, connectivité locale, espace disque et pool de sessions.
 - Prisma : `npx prisma validate`, `npx prisma migrate status`.
 - Backup : `npm run backup:verify -- ID` et `pg_restore --list`.
+
+## Checklist opérationnelle finale
+
+Ordre recommandé : provisionner Ubuntu LTS, créer l'utilisateur non-root, installer Git (ou livrer un artifact versionné), Node/npm, PostgreSQL 18 et `postgresql-client-18`, créer la base et son rôle dédié, configurer `.env`, puis exécuter `npm ci`, `prisma generate`, `prisma migrate deploy` et `production:check`. Préparer ensuite les permissions, PM2, Nginx, DNS, Certbot/HTTPS, UFW, smoke tests, sauvegardes et monitoring.
+
+Permissions minimales : `.env` en `600`; `storage/private`, `storage/private/backups` et `logs` en `700`; fichiers privés, dumps et logs en `600`. Tous appartiennent à l'utilisateur de service. Ne jamais utiliser `chmod 777` et vérifier que Nginx ne sert ni `.env`, ni `storage/private`, ni les dumps.
+
+Le fichier PM2 fixe son `cwd` avec `__dirname`, de manière portable, et conserve une seule instance en mode fork. Après validation, exécuter `pm2 save`, puis la commande proposée par `pm2 startup` afin de restaurer le processus après redémarrage du VPS.
+
+Politique UFW attendue : SSH limité aux adresses d'administration lorsque possible, HTTP/HTTPS publics via Nginx, aucun accès public direct à PostgreSQL 5432 ou au port Node 3000.
+
+Smoke tests après VPS : routes publiques `/`, `/formations`, `/login`, `/register`, `/robots.txt`, `/sitemap.xml`, `/health`, `/ready`; login, logout et persistance de session; dashboards et fonctions principales Student/Admin/Teacher; upload autorisé, téléchargement privé, CSRF absent/invalide, dépassement du rate limit, 404 et erreur 500 contrôlée. Ces contrôles ne sont considérés exécutés qu'après installation réelle du VPS et de HTTPS.
+
+Monitoring initial : processus Node, redémarrages PM2, CPU, RAM, disque, PostgreSQL et connexions, croissance de `storage/private`, espace et âge des sauvegardes, erreurs HTTP 5xx, `/health`, `/ready`, expiration du certificat TLS et du domaine. Une alerte externe simple et un test périodique de restauration isolée suffisent initialement.
+
+## Distinction du rollback
+
+Avant chaque déploiement, conserver l'artifact ou commit précédent, un dump pré-déploiement vérifié et le snapshot correspondant des fichiers privés.
+
+**Rollback application :** remettre l'artifact/version précédente, exécuter `npm ci`, régénérer Prisma si nécessaire, redémarrer PM2 et effectuer les smoke tests. Ne pas modifier la base si cette version reste compatible avec le schéma déployé.
+
+**Rollback base de données :** ne jamais tenter aveuglément d'annuler une migration Prisma déjà appliquée avec des données. Restaurer le dump pré-déploiement uniquement pendant une maintenance contrôlée, lorsque l'incompatibilité de schéma le rend réellement nécessaire, avec les fichiers privés du même point temporel.
