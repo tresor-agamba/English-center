@@ -119,7 +119,8 @@ test('parcours public étudiant par formation et niveau', async (t) => {
       assert.throws(() => normalizePhoneNumber(''), /invalide/i);
       assert.throws(() => registration.validateLevel('ADMIN'), /niveau/i);
       const controller = require('../src/controllers/registrationController');
-      assert.throws(() => controller.validatePassword('abcdefgh', 'abcdefgi'), /correspondent/i);
+      assert.throws(() => controller.validatePassword('abcdefgh', 'abcdefgh'), /10 caractères/i);
+      assert.throws(() => controller.validatePassword('abcdefghij', 'abcdefghik'), /correspondent/i);
     });
 
     await t.test('refuse un doublon de téléphone sous un autre format', async () => {

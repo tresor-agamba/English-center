@@ -1,3 +1,4 @@
+const { accessLimits, structureSelect } = require('./courseStructureService');
 const prisma = require('../utils/prisma');
 const { Prisma } = require('@prisma/client');
 const logger = require('./loggerService');
@@ -10,7 +11,7 @@ function evaluateMeetingAccess(meeting, trialAccess, now = new Date()) {
   if (meeting.status !== 'SCHEDULED' || now > meeting.endsAt) {
     return { code: 'ENDED', label: 'Cours terminé', canJoin: false };
   }
-  if (meeting.levelPosition && meeting.levelPosition > TOTAL_SESSIONS_LIMIT) {
+  if (meeting.levelPosition && meeting.levelPosition > (trialAccess.totalSessionsLimit || TOTAL_SESSIONS_LIMIT)) {
     return { code: 'LEVEL_COMPLETED', label: 'Niveau terminé', canJoin: false };
   }
   if (meeting.levelPosition && meeting.levelPosition > trialAccess.nextSessionLimit) {
@@ -53,13 +54,12 @@ async function calculateTrialAccess(enrollmentId, client = prisma) {
           course: {
             select: {
               id: true, price: true, registrationFee: true, currency: true,
-              pricingMode: true, pricingActive: true,
+              pricingMode: true, pricingActive: true, ...structureSelect,
             },
           },
           classMeetings: {
             where: { status: { not: 'CANCELLED' } },
             orderBy: [{ startsAt: 'asc' }, { id: 'asc' }],
-            take: TOTAL_SESSIONS_LIMIT,
             select: {
               id: true, startsAt: true,
               attendances: {
@@ -87,6 +87,8 @@ async function calculateTrialAccess(enrollmentId, client = prisma) {
   if (!enrollment) throw new TrialAccessError('ENROLLMENT_NOT_FOUND', 'Cette inscription est introuvable.', 404);
 
   const course = enrollment.trainingSession.course;
+  const limits = accessLimits(course);
+  enrollment.trainingSession.classMeetings = enrollment.trainingSession.classMeetings.slice(0, limits.total);
   if (course.pricingMode === 'FREE') {
     throw new TrialAccessError('PAID_COURSE_REQUIRED', 'Cette formation doit disposer d’un tarif payant.', 409);
   }
@@ -132,11 +134,14 @@ async function calculateTrialAccess(enrollmentId, client = prisma) {
   if (enrollment.status === 'PLACEMENT_TEST_REQUIRED') {
     accessStage = 'PLACEMENT_TEST_REQUIRED'; allowed = false; nextSessionLimit = 0;
     blockedReason = 'PLACEMENT_TEST_REQUIRED';
-  } else if (attendedSessionCount >= TOTAL_SESSIONS_LIMIT) {
-    accessStage = 'COMPLETED'; allowed = false; nextSessionLimit = TOTAL_SESSIONS_LIMIT;
+  } else if (attendedSessionCount >= limits.total) {
+    accessStage = 'COMPLETED'; allowed = false; nextSessionLimit = limits.total;
     blockedReason = 'LEVEL_COMPLETED';
   } else if (paidInFull) {
-    accessStage = 'FULL_ACCESS'; allowed = true; nextSessionLimit = TOTAL_SESSIONS_LIMIT;
+    accessStage = 'FULL_ACCESS'; allowed = true; nextSessionLimit = limits.total;
+  } else if (!limits.legacy) {
+    accessStage = 'PAYMENT_REQUIRED_FULL'; allowed = false; nextSessionLimit = 0;
+    blockedReason = pricingUnavailable ? 'PRICE_UNAVAILABLE' : 'FULL_PAYMENT_REQUIRED';
   } else if (attendedSessionCount >= PARTIAL_ACCESS_LIMIT) {
     accessStage = 'PAYMENT_REQUIRED_FULL'; allowed = false; nextSessionLimit = PARTIAL_ACCESS_LIMIT;
     blockedReason = pricingUnavailable ? 'PRICE_UNAVAILABLE' : 'FULL_PAYMENT_REQUIRED';
@@ -204,11 +209,12 @@ async function calculateTrialAccess(enrollmentId, client = prisma) {
     enrollmentStatus: status,
     attendedSessionCount,
     trialAttendanceCount: attendedSessionCount,
-    trialLimit: TRIAL_LIMIT,
-    freeSessionsLimit: TRIAL_LIMIT,
-    partialAccessLimit: PARTIAL_ACCESS_LIMIT,
-    totalSessionsLimit: TOTAL_SESSIONS_LIMIT,
-    remainingTrialAttendances: Math.max(0, TRIAL_LIMIT - attendedSessionCount),
+    trialLimit: limits.trial,
+    freeSessionsLimit: limits.trial,
+    partialAccessLimit: limits.partial,
+    totalSessionsLimit: limits.total,
+    legacyStagedAccess: limits.legacy,
+    remainingTrialAttendances: Math.max(0, limits.trial - attendedSessionCount),
     confirmedPaidAmount,
     expectedTotalAmount: total,
     expectedCurrency: expectedCurrency || course.currency,
@@ -282,7 +288,7 @@ async function canAccessClassMeeting(userId, enrollmentId, classMeetingId) {
     select: { id: true },
   });
   const levelPosition = orderedMeetings.findIndex((item) => item.id === meeting.id) + 1;
-  if (!levelPosition || levelPosition > trialAccess.nextSessionLimit || levelPosition > TOTAL_SESSIONS_LIMIT) {
+  if (!levelPosition || levelPosition > trialAccess.nextSessionLimit || levelPosition > trialAccess.totalSessionsLimit) {
     logger.security('STUDENT_COURSE_ACCESS_BYPASS_REFUSED', {
       userId, enrollmentId: enrollment.id, classMeetingId: meeting.id,
       accessStage: trialAccess.accessStage, levelPosition,

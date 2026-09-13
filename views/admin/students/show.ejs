@@ -69,12 +69,12 @@
 
 <section class="card wide-card reset-card">
   <h2>Réinitialiser le mot de passe</h2>
-  <p>Définissez un nouveau mot de passe temporaire d’au moins 8 caractères.</p>
+  <p>Définissez un nouveau mot de passe temporaire d’au moins <%= passwordMinLength %> caractères.</p>
   <% if (resetError) { %><p class="form-error" role="alert"><%= resetError %></p><% } %>
   <form action="/admin/students/<%= student.id %>/reset-password" method="post"><%- csrfField() %>
     <div class="form-grid">
-      <div><label for="password">Nouveau mot de passe</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required /></div>
-      <div><label for="passwordConfirmation">Confirmation</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required /></div>
+      <div><label for="password">Nouveau mot de passe</label><input id="password" name="password" type="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" required /></div>
+      <div><label for="passwordConfirmation">Confirmation</label><input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" required /></div>
     </div>
     <button class="button" type="submit">Réinitialiser</button>
   </form>

@@ -1,0 +1,31 @@
+◇ injected env (5) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+node : Environment variables loaded from .env
+Au caractère Ligne:2 : 1
++ node scripts/runWithTestDatabase.js prepare *> tmp/auth-phase1-prepar ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Environment variables loaded from .env:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to .\node_modules\@prisma\client in 797ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "english_center_test", schema "public" at "localhost:5432"
+
+38 migrations found in prisma/migrations
+
+Applying migration `20260909180000_add_user_auth_version`
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260909180000_add_user_auth_version/
+    └─ migration.sql
+      
+All migrations have been successfully applied.

@@ -29,13 +29,13 @@ test('NVA — groupes, inscription partagée et récupération', async (t) => {
       await assert.rejects(() => registration.createStudentEnrollment({ courseId: course.id, groupId: groups[1].id, firstName: 'Nva', lastName: 'Test', phoneNumber: first.user.phoneNumber, passwordHash: 'unused', requestedLevel: 'LEVEL_1', allowExistingUser: true }), error => error.code === 'DUPLICATE_ENROLLMENT');
     });
     await t.test('jeton hashé, expirant et à usage unique', async () => {
-      const issued = await passwordReset.requestReset(`nva-${key}@example.test`); assert.ok(issued.delivery.token);
-      assert.equal(await prisma.passwordResetToken.count({ where: { tokenHash: issued.delivery.token } }), 0);
-      await passwordReset.resetPassword(issued.delivery.token, 'Nouveau@2026');
+      const token = await require('./helpers/passwordResetTokenFixture')(first.user.id);
+      assert.equal(await prisma.passwordResetToken.count({ where: { tokenHash: token } }), 0);
+      await passwordReset.resetPassword(token, 'Nouveau@2026');
       assert.equal(Boolean(await require('../src/services/authService').authenticate(first.user.phoneNumber, 'Nouveau@2026')), true);
-      await assert.rejects(() => passwordReset.resetPassword(issued.delivery.token, 'Encore@2026'), error => error.code === 'INVALID_TOKEN');
-      const expired = await passwordReset.requestReset(`nva-${key}@example.test`); await prisma.passwordResetToken.updateMany({ where: { userId: first.user.id, usedAt: null }, data: { expiresAt: new Date(Date.now() - 1000) } });
-      await assert.rejects(() => passwordReset.resetPassword(expired.delivery.token, 'Expire@2026'), error => error.code === 'INVALID_TOKEN');
+      await assert.rejects(() => passwordReset.resetPassword(token, 'Encore@2026'), error => error.code === 'INVALID_TOKEN');
+      const expired = await require('./helpers/passwordResetTokenFixture')(first.user.id); await prisma.passwordResetToken.updateMany({ where: { userId: first.user.id, usedAt: null }, data: { expiresAt: new Date(Date.now() - 1000) } });
+      await assert.rejects(() => passwordReset.resetPassword(expired, 'Expire@2026'), error => error.code === 'INVALID_TOKEN');
     });
   } finally {
     await prisma.passwordResetToken.deleteMany({ where: { userId: { in: userIds } } });

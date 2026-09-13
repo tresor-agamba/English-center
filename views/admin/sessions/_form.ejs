@@ -9,10 +9,12 @@
   <select id="courseId" name="courseId" required>
     <option value="">Sélectionner une formation</option>
     <% courses.forEach((course) => { %>
-      <option value="<%= course.id %>" <%= String(form.courseId || '') === String(course.id) ? 'selected' : '' %>><%= course.title %></option>
+      <option data-structure="<%= course.structureType %>" data-levels="<%= course.numberOfLevels || '' %>" value="<%= course.id %>" <%= String(form.courseId || '') === String(course.id) ? 'selected' : '' %>><%= course.title %></option>
     <% }) %>
   </select>
 
+  <% const selectedCourse = courses.find(course => String(course.id) === String(form.courseId)); const requiresLevel = selectedCourse?.structureType === 'LEVEL_BASED'; %>
+  <div data-session-level <%= requiresLevel ? '' : 'hidden' %>><label for="levelNumber">Numéro du niveau (formation par niveaux)</label><input id="levelNumber" name="levelNumber" type="number" min="1" step="1" value="<%= form.levelNumber || '' %>" <%= requiresLevel ? 'required' : 'disabled' %>><p class="form-hint">Obligatoire pour une formation par niveaux. Au-delà du niveau 3, inscription académique indisponible dans cette phase.</p></div>
   <div class="form-grid">
     <div><label for="startDate">Date de début</label><input id="startDate" name="startDate" type="date" value="<%= formatDate(form.startDate) %>" required /></div>
     <div><label for="endDate">Date de fin</label><input id="endDate" name="endDate" type="date" value="<%= formatDate(form.endDate) %>" required /></div>
@@ -55,3 +57,5 @@
     <a href="<%= session ? `/admin/sessions/${session.id}` : '/admin/sessions' %>">Annuler</a>
   </div>
 </form>
+
+<script src="/js/course-structure-admin.js" defer></script>

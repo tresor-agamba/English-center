@@ -1,0 +1,10 @@
+<% const summary = typeof totals !== 'undefined' ? totals : courseTotals(course); const fr = typeof documentLanguage !== 'undefined' && documentLanguage === 'fr'; %>
+<% if (summary.levelBased) { %>
+<section class="course-structure-summary" aria-label="<%= fr ? 'Parcours complet' : 'Complete programme' %>">
+  <p><strong data-local-price data-amount="<%= course.price %>" data-currency="<%= course.currency %>"><%= course.price %> <%= course.currency %></strong> <span data-i18n="structure.perLevel"><%= fr ? '/ niveau' : '/ level' %></span></p>
+  <strong data-i18n="structure.complete"><%= fr ? 'Parcours complet' : 'Complete programme' %></strong>
+  <p class="public-chip-row"><span class="public-chip"><%= summary.numberOfLevels %> <span data-i18n="structure.levels"><%= fr ? 'niveaux' : 'levels' %></span></span><span class="public-chip"><%= summary.totalSessions %> <span data-i18n="structure.sessions"><%= fr ? 'séances' : 'sessions' %></span></span><span class="public-chip" data-local-duration data-value="<%= summary.totalDuration %>" data-unit="<%= course.durationUnit %>"><%= summary.totalDuration %> <%= course.durationUnit === 'HOURS' ? (fr ? 'heures' : 'hours') : course.durationUnit %></span></p>
+  <p><span data-i18n="structure.totalPrice"><%= fr ? 'Prix total indicatif' : 'Indicative total price' %></span> : <strong data-local-price data-amount="<%= summary.totalIndicativePrice %>" data-currency="<%= course.currency %>"><%= summary.totalIndicativePrice %> <%= course.currency %></strong></p>
+  <p data-i18n="structure.payment"><%= fr ? "Le paiement s’effectue niveau par niveau." : 'Payment is made one level at a time.' %></p>
+</section>
+<% } else if (summary.totalSessions) { %><p><%= summary.totalSessions %> <span data-i18n="structure.sessions"><%= fr ? 'séances' : 'sessions' %></span></p><% } %>

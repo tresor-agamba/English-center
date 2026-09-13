@@ -1,0 +1,50 @@
+<%- include('../../partials/header', { title }) %>
+<section class="page-heading"><div><p class="eyebrow"><%= text.security %></p><h1><%= text.detail %> #<%= request.id %></h1></div><a class="button button-secondary" href="/admin/password-reset-requests?lang=<%= language %>"><%= text.back %></a></section>
+<% if (success) { %><p class="success-message" role="status"><%= success %></p><% } %>
+<div class="card-grid reset-request-details">
+  <section class="card"><h2><%= text.detail %></h2><dl>
+    <dt>ID</dt><dd>#<%= request.id %></dd>
+    <dt><%= text.status %></dt><dd><span class="status reset-request-status-<%= request.status.toLowerCase() %>"><%= request.status === 'APPROVED' ? (request.deliveryStatus === 'SENT' ? text.approvedSent : text.approvedUnsent) : text[request.status] %></span></dd>
+    <dt><%= text.requestedAt %></dt><dd><%= formatDate(request.requestedAt) %></dd>
+    <dt><%= text.reviewedAt %></dt><dd><%= formatDate(request.reviewedAt) %></dd>
+    <dt><%= text.completedAt %></dt><dd><%= formatDate(request.completedAt) %></dd>
+  </dl></section>
+  <section class="card"><h2><%= text.user %></h2><dl>
+    <dt><%= text.user %></dt><dd><%= request.user.firstName %> <%= request.user.lastName %></dd>
+    <dt><%= text.phone %></dt><dd><%= request.user.phoneNumber %></dd>
+    <% if (request.user.email) { %><dt><%= text.email %></dt><dd><%= maskResetEmail(request.user.email) %></dd><% } %>
+    <% if (request.user.whatsappNumber) { %><dt><%= text.whatsapp %></dt><dd><%= request.user.whatsappNumber %></dd><% } %>
+    <dt><%= text.role %></dt><dd><%= text[request.user.role] %></dd>
+    <dt><%= text.account %></dt><dd><%= request.user.isActive ? text.active : text.inactive %></dd>
+  </dl></section>
+  <section class="card"><h2><%= text.decision %></h2>
+    <p><%= text.scope %></p>
+    <% if (request.status === 'PENDING') { %>
+      <% if (!request.user.isActive || !['STUDENT', 'TEACHER'].includes(request.user.role)) { %><p role="status"><%= text.USER_INELIGIBLE %></p><% } %>
+      <div class="action-row">
+        <% if (request.user.isActive && ['STUDENT', 'TEACHER'].includes(request.user.role)) { %>
+        <form method="post" action="/admin/password-reset-requests/<%= request.id %>/approve?lang=<%= language %>" data-admin-confirm="<%= text.confirmApprove %>"><%- csrfField() %><button class="button" type="submit"><%= text.approve %></button></form>
+        <% } %>
+        <form method="post" action="/admin/password-reset-requests/<%= request.id %>/reject?lang=<%= language %>" data-admin-confirm="<%= text.confirmReject %>"><%- csrfField() %><button class="button button-danger" type="submit"><%= text.reject %></button></form>
+      </div>
+    <% } else { %>
+      <p><%= text.processed %></p><dl><dt><%= text.reviewedBy %></dt><dd><%= request.reviewedBy ? `${request.reviewedBy.firstName} ${request.reviewedBy.lastName}` : '—' %></dd><dt><%= text.reviewedAt %></dt><dd><%= formatDate(request.reviewedAt) %></dd></dl>
+    <% } %>
+  </section>
+  <section class="card"><h2><%= text.delivery %></h2>
+    <dl><dt><%= text.status %></dt><dd><%= request.deliveryStatus ? text[request.deliveryStatus] : text.notSent %></dd>
+      <dt><%= text.channel %></dt><dd><%= request.deliveryChannel ? text[request.deliveryChannel] || request.deliveryChannel : '—' %></dd>
+      <dt><%= text.attempts %></dt><dd><%= request.deliveryAttempts %></dd>
+      <dt><%= text.deliveredAt %></dt><dd><%= formatDate(request.deliveredAt) %></dd></dl>
+    <% if (request.status === 'APPROVED' && request.user.isActive && ['STUDENT', 'TEACHER'].includes(request.user.role)) { %>
+      <% if (!hasDeliveryEmail) { %><p role="status"><%= request.user.email ? text.INVALID_EMAIL : text.NO_EMAIL %></p>
+      <% } else { %>
+        <% if (request.deliveryStatus === 'SENDING') { %><p role="status"><%= text.DELIVERY_BUSY %></p><% } %>
+        <form method="post" action="/admin/password-reset-requests/<%= request.id %>/send?lang=<%= language %>" data-admin-confirm="<%= text.confirmSend %>">
+          <%- csrfField() %><button class="button" type="submit"><%= request.deliveryAttempts ? text.retry : text.sendLink %></button>
+        </form>
+      <% } %>
+    <% } %>
+  </section>
+</div>
+<%- include('../../partials/footer') %>

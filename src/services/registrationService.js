@@ -1,3 +1,4 @@
+const { structureSelect, isLevelBased, validateSessionLevel, accessLimits } = require('./courseStructureService');
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES, remainingPlaces, sessionRegistrationState, isSessionOpenForRegistration } = require('./enrollmentPolicy');
@@ -76,7 +77,7 @@ function normalizeEmail(value) {
 function sessionSelect(now) {
   return {
     id: true,
-    name: true,
+    name: true, levelNumber: true,
     startDate: true,
     endDate: true,
     registrationDeadline: true,
@@ -104,7 +105,7 @@ function sessionSelect(now) {
         closedAt: true,
         createdAt: true,
         description: true,
-        level: true,
+        level: true, ...structureSelect,
         duration: true,
         durationValue: true,
         durationUnit: true,
@@ -149,6 +150,8 @@ function validateSession(session, now = new Date(), options = {}) {
   if (!session || !isPublicCourse(session.course)) {
     throw new RegistrationError('SESSION_NOT_FOUND', messages.SESSION_NOT_FOUND, 404);
   }
+  try { validateSessionLevel(session.course, session.levelNumber); } catch (error) { throw new RegistrationError('SESSION_UNAVAILABLE', error.message); }
+  if (isLevelBased(session.course) && session.levelNumber > 3) throw new RegistrationError('ACADEMIC_LEVEL_UNSUPPORTED', 'Ce niveau nécessite une prise en charge administrative. L’inscription académique au-delà du niveau 3 n’est pas encore disponible.');
   const state = sessionRegistrationState(session, now);
   if (state === 'UNAVAILABLE') {
     throw new RegistrationError('SESSION_UNAVAILABLE', messages.SESSION_UNAVAILABLE);
@@ -161,6 +164,16 @@ function validateSession(session, now = new Date(), options = {}) {
     throw new RegistrationError('SESSION_FULL', messages.SESSION_FULL);
   }
   return { ...session, remainingPlaces: availablePlaces, registrationGroups: availableGroups(session) };
+}
+
+function registrationLevel(session, requested) {
+  if (isLevelBased(session.course)) {
+    const expected = 'LEVEL_' + session.levelNumber;
+    if (requested && requested !== expected) throw new RegistrationError('LEVEL_MISMATCH', 'Le niveau demandé doit correspondre au niveau de la session.');
+    return validateLevel(expected);
+  }
+  // Preserve existing placement behavior only on historical courses.
+  return accessLimits(session.course).legacy && requested ? validateLevel(requested) : null;
 }
 
 function enrollmentPricingSnapshot(session) {
@@ -195,7 +208,7 @@ async function listCoursesForPublicRegistration(client = prisma) {
       trainingSessions: { some: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } } },
     },
     select: {
-      id: true, title: true, slug: true, shortDescription: true, description: true, level: true,
+      id: true, title: true, slug: true, shortDescription: true, description: true, level: true, ...structureSelect,
       duration: true, durationValue: true, durationUnit: true, price: true, currency: true,
       pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true,
       archivedAt: true, closedAt: true, createdAt: true,
@@ -208,10 +221,11 @@ async function listCoursesForPublicRegistration(client = prisma) {
     orderBy: { title: 'asc' },
   });
   return courses
+    .map(course => ({ ...course, trainingSessions: course.trainingSessions.filter(session => !isLevelBased(course) || (session.levelNumber >= 1 && session.levelNumber <= Math.min(course.numberOfLevels, 3))) }))
     .filter((course) => isPublicCourse(course) && course.trainingSessions.some((session) => isSessionOpenForRegistration(session, now)))
     .map((course) => {
       const session = course.trainingSessions.find((candidate) => isSessionOpenForRegistration(candidate, now));
-      return { id: course.id, title: course.title, slug: course.slug, price: course.price, currency: course.currency, registrationFee: course.registrationFee, session: session ? validateSession({ ...session, course }, now) : null };
+      return { ...Object.fromEntries(Object.keys(structureSelect).map(key => [key, course[key]])), durationValue: course.durationValue, durationUnit: course.durationUnit, id: course.id, title: course.title, slug: course.slug, price: course.price, currency: course.currency, registrationFee: course.registrationFee, session: session ? validateSession({ ...session, course }, now) : null };
     });
 }
 
@@ -231,7 +245,7 @@ async function getCourseRegistrationSession(rawCourseId, client = prisma) {
   if (!course) throw new RegistrationError('COURSE_UNAVAILABLE', 'Cette formation n’est pas disponible aux inscriptions publiques.');
   for (const candidate of course.trainingSessions) {
     try { return validateSession(candidate, now); } catch (error) {
-      if (!['SESSION_FULL', 'REGISTRATION_CLOSED'].includes(error.code)) throw error;
+      if (!['SESSION_FULL', 'REGISTRATION_CLOSED', 'ACADEMIC_LEVEL_UNSUPPORTED', 'SESSION_UNAVAILABLE'].includes(error.code)) throw error;
     }
   }
   throw new RegistrationError('COURSE_UNAVAILABLE', 'Cette formation n’est pas disponible aux inscriptions publiques.');
@@ -270,10 +284,11 @@ async function runRegistrationTransaction({
 }) {
   return prisma.$transaction(
     async (tx) => {
-      const session = courseId
+      const session = !sessionId && courseId
         ? await getCourseRegistrationSession(courseId, tx)
         : await getSessionForRegistration(sessionId, tx);
-      const level = requestedLevel ? validateLevel(requestedLevel) : null;
+      if (courseId && Number(courseId) !== session.course.id) throw new RegistrationError('COURSE_UNAVAILABLE', 'La session ne correspond pas à la formation.');
+      const level = registrationLevel(session, requestedLevel);
       const group = validateGroup(session, groupId);
       const normalizedEmail = normalizeEmail(email);
       const existingUser = await tx.user.findUnique({
@@ -302,7 +317,7 @@ async function runRegistrationTransaction({
       const user = existingUser ? await tx.user.update({
         where: { id: existingUser.id },
         data: { firstName, lastName, email: normalizedEmail || undefined, whatsappNumber: whatsappNumber || undefined },
-        select: { id: true, firstName: true, lastName: true, phoneNumber: true, email: true, role: true, isActive: true },
+        select: { id: true, firstName: true, lastName: true, phoneNumber: true, email: true, role: true, isActive: true, authVersion: true, mustChangePassword: true },
       }) : await tx.user.create({
         data: {
           firstName,
@@ -323,6 +338,8 @@ async function runRegistrationTransaction({
           email: true,
           role: true,
           isActive: true,
+          authVersion: true,
+          mustChangePassword: true,
         },
       });
 
@@ -331,11 +348,11 @@ async function runRegistrationTransaction({
           userId: user.id,
           trainingSessionId: session.id,
           registrationGroupId: group?.id || null,
-          status: level && level !== 'LEVEL_1' ? 'PLACEMENT_TEST_REQUIRED' : 'TRIAL_ACTIVE',
+          status: accessLimits(session.course).legacy && level && level !== 'LEVEL_1' ? 'PLACEMENT_TEST_REQUIRED' : (accessLimits(session.course).legacy ? 'TRIAL_ACTIVE' : 'PAYMENT_REQUIRED'),
           requestedLevel: level,
           recommendedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
-          approvedLevel: level === 'LEVEL_1' ? 'LEVEL_1' : null,
-          placementTestRequired: Boolean(level && level !== 'LEVEL_1'),
+          approvedLevel: !accessLimits(session.course).legacy ? level : (level === 'LEVEL_1' ? 'LEVEL_1' : null),
+          placementTestRequired: Boolean(accessLimits(session.course).legacy && level && level !== 'LEVEL_1'),
           ...enrollmentPricingSnapshot(session),
         },
         select: {
@@ -398,7 +415,7 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
         const presentCount = await tx.attendance.count({
           where: { enrollmentId: existingEnrollment.id, status: 'PRESENT' },
         });
-        const reactivatedStatus =
+        const reactivatedStatus = !accessLimits(session.course).legacy ? 'PAYMENT_REQUIRED' :
           existingEnrollment.status === 'PAYMENT_FAILED' && presentCount >= TRIAL_LIMIT
             ? 'PAYMENT_REQUIRED'
             : 'TRIAL_ACTIVE';
@@ -414,7 +431,10 @@ async function runExistingStudentTransaction({ userId, sessionId }) {
         data: {
           userId: user.id,
           trainingSessionId: availableSession.id,
-          status: 'TRIAL_ACTIVE',
+          status: accessLimits(availableSession.course).legacy && registrationLevel(availableSession) && availableSession.levelNumber > 1 ? 'PLACEMENT_TEST_REQUIRED' : (accessLimits(availableSession.course).legacy ? 'TRIAL_ACTIVE' : 'PAYMENT_REQUIRED'),
+          requestedLevel: registrationLevel(availableSession),
+          approvedLevel: !accessLimits(availableSession.course).legacy ? registrationLevel(availableSession) : (availableSession.levelNumber === 1 ? 'LEVEL_1' : null),
+          placementTestRequired: accessLimits(availableSession.course).legacy && isLevelBased(availableSession.course) && availableSession.levelNumber > 1,
           ...enrollmentPricingSnapshot(availableSession),
         },
         select: { id: true, status: true },
@@ -467,14 +487,14 @@ function findEnrollmentForViewer(enrollmentId) {
       trainingSession: {
         select: {
           id: true,
-          name: true,
+          name: true, levelNumber: true,
           startDate: true,
           endDate: true,
           startTime: true,
           endTime: true,
           course: {
             select: {
-              title: true,
+              title: true, ...structureSelect,
               slug: true,
               price: true,
               currency: true,

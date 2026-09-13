@@ -1,0 +1,328 @@
+▶ devoirs, soumissions, corrections et notes
+  ✔ crée, modifie et valide les rattachements, note et date (2201.5678ms)
+  ✔ publie, masque et protège la suppression avec soumissions (119.3484ms)
+{"timestamp":"2026-09-09T17:59:11.116Z","level":"INFO","action":"HTTP_REQUEST","requestId":"49077eee-d944-49e7-805b-85468f4c6328","userId":115,"route":"/login","method":"POST","status":302,"durationMs":946.2021,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.157Z","level":"INFO","action":"HTTP_REQUEST","requestId":"89337e37-1362-4f28-a963-f2a3f491dc8e","userId":116,"route":"/login","method":"POST","status":302,"durationMs":982.1245,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.171Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c4115944-e3e3-45a9-b743-e6bdc64829c7","userId":114,"route":"/login","method":"POST","status":302,"durationMs":1005.0224,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.172Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3eed367b-35e2-47f7-9fb5-71672560516b","userId":113,"route":"/login","method":"POST","status":302,"durationMs":1077.4418,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.809Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d6549de4-e3a3-4314-ad45-37ff9db30ec5","userId":117,"route":"/login","method":"POST","status":302,"durationMs":1630.2137,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.821Z","level":"INFO","action":"HTTP_REQUEST","requestId":"322a5223-e3ca-44e1-a054-a941e178bd1c","userId":118,"route":"/login","method":"POST","status":302,"durationMs":1638.3051,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.835Z","level":"INFO","action":"HTTP_REQUEST","requestId":"38d85e36-9ab1-466d-b28f-d4fec3e06cdb","route":"/admin/courses/41/assignments","method":"GET","status":302,"durationMs":28.2697,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.839Z","level":"ERROR","action":"HTTP_ERROR","requestId":"0347cc3a-bb12-4339-8768-814f0fd208bb","statusCode":403,"route":"/admin/courses/41/assignments","method":"GET","userId":114,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:11.879Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0347cc3a-bb12-4339-8768-814f0fd208bb","userId":114,"route":"/admin/courses/41/assignments","method":"GET","status":403,"durationMs":56.8313,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:11.990Z","level":"INFO","action":"HTTP_REQUEST","requestId":"41ae85d5-dcaf-4092-bf2a-da7482ad702a","userId":113,"route":"/admin/courses/41/assignments","method":"GET","status":200,"durationMs":115.11,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.005Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3912488d-f51a-4953-b037-26151b1755dd","route":"/admin/courses/41/assignments/new","method":"GET","status":302,"durationMs":19.2367,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.007Z","level":"ERROR","action":"HTTP_ERROR","requestId":"0c270282-1904-465f-bbcc-cce9eccf65d0","statusCode":403,"route":"/admin/courses/41/assignments/new","method":"GET","userId":114,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:12.032Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0c270282-1904-465f-bbcc-cce9eccf65d0","userId":114,"route":"/admin/courses/41/assignments/new","method":"GET","status":403,"durationMs":36.0238,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.071Z","level":"INFO","action":"HTTP_REQUEST","requestId":"802b4d68-bd31-4b7d-8c06-e31c3aa8a409","userId":113,"route":"/admin/courses/41/assignments/new","method":"GET","status":200,"durationMs":46.529,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.073Z","level":"ERROR","action":"HTTP_ERROR","requestId":"eb6f8e79-4ede-4719-96f8-54eae9061f34","statusCode":403,"route":"/admin/assignments/10","method":"GET","userId":114,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:12.085Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d2b00470-b322-4ffd-a0c7-409ba0520db8","route":"/admin/assignments/10","method":"GET","status":302,"durationMs":26.6822,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.098Z","level":"INFO","action":"HTTP_REQUEST","requestId":"eb6f8e79-4ede-4719-96f8-54eae9061f34","userId":114,"route":"/admin/assignments/10","method":"GET","status":403,"durationMs":35.137,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.130Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4af30fce-9633-4173-ac77-6b386bd58391","userId":113,"route":"/admin/assignments/10","method":"GET","status":200,"durationMs":43.7665,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.138Z","level":"ERROR","action":"HTTP_ERROR","requestId":"8106d4a6-b105-49ec-b28d-7b0d96a234da","statusCode":403,"route":"/admin/assignments/10/edit","method":"GET","userId":114,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:12.146Z","level":"INFO","action":"HTTP_REQUEST","requestId":"95bf0abe-bb52-4e47-97ca-8f2473950b22","route":"/admin/assignments/10/edit","method":"GET","status":302,"durationMs":31.939,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.162Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8106d4a6-b105-49ec-b28d-7b0d96a234da","userId":114,"route":"/admin/assignments/10/edit","method":"GET","status":403,"durationMs":34.6731,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.219Z","level":"INFO","action":"HTTP_REQUEST","requestId":"88feb1df-f965-42fa-8f8b-9f69db329ed3","userId":113,"route":"/admin/assignments/10/edit","method":"GET","status":200,"durationMs":60.0458,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.231Z","level":"ERROR","action":"HTTP_ERROR","requestId":"5d15ac06-e27b-414f-8871-b2c5d1f65443","statusCode":403,"route":"/admin/assignments/10/submissions","method":"GET","userId":114,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:12.239Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a7d67d00-b923-413d-9c72-cf3a42b5e7f0","route":"/admin/assignments/10/submissions","method":"GET","status":302,"durationMs":30.7965,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.258Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5d15ac06-e27b-414f-8871-b2c5d1f65443","userId":114,"route":"/admin/assignments/10/submissions","method":"GET","status":403,"durationMs":38.3087,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.316Z","level":"INFO","action":"HTTP_REQUEST","requestId":"497872e5-65af-4e90-817f-ac1eb0d652a0","userId":113,"route":"/admin/assignments/10/submissions","method":"GET","status":200,"durationMs":71.6104,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.321Z","level":"ERROR","action":"HTTP_ERROR","requestId":"d1e2433b-bc76-4632-b980-90da2d5d5d4a","statusCode":403,"route":"/student/assignments","method":"GET","userId":113,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ protège les routes administratives et étudiantes (530.7713ms)
+{"timestamp":"2026-09-09T17:59:12.342Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a9e7684d-7aeb-42d4-80a8-42919ca09107","route":"/student/assignments","method":"GET","status":302,"durationMs":49.3454,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.357Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d1e2433b-bc76-4632-b980-90da2d5d5d4a","userId":113,"route":"/student/assignments","method":"GET","status":403,"durationMs":47.7701,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.388Z","level":"INFO","action":"HTTP_REQUEST","requestId":"86294c60-2fea-4f93-b817-766b29349d0c","userId":114,"route":"/student/courses/85/assignments/10","method":"GET","status":200,"durationMs":59.1261,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.445Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3e65de9f-482f-4930-b16f-05f1bf2611ed","userId":115,"route":"/student/courses/86/assignments/10","method":"GET","status":200,"durationMs":50.1998,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.508Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b1d2f756-27e0-4300-961a-ca9fec149bf5","userId":116,"route":"/student/courses/87/assignments/10","method":"GET","status":403,"durationMs":49.7521,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.554Z","level":"INFO","action":"HTTP_REQUEST","requestId":"032c04bf-8bd2-4d35-935d-54bd1257eb62","userId":117,"route":"/student/courses/88/assignments/10","method":"GET","status":403,"durationMs":41.8439,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.606Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c593b37b-6636-4028-9360-115bdb2ccfa6","userId":118,"route":"/student/courses/89/assignments/10","method":"GET","status":403,"durationMs":43.8545,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.656Z","level":"INFO","action":"HTTP_REQUEST","requestId":"989cfa25-610c-4277-a11b-81e8a5144db9","userId":117,"route":"/student/assignments","method":"GET","status":200,"durationMs":47.1101,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.721Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5456d830-f2c9-402f-9b15-84293cba6420","userId":118,"route":"/student/assignments","method":"GET","status":200,"durationMs":46.1188,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:12.802Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fa2e9ab7-fab5-4145-9534-cb72a8cdd2a6","userId":114,"route":"/student/courses/85/assignments/12","method":"GET","status":404,"durationMs":44.5626,"ip":"::ffff:127.0.0.1"}
+  ✔ autorise TRIAL_ACTIVE et CONFIRMED, refuse les autres statuts et les brouillons (477.1521ms)
+{"timestamp":"2026-09-09T17:59:12.964Z","level":"INFO","action":"HTTP_REQUEST","requestId":"98e1a178-08c0-41d3-85bc-fc6877a80157","userId":115,"route":"/student/courses/86/assignments/10","method":"GET","status":200,"durationMs":41.4924,"ip":"::ffff:127.0.0.1"}
+  ✔ accepte texte ou URL, refuse vide et URL invalide, et isole les inscriptions (161.8329ms)
+  ✔ applique les règles de date limite et de retard (176.5219ms)
+  ✔ corrige avec Decimal et refuse les notes hors limites (49.5075ms)
+{"timestamp":"2026-09-09T17:59:13.241Z","level":"INFO","action":"HTTP_REQUEST","requestId":"acb71ade-42c3-4d4a-adb6-4e1efbf9bc12","userId":114,"route":"/student/courses/85/assignments/10","method":"GET","status":200,"durationMs":46.4216,"ip":"::ffff:127.0.0.1"}
+  ✔ ne publie ni note ni feedback avant publication (49.1635ms)
+  ✔ une modification avant publication invalide la correction (33.8043ms)
+{"timestamp":"2026-09-09T17:59:13.420Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6f367a28-d3ff-440d-94b2-acb21a2b86e7","userId":114,"route":"/student/courses/85/assignments/10","method":"GET","status":200,"durationMs":45.8635,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:13.495Z","level":"INFO","action":"HTTP_REQUEST","requestId":"22b03ebd-d5f1-4a31-b10a-c167658ce295","userId":114,"route":"/student/courses/85/assignments/10","method":"GET","status":200,"durationMs":41.6871,"ip":"::ffff:127.0.0.1"}
+  ✔ publie puis annule la publication de la correction (219.6652ms)
+{"timestamp":"2026-09-09T17:59:13.608Z","level":"INFO","action":"HTTP_REQUEST","requestId":"17f2a421-8711-411c-8155-7c51b344c77a","userId":113,"route":"/admin/assignments/10/submissions","method":"GET","status":200,"durationMs":54.0505,"ip":"::ffff:127.0.0.1"}
+  ✔ calcule les statistiques et affiche les étudiants sans soumission (140.3675ms)
+✔ devoirs, soumissions, corrections et notes (9446.3891ms)
+{"timestamp":"2026-09-09T17:59:16.761Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5d0583f0-1976-4a13-a577-f1af60fb1020","route":"/login","method":"GET","status":200,"durationMs":64.8308,"ip":"192.0.0.2"}
+{"timestamp":"2026-09-09T17:59:17.343Z","level":"INFO","action":"HTTP_REQUEST","requestId":"03c47e08-cc33-43ad-b116-c900f3f99228","userId":119,"route":"/login","method":"POST","status":302,"durationMs":573.1052,"ip":"192.0.0.3"}
+{"timestamp":"2026-09-09T17:59:17.392Z","level":"INFO","action":"HTTP_REQUEST","requestId":"446d70d1-3a02-4783-b106-3a25f82c38cb","userId":119,"route":"/login","method":"GET","status":200,"durationMs":43.971,"ip":"192.0.0.4"}
+{"timestamp":"2026-09-09T17:59:19.542Z","level":"INFO","action":"HTTP_REQUEST","requestId":"35b186c2-2a7a-41e5-8547-3c7417df6f74","userId":119,"route":"/student","method":"GET","status":200,"durationMs":2140.0651,"ip":"192.0.0.5"}
+▶ Phase 1 — sécurité de l’authentification
+  ✔ A/N/O/P — login STUDENT, version et absence de hash dans la session (4931.8655ms)
+{"timestamp":"2026-09-09T17:59:19.605Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ac044aca-d1e2-479f-aaf6-e68f7989c990","route":"/login","method":"GET","status":200,"durationMs":25.905,"ip":"192.0.0.6"}
+{"timestamp":"2026-09-09T17:59:20.439Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2d2c88dc-ff7e-4af1-9bb0-0ecfe20d77f2","userId":120,"route":"/login","method":"POST","status":302,"durationMs":818.2215,"ip":"192.0.0.7"}
+{"timestamp":"2026-09-09T17:59:20.476Z","level":"INFO","action":"HTTP_REQUEST","requestId":"edee603e-f4b5-4e5b-94de-23d88a8553ce","userId":120,"route":"/login","method":"GET","status":200,"durationMs":33.1215,"ip":"192.0.0.8"}
+{"timestamp":"2026-09-09T17:59:20.525Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f47d4726-3dd8-4df9-ad20-6031d22b65c4","userId":120,"route":"/teacher","method":"GET","status":200,"durationMs":43.8147,"ip":"192.0.0.9"}
+  ✔ A/N/O/P — login TEACHER, version et absence de hash dans la session (979.5753ms)
+{"timestamp":"2026-09-09T17:59:20.582Z","level":"INFO","action":"HTTP_REQUEST","requestId":"14605d20-88af-4e02-b0e5-a9434f410c42","route":"/login","method":"GET","status":200,"durationMs":25.6776,"ip":"192.0.0.10"}
+{"timestamp":"2026-09-09T17:59:21.423Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c8ff5fda-8f5c-4da9-8ce0-c88e33d9213d","userId":121,"route":"/login","method":"POST","status":302,"durationMs":835.862,"ip":"192.0.0.11"}
+{"timestamp":"2026-09-09T17:59:21.470Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d0e8e341-5f26-4908-897f-d847a3b22261","userId":121,"route":"/login","method":"GET","status":200,"durationMs":31.7902,"ip":"192.0.0.12"}
+{"timestamp":"2026-09-09T17:59:21.591Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b2c081ec-33b1-4a69-98ba-92a70b39763c","userId":121,"route":"/admin/dashboard","method":"GET","status":200,"durationMs":105.2618,"ip":"192.0.0.13"}
+  ✔ A/N/O/P — login ADMIN, version et absence de hash dans la session (1064.9004ms)
+{"timestamp":"2026-09-09T17:59:21.647Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f8678983-60d4-4167-9ce9-412c4a299fd5","route":"/login","method":"GET","status":200,"durationMs":25.1822,"ip":"192.0.0.14"}
+{"timestamp":"2026-09-09T17:59:22.489Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e6190ed1-bde9-44ce-8309-7a08ef9f508c","userId":122,"route":"/login","method":"POST","status":302,"durationMs":838.4083,"ip":"192.0.0.15"}
+{"timestamp":"2026-09-09T17:59:22.529Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ce9a0dde-07d8-474e-8067-8156a54c7daa","userId":122,"route":"/login","method":"GET","status":200,"durationMs":33.4649,"ip":"192.0.0.16"}
+{"timestamp":"2026-09-09T17:59:22.585Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bf0ef762-b72b-4c1a-a9cf-913efb8ac24e","route":"/student","method":"GET","status":302,"durationMs":24.7433,"ip":"192.0.0.17"}
+  ✔ B — version incorrecte (996.7127ms)
+{"timestamp":"2026-09-09T17:59:22.644Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ee58a5b7-9917-43e0-b599-a7adabc518f8","route":"/login","method":"GET","status":200,"durationMs":23.9725,"ip":"192.0.0.18"}
+{"timestamp":"2026-09-09T17:59:23.411Z","level":"INFO","action":"HTTP_REQUEST","requestId":"822dcb3f-f745-4b84-bbfd-f3f8623f2ee2","userId":123,"route":"/login","method":"POST","status":302,"durationMs":756.3463,"ip":"192.0.0.19"}
+{"timestamp":"2026-09-09T17:59:23.451Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1e142203-7a6b-4af0-ab94-bb6b1c9fbd43","userId":123,"route":"/login","method":"GET","status":200,"durationMs":30.8022,"ip":"192.0.0.20"}
+{"timestamp":"2026-09-09T17:59:23.507Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ccd1c90b-7446-47f1-95e6-7b35e004e7b2","route":"/student","method":"GET","status":302,"durationMs":20.0568,"ip":"192.0.0.21"}
+  ✔ C — version absente (920.7295ms)
+{"timestamp":"2026-09-09T17:59:23.561Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e7318ddc-3123-4baa-9c58-2819ce40aad1","route":"/login","method":"GET","status":200,"durationMs":24.8805,"ip":"192.0.0.22"}
+{"timestamp":"2026-09-09T17:59:24.230Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5abfcff9-a989-4a0d-b1dc-433b9be175e8","userId":124,"route":"/login","method":"POST","status":302,"durationMs":659.8705,"ip":"192.0.0.23"}
+{"timestamp":"2026-09-09T17:59:24.271Z","level":"INFO","action":"HTTP_REQUEST","requestId":"efd0cdb3-0ea8-4761-94af-49f26655c993","userId":124,"route":"/login","method":"GET","status":200,"durationMs":30.5706,"ip":"192.0.0.24"}
+{"timestamp":"2026-09-09T17:59:24.322Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ba12307b-9c59-4144-94f0-eafb19c69087","route":"/student","method":"GET","status":302,"durationMs":24.4675,"ip":"192.0.0.25"}
+  ✔ D — étudiant désactivé (814.3605ms)
+{"timestamp":"2026-09-09T17:59:24.378Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f3c9ae94-a931-40e7-bd37-db805535cb02","route":"/login","method":"GET","status":200,"durationMs":23.5128,"ip":"192.0.0.26"}
+{"timestamp":"2026-09-09T17:59:25.205Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f9cd47e3-4ac6-4f94-bc6e-4bd5fdd8ef51","userId":125,"route":"/login","method":"POST","status":302,"durationMs":817.4573,"ip":"192.0.0.27"}
+{"timestamp":"2026-09-09T17:59:25.242Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e1495551-cb76-480b-949a-b0af4a2bc6d3","userId":125,"route":"/login","method":"GET","status":200,"durationMs":33.502,"ip":"192.0.0.28"}
+{"timestamp":"2026-09-09T17:59:25.293Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5d56ee5f-6f15-4fd3-9edc-ea268ee9154b","route":"/admin/dashboard","method":"GET","status":302,"durationMs":25.205,"ip":"192.0.0.29"}
+  ✔ E — ADMIN rétrogradé (969.1437ms)
+{"timestamp":"2026-09-09T17:59:25.339Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d1a77304-d253-4e0d-9e9c-77234081e82b","route":"/login","method":"GET","status":200,"durationMs":22.7249,"ip":"192.0.0.30"}
+{"timestamp":"2026-09-09T17:59:26.178Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cb0c3266-a24c-4108-8d9b-d454a4c1884f","userId":126,"route":"/login","method":"POST","status":302,"durationMs":822.2294,"ip":"192.0.0.31"}
+{"timestamp":"2026-09-09T17:59:26.216Z","level":"INFO","action":"HTTP_REQUEST","requestId":"faa7614f-94db-42ef-85f7-a7f005edbb7d","userId":126,"route":"/login","method":"GET","status":200,"durationMs":35.4455,"ip":"192.0.0.32"}
+{"timestamp":"2026-09-09T17:59:26.272Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f2649779-6244-487d-807b-6c8796dca6ad","route":"/admin/dashboard","method":"GET","status":302,"durationMs":24.108,"ip":"192.0.0.33"}
+  ✔ F — ADMIN désactivé (979.6834ms)
+{"timestamp":"2026-09-09T17:59:26.328Z","level":"INFO","action":"HTTP_REQUEST","requestId":"64352222-3e22-4891-83e5-a2779793b1bd","route":"/login","method":"GET","status":200,"durationMs":24.3189,"ip":"192.0.0.34"}
+{"timestamp":"2026-09-09T17:59:27.080Z","level":"INFO","action":"HTTP_REQUEST","requestId":"89affe79-798b-43d7-80e5-8d417566679a","userId":127,"route":"/login","method":"POST","status":302,"durationMs":745.7833,"ip":"192.0.0.35"}
+{"timestamp":"2026-09-09T17:59:27.118Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4a9ce231-35d4-4123-85b3-aad7fb9cdeb0","userId":127,"route":"/login","method":"GET","status":200,"durationMs":31.3164,"ip":"192.0.0.36"}
+{"timestamp":"2026-09-09T17:59:27.174Z","level":"INFO","action":"HTTP_REQUEST","requestId":"abfc59cf-f712-45f2-86ae-972230190dd7","route":"/admin/dashboard","method":"GET","status":302,"durationMs":23.2358,"ip":"192.0.0.37"}
+{"timestamp":"2026-09-09T17:59:27.230Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f38311c4-13ba-4b61-9b41-bdb7204cc94a","route":"/login","method":"GET","status":200,"durationMs":32.1206,"ip":"192.0.0.38"}
+{"timestamp":"2026-09-09T17:59:28.020Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c087e40b-562e-4341-bfb3-257ab69417db","userId":128,"route":"/login","method":"POST","status":302,"durationMs":783.4775,"ip":"192.0.0.39"}
+{"timestamp":"2026-09-09T17:59:28.054Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3c1cf718-a31b-4210-a122-e811df847482","userId":128,"route":"/login","method":"GET","status":200,"durationMs":31.3004,"ip":"192.0.0.40"}
+{"timestamp":"2026-09-09T17:59:28.084Z","level":"ERROR","action":"HTTP_ERROR","requestId":"4fdfbb74-83a1-4018-816b-6a53571dd4a8","statusCode":403,"route":"/admin/dashboard","method":"GET","userId":128,"ip":"192.0.0.41","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:59:28.109Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4fdfbb74-83a1-4018-816b-6a53571dd4a8","userId":128,"route":"/admin/dashboard","method":"GET","status":403,"durationMs":37.312,"ip":"192.0.0.41"}
+  ✔ compte supprimé et rôle STUDENT ne donnent aucun accès ADMIN (1835.8545ms)
+{"timestamp":"2026-09-09T17:59:28.156Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8d15350a-8196-41fc-8db7-b5d694046163","route":"/login","method":"GET","status":200,"durationMs":20.8269,"ip":"192.0.0.42"}
+{"timestamp":"2026-09-09T17:59:28.942Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ec844b14-122d-40bd-9940-b6bc3f6863a7","userId":129,"route":"/login","method":"POST","status":302,"durationMs":781.7354,"ip":"192.0.0.43"}
+{"timestamp":"2026-09-09T17:59:28.982Z","level":"INFO","action":"HTTP_REQUEST","requestId":"94c0d9e8-2e98-4fa7-9345-223d4fca2873","userId":129,"route":"/login","method":"GET","status":200,"durationMs":30.4457,"ip":"192.0.0.44"}
+{"timestamp":"2026-09-09T17:59:29.021Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fddb0182-32cd-4246-9393-036dbf55f2a2","route":"/login","method":"GET","status":200,"durationMs":22.8257,"ip":"192.0.0.45"}
+{"timestamp":"2026-09-09T17:59:29.854Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5aaaf9ff-1481-416d-b6a8-0daffca7c160","userId":129,"route":"/login","method":"POST","status":302,"durationMs":829.4466,"ip":"192.0.0.46"}
+{"timestamp":"2026-09-09T17:59:29.899Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d61ffa4b-2c3c-46ef-a6b8-72ff2c3e3e19","userId":129,"route":"/login","method":"GET","status":200,"durationMs":32.5859,"ip":"192.0.0.47"}
+{"timestamp":"2026-09-09T17:59:31.580Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d46ff829-6771-4887-b834-3e868a4da057","route":"/student/profile/password","method":"POST","status":302,"durationMs":1627.4309,"ip":"192.0.0.48"}
+{"timestamp":"2026-09-09T17:59:31.626Z","level":"INFO","action":"HTTP_REQUEST","requestId":"dd5c295b-8d41-40a6-807a-c82c4000f288","route":"/student","method":"GET","status":302,"durationMs":23.487,"ip":"192.0.0.49"}
+{"timestamp":"2026-09-09T17:59:31.657Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e40aa8d6-1e0b-41a5-b3e5-cbba5c878661","route":"/student","method":"GET","status":302,"durationMs":22.3901,"ip":"192.0.0.50"}
+  ✔ G/H/I — profil étudiant : version, tokens et toutes les anciennes sessions (5121.8879ms)
+{"timestamp":"2026-09-09T17:59:33.303Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8c87f5bc-8514-41ab-8a49-31def783754c","route":"/login","method":"GET","status":200,"durationMs":24.2722,"ip":"192.0.0.51"}
+{"timestamp":"2026-09-09T17:59:34.137Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3ad0578c-9df9-42f7-84b2-601e97692be7","userId":130,"route":"/login","method":"POST","status":302,"durationMs":817.0575,"ip":"192.0.0.52"}
+{"timestamp":"2026-09-09T17:59:34.173Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5414d528-7c6d-4207-b07c-7db48d3bdad4","userId":130,"route":"/login","method":"GET","status":200,"durationMs":32.369,"ip":"192.0.0.53"}
+{"timestamp":"2026-09-09T17:59:35.140Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2f281a28-4319-4d62-b881-de4bd0cdd827","route":"/student","method":"GET","status":302,"durationMs":26.7263,"ip":"192.0.0.54"}
+  ✔ J/K — reset atomique, concurrence, usage unique et expiration (3290.7943ms)
+{"timestamp":"2026-09-09T17:59:36.585Z","level":"INFO","action":"HTTP_REQUEST","requestId":"97720505-9c10-4d08-930e-ab18cb321bd4","route":"/login","method":"GET","status":200,"durationMs":24.2122,"ip":"192.0.0.55"}
+{"timestamp":"2026-09-09T17:59:37.437Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6496dd27-ac1a-4c49-8321-33196fb06b28","userId":131,"route":"/login","method":"POST","status":302,"durationMs":843.3878,"ip":"192.0.0.56"}
+{"timestamp":"2026-09-09T17:59:37.480Z","level":"INFO","action":"HTTP_REQUEST","requestId":"147bd279-ab82-44d3-83b3-b1bdadcf171b","userId":131,"route":"/login","method":"GET","status":200,"durationMs":34.004,"ip":"192.0.0.57"}
+{"timestamp":"2026-09-09T17:59:37.519Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8244983d-da2b-4288-b61d-41c5556f7d70","route":"/login","method":"GET","status":200,"durationMs":25.3742,"ip":"192.0.0.58"}
+{"timestamp":"2026-09-09T17:59:38.367Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a0faf765-25b2-48e3-8e2e-1950448b29e6","userId":131,"route":"/login","method":"POST","status":302,"durationMs":830.9596,"ip":"192.0.0.59"}
+{"timestamp":"2026-09-09T17:59:38.414Z","level":"INFO","action":"HTTP_REQUEST","requestId":"298b6a14-40e1-46f6-9997-289489a8d84f","userId":131,"route":"/login","method":"GET","status":200,"durationMs":33.6782,"ip":"192.0.0.60"}
+{"timestamp":"2026-09-09T17:59:38.487Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2c14eeff-6e1d-4ca8-a0df-ce79fda6406d","userId":131,"route":"/student","method":"GET","status":302,"durationMs":27.8699,"ip":"192.0.0.61"}
+{"timestamp":"2026-09-09T17:59:39.328Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b0f2875a-bc96-4fef-9009-875a8241d58d","route":"/change-password","method":"POST","status":302,"durationMs":835.9689,"ip":"192.0.0.62"}
+{"timestamp":"2026-09-09T17:59:39.368Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4430e1bf-f7e0-43c0-a26d-6a0b11012928","route":"/student","method":"GET","status":302,"durationMs":25.028,"ip":"192.0.0.63"}
+{"timestamp":"2026-09-09T17:59:39.395Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5d47169a-94fd-4100-8377-04263a5c11c1","route":"/login","method":"GET","status":200,"durationMs":24.2324,"ip":"192.0.0.64"}
+{"timestamp":"2026-09-09T17:59:40.262Z","level":"INFO","action":"HTTP_REQUEST","requestId":"81499058-52a4-411c-81b6-03e1b109a877","userId":131,"route":"/login","method":"POST","status":302,"durationMs":863.0255,"ip":"192.0.0.65"}
+{"timestamp":"2026-09-09T17:59:40.304Z","level":"INFO","action":"HTTP_REQUEST","requestId":"62595905-7b51-4f28-91c8-7638a28625ce","userId":131,"route":"/login","method":"GET","status":200,"durationMs":32.512,"ip":"192.0.0.66"}
+{"timestamp":"2026-09-09T17:59:40.370Z","level":"INFO","action":"HTTP_REQUEST","requestId":"00636cf0-a9d4-44f2-ba2b-955452a41575","userId":131,"route":"/student","method":"GET","status":200,"durationMs":52.6619,"ip":"192.0.0.67"}
+{"timestamp":"2026-09-09T17:59:40.409Z","level":"INFO","action":"HTTP_REQUEST","requestId":"50aecc9f-5b00-4ebb-9c20-5d08f3bc2895","userId":131,"route":"/change-password","method":"POST","status":403,"durationMs":32.9207,"ip":"192.0.0.68"}
+  ✔ Q — mot de passe temporaire obligatoire ; changement volontaire séparé (3885.5468ms)
+{"timestamp":"2026-09-09T17:59:40.459Z","level":"INFO","action":"HTTP_REQUEST","requestId":"79f003e8-8cf4-4582-8a51-3cfcd4881618","route":"/login","method":"GET","status":200,"durationMs":25.2725,"ip":"192.0.0.69"}
+{"timestamp":"2026-09-09T17:59:41.304Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f0b96dc0-8ec2-473c-b200-2a5e7057393f","userId":132,"route":"/login","method":"POST","status":302,"durationMs":838.1198,"ip":"192.0.0.70"}
+{"timestamp":"2026-09-09T17:59:41.345Z","level":"INFO","action":"HTTP_REQUEST","requestId":"eec281e5-9404-40f1-8ae0-f23eb49e6287","userId":132,"route":"/login","method":"GET","status":200,"durationMs":34.7666,"ip":"192.0.0.71"}
+{"timestamp":"2026-09-09T17:59:41.406Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b32c4895-de94-487c-a70b-48454791f747","route":"/login","method":"GET","status":200,"durationMs":24.2347,"ip":"192.0.0.72"}
+{"timestamp":"2026-09-09T17:59:42.270Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f189f82a-492b-4a71-b455-b4705c5aab0d","userId":133,"route":"/login","method":"POST","status":302,"durationMs":855.892,"ip":"192.0.0.73"}
+{"timestamp":"2026-09-09T17:59:42.311Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d38e3400-d9bb-4814-be25-99a996db472a","userId":133,"route":"/login","method":"GET","status":200,"durationMs":36.8931,"ip":"192.0.0.74"}
+{"timestamp":"2026-09-09T17:59:43.169Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ac8fab3e-9da9-4461-9595-72665debb74d","userId":132,"route":"/admin/students/133/reset-password","method":"POST","status":302,"durationMs":802.6735,"ip":"192.0.0.75"}
+{"timestamp":"2026-09-09T17:59:43.217Z","level":"INFO","action":"HTTP_REQUEST","requestId":"60f47662-906c-42e9-9f8d-814816b4e439","route":"/student","method":"GET","status":302,"durationMs":24.6388,"ip":"192.0.0.76"}
+{"timestamp":"2026-09-09T17:59:43.261Z","level":"INFO","action":"HTTP_REQUEST","requestId":"88b9c1cb-3ad8-417a-b359-4f63d85c1b36","route":"/login","method":"GET","status":200,"durationMs":28.5558,"ip":"192.0.0.77"}
+{"timestamp":"2026-09-09T17:59:44.133Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2231f870-8c51-4520-afac-5a100adca9c4","userId":133,"route":"/login","method":"POST","status":302,"durationMs":867.3866,"ip":"192.0.0.78"}
+{"timestamp":"2026-09-09T17:59:44.167Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b3ae24d4-a3b1-4a8e-93c3-836bfdd1426e","userId":133,"route":"/login","method":"GET","status":200,"durationMs":30.1078,"ip":"192.0.0.79"}
+{"timestamp":"2026-09-09T17:59:44.208Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c1105eef-fedc-48bd-b360-e673d6819d4b","userId":133,"route":"/student","method":"GET","status":302,"durationMs":25.0244,"ip":"192.0.0.80"}
+{"timestamp":"2026-09-09T17:59:44.254Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bb06b81b-db30-4056-abcc-b1dd48ccb724","route":"/login","method":"GET","status":200,"durationMs":23.101,"ip":"192.0.0.81"}
+{"timestamp":"2026-09-09T17:59:45.103Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0544b8d7-db79-45a8-8c25-72d741df4f41","userId":134,"route":"/login","method":"POST","status":302,"durationMs":839.1683,"ip":"192.0.0.82"}
+{"timestamp":"2026-09-09T17:59:45.145Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9b0d9253-3b09-4fe6-a8cd-9c50a025432b","userId":134,"route":"/login","method":"GET","status":200,"durationMs":31.8731,"ip":"192.0.0.83"}
+{"timestamp":"2026-09-09T17:59:45.907Z","level":"INFO","action":"HTTP_REQUEST","requestId":"193bc5c7-c78c-46fe-82b8-d7bd639d5055","userId":132,"route":"/admin/teachers/134/reset-password","method":"POST","status":302,"durationMs":722.7718,"ip":"192.0.0.84"}
+{"timestamp":"2026-09-09T17:59:45.937Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c55a23c9-4bab-4440-b869-355e796e2423","route":"/teacher","method":"GET","status":302,"durationMs":21.4391,"ip":"192.0.0.85"}
+{"timestamp":"2026-09-09T17:59:45.961Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4ee1cb04-4a1b-40bf-8a84-10b445f30942","route":"/login","method":"GET","status":200,"durationMs":21.6373,"ip":"192.0.0.86"}
+{"timestamp":"2026-09-09T17:59:46.800Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e68b4a88-fb45-4bb7-84a0-36ca73f51eba","userId":134,"route":"/login","method":"POST","status":302,"durationMs":826.6594,"ip":"192.0.0.87"}
+{"timestamp":"2026-09-09T17:59:46.848Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b6daa803-aaef-4796-be03-63ef54c17e24","userId":134,"route":"/login","method":"GET","status":200,"durationMs":38.2979,"ip":"192.0.0.88"}
+{"timestamp":"2026-09-09T17:59:46.877Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1574e967-f916-463b-bb4d-a64fad4aa35e","userId":134,"route":"/teacher","method":"GET","status":302,"durationMs":26.8394,"ip":"192.0.0.89"}
+  ✔ resets ADMIN étudiant et enseignant invalident sessions et tokens (6467.3948ms)
+{"timestamp":"2026-09-09T17:59:46.922Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c2487357-1e62-4c05-921f-77d4949aa541","route":"/login","method":"GET","status":200,"durationMs":22.2115,"ip":"192.0.0.90"}
+{"timestamp":"2026-09-09T17:59:47.624Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b57fcf40-643f-4d7f-a1b9-de50975359f4","userId":135,"route":"/login","method":"POST","status":302,"durationMs":697.3083,"ip":"192.0.0.91"}
+{"timestamp":"2026-09-09T17:59:47.664Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6aac6252-4446-4b32-ade3-daee6f35df4b","userId":135,"route":"/login","method":"GET","status":200,"durationMs":31.7336,"ip":"192.0.0.92"}
+{"timestamp":"2026-09-09T17:59:47.689Z","level":"INFO","action":"HTTP_REQUEST","requestId":"03e5e0b3-1cd0-46d6-b64c-5c794efe7d74","route":"/login","method":"GET","status":200,"durationMs":23.0108,"ip":"192.0.0.93"}
+{"timestamp":"2026-09-09T17:59:48.503Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ca628491-147d-4430-b2ac-623168a94a40","userId":135,"route":"/login","method":"POST","status":302,"durationMs":808.2968,"ip":"192.0.0.94"}
+{"timestamp":"2026-09-09T17:59:48.548Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7b0ba6f0-3919-4103-a209-ca3e50c3747a","userId":135,"route":"/login","method":"GET","status":200,"durationMs":31.6513,"ip":"192.0.0.95"}
+{"timestamp":"2026-09-09T17:59:48.611Z","level":"ERROR","action":"HTTP_ERROR","requestId":"18864bce-0b69-4137-8ccd-41ca465b9468","statusCode":400,"route":"/teacher/profile","method":"POST","userId":135,"ip":"192.0.0.96","error":{"name":"PasswordError","code":"INVALID_CURRENT","message":"Le mot de passe actuel est incorrect."}}
+{"timestamp":"2026-09-09T17:59:48.632Z","level":"INFO","action":"HTTP_REQUEST","requestId":"18864bce-0b69-4137-8ccd-41ca465b9468","userId":135,"route":"/teacher/profile","method":"POST","status":400,"durationMs":35.8622,"ip":"192.0.0.96"}
+{"timestamp":"2026-09-09T17:59:50.282Z","level":"INFO","action":"HTTP_REQUEST","requestId":"36bace2c-30eb-4847-90cf-a807f5fe2f8a","route":"/teacher/profile","method":"POST","status":302,"durationMs":1646.2597,"ip":"192.0.0.97"}
+{"timestamp":"2026-09-09T17:59:50.317Z","level":"INFO","action":"HTTP_REQUEST","requestId":"afb1293c-40a6-43d1-96c9-874e16312af0","route":"/teacher","method":"GET","status":302,"durationMs":21.7681,"ip":"192.0.0.98"}
+  ✔ profil enseignant exige le mot de passe actuel et révoque les accès (3439.8061ms)
+{"timestamp":"2026-09-09T17:59:50.406Z","level":"INFO","action":"HTTP_REQUEST","requestId":"193cfed3-cba9-4f0d-938f-7d6df7dfd59e","route":"/forgot-password","method":"GET","status":200,"durationMs":24.2761,"ip":"192.0.0.99"}
+{"timestamp":"2026-09-09T17:59:50.441Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3020cac5-c9d5-4d41-a40d-e81ad7cea909","route":"/reset-password/[REDACTED]","method":"GET","status":200,"durationMs":28.4573,"ip":"192.0.0.100"}
+{"timestamp":"2026-09-09T17:59:50.469Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d93a0dae-a9c0-4074-8719-87f651cfe1a8","route":"/reset-password/[REDACTED]","method":"GET","status":400,"durationMs":25.3919,"ip":"192.0.0.101"}
+{"timestamp":"2026-09-09T17:59:50.482Z","level":"ERROR","action":"HTTP_ERROR","requestId":"e9e36a1c-5ae0-4723-bdf3-db54ef792c44","statusCode":403,"route":"/reset-password/[REDACTED]","method":"POST","ip":"192.0.0.102","error":{"name":"Error","code":"INVALID_CSRF_TOKEN","message":"Votre session de formulaire a expiré. Rechargez la page puis réessayez."}}
+{"timestamp":"2026-09-09T17:59:50.504Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e9e36a1c-5ae0-4723-bdf3-db54ef792c44","route":"/reset-password/[REDACTED]","method":"POST","status":403,"durationMs":25.711,"ip":"192.0.0.102"}
+{"timestamp":"2026-09-09T17:59:51.373Z","level":"INFO","action":"HTTP_REQUEST","requestId":"af555451-af24-4558-93bb-80ca07d7bb45","route":"/reset-password/[REDACTED]","method":"POST","status":200,"durationMs":863.1316,"ip":"192.0.0.103"}
+  ✔ R — CSRF et headers des pages de récupération (1055.9276ms)
+  ✔ politique centralisée et entrées invalides sans changement de compte (61.8579ms)
+  ✔ L/M — aucun secret dans les logs HTTP, erreurs et métadonnées (26.9026ms)
+{"timestamp":"2026-09-09T17:59:51.490Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e5fa1c4b-a0d1-4303-928c-83a4eda614cc","route":"/forgot-password","method":"GET","status":200,"durationMs":22.9895,"ip":"192.0.0.105"}
+{"timestamp":"2026-09-09T17:59:51.581Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fe5f75bc-b7fc-4f93-8687-eb0dfd10c5a0","route":"/forgot-password","method":"POST","status":200,"durationMs":58.5915,"ip":"192.0.0.106"}
+{"timestamp":"2026-09-09T17:59:51.622Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1f675036-3c01-4cce-ad66-28cad3848d05","route":"/forgot-password","method":"POST","status":200,"durationMs":27.7863,"ip":"192.0.0.107"}
+{"timestamp":"2026-09-09T17:59:51.638Z","level":"ERROR","action":"HTTP_ERROR","requestId":"cca5662e-98e4-4ac5-a680-99882f3594c3","statusCode":500,"route":"/reset-password/[REDACTED]","method":"POST","ip":"192.0.0.108","error":{"name":"Error","message":"INTERNAL_DATABASE_DETAIL"}}
+{"timestamp":"2026-09-09T17:59:51.662Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cca5662e-98e4-4ac5-a680-99882f3594c3","route":"/reset-password/[REDACTED]","method":"POST","status":500,"durationMs":27.6585,"ip":"192.0.0.108"}
+  ✔ erreur technique du reset masquée ; réponse publique non énumérante (199.478ms)
+✔ Phase 1 — sécurité de l’authentification (37614.938ms)
+{"timestamp":"2026-09-09T17:59:55.295Z","level":"INFO","action":"HTTP_REQUEST","requestId":"70d34449-a53a-4084-b0c9-9d72bef2b9eb","route":"/register","method":"GET","status":200,"durationMs":193.1686,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:55.400Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b1f81f35-0c00-40fa-9457-940f687c1f9f","route":"/register","method":"POST","status":400,"durationMs":81.5772,"ip":"::ffff:127.0.0.1"}
+▶ protection CSRF des parcours publics, étudiant et Admin
+  ✔ accepte un jeton valide sur le formulaire d’inscription (390.7403ms)
+{"timestamp":"2026-09-09T17:59:55.455Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e776103a-0559-4a9c-8e3e-7ffcfd91823c","route":"/register","method":"GET","status":200,"durationMs":43.9237,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:55.483Z","level":"ERROR","action":"HTTP_ERROR","requestId":"281284a9-529d-496e-aa87-f709e90f543c","statusCode":403,"route":"/register","method":"POST","ip":"::ffff:127.0.0.1","error":{"name":"Error","code":"INVALID_CSRF_TOKEN","message":"Votre session de formulaire a expiré. Rechargez la page puis réessayez."}}
+{"timestamp":"2026-09-09T17:59:55.510Z","level":"INFO","action":"HTTP_REQUEST","requestId":"281284a9-529d-496e-aa87-f709e90f543c","route":"/register","method":"POST","status":403,"durationMs":33.4859,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:55.528Z","level":"ERROR","action":"HTTP_ERROR","requestId":"37b0571d-693f-44c1-9463-6409b41a2215","statusCode":403,"route":"/register","method":"POST","ip":"::ffff:127.0.0.1","error":{"name":"Error","code":"INVALID_CSRF_TOKEN","message":"Votre session de formulaire a expiré. Rechargez la page puis réessayez."}}
+{"timestamp":"2026-09-09T17:59:55.552Z","level":"INFO","action":"HTTP_REQUEST","requestId":"37b0571d-693f-44c1-9463-6409b41a2215","route":"/register","method":"POST","status":403,"durationMs":28.2396,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse un jeton absent ou incorrect (149.893ms)
+{"timestamp":"2026-09-09T17:59:55.585Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f891db7a-454d-4021-b502-fd7a989eb683","route":"/login","method":"GET","status":200,"durationMs":25.9237,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:56.446Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c20db8a0-e8a1-4529-ac05-70f73bb8d678","userId":139,"route":"/login","method":"POST","status":302,"durationMs":842.5012,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:56.495Z","level":"INFO","action":"HTTP_REQUEST","requestId":"266d3f14-02b5-45e7-b29b-d796aa9d436d","userId":139,"route":"/change-password","method":"GET","status":200,"durationMs":36.8713,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:57.383Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fc0cffd9-dfed-49d8-9e68-d5929bc2a75f","route":"/change-password","method":"POST","status":302,"durationMs":876.4735,"ip":"::ffff:127.0.0.1"}
+  ✔ protège le changement de mot de passe (1830.8284ms)
+{"timestamp":"2026-09-09T17:59:57.456Z","level":"INFO","action":"HTTP_REQUEST","requestId":"73e000ba-5f53-49a9-be4e-1faa48267532","route":"/reset-password/[REDACTED]","method":"GET","status":200,"durationMs":30.6709,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:58.354Z","level":"INFO","action":"HTTP_REQUEST","requestId":"59fa6f6e-1508-416e-aa32-e6a92f0bd497","route":"/reset-password/[REDACTED]","method":"POST","status":200,"durationMs":881.4598,"ip":"::ffff:127.0.0.1"}
+  ✔ protège la réinitialisation par jeton (968.83ms)
+{"timestamp":"2026-09-09T17:59:58.384Z","level":"INFO","action":"HTTP_REQUEST","requestId":"31ee5080-9466-40ac-acd9-bf0b9e809167","route":"/login","method":"GET","status":200,"durationMs":25.453,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:59:59.179Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a5c71d9e-a458-4f02-9621-5daa8c1e658a","userId":140,"route":"/login","method":"POST","status":302,"durationMs":788.2425,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:01.373Z","level":"INFO","action":"HTTP_REQUEST","requestId":"09bac118-c2f8-4c19-ad5f-c14a2816fad0","userId":140,"route":"/admin/students","method":"GET","status":200,"durationMs":2179.3217,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:01.462Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6049d336-5e05-4983-a59d-48ab8029e49c","userId":140,"route":"/admin/students/139/toggle-status","method":"POST","status":302,"durationMs":67.9303,"ip":"::ffff:127.0.0.1"}
+  ✔ protège une action Admin sensible (3107.4035ms)
+✔ protection CSRF des parcours publics, étudiant et Admin (9072.2731ms)
+▶ NVA — groupes, inscription partagée et récupération
+  ✔ capacité indépendante et groupe plein (1433.7643ms)
+  ✔ groupe désactivé et doublon refusés (715.3357ms)
+  ✔ jeton hashé, expirant et à usage unique (3161.914ms)
+✔ NVA — groupes, inscription partagée et récupération (10430.465ms)
+▶ stockage PostgreSQL des sessions
+  ✔ n’utilise pas MemoryStore et conserve une session valide (81.075ms)
+  ✔ refuse une session expirée et permet son nettoyage (57.8772ms)
+  ✔ préserve l’authentification après redémarrage du processus Node (10193.8403ms)
+✔ stockage PostgreSQL des sessions (10339.6227ms)
+{"timestamp":"2026-09-09T18:00:26.163Z","level":"INFO","action":"HTTP_REQUEST","requestId":"932cd46d-e6f5-4527-8a60-03ec93946edd","route":"/register","method":"GET","status":200,"durationMs":185.7928,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.238Z","level":"INFO","action":"HTTP_REQUEST","requestId":"46cdd956-6032-4c02-bc7f-76277cbe44e9","route":"/register","method":"GET","status":200,"durationMs":57.7716,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.297Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1eaa64b7-6ee1-4990-8c00-b9076438fd82","route":"/register","method":"GET","status":404,"durationMs":52.435,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.360Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3cdb6b93-d6a9-46aa-ae33-18c880878a87","route":"/register","method":"GET","status":400,"durationMs":52.0311,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.427Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8f2cdc36-4b46-4d49-9d13-100ac78f5fa9","route":"/register","method":"GET","status":400,"durationMs":55.3582,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.486Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8770a4b2-d630-4740-bd9c-a58e33e9a47d","route":"/register","method":"GET","status":400,"durationMs":51.437,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:26.541Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3d2f6c44-81f0-43e0-8c9d-f1b80c7a9082","route":"/register","method":"GET","status":400,"durationMs":51.1284,"ip":"::ffff:127.0.0.1"}
+▶ inscription autonome à une session
+  ✔ affiche le formulaire et refuse les sessions invalides (600.4844ms)
+{"timestamp":"2026-09-09T18:00:27.493Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4ac465ad-83e0-4568-ab1d-8df8a8ee8ca7","route":"/register","method":"POST","status":400,"durationMs":910.3972,"ip":"::ffff:127.0.0.1"}
+  ✔ rejette un téléphone existant sans modifier le compte (958.5635ms)
+{"timestamp":"2026-09-09T18:00:27.748Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1fe1037d-3123-4630-bff7-dd21a07a2dad","route":"/register","method":"POST","status":400,"durationMs":237.0425,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse une inscription HTTP sans acceptation des conditions (248.7617ms)
+{"timestamp":"2026-09-09T18:00:30.786Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f6fbe7f8-1244-4def-a773-6e3e10cc4122","userId":146,"route":"/register","method":"POST","status":302,"durationMs":3026.0255,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:31.726Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6ff8d874-98a5-416f-8030-edbdf8352c58","userId":146,"route":"/registration/success/93","method":"GET","status":200,"durationMs":167.5855,"ip":"::ffff:127.0.0.1"}
+  ✔ crée compte et inscription atomiquement puis connecte automatiquement (3973.4518ms)
+{"timestamp":"2026-09-09T18:00:32.614Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9998c45d-a02c-4d60-8395-92a1390448e9","route":"/registration/success/93","method":"GET","status":302,"durationMs":25.6259,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:32.661Z","level":"ERROR","action":"HTTP_ERROR","requestId":"5e685695-fc9f-47c6-96d4-9be2c94077e8","statusCode":403,"route":"/registration/success/94","method":"GET","userId":146,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ rejette une double inscription et protège le récapitulatif (943.641ms)
+{"timestamp":"2026-09-09T18:00:32.688Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5e685695-fc9f-47c6-96d4-9be2c94077e8","userId":146,"route":"/registration/success/94","method":"GET","status":403,"durationMs":51.9397,"ip":"::ffff:127.0.0.1"}
+  ✔ compte seulement les statuts occupant une place (43.7802ms)
+  ✔ ne crée aucun compte lorsqu’une session est pleine (721.5475ms)
+✔ inscription autonome à une session (10111.2157ms)
+{"timestamp":"2026-09-09T18:00:37.882Z","level":"INFO","action":"HTTP_REQUEST","requestId":"05aa30ad-ce05-44e2-a197-bde79f54cb2f","userId":147,"route":"/login","method":"POST","status":302,"durationMs":1026.8944,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.833Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0d7ff5c3-1a33-4d6f-92c4-187b066ad203","userId":149,"route":"/login","method":"POST","status":302,"durationMs":942.9733,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.857Z","level":"ERROR","action":"HTTP_ERROR","requestId":"af93bdc0-15a4-4650-8946-40018ee82d83","statusCode":403,"route":"/student","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T18:00:38.903Z","level":"INFO","action":"HTTP_REQUEST","requestId":"af93bdc0-15a4-4650-8946-40018ee82d83","userId":149,"route":"/student","method":"GET","status":403,"durationMs":66.9352,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.916Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3ea3d8cd-4555-43c4-83ad-ee7389dc9ed4","route":"/student","method":"GET","status":302,"durationMs":98.1907,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.917Z","level":"ERROR","action":"HTTP_ERROR","requestId":"de856a77-a9c3-4590-b1d7-53f1e26187d7","statusCode":403,"route":"/student/courses","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T18:00:38.944Z","level":"INFO","action":"HTTP_REQUEST","requestId":"de856a77-a9c3-4590-b1d7-53f1e26187d7","userId":149,"route":"/student/courses","method":"GET","status":403,"durationMs":40.6523,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.958Z","level":"INFO","action":"HTTP_REQUEST","requestId":"18f94975-293c-41ce-b4a0-5e0603205f61","route":"/student/courses","method":"GET","status":302,"durationMs":66.8258,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.959Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f5896bd8-6018-4328-ad16-aec2401a13f2","route":"/student/courses/95","method":"GET","status":302,"durationMs":27.3291,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:38.967Z","level":"ERROR","action":"HTTP_ERROR","requestId":"ec76d784-aff2-4e85-aba5-7310bfc368d7","statusCode":403,"route":"/student/courses/95","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T18:00:38.992Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ec76d784-aff2-4e85-aba5-7310bfc368d7","userId":149,"route":"/student/courses/95","method":"GET","status":403,"durationMs":54.0482,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.003Z","level":"ERROR","action":"HTTP_ERROR","requestId":"3b3b5292-1b2b-43e7-ae2a-2eab31f40c70","statusCode":403,"route":"/student/schedule","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T18:00:39.012Z","level":"INFO","action":"HTTP_REQUEST","requestId":"66455c84-fc94-4dda-8926-0426e313b6b5","route":"/student/schedule","method":"GET","status":302,"durationMs":25.8411,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.028Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3b3b5292-1b2b-43e7-ae2a-2eab31f40c70","userId":149,"route":"/student/schedule","method":"GET","status":403,"durationMs":34.5249,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.041Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d58eab57-e663-4cd3-bf79-3b6c887b8cbb","route":"/student/payments","method":"GET","status":302,"durationMs":24.8347,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.042Z","level":"ERROR","action":"HTTP_ERROR","requestId":"a988dfc2-2262-4fd7-81b8-c84e493fa2be","statusCode":403,"route":"/student/payments","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T18:00:39.065Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a988dfc2-2262-4fd7-81b8-c84e493fa2be","userId":149,"route":"/student/payments","method":"GET","status":403,"durationMs":35.061,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.078Z","level":"INFO","action":"HTTP_REQUEST","requestId":"654c2794-a856-4953-a6aa-48fa4496341e","route":"/student/profile","method":"GET","status":302,"durationMs":20.119,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:39.081Z","level":"ERROR","action":"HTTP_ERROR","requestId":"4562752a-a594-4771-acb0-be1ab5e1ac06","statusCode":403,"route":"/student/profile","method":"GET","userId":149,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+▶ espace étudiant
+  ✔ redirige vers /student et protège toutes les pages (1219.0085ms)
+{"timestamp":"2026-09-09T18:00:39.103Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4562752a-a594-4771-acb0-be1ab5e1ac06","userId":149,"route":"/student/profile","method":"GET","status":403,"durationMs":36.4879,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:41.325Z","level":"INFO","action":"HTTP_REQUEST","requestId":"05ebc2c1-186c-4dc9-bb3a-5ec28cc8c110","userId":147,"route":"/student","method":"GET","status":200,"durationMs":2227.5762,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:42.213Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c899496d-7d83-456b-a486-ef7dfaf3722b","userId":150,"route":"/login","method":"POST","status":302,"durationMs":877.9378,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:42.255Z","level":"INFO","action":"HTTP_REQUEST","requestId":"63c4d24e-e66d-4928-ad9a-d56d078899a2","userId":150,"route":"/student","method":"GET","status":200,"durationMs":52.3414,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:42.336Z","level":"INFO","action":"HTTP_REQUEST","requestId":"57b00a44-2672-4a8e-9ba6-f672eab1a147","userId":147,"route":"/student/courses","method":"GET","status":200,"durationMs":64.7976,"ip":"::ffff:127.0.0.1"}
+  ✔ isole les données et ne divulgue aucun lien privé (3272.147ms)
+{"timestamp":"2026-09-09T18:00:42.379Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b7f8999e-ddc7-4a76-9ee3-6a7f38e9c0ab","userId":147,"route":"/student/courses/96","method":"GET","status":404,"durationMs":41.4892,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:42.444Z","level":"INFO","action":"HTTP_REQUEST","requestId":"15ce7e0e-fea4-435e-a9c6-58a661ab72a5","userId":147,"route":"/student/schedule","method":"GET","status":200,"durationMs":76.1494,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:43.150Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":95,"userId":147,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T18:00:43.150Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":95,"userId":147}
+{"timestamp":"2026-09-09T18:00:43.150Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":95,"userId":147,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T18:00:43.304Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0094ada7-bcf6-42e2-a48b-5d62cf7b7f4e","userId":147,"route":"/student/courses/95","method":"GET","status":200,"durationMs":65.8407,"ip":"::ffff:127.0.0.1"}
+  ✔ calcule l’essai et la fenêtre d’accès côté serveur (945.9305ms)
+{"timestamp":"2026-09-09T18:00:43.450Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e980f006-9289-4e06-85de-e61cf6e6cf2b","userId":147,"route":"/student/payments","method":"GET","status":200,"durationMs":51.0013,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:43.564Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e6d8af0c-51e7-4c79-a147-c84760c848d8","userId":147,"route":"/student","method":"GET","status":200,"durationMs":108.2455,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:43.599Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":95,"userId":147,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":5,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T18:00:43.791Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ae813ab5-2c6e-42cc-8725-3ee326f9db00","userId":147,"route":"/student/courses/95","method":"GET","status":200,"durationMs":69.324,"ip":"::ffff:127.0.0.1"}
+  ✔ filtre les paiements, reprend une tentative et confirme l’accès (480.1727ms)
+{"timestamp":"2026-09-09T18:00:44.498Z","level":"INFO","action":"HTTP_REQUEST","requestId":"651f1886-204f-495e-b3c4-595aa8fd8bc5","userId":147,"route":"/student/profile","method":"POST","status":302,"durationMs":701.6972,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:45.251Z","level":"INFO","action":"HTTP_REQUEST","requestId":"401db9c5-77aa-43b8-be21-a1796158c147","userId":147,"route":"/student/profile","method":"POST","status":400,"durationMs":750.8723,"ip":"::ffff:127.0.0.1"}
+  ✔ normalise le téléphone et contrôle son unicité (1460.2422ms)
+{"timestamp":"2026-09-09T18:00:46.000Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ae934440-61fa-4b80-8a69-26807d4c4500","userId":147,"route":"/student/profile/password","method":"POST","status":400,"durationMs":742.8836,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T18:00:47.420Z","level":"ERROR","action":"HTTP_ERROR","requestId":"914aa9b7-bcfe-471a-aeae-1e70f6a943ba","statusCode":500,"route":"/student/profile/password","method":"POST","userId":147,"ip":"::ffff:127.0.0.1","error":{"name":"ReferenceError","message":"endSession is not defined"}}
+  ✖ vérifie l’ancien mot de passe et ne divulgue pas le hash (2180.9917ms)
+{"timestamp":"2026-09-09T18:00:47.449Z","level":"INFO","action":"HTTP_REQUEST","requestId":"914aa9b7-bcfe-471a-aeae-1e70f6a943ba","userId":147,"route":"/student/profile/password","method":"POST","status":500,"durationMs":1458.4942,"ip":"::ffff:127.0.0.1"}
+✖ espace étudiant (16571.2828ms)
+▶ module administrateur des étudiants
+  ✔ valide les numéros et la confirmation du mot de passe (27.7767ms)
+  ✔ crée un étudiant valide et rejette le doublon (503.0194ms)
+  ✔ recherche par prénom, nom et fragment de téléphone (2066.2142ms)
+  ✔ modifie uniquement un étudiant et refuse un compte ADMIN (35.0696ms)
+  ✔ désactive, refuse la connexion puis réactive (1698.4516ms)
+  ✔ réinitialise le mot de passe et authentifie le nouveau (2571.1341ms)
+  ✔ protège toutes les routes avec requireAdmin (5.0939ms)
+✔ module administrateur des étudiants (9040.2254ms)
+ℹ tests 68
+ℹ suites 0
+ℹ pass 66
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 116345.4919
+
+✖ failing tests:
+
+test at tests\studentDashboard.test.js:214:13
+✖ vérifie l’ancien mot de passe et ne divulgue pas le hash (2180.9917ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  500 !== 302
+  
+      at TestContext.<anonymous> (D:\English-center\tests\studentDashboard.test.js:226:14)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (D:\English-center\tests\studentDashboard.test.js:214:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 302,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

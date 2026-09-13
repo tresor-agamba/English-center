@@ -1,0 +1,985 @@
+◇ injected env (5) from .env // tip: ⌘ suppress logs { quiet: true }
+node : Environment variables loaded from .env
+Au caractère Ligne:2 : 1
++ node scripts/runWithTestDatabase.js test *> tmp/auth-phase1-baseline. ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Environment variables loaded from .env:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.19.3) to .\node_modules\@prisma\client in 472ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "english_center_test", schema "public" at "localhost:5432"
+
+Applying migration `20260722131415_add_training_sessions`
+Applying migration `20260722160000_phone_authentication`
+Applying migration `20260724223000_add_student_status`
+Applying migration `20260724230000_add_public_course_catalog`
+Applying migration `20260724233000_add_self_registration`
+Applying migration `20260725000000_add_online_session_details`
+Applying migration `20260725003000_add_payment_architecture`
+Applying migration `20260725010000_add_free_trial_attendance`
+Applying migration `20260725013000_add_admin_course_schedule_configuration`
+Applying migration `20260725020000_add_admin_class_meeting_management`
+Applying migration `20260726010000_add_course_learning_content`
+Applying migration `20260726020000_add_assignments_and_submissions`
+Applying migration `20260726030000_link_live_meetings_to_lessons`
+Applying migration `20260726040000_add_teacher_management`
+Applying migration `20260726050000_add_notifications_and_reminders`
+Applying migration `20260726060000_add_whatsapp_delivery`
+Applying migration `20260726070000_add_certificate_fees`
+Applying migration `20260726071000_unique_certificate_payment_per_enrollment`
+Applying migration `20260726072000_add_certificate_verification_snapshots`
+Applying migration `20260727142540_assessment_foundations`
+Applying migration `20260727144144_recorded_oral_phase2`
+Applying migration `20260727151805_live_video_oral_phase3`
+Applying migration `20260727154726_written_assessment_phase4`
+Applying migration `20260727163000_lms_phase5`
+Applying migration `20260727203000_academic_management_phase6`
+Applying migration `20260727214500_strict_academic_levels`
+Applying migration `20260727223000_simple_finance_phase7`
+Applying migration `20260728120000_center_settings_phase9`
+Applying migration `20260728200000_production_readiness_phase10`
+Applying migration `20260728220000_public_student_placement`
+Applying migration `20260730143000_add_course_pricing`
+Applying migration `20260730143100_default_course_pricing_mode`
+Applying migration `20260730171000_add_enrollment_payment_access_snapshots`
+Applying migration `20260730171100_enforce_free_registration`
+Applying migration `20260805120000_add_manual_payment_methods`
+Applying migration `20260827090000_add_registration_groups_and_forced_password`
+Applying migration `20260827130000_add_password_reset_tokens`
+
+Database reset successful
+
+The following migration(s) have been applied:
+
+migrations/
+  └─ 20260722131415_add_training_sessions/
+    └─ migration.sql
+  └─ 20260722160000_phone_authentication/
+    └─ migration.sql
+  └─ 20260724223000_add_student_status/
+    └─ migration.sql
+  └─ 20260724230000_add_public_course_catalog/
+    └─ migration.sql
+  └─ 20260724233000_add_self_registration/
+    └─ migration.sql
+  └─ 20260725000000_add_online_session_details/
+    └─ migration.sql
+  └─ 20260725003000_add_payment_architecture/
+    └─ migration.sql
+  └─ 20260725010000_add_free_trial_attendance/
+    └─ migration.sql
+  └─ 20260725013000_add_admin_course_schedule_configuration/
+    └─ migration.sql
+  └─ 20260725020000_add_admin_class_meeting_management/
+    └─ migration.sql
+  └─ 20260726010000_add_course_learning_content/
+    └─ migration.sql
+  └─ 20260726020000_add_assignments_and_submissions/
+    └─ migration.sql
+  └─ 20260726030000_link_live_meetings_to_lessons/
+    └─ migration.sql
+  └─ 20260726040000_add_teacher_management/
+    └─ migration.sql
+  └─ 20260726050000_add_notifications_and_reminders/
+    └─ migration.sql
+  └─ 20260726060000_add_whatsapp_delivery/
+    └─ migration.sql
+  └─ 20260726070000_add_certificate_fees/
+    └─ migration.sql
+  └─ 20260726071000_unique_certificate_payment_per_enrollment/
+    └─ migration.sql
+  └─ 20260726072000_add_certificate_verification_snapshots/
+    └─ migration.sql
+  └─ 20260727142540_assessment_foundations/
+    └─ migration.sql
+  └─ 20260727144144_recorded_oral_phase2/
+    └─ migration.sql
+  └─ 20260727151805_live_video_oral_phase3/
+    └─ migration.sql
+  └─ 20260727154726_written_assessment_phase4/
+    └─ migration.sql
+  └─ 20260727163000_lms_phase5/
+    └─ migration.sql
+  └─ 20260727203000_academic_management_phase6/
+    └─ migration.sql
+  └─ 20260727214500_strict_academic_levels/
+    └─ migration.sql
+  └─ 20260727223000_simple_finance_phase7/
+    └─ migration.sql
+  └─ 20260728120000_center_settings_phase9/
+    └─ migration.sql
+  └─ 20260728200000_production_readiness_phase10/
+    └─ migration.sql
+  └─ 20260728220000_public_student_placement/
+    └─ migration.sql
+  └─ 20260730143000_add_course_pricing/
+    └─ migration.sql
+  └─ 20260730143100_default_course_pricing_mode/
+    └─ migration.sql
+  └─ 20260730171000_add_enrollment_payment_access_snapshots/
+    └─ migration.sql
+  └─ 20260730171100_enforce_free_registration/
+    └─ migration.sql
+  └─ 20260805120000_add_manual_payment_methods/
+    └─ migration.sql
+  └─ 20260827090000_add_registration_groups_and_forced_password/
+    └─ migration.sql
+  └─ 20260827130000_add_password_reset_tokens/
+    └─ migration.sql
+
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+▶ Phase 6 — gestion académique
+  ✔ accepte uniquement les trois niveaux officiels (66.8276ms)
+  ✔ inscrit sans doublon et contrôle les capacités (101.8068ms)
+  ✔ affecte un enseignant et applique ses permissions (33.1012ms)
+  ✔ transfère entre groupes avec historique (57.2721ms)
+  ✔ crée des séances, refuse les chevauchements et autorise les créneaux adjacents (95.7925ms)
+  ✔ enregistre et corrige une présence unique sans convertir TECHNICAL_ISSUE (66.9983ms)
+  ✔ suspension retire l’accès LMS et réactivation le restaure (53.7642ms)
+  ✔ isole la consultation étudiante et déduplique les notifications (14.4479ms)
+✔ Phase 6 — gestion académique (5129.5995ms)
+▶ administration des séances et présences
+  ✔ crée et modifie une séance valide dans le fuseau de la session (2177.2564ms)
+  ✔ rejette session, période, jour, horaire, URL et doublon invalides (21.6272ms)
+  ✔ affiche uniquement les étudiants de la bonne session (44.9121ms)
+  ✔ enregistre et corrige les présences en lot sans doublon (438.953ms)
+{"timestamp":"2026-09-09T17:44:25.195Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":1,"userId":5,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:44:25.195Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":1,"userId":5}
+{"timestamp":"2026-09-09T17:44:25.195Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":1,"userId":5,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:44:25.210Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":1,"userId":5,"accessStage":"FREE_TRIAL","attendedSessionCount":4,"paidPercentage":"0.00"}
+  ✔ déclenche le paiement requis puis exclut une séance annulée du compteur (3294.9516ms)
+  ✔ protège le changement de session si des présences existent (5.8177ms)
+  ✔ applique la fenêtre centrale de trente minutes et les statuts (121.0233ms)
+{"timestamp":"2026-09-09T17:44:25.570Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6b7c862b-45d3-4259-9ac3-ac2e24f40e9d","route":"/admin/class-meetings","method":"GET","status":302,"durationMs":109.3286,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:25.598Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d90a1ee4-5784-4276-9837-41a24cfe3518","route":"/admin/class-meetings/1/attendance","method":"GET","status":302,"durationMs":94.4729,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:25.828Z","level":"INFO","action":"HTTP_REQUEST","requestId":"49b6f82e-52c2-47cb-a6a7-7d978b4a6857","userId":5,"route":"/login","method":"POST","status":302,"durationMs":310.8475,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:25.834Z","level":"ERROR","action":"HTTP_ERROR","requestId":"6f9eedf2-a71e-4617-b2e2-4d4c14ea0519","statusCode":403,"route":"/admin/class-meetings/1/cancel","method":"POST","userId":5,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ protège toutes les routes administratives (412.0026ms)
+{"timestamp":"2026-09-09T17:44:25.865Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6f9eedf2-a71e-4617-b2e2-4d4c14ea0519","userId":5,"route":"/admin/class-meetings/1/cancel","method":"POST","status":403,"durationMs":48.9304,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:25.880Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7a5efd01-e0ba-4dc8-8a45-f81fbe45e538","route":"/formations/gestion-seances-1788975856858-15488","method":"GET","status":200,"durationMs":33.5969,"ip":"::ffff:127.0.0.1"}
+  ✔ ne publie jamais le lien privé (39.5787ms)
+✔ administration des séances et présences (11815.1486ms)
+▶ configuration administrative du catalogue
+  ✔ crée une formation structurée et génère un slug unique (2132.9371ms)
+  ✔ rejette prix négatif et devise non autorisée (0.6804ms)
+  ✔ interdit la formation gratuite et distingue tarif indisponible ou inactif (0.524ms)
+  ✔ crée une session avec jours et horaires contrôlés (24.5053ms)
+  ✔ rejette jours absents, horaires invalides et capacité nulle (0.5546ms)
+{"timestamp":"2026-09-09T17:44:31.445Z","level":"INFO","action":"HTTP_REQUEST","requestId":"88b7c50d-5ec9-478c-a078-303256fe7092","route":"/formations/business-english-banque-1788975869117-2864","method":"GET","status":200,"durationMs":98.0339,"ip":"::ffff:127.0.0.1"}
+  ✔ affiche les informations configurées et exclut les sessions non ouvertes (170.5965ms)
+{"timestamp":"2026-09-09T17:44:31.471Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ef8922bb-802c-4aa2-a69f-cbc81530c929","route":"/admin/courses","method":"GET","status":302,"durationMs":19.6443,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:32.278Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a2ce8912-e0cb-4074-ab87-23ffdc102040","userId":8,"route":"/login","method":"POST","status":302,"durationMs":289.6063,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:32.287Z","level":"ERROR","action":"HTTP_ERROR","requestId":"0a11af3d-b929-4a67-9184-0bf988495313","statusCode":403,"route":"/admin/courses","method":"POST","userId":8,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:32.306Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0a11af3d-b929-4a67-9184-0bf988495313","userId":8,"route":"/admin/courses","method":"POST","status":403,"durationMs":27.865,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:32.566Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fef37506-7d2b-4d52-95ce-33619b9bc246","userId":9,"route":"/login","method":"POST","status":302,"durationMs":271.1681,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:32.576Z","level":"ERROR","action":"HTTP_ERROR","requestId":"f496d803-7214-4e27-8783-5a5fcf896cf4","statusCode":403,"route":"/admin/courses","method":"POST","userId":9,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ protège toutes les mutations administratives (1131.1739ms)
+{"timestamp":"2026-09-09T17:44:32.595Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f496d803-7214-4e27-8783-5a5fcf896cf4","userId":9,"route":"/admin/courses","method":"POST","status":403,"durationMs":38.7679,"ip":"::ffff:127.0.0.1"}
+✔ configuration administrative du catalogue (6574.7743ms)
+✔ le layout administratif utilise un shell privé dédié sans toucher au métier (5.3867ms)
+▶ fondations des évaluations
+  ✔ expose les trois modes autour de Assessment (16.6632ms)
+  ✔ ajoute JITSI sans retirer les plateformes existantes (0.231ms)
+  ✔ associe strictement les types de questions au mode (0.4298ms)
+  ✔ refuse les identifiants, textes et nombres non valides (0.319ms)
+  ✔ valide les fenêtres temporelles et les URLs de réunion HTTPS (0.3236ms)
+  ✔ valide les transitions sans permettre un retour silencieux (0.1822ms)
+  ✔ exige une grille unique totalisant 100 % et le total des points (1.3589ms)
+  ✔ vérifie la relation session-formation et construit un brouillon oral (0.8428ms)
+  ✔ contient les modèles spécialisés et leurs contraintes d’unicité Prisma (0.2191ms)
+✔ fondations des évaluations (21.6406ms)
+▶ devoirs, soumissions, corrections et notes
+  ✔ crée, modifie et valide les rattachements, note et date (2145.3877ms)
+  ✔ publie, masque et protège la suppression avec soumissions (99.2246ms)
+{"timestamp":"2026-09-09T17:44:41.667Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d647852a-6523-4ef2-baa7-f1939527da01","userId":10,"route":"/login","method":"POST","status":302,"durationMs":397.2087,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.679Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b0944dcc-3827-4082-b09e-a7627f61d4f7","userId":13,"route":"/login","method":"POST","status":302,"durationMs":388.0951,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.681Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8a14fdef-d5f6-4e56-832e-59a5d894e121","userId":12,"route":"/login","method":"POST","status":302,"durationMs":391.7553,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.682Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f939f260-93bb-418c-b058-06f3ca4e0118","userId":11,"route":"/login","method":"POST","status":302,"durationMs":394.6755,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.920Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1dc0c570-a82d-4ae6-92f3-72f5532876c1","userId":14,"route":"/login","method":"POST","status":302,"durationMs":626.9863,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.927Z","level":"ERROR","action":"HTTP_ERROR","requestId":"e7cacfd6-a33e-43f1-a63b-60674c9a9e99","statusCode":403,"route":"/admin/courses/5/assignments","method":"GET","userId":11,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:41.935Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0eb6bac1-cc06-40c5-a345-08445a5ce0b3","userId":15,"route":"/login","method":"POST","status":302,"durationMs":638.4619,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.935Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1c5da840-4f5c-428e-8fc0-5b3e7325a2f8","route":"/admin/courses/5/assignments","method":"GET","status":302,"durationMs":26.4679,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.978Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e7cacfd6-a33e-43f1-a63b-60674c9a9e99","userId":11,"route":"/admin/courses/5/assignments","method":"GET","status":403,"durationMs":57.7364,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:41.995Z","level":"INFO","action":"HTTP_REQUEST","requestId":"63f54085-fccb-49c1-a6a2-abe1b7847ebb","userId":10,"route":"/admin/courses/5/assignments","method":"GET","status":200,"durationMs":51.0917,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.010Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7f7b5322-654e-46fa-b449-654af097cac8","route":"/admin/courses/5/assignments/new","method":"GET","status":302,"durationMs":17.7828,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.013Z","level":"ERROR","action":"HTTP_ERROR","requestId":"9ca88d7d-0075-4ff6-9e41-c91c57a05b64","statusCode":403,"route":"/admin/courses/5/assignments/new","method":"GET","userId":11,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:42.033Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9ca88d7d-0075-4ff6-9e41-c91c57a05b64","userId":11,"route":"/admin/courses/5/assignments/new","method":"GET","status":403,"durationMs":25.7707,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.067Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3c590085-6ba0-4adf-97d2-43f09a24f2ee","userId":10,"route":"/admin/courses/5/assignments/new","method":"GET","status":200,"durationMs":36.8799,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.072Z","level":"ERROR","action":"HTTP_ERROR","requestId":"4f65b294-d5c8-40f2-8130-9519eb152ee1","statusCode":403,"route":"/admin/assignments/1","method":"GET","userId":11,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:42.083Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b81dd3ed-89b5-4604-9888-e9c7ed3a83be","route":"/admin/assignments/1","method":"GET","status":302,"durationMs":21.5674,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.100Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4f65b294-d5c8-40f2-8130-9519eb152ee1","userId":11,"route":"/admin/assignments/1","method":"GET","status":403,"durationMs":32.6375,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.114Z","level":"ERROR","action":"HTTP_ERROR","requestId":"9db7644c-bff8-4a40-bb22-358d288bfea0","statusCode":403,"route":"/admin/assignments/1/edit","method":"GET","userId":11,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:42.118Z","level":"INFO","action":"HTTP_REQUEST","requestId":"97a89c9d-c745-43fe-988d-12d285202fa8","route":"/admin/assignments/1/edit","method":"GET","status":302,"durationMs":16.7084,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.145Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a568be0e-5cd0-4280-81ec-8eb765feabcc","userId":10,"route":"/admin/assignments/1","method":"GET","status":200,"durationMs":67.6367,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.149Z","level":"ERROR","action":"HTTP_ERROR","requestId":"f718e838-1b38-499b-9e4f-5503a7df75f7","statusCode":403,"route":"/admin/assignments/1/submissions","method":"GET","userId":11,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:44:42.159Z","level":"INFO","action":"HTTP_REQUEST","requestId":"39dea5b6-8003-42d4-a284-ad4d075bfb43","route":"/admin/assignments/1/submissions","method":"GET","status":302,"durationMs":18.5646,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.159Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9db7644c-bff8-4a40-bb22-358d288bfea0","userId":11,"route":"/admin/assignments/1/edit","method":"GET","status":403,"durationMs":50.2069,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.172Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9d8a0d42-d530-46aa-8e65-b4f9a49967a5","userId":10,"route":"/admin/assignments/1/edit","method":"GET","status":200,"durationMs":54.0052,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.189Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f718e838-1b38-499b-9e4f-5503a7df75f7","userId":11,"route":"/admin/assignments/1/submissions","method":"GET","status":403,"durationMs":44.0949,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.205Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b54ccede-b234-4d00-8418-e68ce2186057","userId":10,"route":"/admin/assignments/1/submissions","method":"GET","status":200,"durationMs":48.5561,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.209Z","level":"ERROR","action":"HTTP_ERROR","requestId":"383cf2d5-e5a5-4a7f-b839-7f675ae49e16","statusCode":403,"route":"/student/assignments","method":"GET","userId":10,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ protège les routes administratives et étudiantes (307.727ms)
+{"timestamp":"2026-09-09T17:44:42.219Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8b44401b-0d71-4cb3-a463-a48e8ece08d8","route":"/student/assignments","method":"GET","status":302,"durationMs":22.5475,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.233Z","level":"INFO","action":"HTTP_REQUEST","requestId":"383cf2d5-e5a5-4a7f-b839-7f675ae49e16","userId":10,"route":"/student/assignments","method":"GET","status":403,"durationMs":27.3461,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.259Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e20d6aa0-181f-4d29-86df-dc62b2f472e9","userId":11,"route":"/student/courses/4/assignments/1","method":"GET","status":200,"durationMs":39.2796,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.312Z","level":"INFO","action":"HTTP_REQUEST","requestId":"15b525fc-5e0f-442b-af4f-141d5bf0eb92","userId":12,"route":"/student/courses/5/assignments/1","method":"GET","status":200,"durationMs":35.8322,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.340Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9c04d600-8ef7-4fa5-a388-0ca31e45e65a","userId":13,"route":"/student/courses/6/assignments/1","method":"GET","status":403,"durationMs":27.0612,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.382Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cb198f02-f11e-4db4-b94e-5d94816c5a0a","userId":14,"route":"/student/courses/7/assignments/1","method":"GET","status":403,"durationMs":26.834,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.414Z","level":"INFO","action":"HTTP_REQUEST","requestId":"baef2aa8-5388-402b-aeb5-e6ba80bc507d","userId":15,"route":"/student/courses/8/assignments/1","method":"GET","status":403,"durationMs":26.9736,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.448Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4b22c0cc-3324-407c-95e5-c9e496c14180","userId":14,"route":"/student/assignments","method":"GET","status":200,"durationMs":28.8598,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.476Z","level":"INFO","action":"HTTP_REQUEST","requestId":"02bc6dd8-3b45-4637-96be-a5cc6655ecd4","userId":15,"route":"/student/assignments","method":"GET","status":200,"durationMs":27.5546,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:42.527Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a79fe2b3-9338-45e7-ae43-59b82fe7ca6e","userId":11,"route":"/student/courses/4/assignments/3","method":"GET","status":404,"durationMs":28.2623,"ip":"::ffff:127.0.0.1"}
+  ✔ autorise TRIAL_ACTIVE et CONFIRMED, refuse les autres statuts et les brouillons (312.4586ms)
+{"timestamp":"2026-09-09T17:44:42.640Z","level":"INFO","action":"HTTP_REQUEST","requestId":"670bcdf0-83fa-49df-90b8-174dc31bb405","userId":12,"route":"/student/courses/5/assignments/1","method":"GET","status":200,"durationMs":30.144,"ip":"::ffff:127.0.0.1"}
+  ✔ accepte texte ou URL, refuse vide et URL invalide, et isole les inscriptions (112.6246ms)
+  ✔ applique les règles de date limite et de retard (146.4939ms)
+  ✔ corrige avec Decimal et refuse les notes hors limites (32.65ms)
+{"timestamp":"2026-09-09T17:44:42.859Z","level":"INFO","action":"HTTP_REQUEST","requestId":"861dce75-ecd8-460d-8f7c-21faa789bdd2","userId":11,"route":"/student/courses/4/assignments/1","method":"GET","status":200,"durationMs":34.878,"ip":"::ffff:127.0.0.1"}
+  ✔ ne publie ni note ni feedback avant publication (40.1802ms)
+  ✔ une modification avant publication invalide la correction (27.3125ms)
+{"timestamp":"2026-09-09T17:44:42.985Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f283ae72-b877-4313-9a64-984eac78cc85","userId":11,"route":"/student/courses/4/assignments/1","method":"GET","status":200,"durationMs":30.4935,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:43.044Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5eea6abb-00b7-4d1c-9a99-5318d7e34c6b","userId":11,"route":"/student/courses/4/assignments/1","method":"GET","status":200,"durationMs":32.92,"ip":"::ffff:127.0.0.1"}
+  ✔ publie puis annule la publication de la correction (157.4569ms)
+{"timestamp":"2026-09-09T17:44:43.122Z","level":"INFO","action":"HTTP_REQUEST","requestId":"dbabf597-3e5c-41dc-bd6a-2c9870fb735f","userId":10,"route":"/admin/assignments/1/submissions","method":"GET","status":200,"durationMs":31.6054,"ip":"::ffff:127.0.0.1"}
+  ✔ calcule les statistiques et affiche les étudiants sans soumission (101.0055ms)
+✔ devoirs, soumissions, corrections et notes (6936.7137ms)
+◇ injected env (0) from .env // tip: ⌘ enable debugging { debug: true }
+▶ Phase 9 — paramètres centralisés du centre
+  ✔ charge des valeurs sûres et crée le singleton MAIN (41.0759ms)
+  ✔ met à jour le général, le fuseau et audite (57.2447ms)
+  ✔ valide les couleurs (39.0976ms)
+  ✔ configure académique et niveaux sans rétroactivité (94.0309ms)
+  ✔ configure finances et génère des numéros uniques en concurrence (2507.481ms)
+  ✔ configure certificats, LMS, évaluations, présences et documents (149.4154ms)
+  ✔ stocke une signature privée validée et protège les identifiants (94.9194ms)
+  ✔ n’expose aucune donnée privée dans les paramètres publics ou l’audit (9.5474ms)
+  ✔ refuse les rôles enseignant et étudiant sur les routes admin (0.3965ms)
+✔ Phase 9 — paramètres centralisés du centre (5160.7898ms)
+▶ PDF et vérification des certificats
+  ✔ construit le lien QR uniquement depuis PUBLIC_APP_URL (0.6749ms)
+  ✔ produit un vrai PDF A4 paysage sur une seule page, sans logo (90.3984ms)
+  ✔ supporte les noms longs et ajoute un filigrane au PDF révoqué (29.0976ms)
+  ✔ génère un nom de téléchargement sûr (0.3606ms)
+✔ PDF et vérification des certificats (121.5436ms)
+▶ frais et émission manuelle des certificats
+  ✔ applique général puis formation puis session avec la bonne devise (84.1214ms)
+  ✔ ne génère rien automatiquement et distingue l’éligibilité du paiement (2084.4717ms)
+  ✔ ne confond pas paiement de formation et paiement du certificat (38.5381ms)
+  ✔ recalcule le montant serveur et confirme le paiement une seule fois (64.6909ms)
+  ✔ émet uniquement après le clic administrateur et refuse le doublon (100.4714ms)
+  ✔ exige un motif pour l’exonération et isole les étudiants (55.5371ms)
+  ✔ émet gratuitement lorsque le montant applicable vaut zéro (128.8688ms)
+  ✔ révoque sans supprimer l’historique (44.7908ms)
+✔ frais et émission manuelle des certificats (4893.4132ms)
+▶ publication administrative explicite des formations
+  ✔ une nouvelle formation complète reste invisible en brouillon (7.6863ms)
+  ✔ une formation incomplète ne peut pas être publiée (26.5172ms)
+  ✔ publication puis dépublication contrôlent le catalogue sans doublon (48.6957ms)
+  ✔ une formation archivée et ses sessions restent invisibles (63.3368ms)
+✔ publication administrative explicite des formations (2257.7253ms)
+{"timestamp":"2026-09-09T17:44:59.438Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9ad10564-3f73-498f-9b37-b56dbade12e3","route":"/register","method":"GET","status":200,"durationMs":79.5088,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:59.488Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d1bdb392-6682-4b35-80c4-a38507df7c6b","route":"/register","method":"POST","status":400,"durationMs":42.6166,"ip":"::ffff:127.0.0.1"}
+▶ protection CSRF des parcours publics, étudiant et Admin
+  ✔ accepte un jeton valide sur le formulaire d’inscription (166.8863ms)
+{"timestamp":"2026-09-09T17:44:59.514Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c2cd0ee0-b6e3-47bd-b483-537a612a6444","route":"/register","method":"GET","status":200,"durationMs":22.7777,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:59.531Z","level":"ERROR","action":"HTTP_ERROR","requestId":"fac42e06-4a87-4556-903a-0f7c14889827","statusCode":403,"route":"/register","method":"POST","ip":"::ffff:127.0.0.1","error":{"name":"Error","code":"INVALID_CSRF_TOKEN","message":"Votre session de formulaire a expiré. Rechargez la page puis réessayez."}}
+{"timestamp":"2026-09-09T17:44:59.550Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fac42e06-4a87-4556-903a-0f7c14889827","route":"/register","method":"POST","status":403,"durationMs":21.8304,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:59.554Z","level":"ERROR","action":"HTTP_ERROR","requestId":"fbc19544-11d0-4314-9d36-be8049754cbb","statusCode":403,"route":"/register","method":"POST","ip":"::ffff:127.0.0.1","error":{"name":"Error","code":"INVALID_CSRF_TOKEN","message":"Votre session de formulaire a expiré. Rechargez la page puis réessayez."}}
+{"timestamp":"2026-09-09T17:44:59.570Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fbc19544-11d0-4314-9d36-be8049754cbb","route":"/register","method":"POST","status":403,"durationMs":18.1516,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse un jeton absent ou incorrect (81.3829ms)
+{"timestamp":"2026-09-09T17:44:59.590Z","level":"INFO","action":"HTTP_REQUEST","requestId":"353dbc27-4157-4361-915d-cd9bbced889f","route":"/login","method":"GET","status":200,"durationMs":18.0366,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:59.899Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3f6081f7-f153-4ec7-a073-be071548e58d","userId":20,"route":"/login","method":"POST","status":302,"durationMs":291.1688,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:44:59.938Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bd99a6b5-1681-4c09-9638-b4762d58815c","userId":20,"route":"/change-password","method":"GET","status":200,"durationMs":24.5884,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:00.237Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3b7a1fc8-6b15-4e62-ba4a-0d7342521b98","userId":20,"route":"/change-password","method":"POST","status":302,"durationMs":291.1187,"ip":"::ffff:127.0.0.1"}
+  ✔ protège le changement de mot de passe (666.4976ms)
+{"timestamp":"2026-09-09T17:45:00.304Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ef994bc6-1e2b-4231-bb97-8c7208120867","route":"/reset-password/[REDACTED]","method":"GET","status":200,"durationMs":24.3023,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:00.589Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e4b426c8-40d3-4e59-b629-4f9d2491e458","route":"/reset-password/[REDACTED]","method":"POST","status":200,"durationMs":276.7799,"ip":"::ffff:127.0.0.1"}
+  ✔ protège la réinitialisation par jeton (351.6425ms)
+{"timestamp":"2026-09-09T17:45:00.610Z","level":"INFO","action":"HTTP_REQUEST","requestId":"efabcaab-35eb-49ef-ada7-f1a5bfcbcf40","route":"/login","method":"GET","status":200,"durationMs":18.3982,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:00.915Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a0071e7a-1d3d-4400-876f-7f5a5c8666bd","userId":21,"route":"/login","method":"POST","status":302,"durationMs":291.5471,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:03.019Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2ecb88e7-c209-49fb-8cb9-e8d0bef2c71f","userId":21,"route":"/admin/students","method":"GET","status":200,"durationMs":2102.2422,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:03.068Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a3449fd2-5ced-49be-b22e-7b0334983448","userId":21,"route":"/admin/students/20/toggle-status","method":"POST","status":302,"durationMs":42.6701,"ip":"::ffff:127.0.0.1"}
+  ✔ protège une action Admin sensible (2478.9348ms)
+✔ protection CSRF des parcours publics, étudiant et Admin (6398.9949ms)
+▶ synchronisation des rappels avec les inscriptions
+  ✔ crée uniquement les rappels futurs applicables et reste idempotent (2208.8838ms)
+  ✔ annule seulement les rappels de l’inscription devenue inéligible (138.4201ms)
+  ✔ recrée les rappels après confirmation et exclut un devoir remis (99.9502ms)
+✔ synchronisation des rappels avec les inscriptions (6790.5603ms)
+{"timestamp":"2026-09-09T17:45:13.295Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8490fc2c-df0f-4907-8363-60c3f25cb6d9","route":"/enroll","method":"GET","status":302,"durationMs":76.589,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:13.308Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e8852300-7242-4f77-a253-801a0d3ec58c","route":"/login","method":"GET","status":200,"durationMs":69.003,"ip":"::ffff:127.0.0.1"}
+▶ inscription d’un étudiant existant
+  ✔ redirige le visiteur vers login en conservant la session (124.6598ms)
+{"timestamp":"2026-09-09T17:45:13.602Z","level":"INFO","action":"HTTP_REQUEST","requestId":"71015c4d-6ce2-4ef2-988b-3dfeda9a3341","userId":24,"route":"/login","method":"POST","status":302,"durationMs":286.6744,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:13.646Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9f9a7ae3-b363-4d8b-8866-9636db169411","userId":24,"route":"/enroll","method":"GET","status":200,"durationMs":56.36,"ip":"::ffff:127.0.0.1"}
+  ✔ redirige vers la confirmation après connexion (335.9237ms)
+  ✔ inscrit uniquement l’utilisateur de la session Express (2099.4552ms)
+{"timestamp":"2026-09-09T17:45:15.761Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1dcb489b-350a-455e-a4c7-7eb7c91d2813","userId":24,"route":"/enroll","method":"POST","status":302,"durationMs":2112.1171,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:15.784Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f3e711ea-3189-46f3-b9a4-35926fe48cf9","userId":24,"route":"/enroll","method":"GET","status":302,"durationMs":23.2445,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:15.837Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8827425d-6716-4cf8-87d3-27300410d283","userId":24,"route":"/registration/success/14","method":"GET","status":200,"durationMs":57.9485,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:15.880Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9097dc90-aa60-4082-8189-cac9fa1ebf17","userId":24,"route":"/enroll","method":"GET","status":302,"durationMs":23.4321,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:15.931Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":15,"userId":24,"expectedTotalAmount":"75","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:45:15.931Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":15,"userId":24,"accessStage":"FULL_ACCESS","attendedSessionCount":0,"paidPercentage":"100.00"}
+{"timestamp":"2026-09-09T17:45:15.951Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2fda2dab-09f4-4de5-a4bb-1d5a1d9cfc6f","userId":24,"route":"/registration/success/15","method":"GET","status":200,"durationMs":78.2557,"ip":"::ffff:127.0.0.1"}
+  ✔ redirige les inscriptions en attente ou confirmées vers leur récapitulatif (205.1928ms)
+  ✔ réactive CANCELLED et PAYMENT_FAILED sans créer une seconde ligne (92.6718ms)
+  ✔ rejette les sessions invalides avant et pendant la création (128.6366ms)
+  ✔ empêche le dépassement concurrent de capacité (72.2347ms)
+  ✔ n’accepte aucune redirection externe (268.388ms)
+{"timestamp":"2026-09-09T17:45:16.529Z","level":"INFO","action":"HTTP_REQUEST","requestId":"790d32cd-f037-4341-aaaf-4cc2cf3155bb","userId":24,"route":"/login","method":"POST","status":302,"durationMs":270.3535,"ip":"::ffff:127.0.0.1"}
+✔ inscription d’un étudiant existant (9115.5422ms)
+{"timestamp":"2026-09-09T17:45:22.912Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9ef2e521-ae40-4fdd-9ae9-c1b7d8d74685","userId":26,"route":"/login","method":"POST","status":302,"durationMs":329.4739,"ip":"::ffff:127.0.0.1"}
+▶ accès gratuit limité à cinq présences
+  ✔ autorise l’accès avant puis après une et deux présences (2205.5836ms)
+  ✔ ne compte ni ABSENT ni EXCUSED (100.6101ms)
+{"timestamp":"2026-09-09T17:45:25.302Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":22,"userId":26,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:45:25.302Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":22,"userId":26}
+{"timestamp":"2026-09-09T17:45:25.302Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":22,"userId":26,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:45:25.365Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":26,"enrollmentId":22,"classMeetingId":20,"accessStage":"PAYMENT_REQUIRED_50","levelPosition":6}
+{"timestamp":"2026-09-09T17:45:25.450Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6eb63c5f-1d14-479e-8a95-0970213e4e83","userId":26,"route":"/registration/success/22","method":"GET","status":200,"durationMs":66.1795,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:25.476Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":26,"enrollmentId":22,"classMeetingId":20,"accessStage":"PAYMENT_REQUIRED_50","levelPosition":6}
+{"timestamp":"2026-09-09T17:45:25.497Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b5b5dd78-2557-4b22-af83-8dcf65f52d51","userId":26,"route":"/class-meetings/20/join","method":"GET","status":403,"durationMs":43.4886,"ip":"::ffff:127.0.0.1"}
+  ✔ passe à PAYMENT_REQUIRED à la cinquième présence et bloque le lien (291.5518ms)
+{"timestamp":"2026-09-09T17:45:25.510Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":22,"userId":26,"accessStage":"FREE_TRIAL","attendedSessionCount":4,"paidPercentage":"0.00"}
+  ✔ corrige une présence sans doublon et réactive l’essai (93.8113ms)
+  ✔ valide la correspondance séance/session (74.3907ms)
+{"timestamp":"2026-09-09T17:45:25.679Z","level":"ERROR","action":"HTTP_ERROR","requestId":"03262668-581f-45a1-9f16-4675988235e9","statusCode":403,"route":"/admin/attendances","method":"POST","userId":26,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ empêche un étudiant de créer sa propre présence (18.9793ms)
+{"timestamp":"2026-09-09T17:45:25.698Z","level":"INFO","action":"HTTP_REQUEST","requestId":"03262668-581f-45a1-9f16-4675988235e9","userId":26,"route":"/admin/attendances","method":"POST","status":403,"durationMs":25.4284,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:25.736Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":22,"userId":26,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":4,"paidPercentage":"50.00"}
+  ✔ autorise le paiement anticipé et rétablit l’accès après succès (150.3747ms)
+{"timestamp":"2026-09-09T17:45:25.900Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":23,"userId":27,"accessStage":"FREE_TRIAL","attendedSessionCount":0,"paidPercentage":"0.00"}
+  ✔ autorise le paiement lorsque PAYMENT_REQUIRED (96.5871ms)
+  ✔ compte les places selon les nouveaux statuts (70.5258ms)
+✔ accès gratuit limité à cinq présences (6068.9568ms)
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+▶ Lot 7 - performance frontend, images et PWA
+  ✔ génère toutes les variantes optimisées sans supprimer les originaux (1.7294ms)
+  ✔ utilise picture, srcset, sizes, lazy loading et une seule priorité LCP par page (13.2565ms)
+  ✔ bypasse tout cache PWA pour les parcours privés et formulaires à jeton (0.5041ms)
+  ✔ versionne le cache et aligne le précache avec les URLs HTML (0.3306ms)
+{"timestamp":"2026-09-09T17:45:26.613Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9d68b867-e3e0-431c-8e7a-2345627bdb4c","route":"/images/optimized/pic-1-640.webp","method":"GET","status":200,"durationMs":8.0732,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.627Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f80d2223-000c-4bce-b4f9-5387a409fe16","route":"/images/optimized/pic-1-1290.webp","method":"GET","status":200,"durationMs":5.7878,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.631Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0a72214a-d42f-4475-b9b8-a09b0354d743","route":"/images/optimized/pic-3-480.webp","method":"GET","status":200,"durationMs":1.9195,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.635Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cb028d8d-0c50-4d07-aa82-7c9a6f3dfd11","route":"/images/optimized/pic-3-768.webp","method":"GET","status":200,"durationMs":1.6031,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.638Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8991b373-da08-4eb2-98cc-ea37fcd4f1eb","route":"/images/optimized/pic-3-1024.webp","method":"GET","status":200,"durationMs":1.3184,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.642Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6efb3f55-6f18-42d3-91b7-72b541a55ccc","route":"/images/optimized/pic-6-480.webp","method":"GET","status":200,"durationMs":1.7675,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.646Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e1edc907-2abd-4a77-92b1-4402586daded","route":"/images/optimized/pic-6-768.webp","method":"GET","status":200,"durationMs":1.2222,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.650Z","level":"INFO","action":"HTTP_REQUEST","requestId":"16f27046-c110-4bdd-8938-1898005f5368","route":"/images/optimized/pic-6-1280.webp","method":"GET","status":200,"durationMs":2.5719,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.653Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a1ffcf9f-e250-49b8-9732-6a02bf892099","route":"/images/optimized/pic-7-768.webp","method":"GET","status":200,"durationMs":1.1896,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.657Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4634c415-3271-4b9a-86c6-e071804f7c0f","route":"/images/optimized/pic-7-1440.webp","method":"GET","status":200,"durationMs":2.1644,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.660Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9fa9f2d8-7755-46a7-a9b9-12a6a7c2c26d","route":"/images/optimized/pic-8-480.webp","method":"GET","status":200,"durationMs":1.0139,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.662Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f78b4f71-2b92-4f17-b01f-6d991697be15","route":"/images/optimized/pic-8-768.webp","method":"GET","status":200,"durationMs":0.706,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.665Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b4ffa5fb-828f-442e-b057-c19d5ea78ead","route":"/images/optimized/pic-8-1024.webp","method":"GET","status":200,"durationMs":1.9941,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.667Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0402c1c8-6090-4c2d-82ad-69308e2ef376","route":"/images/optimized/pic-9-480.webp","method":"GET","status":200,"durationMs":0.8547,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.669Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0fcda193-43b4-4962-8041-432a3b4982ef","route":"/images/optimized/pic-9-768.webp","method":"GET","status":200,"durationMs":0.8472,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.673Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f38baf10-b8c8-4ebd-8b37-25c521ac5a5c","route":"/images/optimized/pic-9-1024.webp","method":"GET","status":200,"durationMs":2.0587,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.675Z","level":"INFO","action":"HTTP_REQUEST","requestId":"563f1f72-fa17-4e8a-911e-3a52d1a82d24","route":"/images/optimized/pic-10-480.webp","method":"GET","status":200,"durationMs":1.5327,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.678Z","level":"INFO","action":"HTTP_REQUEST","requestId":"19df9b0d-8b83-444a-ac78-12832add6915","route":"/images/optimized/pic-10-768.webp","method":"GET","status":200,"durationMs":0.9128,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.683Z","level":"INFO","action":"HTTP_REQUEST","requestId":"49f6101a-3804-463a-8a17-6eb1c3fede65","route":"/images/optimized/pic-10-1024.webp","method":"GET","status":200,"durationMs":1.0896,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.685Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9d231ca9-de6e-4257-bdf7-f63a595191f3","route":"/images/optimized/logo-icon-192.png","method":"GET","status":200,"durationMs":0.7318,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.688Z","level":"INFO","action":"HTTP_REQUEST","requestId":"45b73476-b1a4-4172-ba50-82c583a548c0","route":"/images/optimized/logo-navigation-320.png","method":"GET","status":200,"durationMs":1.7786,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:26.698Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4abb2079-ce41-419b-a453-2b04fbbf31d0","route":"/images/optimized/logo-with-tagline-480.png","method":"GET","status":200,"durationMs":9.6053,"ip":"127.0.0.1"}
+  ✔ sert chaque nouvel asset en HTTP 200 avec son MIME (6149.5192ms)
+✔ Lot 7 - performance frontend, images et PWA (6171.5034ms)
+✔ photo NVA locale integree au Hero public (1.2976ms)
+▶ gestion pédagogique des formations
+  ✔ valide, crée, modifie, publie et ordonne les modules (162.8655ms)
+  ✔ valide, crée, modifie, publie et ordonne les leçons (180.5619ms)
+  ✔ valide, ajoute, modifie et ordonne les ressources (114.3732ms)
+{"timestamp":"2026-09-09T17:45:36.978Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0e3302d8-ab22-4e02-9280-4ae0245a8829","userId":31,"route":"/login","method":"POST","status":302,"durationMs":389.8884,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:36.991Z","level":"INFO","action":"HTTP_REQUEST","requestId":"58c16505-fbc6-4789-9dc3-977bdec4c23e","userId":33,"route":"/login","method":"POST","status":302,"durationMs":376.0286,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:36.991Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c17366c9-f69d-45cf-a8cb-d3413556a1f8","userId":34,"route":"/login","method":"POST","status":302,"durationMs":372.3552,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:36.992Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cc9481dc-643c-497f-a1a2-c353440a9d3c","userId":32,"route":"/login","method":"POST","status":302,"durationMs":380.1046,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.252Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0108bba5-6da9-4163-af20-b29430fdc283","userId":35,"route":"/login","method":"POST","status":302,"durationMs":625.5356,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.263Z","level":"ERROR","action":"HTTP_ERROR","requestId":"6c2def19-467d-484e-b6b5-65ad4f6a5cc2","statusCode":403,"route":"/admin/courses/15/modules","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.285Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a2453a49-4f82-44e9-8d74-3771f845994a","route":"/admin/courses/15/modules","method":"GET","status":302,"durationMs":44.561,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.300Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6c2def19-467d-484e-b6b5-65ad4f6a5cc2","userId":32,"route":"/admin/courses/15/modules","method":"GET","status":403,"durationMs":47.6591,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.335Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ce631f4d-2137-4cac-a5db-b0c159ac9f2e","userId":31,"route":"/admin/courses/15/modules","method":"GET","status":200,"durationMs":33.8139,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.354Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9b11728d-997b-4464-ba56-67c8383d342d","route":"/admin/courses/15/modules/new","method":"GET","status":302,"durationMs":20.8821,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.357Z","level":"ERROR","action":"HTTP_ERROR","requestId":"91c01835-7fce-4af7-8eac-44f78db0af86","statusCode":403,"route":"/admin/courses/15/modules/new","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.380Z","level":"INFO","action":"HTTP_REQUEST","requestId":"91c01835-7fce-4af7-8eac-44f78db0af86","userId":32,"route":"/admin/courses/15/modules/new","method":"GET","status":403,"durationMs":31.2601,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.410Z","level":"INFO","action":"HTTP_REQUEST","requestId":"66012cd0-39db-41d6-a5dd-399691fe6d49","userId":31,"route":"/admin/courses/15/modules/new","method":"GET","status":200,"durationMs":36.7016,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.417Z","level":"ERROR","action":"HTTP_ERROR","requestId":"240e3170-ad7d-48f7-a3d6-65191a35d7a2","statusCode":403,"route":"/admin/modules/4/edit","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.425Z","level":"INFO","action":"HTTP_REQUEST","requestId":"253489ab-d6a5-4047-afdc-722920e9cc59","route":"/admin/modules/4/edit","method":"GET","status":302,"durationMs":18.884,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.442Z","level":"INFO","action":"HTTP_REQUEST","requestId":"240e3170-ad7d-48f7-a3d6-65191a35d7a2","userId":32,"route":"/admin/modules/4/edit","method":"GET","status":403,"durationMs":30.4908,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.457Z","level":"INFO","action":"HTTP_REQUEST","requestId":"50532795-dc3c-4cb4-8a7d-cddd7328ea2b","userId":31,"route":"/admin/modules/4/edit","method":"GET","status":200,"durationMs":34.8298,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.459Z","level":"ERROR","action":"HTTP_ERROR","requestId":"9ec0563c-bddb-4131-830d-294fdac623dc","statusCode":403,"route":"/admin/modules/4/lessons/new","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.471Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e65f5798-5672-4e23-9d2b-c0c4a61be063","route":"/admin/modules/4/lessons/new","method":"GET","status":302,"durationMs":28.2577,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.490Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9ec0563c-bddb-4131-830d-294fdac623dc","userId":32,"route":"/admin/modules/4/lessons/new","method":"GET","status":403,"durationMs":37.3833,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.505Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3f9b1917-de35-4c92-b5b6-7413563f0a42","userId":31,"route":"/admin/modules/4/lessons/new","method":"GET","status":200,"durationMs":35.8401,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.509Z","level":"ERROR","action":"HTTP_ERROR","requestId":"630a82e7-5b0c-4f78-8c69-9f9fffe5ebaf","statusCode":403,"route":"/admin/lessons/3/edit","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.519Z","level":"INFO","action":"HTTP_REQUEST","requestId":"eb91f016-142d-4728-8093-bbdb1e8ebc17","route":"/admin/lessons/3/edit","method":"GET","status":302,"durationMs":17.9044,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.533Z","level":"INFO","action":"HTTP_REQUEST","requestId":"630a82e7-5b0c-4f78-8c69-9f9fffe5ebaf","userId":32,"route":"/admin/lessons/3/edit","method":"GET","status":403,"durationMs":27.857,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.547Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0da1f79b-9936-47ab-b6fe-e439f484eb3f","userId":31,"route":"/admin/lessons/3/edit","method":"GET","status":200,"durationMs":30.077,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.550Z","level":"ERROR","action":"HTTP_ERROR","requestId":"9b3e2407-1498-4297-ab30-d704a67d4328","statusCode":403,"route":"/admin/lessons/3/resources","method":"GET","userId":32,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:37.560Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3c125640-146a-439f-936b-bb754a96afdc","route":"/admin/lessons/3/resources","method":"GET","status":302,"durationMs":26.9177,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.576Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9b3e2407-1498-4297-ab30-d704a67d4328","userId":32,"route":"/admin/lessons/3/resources","method":"GET","status":403,"durationMs":28.8398,"ip":"::ffff:127.0.0.1"}
+  ✔ protège les routes administratives (340.1071ms)
+{"timestamp":"2026-09-09T17:45:37.591Z","level":"INFO","action":"HTTP_REQUEST","requestId":"082137b0-d371-47a8-99a0-cffa61791a3a","userId":31,"route":"/admin/lessons/3/resources","method":"GET","status":200,"durationMs":30.4558,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.663Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4e4414dd-74b2-41ca-a7c4-3986f596d0ad","userId":32,"route":"/student/courses/27/learn","method":"GET","status":200,"durationMs":83.3789,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.750Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bb9c8385-08e2-4d2a-8d7d-d45702299ec5","userId":32,"route":"/student/courses/27/lessons/3","method":"GET","status":200,"durationMs":84.2874,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.808Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":28,"userId":33,"expectedTotalAmount":"50","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:45:37.808Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":28,"userId":33,"accessStage":"FULL_ACCESS","attendedSessionCount":0,"paidPercentage":"100.00"}
+{"timestamp":"2026-09-09T17:45:37.830Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f17c57c9-545a-436c-8541-be9f7008fb88","userId":33,"route":"/student/courses/28/learn","method":"GET","status":200,"durationMs":77.9189,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:37.916Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ae6e152f-c225-4009-a272-1003c0f23cb2","userId":33,"route":"/student/courses/28/lessons/3","method":"GET","status":200,"durationMs":81.0968,"ip":"::ffff:127.0.0.1"}
+  ✔ autorise TRIAL_ACTIVE et CONFIRMED, échappe le contenu et masque les brouillons (339.1802ms)
+{"timestamp":"2026-09-09T17:45:38.004Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":29,"userId":34,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:45:38.004Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":29,"userId":34}
+{"timestamp":"2026-09-09T17:45:38.004Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":29,"userId":34,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:45:38.029Z","level":"INFO","action":"HTTP_REQUEST","requestId":"81b1c390-c152-4942-82a3-0623fb0fa887","userId":34,"route":"/student/courses/29/learn","method":"GET","status":200,"durationMs":109.3097,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:38.075Z","level":"INFO","action":"HTTP_REQUEST","requestId":"71d3820f-40e0-4c4f-9e9f-0727f4908543","userId":34,"route":"/student/courses/29/lessons/3","method":"GET","status":403,"durationMs":40.4692,"ip":"::ffff:127.0.0.1"}
+  ✔ montre seulement le sommaire à PAYMENT_REQUIRED sans contenu ni ressource (158.8987ms)
+{"timestamp":"2026-09-09T17:45:38.166Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1ed3283e-5770-411b-8fcb-9a2de768ca61","userId":32,"route":"/student/courses/27/lessons/7","method":"GET","status":404,"durationMs":35.6604,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:38.188Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2096e898-7318-4099-b5a6-3eaf59185c8f","userId":35,"route":"/student/courses/27/learn","method":"GET","status":404,"durationMs":25.8763,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse une leçon d’une autre formation et isole les étudiants (137.9009ms)
+{"timestamp":"2026-09-09T17:45:38.229Z","level":"INFO","action":"HTTP_REQUEST","requestId":"80bf63f2-d522-4672-a7fd-2ebc313f719f","userId":32,"route":"/student/courses/31/lessons/3","method":"GET","status":404,"durationMs":51.3215,"ip":"::ffff:127.0.0.1"}
+  ✔ calcule la progression, la prochaine leçon et reste idempotent (209.3633ms)
+✔ gestion pédagogique des formations (5284.6486ms)
+▶ séances live liées au programme pédagogique
+  ✔ crée une séance générale et une séance liée à une leçon valide (2255.1603ms)
+  ✔ refuse une leçon d’une autre formation et modifie la leçon associée (220.599ms)
+  ✔ conserve la séance lorsque sa leçon est supprimée (169.5742ms)
+  ✔ exige une plateforme contrôlée et une URL HTTPS (11.617ms)
+{"timestamp":"2026-09-09T17:45:45.504Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ccc0fafb-6e48-40d0-b704-1ac5a66c1f21","userId":36,"route":"/login","method":"POST","status":302,"durationMs":352.0448,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:45.762Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c5e40657-96ea-4691-8867-bfda9a25854a","userId":37,"route":"/login","method":"POST","status":302,"durationMs":287.0667,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:46.043Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0a6c42c8-553e-43a2-91f4-0578ff28724e","userId":38,"route":"/login","method":"POST","status":302,"durationMs":296.6325,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:46.322Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c6334b8e-88a0-429d-8e5f-7301378759e5","userId":39,"route":"/login","method":"POST","status":302,"durationMs":300.437,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:46.640Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5f3a76ce-d00b-4733-bc94-3638ca4b570d","userId":40,"route":"/login","method":"POST","status":302,"durationMs":330.9017,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:47.321Z","level":"INFO","action":"HTTP_REQUEST","requestId":"69c09f29-cc9a-4e62-8a46-813ca6b7850c","userId":41,"route":"/login","method":"POST","status":302,"durationMs":709.8377,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.251Z","level":"INFO","action":"HTTP_REQUEST","requestId":"25a52727-94b0-42d9-b40b-b3410d83f1aa","userId":42,"route":"/login","method":"POST","status":302,"durationMs":971.9666,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.261Z","level":"ERROR","action":"HTTP_ERROR","requestId":"be3ac3fc-6413-4b8b-a633-665247869a12","statusCode":403,"route":"/admin/class-meetings/28","method":"GET","userId":37,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:48.291Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bf15c4d5-f80d-45c2-affd-7ff44346d642","route":"/admin/class-meetings/28","method":"GET","status":302,"durationMs":85.9978,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.318Z","level":"INFO","action":"HTTP_REQUEST","requestId":"be3ac3fc-6413-4b8b-a633-665247869a12","userId":37,"route":"/admin/class-meetings/28","method":"GET","status":403,"durationMs":91.1764,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.329Z","level":"ERROR","action":"HTTP_ERROR","requestId":"7cde2d73-8c35-4509-8892-dcfdc3d904a4","statusCode":403,"route":"/student/class-meetings/28","method":"GET","userId":36,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:45:48.359Z","level":"INFO","action":"HTTP_REQUEST","requestId":"682d97cd-1605-4f25-a7fe-55fcb075caf8","route":"/student/class-meetings/28","method":"GET","status":302,"durationMs":46.4563,"ip":"::ffff:127.0.0.1"}
+  ✔ protège les pages administratives et étudiantes (176.1841ms)
+{"timestamp":"2026-09-09T17:45:48.397Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7cde2d73-8c35-4509-8892-dcfdc3d904a4","userId":36,"route":"/student/class-meetings/28","method":"GET","status":403,"durationMs":75.2065,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.423Z","level":"INFO","action":"HTTP_REQUEST","requestId":"632c4f76-da5f-46e3-b0fb-7eaaf896bb6a","userId":42,"route":"/student/class-meetings/28","method":"GET","status":404,"durationMs":77.1703,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:48.516Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":32,"userId":37,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":0,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T17:45:48.621Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":33,"userId":38,"expectedTotalAmount":"100","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:45:48.622Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":33,"userId":38,"accessStage":"FULL_ACCESS","attendedSessionCount":0,"paidPercentage":"100.00"}
+{"timestamp":"2026-09-09T17:45:48.738Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":34,"userId":39,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:45:48.739Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":34,"userId":39}
+{"timestamp":"2026-09-09T17:45:48.739Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":34,"userId":39,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:45:48.742Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":39,"enrollmentId":34,"classMeetingId":30,"accessStage":"PAYMENT_REQUIRED_50","levelPosition":6}
+{"timestamp":"2026-09-09T17:45:48.794Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":40,"enrollmentId":35,"classMeetingId":30,"accessStage":"FREE_TRIAL","levelPosition":6}
+{"timestamp":"2026-09-09T17:45:48.898Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":36,"userId":41,"accessStage":"FREE_TRIAL","attendedSessionCount":0,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:45:48.902Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":41,"enrollmentId":36,"classMeetingId":30,"accessStage":"FREE_TRIAL","levelPosition":6}
+  ✔ autorise le palier partiel confirmé après l’essai et isole (527.5526ms)
+  ✔ applique la fenêtre, les annulations et HTTPS au moment de rejoindre (235.5497ms)
+{"timestamp":"2026-09-09T17:45:49.246Z","level":"INFO","action":"HTTP_REQUEST","requestId":"575ec6cf-b16f-4c14-a051-cbebdbeb26d6","userId":37,"route":"/student/class-meetings/30","method":"GET","status":200,"durationMs":101.4629,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:49.325Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7311cd60-b1e3-4434-bc66-12b1c1a2c815","userId":37,"route":"/student/class-meetings/29","method":"GET","status":200,"durationMs":72.2664,"ip":"::ffff:127.0.0.1"}
+  ✔ affiche le live, la leçon et les ressources sans exposer le lien privé (224.2948ms)
+{"timestamp":"2026-09-09T17:45:49.404Z","level":"INFO","action":"HTTP_REQUEST","requestId":"98492fcc-2501-42bf-b75f-d75731ced859","userId":37,"route":"/class-meetings/30/join","method":"GET","status":302,"durationMs":71.9906,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:45:49.443Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ff611b6d-5a7b-4b5b-a618-a2198defa4d3","userId":37,"route":"/student/courses/32/learn","method":"GET","status":200,"durationMs":71.7277,"ip":"::ffff:127.0.0.1"}
+  ✔ affiche la relation live dans le programme (78.0386ms)
+✔ séances live liées au programme pédagogique (10837.8123ms)
+▶ Phase 3 — évaluations orales en visioconférence
+  ✔ planifie, affecte et ne divulgue jamais le lien dans les listes (4343.0026ms)
+  ✔ détecte les conflits sans bloquer deux créneaux adjacents (215.6934ms)
+  ✔ contrôle la fenêtre et l’identité avant de révéler le lien (51.2058ms)
+  ✔ présence, incident technique et fin ne génèrent aucune note (232.9334ms)
+  ✔ note manuellement, masque le brouillon puis publie une seule fois (252.5243ms)
+  ✔ notifications et rappels ne contiennent aucun secret de réunion (9.0169ms)
+  ✔ reporte en conservant l’historique puis annule avec motif (2590.1372ms)
+✔ Phase 3 — évaluations orales en visioconférence (10587.9297ms)
+◇ injected env (0) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+▶ LMS Phase 5
+  ✔ crée la hiérarchie réelle, nettoie le HTML et valide les liens (136.0405ms)
+  ✖ réorganise transactionnellement avec un périmètre exact (97759.6248ms)
+  ✔ duplique la structure sans dupliquer Assessment ni données étudiantes (3392.7339ms)
+  ✔ limite le temps serveur et exclut le contenu verrouillé (0.9078ms)
+  ✔ sanitisation XSS idempotente au stockage (0.4078ms)
+✖ LMS Phase 5 (103584.454ms)
+▶ paiements manuels : déclaration, validation, refus et paliers existants
+  ✔ administrateur crée, modifie, active et désactive un moyen (411.3462ms)
+{"timestamp":"2026-09-09T17:47:50.078Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":39,"userId":49,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:47:50.079Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":39,"userId":49}
+{"timestamp":"2026-09-09T17:47:50.083Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":39,"userId":49,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+  ✔ crée uniquement PROCESSING puis PENDING après déclaration (442.3159ms)
+{"timestamp":"2026-09-09T17:47:50.505Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":40,"userId":49,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:47:50.508Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":40,"userId":49}
+{"timestamp":"2026-09-09T17:47:50.509Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":40,"userId":49,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+  ✔ stocke la preuve hors public et bloque l’IDOR étudiant (398.6903ms)
+{"timestamp":"2026-09-09T17:47:51.174Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":41,"userId":49,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:47:51.175Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":41,"userId":49}
+{"timestamp":"2026-09-09T17:47:51.175Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":41,"userId":49,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:47:51.340Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":41,"userId":49,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":5,"paidPercentage":"50.00"}
+  ✔ confirmation admin passe SUCCESS et déverrouille le palier 50 % (847.734ms)
+{"timestamp":"2026-09-09T17:47:51.910Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":42,"userId":49,"accessStage":"PAYMENT_REQUIRED_FULL","attendedSessionCount":10,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:47:51.998Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":42,"userId":49,"accessStage":"PAYMENT_REQUIRED_FULL","attendedSessionCount":10,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T17:47:52.203Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":42,"userId":49,"expectedTotalAmount":"100","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:47:52.203Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_UNLOCKED","enrollmentId":42,"userId":49}
+{"timestamp":"2026-09-09T17:47:52.203Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":42,"userId":49,"accessStage":"FULL_ACCESS","attendedSessionCount":10,"paidPercentage":"100.00"}
+  ✔ deux paiements confirmés cumulent 100 % et débloquent la suite (774.7763ms)
+{"timestamp":"2026-09-09T17:47:52.574Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":43,"userId":49,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:47:52.574Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":43,"userId":49}
+{"timestamp":"2026-09-09T17:47:52.574Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":43,"userId":49,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+  ✔ refus admin conserve les montants et enregistre le motif (440.9437ms)
+{"timestamp":"2026-09-09T17:47:52.924Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":44,"userId":49,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:47:52.924Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":44,"userId":49}
+{"timestamp":"2026-09-09T17:47:52.924Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":44,"userId":49,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+  ✔ refuse montant falsifié et confirmation avant déclaration (251.8296ms)
+✔ paiements manuels : déclaration, validation, refus et paliers existants (7982.2316ms)
+✔ surface sécurisée du paiement manuel (2.876ms)
+▶ notifications internes et rappels planifiés
+  ✔ déduplique une notification et calcule uniquement les non lues (57.2379ms)
+  ✔ isole lecture et suppression par propriétaire (46.2505ms)
+  ✔ traite une échéance une seule fois et termine à SENT (85.5258ms)
+✔ notifications internes et rappels planifiés (2336.4938ms)
+▶ NVA — groupes, inscription partagée et récupération
+  ✔ capacité indépendante et groupe plein (565.8686ms)
+  ✔ groupe désactivé et doublon refusés (288.5513ms)
+  ✔ jeton hashé, expirant et à usage unique (613.6545ms)
+✔ NVA — groupes, inscription partagée et récupération (6095.965ms)
+{"timestamp":"2026-09-09T17:48:07.490Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":47,"userId":56,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:48:07.491Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":47,"userId":56}
+{"timestamp":"2026-09-09T17:48:07.491Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":47,"userId":56,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+▶ 5 séances gratuites puis paliers cumulés de paiement à 50 % et 100 %
+  ✔ 5 séances et 0 % payé : séance 6 bloquée (3057.244ms)
+{"timestamp":"2026-09-09T17:48:07.617Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":47,"userId":56,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":5,"paidPercentage":"50.00"}
+  ✔ 49 % bloque encore puis plusieurs paiements cumulés atteignant 50 % autorisent les séances 6 à 10 (61.7207ms)
+{"timestamp":"2026-09-09T17:48:08.524Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":47,"userId":56,"accessStage":"PAYMENT_REQUIRED_FULL","attendedSessionCount":10,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T17:48:08.637Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":47,"userId":56,"expectedTotalAmount":"100","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:48:08.637Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":47,"userId":56,"accessStage":"FULL_ACCESS","attendedSessionCount":10,"paidPercentage":"100.00"}
+  ✔ après 10 séances, 50 % puis 99 % bloquent la séance 11 et 100 % ouvre les séances 11 à 16 (1027.9692ms)
+{"timestamp":"2026-09-09T17:48:08.987Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":48,"userId":57,"expectedTotalAmount":"100","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:48:08.987Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":48,"userId":57,"accessStage":"FULL_ACCESS","attendedSessionCount":0,"paidPercentage":"100.00"}
+  ✔ paiement direct de 100 % donne immédiatement l’accès complet (341.87ms)
+{"timestamp":"2026-09-09T17:48:10.213Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":49,"userId":58,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:48:10.213Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":49,"userId":58}
+{"timestamp":"2026-09-09T17:48:10.213Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":49,"userId":58,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:48:10.304Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":49,"userId":58,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":5,"paidPercentage":"50.00"}
+  ✔ un paiement unique de exactement 50 % ouvre les séances 6 à 10 (1316.4676ms)
+{"timestamp":"2026-09-09T17:48:10.956Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":50,"userId":59,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":0,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T17:48:11.232Z","level":"SECURITY","action":"PAYMENT_OVER_BALANCE_REFUSED","requestedAmount":"51","remainingAmount":"50"}
+  ✔ le serveur accepte les paiements partiels, les cumule et refuse un montant supérieur au solde (1297.3837ms)
+  ✔ mauvaise inscription, autre étudiant et statuts non confirmés sont ignorés (747.5754ms)
+  ✔ absence, annulation, présence future et doublon ne sont pas comptés (1168.698ms)
+{"timestamp":"2026-09-09T17:48:15.083Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":55,"userId":64,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:48:15.083Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":55,"userId":64}
+{"timestamp":"2026-09-09T17:48:15.083Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":55,"userId":64,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:48:15.180Z","level":"SECURITY","action":"STUDENT_COURSE_ACCESS_BYPASS_REFUSED","userId":64,"enrollmentId":55,"classMeetingId":213,"accessStage":"PAYMENT_REQUIRED_50","levelPosition":11}
+  ✔ URL directe refusée et aucun lien privé divulgué au palier bloqué (1662.0778ms)
+  ✔ ancien tarif conservé après modification du cours (388.527ms)
+{"timestamp":"2026-09-09T17:48:16.286Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":57,"userId":66,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:48:16.286Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":57,"userId":66}
+{"timestamp":"2026-09-09T17:48:16.286Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":57,"userId":66,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:48:17.689Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":57,"userId":66,"accessStage":"COMPLETED","attendedSessionCount":16,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:48:17.803Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":57,"userId":66,"accessStage":"COMPLETED","attendedSessionCount":16,"paidPercentage":"100.00"}
+  ✔ niveau terminé après 16 présences et formation FREE refusée (2287.0794ms)
+  ✔ inscription gratuite et limitée à 16 séances (5.3148ms)
+✔ 5 séances gratuites puis paliers cumulés de paiement à 50 % et 100 % (15909.9204ms)
+▶ architecture interne des paiements
+  ✔ génère des références cryptographiques distinctes (7.3223ms)
+{"timestamp":"2026-09-09T17:48:22.519Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f5d6f331-885a-447c-9a61-aececf75d943","userId":67,"route":"/login","method":"POST","status":302,"durationMs":1068.4556,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:48:22.701Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ef2a93c6-90ab-4770-8854-6f599d03fab4","userId":67,"route":"/payments","method":"POST","status":400,"durationMs":120.4355,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:48:22.806Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ce207ce9-af88-460a-980d-1410f30d8fab","userId":67,"route":"/payments","method":"POST","status":302,"durationMs":111.96,"ip":"::ffff:127.0.0.1"}
+  ✔ crée un paiement partiel et refuse une devise falsifiée (312.6203ms)
+  ✔ réutilise une tentative active (30.8081ms)
+{"timestamp":"2026-09-09T17:48:22.885Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b1e04bfb-d466-4b42-88dc-6fe6ae8bf68d","route":"/payments","method":"POST","status":302,"durationMs":22.7384,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse visiteur, administrateur, autre étudiant et inscription inexistante (46.8011ms)
+{"timestamp":"2026-09-09T17:48:22.980Z","level":"INFO","action":"HTTP_REQUEST","requestId":"08f67eb8-7ac2-4474-b27d-f370ecf40544","userId":67,"route":"/payments/ENG-2026-31CAC2BF98940BB0","method":"GET","status":200,"durationMs":73.3496,"ip":"::ffff:127.0.0.1"}
+  ✔ protège la page et ne transmet aucun secret (209.6505ms)
+{"timestamp":"2026-09-09T17:48:23.162Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4b135255-d42d-4c71-8bde-863a0ccdf241","userId":67,"route":"/payments/ENG-2026-42D2D3970C0CBCB1","method":"GET","status":403,"durationMs":80.3707,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:48:25.473Z","level":"AUDIT","action":"STUDENT_FULL_PAYMENT_CONFIRMED","enrollmentId":58,"userId":67,"expectedTotalAmount":"149.5","expectedCurrency":"USD"}
+{"timestamp":"2026-09-09T17:48:25.473Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":58,"userId":67,"accessStage":"FULL_ACCESS","attendedSessionCount":0,"paidPercentage":"100.00"}
+  ✔ simule le succès atomiquement et reste idempotent (2460.8372ms)
+  ✔ simule un échec et autorise une nouvelle tentative (259.5574ms)
+  ✔ expire une tentative et refuse sa confirmation (206.4244ms)
+{"timestamp":"2026-09-09T17:48:26.136Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":62,"userId":67,"accessStage":"FREE_TRIAL","attendedSessionCount":0,"paidPercentage":"0.00"}
+  ✔ ne considère pas un statut confirmé sans paiement comme payé (117.5232ms)
+  ✔ refuse formation gratuite, tarif absent, tarif inactif et formation non publiée (313.8456ms)
+  ✔ désactive les simulations en production (1.2387ms)
+✔ architecture interne des paiements (8139.9164ms)
+▶ stockage PostgreSQL des sessions
+  ✔ n’utilise pas MemoryStore et conserve une session valide (97.8693ms)
+  ✔ refuse une session expirée et permet son nettoyage (48.3911ms)
+  ✔ préserve l’authentification après redémarrage du processus Node (10136.7645ms)
+✔ stockage PostgreSQL des sessions (10289.1586ms)
+▶ compatibilité dynamique des outils PostgreSQL
+  ✔ lit les versions serveur et CLI (0.9165ms)
+  ✔ accepte serveur 18 et outils 18 (0.7163ms)
+  ✔ refuse serveur 18 et pg_dump 16 (0.3645ms)
+✔ compatibilité dynamique des outils PostgreSQL (3.1673ms)
+✔ le stockage LMS privé respecte PRIVATE_STORAGE_ROOT (41.1632ms)
+◇ injected env (0) from .env // tip: ⌘ multiple files { path: ['.env.local', '.env'] }
+{"timestamp":"2026-09-09T17:48:40.245Z","level":"AUDIT","action":"BACKUP_CREATE_STARTED","result":"RUNNING","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2","actorId":71,"requestId":"phase10-create"}
+{"timestamp":"2026-09-09T17:48:43.253Z","level":"AUDIT","action":"BACKUP_CREATE_COMPLETED","result":"SUCCESS","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2","actorId":71,"requestId":"phase10-create"}
+▶ Phase 10 — préparation production, sauvegardes et sécurité
+  ✔ crée une sauvegarde custom simulée avec statut, taille et checksum (3119.0111ms)
+{"timestamp":"2026-09-09T17:48:43.346Z","level":"AUDIT","action":"BACKUP_VERIFY","result":"VALID","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2"}
+{"timestamp":"2026-09-09T17:48:43.369Z","level":"AUDIT","action":"BACKUP_DOWNLOAD","result":"SUCCESS","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2","actorId":71,"requestId":"download"}
+{"timestamp":"2026-09-09T17:48:43.414Z","level":"AUDIT","action":"BACKUP_VERIFY","result":"INVALID","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2"}
+  ✔ vérifie taille, en-tête et checksum puis rejette un dump altéré (132.2934ms)
+  ✔ protège IDOR et refuse les rôles enseignant/étudiant (5.1263ms)
+{"timestamp":"2026-09-09T17:48:43.513Z","level":"AUDIT","action":"BACKUP_CREATE_STARTED","result":"RUNNING","backupId":"c1513075-18a8-48d7-a53d-a6b6a08c233d","actorId":71}
+{"timestamp":"2026-09-09T17:48:43.643Z","level":"AUDIT","action":"BACKUP_CREATE_COMPLETED","result":"SUCCESS","backupId":"c1513075-18a8-48d7-a53d-a6b6a08c233d","actorId":71}
+{"timestamp":"2026-09-09T17:48:43.719Z","level":"AUDIT","action":"BACKUP_CLEANUP","result":"SUCCESS","actorId":71}
+  ✔ empêche deux sauvegardes simultanées et nettoie les fichiers partiels (297.9086ms)
+{"timestamp":"2026-09-09T17:48:43.823Z","level":"AUDIT","action":"BACKUP_CREATE_STARTED","result":"RUNNING","backupId":"2b104dd6-bb54-4464-a869-d0d8ef8589ea","actorId":71}
+{"timestamp":"2026-09-09T17:48:43.917Z","level":"AUDIT","action":"BACKUP_CREATE_COMPLETED","result":"SUCCESS","backupId":"2b104dd6-bb54-4464-a869-d0d8ef8589ea","actorId":71}
+{"timestamp":"2026-09-09T17:48:43.998Z","level":"AUDIT","action":"BACKUP_DELETE","result":"SUCCESS","backupId":"c1513075-18a8-48d7-a53d-a6b6a08c233d","actorId":71}
+{"timestamp":"2026-09-09T17:48:44.040Z","level":"AUDIT","action":"BACKUP_DELETE","result":"SUCCESS","backupId":"6beacd50-2672-4a69-88a3-a71b2dd2fec2","actorId":71}
+{"timestamp":"2026-09-09T17:48:44.060Z","level":"AUDIT","action":"BACKUP_CLEANUP","result":"SUCCESS","actorId":71}
+  ✔ applique la politique de rétention sans URL publique (340.0189ms)
+{"timestamp":"2026-09-09T17:48:44.221Z","level":"INFO","action":"HTTP_REQUEST","requestId":"22fa0b2a-414e-4932-b4f7-4d750de76119","route":"/health","method":"GET","status":200,"durationMs":101.7703,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:48:44.249Z","level":"ERROR","action":"HTTP_ERROR","requestId":"request-safe","statusCode":500,"route":"/failure","method":"GET","ip":"127.0.0.1","error":{"name":"Error","message":"SQL at [PATH]"}}
+{"timestamp":"2026-09-09T17:48:44.252Z","level":"SECURITY","action":"LOGIN_BRUTE_FORCE","requestId":"r4","ip":"10.0.0.1","scope":"IP","count":5}
+{"timestamp":"2026-09-09T17:48:44.252Z","level":"SECURITY","action":"LOGIN_BRUTE_FORCE","requestId":"r4","ip":"10.0.0.1","scope":"ACCOUNT","count":5}
+  ✔ expose une santé publique minimale et une santé admin détaillée (180.9584ms)
+  ✔ valide strictement les variables de production (2.6219ms)
+  ✔ expurge les secrets des logs et ajoute requestId (1.3282ms)
+  ✔ masque stack et chemins en production tout en renvoyant requestId (2.2822ms)
+  ✔ verrouille les tentatives répétées et réinitialise après succès (2.9288ms)
+◇ injected env (0) from .env // tip: ⌁ auth for agents [www.vestauth.com]
+{"timestamp":"2026-09-09T17:48:44.271Z","level":"INFO","action":"APPLICATION_SHUTDOWN_STARTED","signal":"TEST"}
+{"timestamp":"2026-09-09T17:48:44.280Z","level":"INFO","action":"APPLICATION_SHUTDOWN_COMPLETED","signal":"TEST"}
+  ✔ exécute un arrêt propre et prépare SIGTERM/SIGINT (26.2469ms)
+✔ Phase 10 — préparation production, sauvegardes et sécurité (8396.5835ms)
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+▶ Lot 6A - configuration production et VPS
+  ✔ accepte uniquement une configuration production HTTPS locale derriere un proxy (0.9611ms)
+  ✔ rejette HTTP, localhost public, ecoute publique et proxy incorrect (14.3236ms)
+  ✔ expurge URL PostgreSQL, bearer et secrets des chaines journalisees (1.0317ms)
+  ✔ readiness confirme la connexion PostgreSQL sans details sensibles (2039.9754ms)
+  ✔ fournit des modeles PM2, Nginx et une procedure VPS (2.7202ms)
+✔ Lot 6A - configuration production et VPS (2066.6327ms)
+▶ catalogue public des formations
+  ✔ rend clairement un catalogue vide (8.4864ms)
+  ✔ prépare formations et sessions de contrôle (2433.1745ms)
+  ✔ liste uniquement les formations publiées et compte les sessions ouvertes (13.9619ms)
+  ✔ exclut les sessions passées et annulées et calcule les places restantes (11.0436ms)
+  ✔ publie les prochaines sessions ouvertes dans l’ordre sans données expirées (7.2595ms)
+  ✔ utilise des fallbacks neutres traduisibles sans inventer de catégorie ni durée (3.8969ms)
+  ✔ renvoie une page 404 claire pour un slug inexistant (4.6086ms)
+{"timestamp":"2026-09-09T17:49:04.545Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b7d4caa1-67c0-4ad9-bcda-83d027afe292","route":"/formations","method":"GET","status":200,"durationMs":73.8597,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:04.689Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6b46315a-9bc9-444b-b698-dd859bdfa13c","route":"/formations/formation-publique-1788976141957-1492","method":"GET","status":200,"durationMs":131.4094,"ip":"::ffff:127.0.0.1"}
+  ✔ autorise l’accès HTTP sans session (252.7149ms)
+✔ catalogue public des formations (2814.5381ms)
+✔ projette les trois statuts publics depuis les vraies sessions (1.3942ms)
+✔ centralise les clés i18n, les faits réels et la recherche (0.2652ms)
+✔ la politique publique couvre publication, sessions, dates et capacité (2.0687ms)
+✔ la liste /register exclut absence de session et session pleine (16.5762ms)
+✔ le paramètre course est présélectionné ou expliqué sans être perdu silencieusement (0.8124ms)
+✔ le catalogue ne propose aucun CTA trompeur sans session ouverte (5.9615ms)
+✔ l’administration distingue les états d’inscription publique (0.3482ms)
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+{"timestamp":"2026-09-09T17:49:07.753Z","level":"INFO","action":"HTTP_REQUEST","requestId":"af9ffc21-0050-4e18-998d-5e55dc87bab2","route":"/register","method":"GET","status":200,"durationMs":80.2329,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:09.868Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c8075904-056e-477a-8ce7-738d01e58a36","route":"/","method":"GET","status":200,"durationMs":2108.5505,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:09.930Z","level":"INFO","action":"HTTP_REQUEST","requestId":"51313f33-f921-472f-9e4c-38dabc20a745","route":"/formations","method":"GET","status":200,"durationMs":42.3689,"ip":"127.0.0.1"}
+▶ parcours public étudiant par formation et niveau
+  ✔ affiche le formulaire public et les boutons S’inscrire (2292.6535ms)
+  ✔ inscrit LEVEL_1 sans email, normalise le téléphone et force STUDENT (997.3318ms)
+  ✔ inscrit LEVEL_1 avec email normalisé (931.8197ms)
+  ✔ inscrit LEVEL_2 sans email et bloque la formation avant le test (929.74ms)
+  ✔ inscrit LEVEL_3 sans email en attente du test (897.2679ms)
+  ✔ refuse téléphone vide, niveau invalide et mots de passe différents (3.636ms)
+  ✔ refuse un doublon de téléphone sous un autre format (876.0422ms)
+  ✔ refuse email invalide et doublon email seulement lorsqu’il est fourni (883.8161ms)
+  ✔ refuse formation inexistante ou inactive sans donnée partielle (1721.9594ms)
+  ✔ calcule les seuils centralisés et oriente vers un niveau inférieur (1.4206ms)
+  ✔ conserve LEVEL_3 demandé et approuve LEVEL_2 après résultat moyen (50.242ms)
+  ✔ oriente LEVEL_3 vers LEVEL_1 et LEVEL_2 vers LEVEL_1 (975.1741ms)
+  ✔ connecte avec téléphone normalisé et mot de passe (861.0728ms)
+✔ parcours public étudiant par formation et niveau (13657.697ms)
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+{"timestamp":"2026-09-09T17:49:23.923Z","level":"INFO","action":"HTTP_REQUEST","requestId":"51b1e270-793d-40a7-aa38-af92ac9338c5","route":"/","method":"GET","status":200,"durationMs":4251.454,"ip":"127.0.0.1"}
+▶ interface publique New Vision Academy bilingue et orientée conversion
+  ✔ rend une landing page New Vision Academy avec les deux appels à l’action (4292.4245ms)
+{"timestamp":"2026-09-09T17:49:23.996Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0145236b-6e49-4a7c-95b1-3627ca40b230","route":"/","method":"GET","status":200,"durationMs":49.7007,"ip":"127.0.0.1"}
+  ✔ utilise chaque variante officielle du logo au bon emplacement (67.0307ms)
+  ✔ centralise et contient les traductions anglaises et françaises (30.7542ms)
+{"timestamp":"2026-09-09T17:49:24.096Z","level":"INFO","action":"HTTP_REQUEST","requestId":"52da3e46-fbc6-47b5-ba9f-12220260fc4a","route":"/formations","method":"GET","status":200,"durationMs":56.7252,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.160Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7de266e1-fbdc-481b-b01e-1f31796f997e","route":"/register","method":"GET","status":200,"durationMs":56.4871,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.200Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f2ad5c6e-09d8-4a86-b498-23fe05f6dedb","route":"/login","method":"GET","status":200,"durationMs":33.1258,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.274Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3bdd3810-2b26-4367-8823-c804ca4266a5","route":"/register","method":"GET","status":200,"durationMs":59.3246,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.318Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2e561ec8-3a36-454b-a74f-8188eb066df1","route":"/login","method":"GET","status":200,"durationMs":39.0881,"ip":"127.0.0.1"}
+  ✔ maintient les pages publiques et leurs champs métier (285.1817ms)
+{"timestamp":"2026-09-09T17:49:24.368Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e8e5fdbd-7a06-4e49-89d0-87946d58b33a","route":"/","method":"GET","status":200,"durationMs":43.6707,"ip":"127.0.0.1"}
+  ✔ expose une navigation mobile et des libellés accessibles traduisibles (49.7049ms)
+{"timestamp":"2026-09-09T17:49:24.424Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b2eac6b5-cc0e-4016-911e-e1c02772383f","route":"/","method":"GET","status":200,"durationMs":48.4111,"ip":"127.0.0.1"}
+  ✔ présente les nouvelles sections sans contenu fictif (56.2318ms)
+{"timestamp":"2026-09-09T17:49:24.463Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f0495153-aeed-4e7a-9784-f246b289f260","route":"/about","method":"GET","status":200,"durationMs":27.0297,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.492Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9d5bba6d-6cd5-4205-913d-9e610cb0fed4","route":"/contact","method":"GET","status":200,"durationMs":24.4877,"ip":"127.0.0.1"}
+  ✔ sert les pages À propos et Contact avec les coordonnées administrables (65.8973ms)
+{"timestamp":"2026-09-09T17:49:24.533Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3a0f4e5c-923b-4e7e-a843-59b269f42449","route":"/certificates/verify","method":"GET","status":200,"durationMs":35.8574,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.576Z","level":"INFO","action":"HTTP_REQUEST","requestId":"20ef5723-a50f-47f3-a82d-4b76d636ecef","route":"/route-publique-inexistante","method":"GET","status":404,"durationMs":40.3343,"ip":"127.0.0.1"}
+  ✔ conserve les routes et formulaires publics secondaires (83.0815ms)
+{"timestamp":"2026-09-09T17:49:24.620Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7c9797bd-2d22-4fed-9eb8-72c2471ee390","route":"/","method":"GET","status":200,"durationMs":40.0746,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.661Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b85ccba6-47d4-406c-9b89-63105b0785d7","route":"/about","method":"GET","status":200,"durationMs":25.8779,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.703Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7a457baf-822b-4010-8f7d-d94576ffa963","route":"/contact","method":"GET","status":200,"durationMs":37.4375,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.750Z","level":"INFO","action":"HTTP_REQUEST","requestId":"78f891b3-74be-41ed-9588-291c6a0137cf","route":"/formations","method":"GET","status":200,"durationMs":43.593,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.809Z","level":"INFO","action":"HTTP_REQUEST","requestId":"273a3f6d-c626-4b40-85ef-8915535fafe2","route":"/register","method":"GET","status":200,"durationMs":46.7246,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.850Z","level":"INFO","action":"HTTP_REQUEST","requestId":"157719d1-75fa-41aa-b6c5-8f2261aa298c","route":"/login","method":"GET","status":200,"durationMs":22.8835,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:24.883Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6a74a9cc-9d69-4057-9aad-6ce5a8cc2cdf","route":"/certificates/verify","method":"GET","status":200,"durationMs":25.1029,"ip":"127.0.0.1"}
+  ✔ n’imbrique pas de région main dans le contenu public (306.7002ms)
+  ✔ conserve les boutons dynamiques LEVEL_1, LEVEL_2 et LEVEL_3 (3.0661ms)
+✔ interface publique New Vision Academy bilingue et orientée conversion (5272.8748ms)
+▶ bouton WhatsApp public configuré et accessible
+  ✔ normalise uniquement un numéro international explicite (0.8855ms)
+  ✔ expose la configuration sans coder le numéro dans le composant (4.11ms)
+{"timestamp":"2026-09-09T17:49:29.697Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9f92c61a-c5cc-4ccb-ac0d-266287f7fd75","route":"/","method":"GET","status":200,"durationMs":4248.6962,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:29.745Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f21dcff2-ad74-4789-b7a6-fa25f834f411","route":"/admin/dashboard","method":"GET","status":302,"durationMs":29.7374,"ip":"127.0.0.1"}
+  ✔ rend le composant sur une page publique et pas sur une page admin (4327.3978ms)
+{"timestamp":"2026-09-09T17:49:29.792Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bada4afd-18bd-499b-ac73-f050f56539de","route":"/settings/public","method":"GET","status":200,"durationMs":37.9143,"ip":"127.0.0.1"}
+  ✔ renvoie le numéro public configuré (46.2013ms)
+✔ bouton WhatsApp public configuré et accessible (4405.2865ms)
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+{"timestamp":"2026-09-09T17:49:32.344Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4f1389c7-ab32-43e3-8c5f-d92b524b9dd6","route":"/manifest.webmanifest","method":"GET","status":200,"durationMs":2035.6988,"ip":"127.0.0.1"}
+▶ Phase 11 — Progressive Web App
+  ✔ sert un manifest valide et installable (2071.6809ms)
+  ✔ fournit toutes les icônes PWA (6.6078ms)
+{"timestamp":"2026-09-09T17:49:32.360Z","level":"INFO","action":"HTTP_REQUEST","requestId":"562ad944-1672-4926-a9e0-fe0ccb357caa","route":"/sw.js","method":"GET","status":200,"durationMs":2.5504,"ip":"127.0.0.1"}
+  ✔ sert le service worker avec MIME et sans cache HTTP durable (6.8189ms)
+  ✔ interdit le cache privé et ignore les méthodes mutantes (1.0686ms)
+{"timestamp":"2026-09-09T17:49:32.365Z","level":"INFO","action":"HTTP_REQUEST","requestId":"817b6f06-f088-4083-b115-81e57a906b2c","route":"/offline","method":"GET","status":200,"durationMs":1.0823,"ip":"127.0.0.1"}
+  ✔ sert une page hors connexion autonome (4.2441ms)
+  ✔ enregistre le service worker et gère installation, iOS, standalone et mise à jour (1.9091ms)
+{"timestamp":"2026-09-09T17:49:34.541Z","level":"INFO","action":"HTTP_REQUEST","requestId":"557aa6a0-e60e-4291-9ed4-e64a61292687","route":"/","method":"GET","status":200,"durationMs":2168.722,"ip":"127.0.0.1"}
+  ✔ conserve une CSP locale compatible PWA (2174.6044ms)
+✔ Phase 11 — Progressive Web App (4269.4792ms)
+✔ le rate limiter isole les adresses IPv4 mappées et refuse le dépassement (336.2299ms)
+▶ Phase 2 — évaluations orales enregistrées
+  ✔ création administrateur, enseignant autorisé et refus non autorisé (85.0385ms)
+  ✔ refuse une publication incomplète puis publie une configuration valide (2159.4438ms)
+  ✔ contrôle inscription, dates et création atomique de tentative (379.338ms)
+  ✔ détecte réellement le format, la durée et les remplacements (639.6489ms)
+  ✔ soumet définitivement sans note automatique et verrouille (134.2692ms)
+  ✔ protège la lecture audio par propriétaire et affectation (53.244ms)
+  ✔ corrige avec la grille et masque le brouillon à l’étudiant (136.1277ms)
+  ✔ publie le résultat de façon idempotente (113.6402ms)
+  ✔ stockage privé absent du répertoire public et traversal refusé (1.0079ms)
+✔ Phase 2 — évaluations orales enregistrées (6079.5191ms)
+✔ POST /register est limité par IP sans affecter GET ni CSRF (3257.6464ms)
+◇ injected env (0) from .env // tip: ◈ encrypted .env [www.dotenvx.com]
+▶ Phase 8 — rapports simples
+  ✔ valide les périodes prédéfinies et personnalisées (3.9055ms)
+  ✔ calcule le résumé administrateur (2075.2579ms)
+  ✔ compte les étudiants par niveau et inscriptions actives (11.9862ms)
+  ✔ calcule les présences sans TECHNICAL_ISSUE au dénominateur (247.0955ms)
+  ✔ exclut les évaluations non notées des moyennes (9.54ms)
+  ✔ agrège la progression LMS existante (5.9874ms)
+  ✔ sépare strictement USD et CDF (28.4813ms)
+  ✔ produit les rapports certificats et enseignants sans finance enseignante (11.0504ms)
+  ✔ exporte en CSV UTF-8 avec protection contre les formules (25.6802ms)
+  ✔ limite les exports et refuse les types non autorisés (1.2049ms)
+✔ Phase 8 — rapports simples (6933.6156ms)
+{"timestamp":"2026-09-09T17:49:54.930Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d7b37ad4-b401-4d3b-8306-86e279880226","route":"/register","method":"GET","status":200,"durationMs":94.6407,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:54.997Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fd6c61b0-66a0-40ef-81a0-98b14c8247cd","route":"/register","method":"GET","status":200,"durationMs":52.0351,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:55.059Z","level":"INFO","action":"HTTP_REQUEST","requestId":"cb51ecd5-57e1-4ac0-9f44-320d1b7e89aa","route":"/register","method":"GET","status":404,"durationMs":55.5959,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:55.116Z","level":"INFO","action":"HTTP_REQUEST","requestId":"437f986f-3244-4591-a1db-d25ae5a73498","route":"/register","method":"GET","status":400,"durationMs":52.1175,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:55.179Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ba9b067f-4fad-4acd-be83-65093948396a","route":"/register","method":"GET","status":400,"durationMs":49.6732,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:55.239Z","level":"INFO","action":"HTTP_REQUEST","requestId":"61b9a96e-9781-4167-a3af-a3ed78438c9e","route":"/register","method":"GET","status":400,"durationMs":46.2128,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:49:55.293Z","level":"INFO","action":"HTTP_REQUEST","requestId":"75665d0c-89f9-4580-977a-61db5c839485","route":"/register","method":"GET","status":400,"durationMs":50.4868,"ip":"::ffff:127.0.0.1"}
+▶ inscription autonome à une session
+  ✔ affiche le formulaire et refuse les sessions invalides (497.3415ms)
+{"timestamp":"2026-09-09T17:49:56.278Z","level":"INFO","action":"HTTP_REQUEST","requestId":"055259ea-d6ae-401d-9519-c17371d37fce","route":"/register","method":"POST","status":400,"durationMs":942.562,"ip":"::ffff:127.0.0.1"}
+  ✔ rejette un téléphone existant sans modifier le compte (988.0171ms)
+{"timestamp":"2026-09-09T17:49:56.348Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fe300ecc-0289-4ac2-90e3-41ace254d2db","route":"/register","method":"POST","status":400,"durationMs":53.8288,"ip":"::ffff:127.0.0.1"}
+  ✔ refuse une inscription HTTP sans acceptation des conditions (64.8102ms)
+{"timestamp":"2026-09-09T17:49:59.412Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3e1bf63c-8095-4d1d-8d3d-a1b62c0590c5","userId":93,"route":"/register","method":"POST","status":302,"durationMs":3052.5203,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:00.391Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6976a4ec-8935-4b7e-9279-3757e19f74b9","userId":93,"route":"/registration/success/76","method":"GET","status":200,"durationMs":146.4781,"ip":"::ffff:127.0.0.1"}
+  ✔ crée compte et inscription atomiquement puis connecte automatiquement (4039.382ms)
+{"timestamp":"2026-09-09T17:50:01.300Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0da3ce01-0258-4bb2-8665-67410cdc344e","route":"/registration/success/76","method":"GET","status":302,"durationMs":18.9102,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:01.358Z","level":"ERROR","action":"HTTP_ERROR","requestId":"50db0ddd-3098-4446-9eb6-9e32424aeb86","statusCode":403,"route":"/registration/success/77","method":"GET","userId":93,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ rejette une double inscription et protège le récapitulatif (974.076ms)
+{"timestamp":"2026-09-09T17:50:01.383Z","level":"INFO","action":"HTTP_REQUEST","requestId":"50db0ddd-3098-4446-9eb6-9e32424aeb86","userId":93,"route":"/registration/success/77","method":"GET","status":403,"durationMs":53.3044,"ip":"::ffff:127.0.0.1"}
+  ✔ compte seulement les statuts occupant une place (42.348ms)
+  ✔ ne crée aucun compte lorsqu’une session est pleine (849.8419ms)
+✔ inscription autonome à une session (10018.9091ms)
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+{"timestamp":"2026-09-09T17:50:07.206Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f500331c-5ef7-4d31-a760-e713cde46ca7","route":"/","method":"GET","status":200,"durationMs":2229.1956,"ip":"127.0.0.1"}
+▶ Lot 8 — SEO, indexation et accessibilité publique
+  ✔ homepage expose title, description, canonical, OG, Twitter et JSON-LD (2273.9747ms)
+{"timestamp":"2026-09-09T17:50:07.287Z","level":"INFO","action":"HTTP_REQUEST","requestId":"0fcdecc3-84c4-4ac4-9c3e-14fb2a9c8430","route":"/formations","method":"GET","status":200,"durationMs":53.4189,"ip":"127.0.0.1"}
+  ✔ catalogue expose ses métadonnées et sa canonical propre (67.7078ms)
+{"timestamp":"2026-09-09T17:50:07.394Z","level":"INFO","action":"HTTP_REQUEST","requestId":"abee9d0f-4d31-4194-b118-28c2e4b5a08b","route":"/formations/seo-course-1788976202871-4812","method":"GET","status":200,"durationMs":97.2754,"ip":"127.0.0.1"}
+  ✔ formation dynamique a une canonical spécifique et échappe les données DB (107.3683ms)
+{"timestamp":"2026-09-09T17:50:07.429Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9655b507-309e-40be-916b-639363509cb6","route":"/login","method":"GET","status":200,"durationMs":26.1722,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.490Z","level":"INFO","action":"HTTP_REQUEST","requestId":"4ea1d7c6-4cf0-4f3b-b9e4-17e83398f852","route":"/register","method":"GET","status":200,"durationMs":55.8476,"ip":"127.0.0.1"}
+  ✔ login et inscription sont explicitement non indexables (94.7941ms)
+{"timestamp":"2026-09-09T17:50:07.521Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8e9cb5ee-4ea0-4d3a-bb78-2132c6269697","route":"/student","method":"GET","status":302,"durationMs":24.7153,"ip":"127.0.0.1"}
+  ✔ les routes Student restent protégées (31.3135ms)
+{"timestamp":"2026-09-09T17:50:07.550Z","level":"INFO","action":"HTTP_REQUEST","requestId":"685ed99d-5709-4910-a71e-3ecc90bfd7a4","route":"/robots.txt","method":"GET","status":200,"durationMs":21.4153,"ip":"127.0.0.1"}
+  ✔ robots.txt est textuel, référence le sitemap et exclut le privé (26.9389ms)
+{"timestamp":"2026-09-09T17:50:07.584Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ec351d1c-7818-4d7c-b9d9-c3485087b0d1","route":"/sitemap.xml","method":"GET","status":200,"durationMs":28.3004,"ip":"127.0.0.1"}
+  ✔ sitemap XML contient uniquement les pages publiques indexables (34.4018ms)
+{"timestamp":"2026-09-09T17:50:07.639Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ec27d9d2-32a0-4bff-9bd0-7765875d734d","route":"/","method":"GET","status":200,"durationMs":48.1183,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.696Z","level":"INFO","action":"HTTP_REQUEST","requestId":"22350282-be83-4ef8-935f-7590f45e8f3b","route":"/","method":"GET","status":200,"durationMs":41.41,"ip":"127.0.0.1"}
+  ✔ lang reflète le contexte serveur anglais et français (112.0869ms)
+{"timestamp":"2026-09-09T17:50:07.735Z","level":"INFO","action":"HTTP_REQUEST","requestId":"fec23edc-569d-4056-9407-1e03c819fd9b","route":"/route-lot-8-inexistante","method":"GET","status":404,"durationMs":31.4929,"ip":"127.0.0.1"}
+  ✔ 404 conserve HTTP 404 et noindex (37.4897ms)
+{"timestamp":"2026-09-09T17:50:07.783Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7e8b2226-485e-486c-a79a-b36be3bb61fd","route":"/","method":"GET","status":200,"durationMs":42.2723,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.834Z","level":"INFO","action":"HTTP_REQUEST","requestId":"98bd2a28-9dba-4316-8cb6-b013056504a9","route":"/formations","method":"GET","status":200,"durationMs":37.8207,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.870Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e7a5fb39-17d5-43d2-89e1-0e51349f2536","route":"/about","method":"GET","status":200,"durationMs":25.4192,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.902Z","level":"INFO","action":"HTTP_REQUEST","requestId":"924a9ec6-8ead-4ae7-9f41-e9a65a100e6a","route":"/contact","method":"GET","status":200,"durationMs":25.7684,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.932Z","level":"INFO","action":"HTTP_REQUEST","requestId":"e0e5aede-3890-4756-a0c5-fcdcc9d239aa","route":"/login","method":"GET","status":200,"durationMs":26.9611,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:07.983Z","level":"INFO","action":"HTTP_REQUEST","requestId":"b729bad2-0d80-4298-81ac-a91319a8dd8e","route":"/register","method":"GET","status":200,"durationMs":42.5459,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:08.013Z","level":"INFO","action":"HTTP_REQUEST","requestId":"ed5d01c9-a7b9-42ed-87a6-a94d4a842088","route":"/login","method":"GET","status":200,"durationMs":22.9919,"ip":"127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:08.056Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2815f8d6-1366-4759-b608-09399724e180","route":"/register","method":"GET","status":200,"durationMs":38.4987,"ip":"127.0.0.1"}
+  ✔ landmarks, images et formulaires principaux restent accessibles structurellement (320.8243ms)
+✔ Lot 8 — SEO, indexation et accessibilité publique (5215.2952ms)
+◇ injected env (0) from .env // tip: ⌘ suppress logs { quiet: true }
+▶ Phase 7 — finances simples
+  ✔ inscription académique gratuite sans frais automatique (47.2405ms)
+  ✔ configure uniquement formation par niveau, syllabus et certificat (110.9234ms)
+  ✔ crée une facture figée formation et syllabus (72.2996ms)
+  ✔ refuse le mélange USD/CDF (53.8045ms)
+  ✔ lie le certificat au module existant (90.9937ms)
+  ✔ gère paiement partiel, plusieurs paiements et solde serveur (79.2682ms)
+  ✔ paiement idempotent sans double débit (7.1282ms)
+  ✔ génère un reçu PDF privé et protège IDOR (41.1287ms)
+  ✔ sépare la situation USD/CDF et déduplique les notifications (9.5362ms)
+✔ Phase 7 — finances simples (2923.2462ms)
+{"timestamp":"2026-09-09T17:50:15.493Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d0a4a656-01ce-440a-9871-26036541596d","userId":96,"route":"/login","method":"POST","status":302,"durationMs":1049.2532,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.425Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6a761a60-0e7e-492d-8149-1d02bddcf729","userId":98,"route":"/login","method":"POST","status":302,"durationMs":923.8719,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.451Z","level":"ERROR","action":"HTTP_ERROR","requestId":"48fbecac-3a32-4c27-b419-7ad48831a72e","statusCode":403,"route":"/student","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:50:16.495Z","level":"INFO","action":"HTTP_REQUEST","requestId":"48fbecac-3a32-4c27-b419-7ad48831a72e","userId":98,"route":"/student","method":"GET","status":403,"durationMs":57.8987,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.505Z","level":"ERROR","action":"HTTP_ERROR","requestId":"5a3942f3-58f2-4af8-9adc-272ae27caf54","statusCode":403,"route":"/student/courses","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:50:16.514Z","level":"INFO","action":"HTTP_REQUEST","requestId":"6f54d2f5-a4f1-4830-ad8f-4d027d0a6dcf","route":"/student","method":"GET","status":302,"durationMs":101.3627,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.535Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5a3942f3-58f2-4af8-9adc-272ae27caf54","userId":98,"route":"/student/courses","method":"GET","status":403,"durationMs":39.561,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.548Z","level":"INFO","action":"HTTP_REQUEST","requestId":"260df9f4-bfea-4f95-88b0-3d8cdb4ae8e2","route":"/student/courses/79","method":"GET","status":302,"durationMs":28.9376,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.550Z","level":"INFO","action":"HTTP_REQUEST","requestId":"c5c19381-8ee6-4785-8824-2509382e60d8","route":"/student/courses","method":"GET","status":302,"durationMs":69.1262,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.556Z","level":"ERROR","action":"HTTP_ERROR","requestId":"2ff04af7-fde1-4ea8-bef6-d3d464823981","statusCode":403,"route":"/student/courses/79","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:50:16.581Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2ff04af7-fde1-4ea8-bef6-d3d464823981","userId":98,"route":"/student/courses/79","method":"GET","status":403,"durationMs":51.388,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.601Z","level":"INFO","action":"HTTP_REQUEST","requestId":"86b08a87-263d-4484-8cf6-f5f8d66ee6f3","route":"/student/schedule","method":"GET","status":302,"durationMs":18.5001,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.606Z","level":"ERROR","action":"HTTP_ERROR","requestId":"a9b22e9e-158d-456c-923e-55d15e810228","statusCode":403,"route":"/student/schedule","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:50:16.630Z","level":"INFO","action":"HTTP_REQUEST","requestId":"a9b22e9e-158d-456c-923e-55d15e810228","userId":98,"route":"/student/schedule","method":"GET","status":403,"durationMs":32.8502,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.651Z","level":"INFO","action":"HTTP_REQUEST","requestId":"814675f8-4c3d-4702-814f-00a05dde8da2","route":"/student/payments","method":"GET","status":302,"durationMs":19.9241,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.653Z","level":"ERROR","action":"HTTP_ERROR","requestId":"09acabf2-b08d-4131-af75-3005dce3e35a","statusCode":403,"route":"/student/payments","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+{"timestamp":"2026-09-09T17:50:16.678Z","level":"INFO","action":"HTTP_REQUEST","requestId":"09acabf2-b08d-4131-af75-3005dce3e35a","userId":98,"route":"/student/payments","method":"GET","status":403,"durationMs":32.4192,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.697Z","level":"INFO","action":"HTTP_REQUEST","requestId":"da32e15e-413d-4ad2-a1a6-9857a6b2f647","route":"/student/profile","method":"GET","status":302,"durationMs":20.5043,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:16.700Z","level":"ERROR","action":"HTTP_ERROR","requestId":"48338e94-be94-4363-91bd-fe01b479fde2","statusCode":403,"route":"/student/profile","method":"GET","userId":98,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+▶ espace étudiant
+  ✔ redirige vers /student et protège toutes les pages (1228.9639ms)
+{"timestamp":"2026-09-09T17:50:16.725Z","level":"INFO","action":"HTTP_REQUEST","requestId":"48338e94-be94-4363-91bd-fe01b479fde2","userId":98,"route":"/student/profile","method":"GET","status":403,"durationMs":31.9735,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:18.936Z","level":"INFO","action":"HTTP_REQUEST","requestId":"d516ad87-6c83-4841-ad00-09f768367ca0","userId":96,"route":"/student","method":"GET","status":200,"durationMs":2219.6204,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:19.835Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1e96cebb-2bf3-4b53-903d-c0be0e8863a2","userId":99,"route":"/login","method":"POST","status":302,"durationMs":889.4622,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:19.884Z","level":"INFO","action":"HTTP_REQUEST","requestId":"8217ad2d-1bee-4cda-8174-8f14bb8ce009","userId":99,"route":"/student","method":"GET","status":200,"durationMs":55.749,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:19.960Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2b724302-aa02-481f-b10d-4e21df7880c9","userId":96,"route":"/student/courses","method":"GET","status":200,"durationMs":67.2237,"ip":"::ffff:127.0.0.1"}
+  ✔ isole les données et ne divulgue aucun lien privé (3286.2083ms)
+{"timestamp":"2026-09-09T17:50:20.013Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3257546d-d9cf-4e08-8ab0-f1a187fbd094","userId":96,"route":"/student/courses/80","method":"GET","status":404,"durationMs":40.885,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:20.079Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7f7eed9e-5d6f-4b9d-a211-b402d0e499d6","userId":96,"route":"/student/schedule","method":"GET","status":200,"durationMs":76.9378,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:20.779Z","level":"AUDIT","action":"STUDENT_TRIAL_FIFTH_SESSION_CONSUMED","enrollmentId":79,"userId":96,"attendedSessionCount":5}
+{"timestamp":"2026-09-09T17:50:20.779Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_BLOCKED_FOR_HALF_PAYMENT","enrollmentId":79,"userId":96}
+{"timestamp":"2026-09-09T17:50:20.779Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":79,"userId":96,"accessStage":"PAYMENT_REQUIRED_50","attendedSessionCount":5,"paidPercentage":"0.00"}
+{"timestamp":"2026-09-09T17:50:20.936Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1a029684-cc4b-410c-b340-9b771948856d","userId":96,"route":"/student/courses/79","method":"GET","status":200,"durationMs":72.2756,"ip":"::ffff:127.0.0.1"}
+  ✔ calcule l’essai et la fenêtre d’accès côté serveur (943.159ms)
+{"timestamp":"2026-09-09T17:50:21.101Z","level":"INFO","action":"HTTP_REQUEST","requestId":"5f7fd13c-7f21-47eb-83c2-29e5cdea9333","userId":96,"route":"/student/payments","method":"GET","status":200,"durationMs":62.049,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:21.226Z","level":"INFO","action":"HTTP_REQUEST","requestId":"1182a340-73d0-4fd0-9694-7aef32fd9be1","userId":96,"route":"/student","method":"GET","status":200,"durationMs":107.7764,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:21.267Z","level":"AUDIT","action":"STUDENT_COURSE_ACCESS_STAGE_CHANGED","enrollmentId":79,"userId":96,"accessStage":"PARTIAL_ACCESS","attendedSessionCount":5,"paidPercentage":"50.00"}
+{"timestamp":"2026-09-09T17:50:21.453Z","level":"INFO","action":"HTTP_REQUEST","requestId":"bce2faff-1c8d-4b48-be65-5cbede29d578","userId":96,"route":"/student/courses/79","method":"GET","status":200,"durationMs":71.4486,"ip":"::ffff:127.0.0.1"}
+  ✔ filtre les paiements, reprend une tentative et confirme l’accès (511.5271ms)
+{"timestamp":"2026-09-09T17:50:22.371Z","level":"INFO","action":"HTTP_REQUEST","requestId":"425389a3-c74c-4364-ac92-054c63d484fa","userId":96,"route":"/student/profile","method":"POST","status":302,"durationMs":912.8939,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:23.256Z","level":"INFO","action":"HTTP_REQUEST","requestId":"9291b5ca-a16d-4da8-b817-c63e2a6a5f12","userId":96,"route":"/student/profile","method":"POST","status":400,"durationMs":892.8234,"ip":"::ffff:127.0.0.1"}
+  ✔ normalise le téléphone et contrôle son unicité (1802.7045ms)
+{"timestamp":"2026-09-09T17:50:24.155Z","level":"INFO","action":"HTTP_REQUEST","requestId":"45ad0273-be8f-46d1-a30e-88e779e75d61","userId":96,"route":"/student/profile/password","method":"POST","status":400,"durationMs":891.583,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:25.929Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7314186b-b06e-49e9-a049-c695109b8d8f","userId":96,"route":"/student/profile/password","method":"POST","status":302,"durationMs":1787.3895,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:26.828Z","level":"INFO","action":"HTTP_REQUEST","requestId":"7bf6b681-62ad-4ccd-91ec-0c6ab90c9ba4","userId":96,"route":"/student/profile","method":"GET","status":200,"durationMs":49.1396,"ip":"::ffff:127.0.0.1"}
+  ✔ vérifie l’ancien mot de passe et ne divulgue pas le hash (3572.6133ms)
+✔ espace étudiant (15226.0796ms)
+▶ module administrateur des étudiants
+  ✔ valide les numéros et la confirmation du mot de passe (23.0289ms)
+  ✔ crée un étudiant valide et rejette le doublon (516.5288ms)
+  ✔ recherche par prénom, nom et fragment de téléphone (2084.3271ms)
+  ✔ modifie uniquement un étudiant et refuse un compte ADMIN (32.6664ms)
+  ✔ désactive, refuse la connexion puis réactive (1733.3927ms)
+  ✔ réinitialise le mot de passe et authentifie le nouveau (2578.9606ms)
+  ✔ protège toutes les routes avec requireAdmin (3.3327ms)
+✔ module administrateur des étudiants (9115.6873ms)
+{"timestamp":"2026-09-09T17:50:40.170Z","level":"INFO","action":"HTTP_REQUEST","requestId":"01d3b2b9-eb6a-44bd-828b-762dcbb14a49","userId":104,"route":"/login","method":"POST","status":302,"durationMs":895.3365,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:41.079Z","level":"INFO","action":"HTTP_REQUEST","requestId":"817a19e2-91df-4db1-8a7c-a4f9558589c2","userId":105,"route":"/login","method":"POST","status":302,"durationMs":903.6067,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:41.935Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2a0f7d99-9fc1-4ee0-a18e-4f2785d62430","userId":106,"route":"/login","method":"POST","status":302,"durationMs":864.6385,"ip":"::ffff:127.0.0.1"}
+▶ page des evaluations orales etudiante
+  ✔ redirige un visiteur non authentifie (18.9804ms)
+{"timestamp":"2026-09-09T17:50:41.969Z","level":"ERROR","action":"HTTP_ERROR","requestId":"265232b2-3ac3-42bf-bf7c-cd936cd11eeb","statusCode":403,"route":"/student/oral-assessments","method":"GET","userId":106,"ip":"::ffff:127.0.0.1","error":{"name":"Error","message":"Accès interdit."}}
+  ✔ refuse un autre role (58.0499ms)
+{"timestamp":"2026-09-09T17:50:42.011Z","level":"INFO","action":"HTTP_REQUEST","requestId":"265232b2-3ac3-42bf-bf7c-cd936cd11eeb","userId":106,"route":"/student/oral-assessments","method":"GET","status":403,"durationMs":61.7857,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:42.026Z","level":"INFO","action":"HTTP_REQUEST","requestId":"2aae27d6-5ace-4086-b9b7-62e2022fffa9","route":"/student/oral-assessments","method":"GET","status":302,"durationMs":102.6221,"ip":"::ffff:127.0.0.1"}
+{"timestamp":"2026-09-09T17:50:42.098Z","level":"INFO","action":"HTTP_REQUEST","requestId":"f6c46313-bf2a-43bd-a596-edb528c9260f","userId":104,"route":"/student/oral-assessments","method":"GET","status":200,"durationMs":95.7978,"ip":"::ffff:127.0.0.1"}
+  ✔ retourne 200 et un etat vide avec une inscription active sans evaluation (104.613ms)
+{"timestamp":"2026-09-09T17:50:42.179Z","level":"INFO","action":"HTTP_REQUEST","requestId":"3ed54687-7482-4cfd-87ec-2b7e11184411","userId":105,"route":"/student/oral-assessments","method":"GET","status":200,"durationMs":70.1594,"ip":"::ffff:127.0.0.1"}
+  ✔ retourne 200 et affiche une evaluation publiee attribuee (78.0775ms)
+✔ page des evaluations orales etudiante (5579.2354ms)
+✔ les erreurs enrollment choisissent explicitement le shell adapté (1.2075ms)
+✔ les erreurs de paiement séparent strictement Student et Admin (1.0138ms)
+✔ la navigation conserve toutes les routes réelles et clarifie les groupes (0.6396ms)
+✔ les états vides certificats et académique restent contextuels (0.2818ms)
+✔ le dashboard premium conserve des badges fondés sur les données existantes (0.3742ms)
+✔ le HTML final des erreurs ne mélange aucun shell (13.3961ms)
+◇ injected env (0) from .env // tip: ⌘ override existing { override: true }
+▶ isolation et nettoyage sécurisé des fixtures
+  ✔ classe A uniquement avec titre, préfixe et horodatage exacts (1.0017ms)
+  ✔ audit et dry-run ne suppriment rien (13.5633ms)
+  ✔ suppression transactionnelle limitée aux fixtures certaines sans dépendance protégée (1.2326ms)
+  ✔ refuse une inscription ou une présence liée (0.3828ms)
+  ✔ refuse un paiement ou une évaluation liés (0.3805ms)
+  ✔ refuse production, confirmation absente et base non dédiée (0.453ms)
+  ✔ refuse TEST_DATABASE_URL absente, identique ou sans suffixe test (0.3236ms)
+  ✔ accepte et sélectionne effectivement une base _test distincte (0.1587ms)
+✔ isolation et nettoyage sécurisé des fixtures (22.5527ms)
+▶ canal transactionnel WhatsApp
+  ✔ valide la configuration et refuse les secrets manquants (1.3947ms)
+  ✔ normalise et masque les numéros sans transformation ambiguë (25.7322ms)
+  ✔ exige le consentement puis annule au retrait (28.7804ms)
+Livraison WhatsApp acceptée : id interne 1
+  ✔ crée une livraison dédupliquée et l’accepte sans réseau en faux mode (114.1365ms)
+  ✔ vérifie la signature et applique les statuts de façon monotone (45.4765ms)
+  ✔ retire le consentement sans supprimer la notification interne (23.6178ms)
+✔ canal transactionnel WhatsApp (2345.7832ms)
+▶ Phase 4 — évaluations écrites
+  ✔ crée avec tous les fondements et contrôle les permissions (155.2479ms)
+  ✔ publie et ne divulgue jamais les réponses correctes (2190.4821ms)
+  ✔ crée une seule tentative concurrente et isole les étudiants (99.6846ms)
+  ✔ sauvegarde le brouillon et corrige uniquement les réponses objectives (154.9254ms)
+  ✔ soumet définitivement sans noter automatiquement le texte (106.729ms)
+  ✔ combine correction automatique et manuelle côté serveur (152.2632ms)
+  ✔ publie le résultat une seule fois puis révèle explications et note (189.6078ms)
+  ✔ le serveur soumet automatiquement à expiration (253.3471ms)
+  ✔ ferme l’évaluation sans supprimer les tentatives (47.3517ms)
+✔ Phase 4 — évaluations écrites (5728.6212ms)
+ℹ tests 373
+ℹ suites 2
+ℹ pass 371
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 400010.9697
+
+✖ failing tests:
+
+test at tests\lmsPhase5.test.js:33:11
+✖ réorganise transactionnellement avec un périmètre exact (97759.6248ms)
+  PrismaClientKnownRequestError: 
+  Invalid `client.user.findUnique()` invocation in
+  D:\English-center\src\services\lmsCourseService.js:26:34
+  
+    23 }
+    24 
+    25 async function actor(actorId, client = prisma) {
+  → 26   const user = await client.user.findUnique(
+  Can't reach database server at `localhost:5432`
+  
+  Please make sure your database server is running at `localhost:5432`.
+      at ei.handleRequestError (D:\English-center\node_modules\@prisma\client\runtime\library.js:121:7268)
+      at ei.handleAndLogRequestError (D:\English-center\node_modules\@prisma\client\runtime\library.js:121:6593)
+      at ei.request (D:\English-center\node_modules\@prisma\client\runtime\library.js:121:6300)
+      at async a (D:\English-center\node_modules\@prisma\client\runtime\library.js:130:9551)
+      at async actor (D:\English-center\src\services\lmsCourseService.js:26:16)
+      at async Promise.all (index 0)
+      at async requireManager (D:\English-center\src\services\lmsCourseService.js:31:26)
+      at async Object.reorder (D:\English-center\src\services\lmsCourseService.js:163:3)
+      at async TestContext.<anonymous> (D:\English-center\tests\lmsPhase5.test.js:36:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)

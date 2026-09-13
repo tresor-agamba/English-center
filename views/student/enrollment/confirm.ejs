@@ -27,7 +27,7 @@
       <div><dt>Horaires</dt><dd><%= session.startTime %> – <%= session.endTime %></dd></div>
       <div><dt>Plateforme</dt><dd><%= session.platform || session.course.trainingMode || 'En ligne' %></dd></div>
       <div><dt>Fuseau horaire</dt><dd><%= session.timezone %></dd></div>
-      <div><dt>Prix</dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>
+      <div><dt><%= session.course.structureType === 'LEVEL_BASED' ? 'Prix du niveau' : 'Prix de la formation' %></dt><dd><%= session.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: session.course.currency }).format(Number(session.course.price)) : 'Sur demande' %></dd></div>
       <div><dt>Places</dt><dd><%= session.remainingPlaces %> restante<%= session.remainingPlaces > 1 ? 's' : '' %></dd></div>
     </dl>
   </aside>

@@ -78,11 +78,11 @@ test('protection CSRF des parcours publics, étudiant et Admin', async (t) => {
     });
 
     await t.test('protège la réinitialisation par jeton', async () => {
-      const issued = await passwordReset.requestReset(`csrf-student-${suffix}@example.test`);
-      const page = await get(`/reset-password/${issued.delivery.token}`);
-      const result = await post(`/reset-password/${issued.delivery.token}`, { password: 'Reset@2026', passwordConfirmation: 'Reset@2026', _csrf: tokenFrom(page.html) }, page.cookie);
+      const token = await require('./helpers/passwordResetTokenFixture')(student.id);
+      const page = await get(`/reset-password/${token}`);
+      const result = await post(`/reset-password/${token}`, { password: 'Reset@2026', passwordConfirmation: 'Reset@2026', _csrf: tokenFrom(page.html) }, page.cookie);
       assert.equal(result.response.status, 200);
-      assert.match(result.html, /mot de passe a été modifié/i);
+      assert.match(result.html, /Your password has been changed/i);
     });
 
     await t.test('protège une action Admin sensible', async () => {

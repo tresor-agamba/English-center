@@ -1,13 +1,13 @@
-const bcrypt = require('bcrypt');
+const passwords = require('../services/passwordService');
+const { sessionUser } = require('../middlewares/validateSession');
 const registrationService = require('../services/registrationService');
 const trialAccessService = require('../services/trialAccessService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
 const placementTestService = require('../services/placementTestService');
 
-const PASSWORD_COST = 12;
 
 function emptyForm() {
-  return { fullName: '', firstName: '', lastName: '', phoneNumber: '', whatsappNumber: '', email: '', courseId: '', groupId: '', requestedLevel: 'LEVEL_1' };
+  return { fullName: '', firstName: '', lastName: '', phoneNumber: '', whatsappNumber: '', email: '', courseId: '', groupId: '', requestedLevel: '' };
 }
 
 function cleanForm(body) {
@@ -34,7 +34,7 @@ function cleanForm(body) {
   }
   if (body.courseId !== undefined) {
     form.courseId = registrationService.parseCourseId(form.courseId);
-    form.requestedLevel = registrationService.validateLevel(form.requestedLevel);
+    if (form.requestedLevel) form.requestedLevel = registrationService.validateLevel(form.requestedLevel);
   }
   form.phoneNumber = normalizePhoneNumber(form.phoneNumber);
   if (form.whatsappNumber) form.whatsappNumber = normalizePhoneNumber(form.whatsappNumber);
@@ -43,14 +43,11 @@ function cleanForm(body) {
 }
 
 function validatePassword(password, confirmation) {
-  if (!password || !confirmation) {
-    throw new registrationService.RegistrationError('INVALID_PASSWORD', 'Le mot de passe et sa confirmation sont obligatoires.');
-  }
-  if (password.length < 8) {
-    throw new registrationService.RegistrationError('INVALID_PASSWORD', 'Le mot de passe doit contenir au moins 8 caractères.');
-  }
-  if (password !== confirmation) {
-    throw new registrationService.RegistrationError('INVALID_PASSWORD', 'Les mots de passe ne correspondent pas.');
+  try {
+    passwords.validatePassword(password, confirmation);
+  } catch (error) {
+    if (!(error instanceof passwords.PasswordError)) throw error;
+    throw new registrationService.RegistrationError(error.code, error.message);
   }
 }
 
@@ -77,7 +74,7 @@ function establishSession(req, user) {
   return new Promise((resolve, reject) => {
     req.session.regenerate((regenerateError) => {
       if (regenerateError) return reject(regenerateError);
-      req.session.user = user;
+      req.session.user = sessionUser(user);
       return req.session.save((saveError) => (saveError ? reject(saveError) : resolve()));
     });
   });
@@ -122,7 +119,7 @@ async function create(req, res) {
     if (req.body.sessionId) session = await registrationService.getSessionForRegistration(req.body.sessionId);
     form = cleanForm(req.body);
     validatePassword(req.body.password, req.body.passwordConfirmation);
-    const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
+    const passwordHash = await passwords.hashPassword(req.body.password);
     const result = await registrationService.createStudentEnrollment({
       sessionId: session?.id,
       ...form,

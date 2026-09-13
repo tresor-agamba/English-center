@@ -7,8 +7,8 @@
   <% } else if (access.accessStage === 'PAYMENT_REQUIRED_FULL') { %><span>Vous avez terminé les 10 premières séances autorisées. Veuillez payer le solde restant pour accéder aux 6 dernières séances du niveau.</span>
   <% } else if (access.accessStage === 'PARTIAL_ACCESS') { %><span>Le palier de 50 % est atteint. Accès autorisé jusqu’à la 10e séance.</span>
   <% } else if (access.accessStage === 'FREE_TRIAL') { %><span>Séances consommées : <%= access.attendedSessionCount %>/5. Il reste <%= access.remainingTrialAttendances %> séance(s) gratuite(s).</span>
-  <% } else if (access.accessStage === 'FULL_ACCESS') { %><span>Paiement complet. Accès autorisé jusqu’à la 16e séance.</span>
-  <% } else if (access.accessStage === 'COMPLETED') { %><span>Les 16 séances de ce niveau sont terminées.</span>
+  <% } else if (access.accessStage === 'FULL_ACCESS') { %><span>Paiement complet. Accès aux séances de cette inscription.</span>
+  <% } else if (access.accessStage === 'COMPLETED') { %><span>Les séances de cette inscription sont terminées.</span>
   <% } else if (enrollment.status === 'CANCELLED') { %><strong>Cette inscription a été annulée.</strong>
   <% } else { %><strong>La dernière tentative de paiement a échoué.</strong><span>Vous pouvez lancer une nouvelle tentative.</span><% } %>
 </section>
@@ -18,14 +18,14 @@
   <article class="card"><strong>Jours et heures</strong><span><%= enrollment.trainingSession.weekDays.join(', ') || 'À préciser' %> · <%= enrollment.trainingSession.startTime %>–<%= enrollment.trainingSession.endTime %></span></article>
   <article class="card"><strong>Plateforme</strong><span><%= enrollment.trainingSession.platform || 'En ligne' %></span></article>
   <article class="card"><strong>Inscription gratuite</strong><span>Oui — frais d’inscription : 0 <%= access.expectedCurrency %></span></article>
-  <article class="card"><strong>Séances d’essai</strong><span><%= access.attendedSessionCount %>/5 utilisées · <%= access.remainingTrialAttendances %> restantes</span></article>
-  <article class="card"><strong>Prix total</strong><span><%= access.expectedTotalAmount %> <%= access.expectedCurrency %></span></article>
+  <% if (access.legacyStagedAccess !== false) { %><article class="card"><strong>Séances d’essai</strong><span><%= access.attendedSessionCount %>/5 utilisées · <%= access.remainingTrialAttendances %> restantes</span></article><% } %>
+  <article class="card"><strong><%= course.structureType === 'LEVEL_BASED' ? 'Prix du niveau' : 'Prix total' %></strong><span><%= access.expectedTotalAmount %> <%= access.expectedCurrency %></span></article>
   <article class="card"><strong>Montant confirmé</strong><span><%= access.confirmedPaidAmount %> <%= access.expectedCurrency %></span></article>
   <article class="card"><strong>Solde restant</strong><span><%= access.remainingAmount %> <%= access.expectedCurrency %></span></article>
   <article class="card"><strong>Progression du paiement</strong><span><%= access.paidPercentage %> %</span></article>
-  <article class="card"><strong>Montant nécessaire pour atteindre 50 %</strong><span><%= Number(access.paidPercentage) >= 50 ? 0 : access.nextRequiredPaymentAmount %> <%= access.expectedCurrency %></span></article>
+  <% if (access.legacyStagedAccess !== false) { %><article class="card"><strong>Montant nécessaire pour atteindre 50 %</strong><span><%= Number(access.paidPercentage) >= 50 ? 0 : access.nextRequiredPaymentAmount %> <%= access.expectedCurrency %></span></article><% } %>
   <article class="card"><strong>Statut du palier</strong><span><%= stageLabels[access.accessStage] %></span></article>
-  <article class="card"><strong>Séances accessibles</strong><span>1 à <%= access.nextSessionLimit %> sur 16</span></article>
+  <article class="card"><strong>Séances accessibles</strong><span>1 à <%= access.nextSessionLimit %> sur <%= access.totalSessionsLimit === 2147483647 ? "—" : access.totalSessionsLimit %></span></article>
 </section>
 <a class="button" href="/student/courses/<%= enrollment.id %>/learn">Accéder au contenu pédagogique</a>
 <a class="button" href="/student/courses/<%= enrollment.id %>/assignments">Voir les devoirs</a>

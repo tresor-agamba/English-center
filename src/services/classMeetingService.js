@@ -1,3 +1,4 @@
+const { accessLimits } = require('./courseStructureService');
 const prisma = require('../utils/prisma');
 const { OCCUPYING_ENROLLMENT_STATUSES, TOTAL_SESSIONS_LIMIT } = require('./enrollmentPolicy');
 const trialAccessService = require('./trialAccessService');
@@ -231,8 +232,10 @@ async function create(data) {
     const count = await tx.classMeeting.count({
       where: { trainingSessionId: data.trainingSessionId, status: { not: 'CANCELLED' } },
     });
-    if (count >= TOTAL_SESSIONS_LIMIT) {
-      throw new ClassMeetingError('LEVEL_SESSION_LIMIT', 'Un niveau ne peut pas contenir plus de 16 séances.');
+    const session = await tx.trainingSession.findUnique({ where: { id: data.trainingSessionId }, include: { course: true } });
+    const limit = accessLimits(session?.course).total;
+    if (count >= limit) {
+      throw new ClassMeetingError('LEVEL_SESSION_LIMIT', `Cette session ne peut pas contenir plus de ${limit} séances.`);
     }
     return tx.classMeeting.create({ data });
   });

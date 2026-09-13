@@ -1,4 +1,5 @@
-const bcrypt = require('bcrypt');
+const passwords = require('../services/passwordService');
+const { endSession } = require('../middlewares/validateSession');
 const prisma = require('../utils/prisma');
 const access = require('../services/teacherAccessService');
 const classMeetings = require('../services/classMeetingService');
@@ -38,12 +39,22 @@ async function createAssignment(req, res) { const session = await access.require
 async function submissions(req, res) { const item = await access.requireAssignment(req.teacher.id, req.params.id); const data = await assignments.submissionRows(item.id); res.render('teacher/submissions', { title: item.title, ...data }); }
 async function grade(req, res) { await access.requireAssignment(req.teacher.id, req.params.id); await assignments.gradeSubmission(req.params.id, req.params.submissionId, req.body); res.redirect(`/teacher/assignments/${req.params.id}/submissions`); }
 async function profile(req, res) { res.render('teacher/profile', { title: 'Mon profil', teacher: req.teacher, error: null, success: req.query.success || '' }); }
-async function updateProfile(req, res) {
+async function updateProfile(req, res, next) {
   const data = { firstName: req.body.firstName?.trim(), lastName: req.body.lastName?.trim(), phoneNumber: normalizePhoneNumber(req.body.phoneNumber) };
   if (!data.firstName || !data.lastName) { const e = new Error('Tous les champs sont obligatoires.'); e.statusCode = 400; throw e; }
   if (req.body.password) {
-    if (req.body.password.length < 8 || req.body.password !== req.body.passwordConfirmation) { const e = new Error('Mot de passe invalide ou confirmation différente.'); e.statusCode = 400; throw e; }
-    data.passwordHash = await bcrypt.hash(req.body.password, 12);
+    passwords.validatePassword(req.body.password, req.body.passwordConfirmation);
+    const current = await prisma.user.findUnique({ where: { id: req.teacher.id }, select: { passwordHash: true } });
+    if (!current || !(await passwords.comparePassword(req.body.currentPassword, current.passwordHash))) {
+      throw new passwords.PasswordError('Le mot de passe actuel est incorrect.', 'INVALID_CURRENT');
+    }
+    const hash = await passwords.hashPassword(req.body.password);
+    const changed = await passwords.replacePasswordHash(req.teacher.id, hash, {
+      where: { role: 'TEACHER', isActive: true }, expectedPasswordHash: current.passwordHash,
+      expectedAuthVersion: req.teacher.authVersion, identity: data,
+    });
+    if (!changed.count) throw new passwords.PasswordError('Votre accès a changé. Reconnectez-vous.', 'ACCESS_CHANGED', 409);
+    return endSession(req, res, next);
   }
   await prisma.user.update({ where: { id: req.teacher.id }, data }); res.redirect('/teacher/profile?success=updated');
 }

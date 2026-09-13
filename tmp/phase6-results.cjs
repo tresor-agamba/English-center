@@ -1,0 +1,6 @@
+﻿const fs = require('node:fs');
+const text = fs.readFileSync('tmp/auth-phase6-final-targeted.log','utf16le');
+for (const match of text.matchAll(/^ok \d+ - (.+)\r?\n  ---\r?\n  duration_ms: ([\d.]+)/gm)) console.log(match[1] + ': ' + match[2] + ' ms');
+const files = ['src/services/passwordResetRequestPolicy.js','src/services/passwordResetRequestService.js','src/services/passwordResetService.js','src/services/passwordResetDeliveryService.js','src/services/passwordService.js','src/services/passwordResetEmailTemplate.js','src/controllers/authController.js','src/controllers/adminPasswordResetRequestController.js','src/utils/maskResetEmail.js','src/utils/passwordResetRequestMessages.js','src/app.js','src/middlewares/errorHandler.js','views/auth/reset-password.ejs','views/admin/password-reset-requests/index.ejs','views/admin/password-reset-requests/show.ejs','public/js/i18n.js','.env.example','scripts/validatePublicI18n.js','tests/authSecurityPhase6.test.js','tests/authSecurityPhase1.test.js','tests/authSecurityPhase2.test.js','tests/authSecurityPhase3.test.js','tests/csrfProtection.test.js','docs/auth-security-phase6.md'];
+console.log('PHASE6_FILE_INVENTORY=' + files.length + '; ALL_EXIST=' + files.every(f=>fs.existsSync(f)));
+

@@ -3,6 +3,7 @@ const trialAccessService = require('./trialAccessService');
 const studentScheduleService = require('./studentScheduleService');
 
 const COURSE_SELECT = {
+  ...require('./courseStructureService').structureSelect,
   id: true,
   title: true,
   courseType: true,

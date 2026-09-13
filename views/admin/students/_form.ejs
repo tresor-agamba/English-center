@@ -21,14 +21,14 @@
     <div class="form-grid">
       <div>
         <label for="password">Mot de passe temporaire</label>
-        <input id="password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+        <input id="password" name="password" type="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" required />
       </div>
       <div>
         <label for="passwordConfirmation">Confirmation</label>
-        <input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="8" required />
+        <input id="passwordConfirmation" name="passwordConfirmation" type="password" autocomplete="new-password" minlength="<%= passwordMinLength %>" required />
       </div>
     </div>
-    <p class="form-hint">Le mot de passe doit contenir au moins 8 caractères.</p>
+    <p class="form-hint">Le mot de passe doit contenir au moins <%= passwordMinLength %> caractères.</p>
   <% } %>
 
   <div class="form-actions">

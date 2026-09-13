@@ -21,7 +21,7 @@
     <div><span data-i18n="success.session">Session</span><strong><%= enrollment.trainingSession.name %></strong></div>
     <div><span data-i18n="success.dates">Dates</span><strong><%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.startDate) %> – <%= new Intl.DateTimeFormat('fr-FR', { dateStyle: 'medium' }).format(enrollment.trainingSession.endDate) %></strong></div>
     <div><span data-i18n="success.hours">Horaires</span><strong><%= enrollment.trainingSession.startTime %> – <%= enrollment.trainingSession.endTime %></strong></div>
-    <div><span data-i18n="success.price">Prix</span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
+    <div><span data-i18n="<%= enrollment.trainingSession.course.structureType === 'LEVEL_BASED' ? 'structure.pricePerLevel' : 'success.price' %>"><%= enrollment.trainingSession.course.structureType === 'LEVEL_BASED' ? 'Prix par niveau' : 'Prix' %></span><strong><%= enrollment.trainingSession.course.price !== null ? new Intl.NumberFormat('fr-FR', { style: 'currency', currency: enrollment.trainingSession.course.currency }).format(Number(enrollment.trainingSession.course.price)) : 'Sur demande' %></strong></div>
     <div><span data-i18n="success.status">Statut</span><strong class="status <%= statusDisplay.className %>" <% if (statusDisplay.key) { %>data-i18n="<%= statusDisplay.key %>"<% } %>><%= statusDisplay.label %></strong></div>
   </div>
 
@@ -31,6 +31,8 @@
       <span><span data-i18n="success.attended">Séances suivies</span> : <%= trialAccess.trialAttendanceCount %> / <%= trialAccess.trialLimit %></span>
       <span><span data-i18n="success.remaining">Séances gratuites restantes</span> : <%= trialAccess.remainingTrialAttendances %></span>
     </div>
+  <% } else if (enrollment.status === 'PAYMENT_REQUIRED' && trialAccess.legacyStagedAccess === false) { %>
+    <div class="trial-notice"><strong>Votre inscription est enregistrée.</strong><span>Le paiement complet de cette inscription est requis avant l’accès aux séances.</span></div>
   <% } else if (enrollment.status === 'PAYMENT_REQUIRED') { %>
     <div class="trial-notice trial-notice-blocked">
       <strong data-i18n="success.trialEnded">Votre période d’essai de 5 séances est terminée.</strong>

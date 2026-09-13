@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const passwords = require('../services/passwordService');
 const { Prisma } = require('@prisma/client');
 const studentService = require('../services/studentService');
 const { normalizePhoneNumber, INVALID_PHONE_MESSAGE } = require('../utils/phone.util');
@@ -6,7 +6,6 @@ const trialAccessService = require('../services/trialAccessService');
 const registrationService = require('../services/registrationService');
 const crypto = require('crypto');
 
-const PASSWORD_COST = 12;
 const DUPLICATE_PHONE_MESSAGE = 'Ce numéro de téléphone est déjà utilisé.';
 
 function httpError(statusCode, message) {
@@ -35,9 +34,7 @@ function cleanIdentity(body) {
 }
 
 function validatePassword(password, confirmation) {
-  if (!password || !confirmation) throw httpError(400, 'Tous les champs du mot de passe sont obligatoires.');
-  if (password.length < 8) throw httpError(400, 'Le mot de passe doit contenir au moins 8 caractères.');
-  if (password !== confirmation) throw httpError(400, 'Les mots de passe ne correspondent pas.');
+  passwords.validatePassword(password, confirmation);
 }
 
 function isDuplicatePhone(error) {
@@ -101,13 +98,13 @@ async function create(req, res) {
     form = cleanIdentity(req.body);
     if (!req.body.courseId) {
       validatePassword(req.body.password, req.body.passwordConfirmation);
-      const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
+      const passwordHash = await passwords.hashPassword(req.body.password);
       const student = await studentService.create({ ...form, passwordHash, mustChangePassword: true });
       return res.redirect(`/admin/students/${student.id}?success=created`);
     }
     form = { ...form, whatsappNumber: req.body.whatsappNumber?.trim() || '', email: req.body.email?.trim() || '', courseId: req.body.courseId, groupId: req.body.groupId, requestedLevel: req.body.requestedLevel };
     const generatedPassword = temporaryPassword();
-    const passwordHash = await bcrypt.hash(generatedPassword, PASSWORD_COST);
+    const passwordHash = await passwords.hashPassword(generatedPassword);
     const result = await registrationService.createStudentEnrollment({
       ...form, courseId: registrationService.parseCourseId(form.courseId), groupId: form.groupId,
       requestedLevel: registrationService.validateLevel(form.requestedLevel), passwordHash,
@@ -189,7 +186,7 @@ async function resetPassword(req, res) {
   let student = await getStudent(req.params.id);
   try {
     validatePassword(req.body.password, req.body.passwordConfirmation);
-    const passwordHash = await bcrypt.hash(req.body.password, PASSWORD_COST);
+    const passwordHash = await passwords.hashPassword(req.body.password);
     const result = await studentService.resetPassword(student.id, passwordHash);
     if (!result.count) throw httpError(404, 'Étudiant introuvable.');
     return res.redirect(`/admin/students/${student.id}?success=password`);

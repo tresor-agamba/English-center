@@ -136,6 +136,15 @@ if (registrationForm) {
   const level = registrationForm.querySelector('[data-requested-level]');
   const submit = registrationForm.querySelector('[data-registration-submit]');
   const updateLevelGuidance = () => {
+    const courseInput = registrationForm.querySelector('[name="courseId"]');
+    const selected = courseInput?.tagName === 'SELECT' ? courseInput.selectedOptions[0] : courseInput;
+    const leveled = selected?.dataset.structure === 'LEVEL_BASED';
+    const historical = selected?.dataset.accessPolicy !== 'FULL_PAYMENT' && !leveled;
+    level.closest('[data-level-field]').hidden = !historical;
+    if (leveled) level.value = 'LEVEL_' + selected.dataset.levelNumber;
+    else if (!historical) level.value = '';
+    const guidance = registrationForm.querySelector('.level-guidance');
+    if (guidance) guidance.hidden = selected?.dataset.accessPolicy === 'FULL_PAYMENT' || (!leveled && !historical);
     const needsTest = ['LEVEL_2', 'LEVEL_3'].includes(level.value);
     registrationForm.querySelectorAll('[data-level-message]').forEach((node) => {
       node.hidden = node.dataset.levelMessage !== level.value;
@@ -167,6 +176,7 @@ if (registrationForm) {
       date.textContent = new Intl.DateTimeFormat(language === 'fr' ? 'fr-FR' : 'en-US', { dateStyle: 'long' }).format(parsed);
     } else date.hidden = true;
   };
+  courseSelect?.addEventListener('change', updateLevelGuidance);
   courseSelect?.addEventListener('change', updateRegistrationSession);
   document.addEventListener('gli:languagechange', updateRegistrationSession);
   updateRegistrationSession();
@@ -199,7 +209,10 @@ if (registrationForm) {
     const updateRecap = () => {
       const courseOption = courseInput.tagName === 'SELECT' ? courseInput.selectedOptions[0] : courseInput;
       const groupOption = groupInput?.selectedOptions[0]; const price = Number(courseOption?.dataset.price || 0); const fee = Number(courseOption?.dataset.fee || 0); const currency = courseOption?.dataset.currency || 'USD';
-      const rows = [['Formation', courseOption?.textContent?.trim() || courseInput.dataset.courseTitle || '—'], ['Niveau', level.value.replace('_', ' ')], ['Session', courseOption?.dataset.sessionName || '—'], ['Jours', groupOption?.dataset.days || 'Selon la session'], ['Horaire', groupOption?.dataset.time || 'Selon la session'], ['Programme', '16 séances · 1 h 30 · 2 séances/semaine · environ 8 semaines'], ['Prix du niveau', `${price} ${currency}`], ['Frais supplémentaires', `${fee} ${currency}`], ['Total à payer', `${price + fee} ${currency}`]];
+      const leveled = courseOption?.dataset.structure === 'LEVEL_BASED';
+      const duration = courseOption?.dataset.durationValue ? courseOption.dataset.durationValue + ' ' + ({HOURS:'heures',DAYS:'jours',WEEKS:'semaines',MONTHS:'mois'}[courseOption.dataset.durationUnit] || '') : 'Selon la formation';
+      const programme = [courseOption?.dataset.sessionCount ? courseOption.dataset.sessionCount + ' séances' : '', duration].filter(Boolean).join(' · ');
+      const rows = [['Formation', courseOption?.textContent?.trim() || courseInput.dataset.courseTitle || '—'], ...(leveled ? [['Niveau', courseOption.dataset.levelNumber]] : []), ['Session', courseOption?.dataset.sessionName || '—'], ['Jours', groupOption?.dataset.days || 'Selon la session'], ['Horaire', groupOption?.dataset.time || 'Selon la session'], [leveled ? 'Programme du niveau' : 'Programme', programme], [leveled ? 'Prix du niveau' : 'Prix de la formation', price + ' ' + currency], ['Frais supplémentaires', fee + ' ' + currency], ['Total à payer pour cette inscription', (price + fee) + ' ' + currency]];
       recap.replaceChildren(...rows.flatMap(([key, value]) => { const dt = document.createElement('dt'); dt.textContent = key; const dd = document.createElement('dd'); dd.textContent = value; return [dt, dd]; }));
     };
     const show = (index) => { current = index; sections.forEach((section, i) => section.hidden = i !== current); [...progress.children].forEach((item, i) => item.classList.toggle('is-active', i === current)); updateRecap(); };

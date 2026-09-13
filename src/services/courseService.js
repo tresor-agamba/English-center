@@ -1,3 +1,4 @@
+const structure = require('./courseStructureService');
 const prisma = require('../utils/prisma');
 const { publicationMissingFields, publicationState } = require('./coursePublicationPolicy');
 const { OCCUPYING_ENROLLMENT_STATUSES, sessionRegistrationState } = require('./enrollmentPolicy');
@@ -26,11 +27,24 @@ function findSlug(slug) {
 }
 
 function create(data) {
-  return prisma.course.create({ data });
+  return prisma.course.create({ data: { ...data, ...structure.parseStructure(data) } });
 }
 
-function update(id, data) {
-  return prisma.course.update({ where: { id }, data });
+async function update(id, data) {
+  return prisma.$transaction(async tx => {
+    await tx.$queryRaw`SELECT id FROM courses WHERE id = ${id} FOR UPDATE`;
+    const current = await tx.course.findUniqueOrThrow({ where: { id } });
+    const merged = { ...current, ...data };
+    const parsed = structure.parseStructure(merged);
+    if (merged.numberOfLevels !== current.numberOfLevels && await tx.academicCohort.count({ where: { courseId: id } })) throw structure.invalid('Le nombre de niveaux est verrouillé par les cohortes académiques existantes.');
+    const changed = ['structureType', 'sessionCount', 'accessPolicy'].some(key => merged[key] !== current[key]);
+    if (changed && (await tx.enrollment.count({ where: { trainingSession: { courseId: id } } }) || await tx.academicCohort.count({ where: { courseId: id } }))) {
+      throw structure.invalid('Structure et règle d’accès verrouillées : des inscriptions ou cohortes existent. Créez une nouvelle formation.');
+    }
+    const sessions = await tx.trainingSession.findMany({ where: { courseId: id }, select: { levelNumber: true } });
+    for (const session of sessions) structure.validateSessionLevel(merged, session.levelNumber);
+    return tx.course.update({ where: { id }, data: { ...data, ...parsed } });
+  });
 }
 
 async function publish(id) {

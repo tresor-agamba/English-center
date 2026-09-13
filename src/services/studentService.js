@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const passwords = require('./passwordService');
 
 const PAGE_SIZE = 10;
 const publicStudentSelect = {
@@ -115,7 +116,7 @@ function setActive(id, isActive) {
 }
 
 function resetPassword(id, passwordHash) {
-  return prisma.user.updateMany({ where: { id, role: 'STUDENT' }, data: { passwordHash, mustChangePassword: true } });
+  return passwords.replacePasswordHash(id, passwordHash, { where: { role: 'STUDENT' }, mustChangePassword: true });
 }
 
 module.exports = { list, filterOptions, findById, create, update, setActive, resetPassword };

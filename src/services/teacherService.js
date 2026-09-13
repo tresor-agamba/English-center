@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const passwords = require('./passwordService');
 const notificationEvents = require('./notificationEventService');
 
 const select = { id: true, firstName: true, lastName: true, phoneNumber: true, isActive: true, createdAt: true };
@@ -23,6 +24,9 @@ function find(id) {
 }
 function create(data) { return prisma.user.create({ data: { ...data, role: 'TEACHER' }, select }); }
 function update(id, data) { return prisma.user.updateMany({ where: { id, role: 'TEACHER' }, data }); }
+function resetPassword(id, passwordHash) {
+  return passwords.replacePasswordHash(id, passwordHash, { where: { role: 'TEACHER' }, mustChangePassword: true });
+}
 function sessions() {
   return prisma.trainingSession.findMany({ orderBy: { startDate: 'desc' }, include: { course: true } });
 }
@@ -53,4 +57,4 @@ async function unassign(teacherId, trainingSessionId) {
   return result;
 }
 
-module.exports = { list, find, create, update, sessions, assign, unassign };
+module.exports = { list, find, create, update, resetPassword, sessions, assign, unassign };

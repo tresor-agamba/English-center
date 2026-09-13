@@ -53,10 +53,10 @@
       <thead><tr><th>Étudiant</th><th>Séances</th><th>Palier</th><th>Prix / payé / solde</th><th>Seuils</th></tr></thead>
       <tbody><% session.enrollments.forEach((enrollment) => { %><tr>
         <td><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></td>
-        <td><%= enrollment.access.attendedSessionCount %>/16</td>
+        <td><%= enrollment.access.attendedSessionCount %></td>
         <td><%= enrollment.access.accessStage %> · <%= enrollment.access.allowed ? 'Actif' : 'Bloqué' %></td>
         <td><%= enrollment.access.expectedTotalAmount %> / <%= enrollment.access.confirmedPaidAmount %> / <%= enrollment.access.remainingAmount %> <%= enrollment.access.expectedCurrency %> (<%= enrollment.access.paidPercentage %> %)</td>
-        <td>Séances gratuites : <%= enrollment.access.attendedSessionCount %>/5<br>50 % : <%= enrollment.access.firstHalfReachedAt ? enrollment.access.firstHalfReachedAt.toLocaleDateString('fr-FR') : 'Non' %><br>100 % : <%= enrollment.access.fullyPaidAt ? enrollment.access.fullyPaidAt.toLocaleDateString('fr-FR') : 'Non' %></td>
+        <td><% if (enrollment.access.legacyStagedAccess !== false) { %>Séances gratuites : <%= enrollment.access.attendedSessionCount %>/5<br>50 % : <%= enrollment.access.firstHalfReachedAt ? enrollment.access.firstHalfReachedAt.toLocaleDateString('fr-FR') : 'Non' %><br><% } %>100 % : <%= enrollment.access.fullyPaidAt ? enrollment.access.fullyPaidAt.toLocaleDateString('fr-FR') : 'Non' %></td>
       </tr><% }) %></tbody>
     </table></div>
   <% } %>

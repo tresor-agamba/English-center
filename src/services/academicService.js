@@ -51,6 +51,8 @@ const academicLevel = (value) => {
   return value;
 };
 async function createCohort(body) {
+  const course = await prisma.course.findUnique({ where: { id: id(body.courseId, 'cours') } });
+  if (course?.structureType === 'LEVEL_BASED' && (course.numberOfLevels > 3 || Number(String(body.level).replace('LEVEL_', '')) > course.numberOfLevels)) throw new AcademicError('UNSUPPORTED_COURSE_LEVELS', 'Ce parcours n’est pas compatible avec les niveaux du module académique actuel.');
   const startDate = date(body.startDate, 'Date de début'), endDate = date(body.endDate, 'Date de fin');
   if (endDate <= startDate) throw new AcademicError('INVALID_PERIOD', 'La fin doit suivre le début.');
   return prisma.academicCohort.create({ data: {

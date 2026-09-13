@@ -1,3 +1,4 @@
+const { parseStructure } = require('../services/courseStructureService');
 const { Prisma } = require('@prisma/client');
 const courseService = require('../services/courseService');
 const { COURSE_TYPE_LABELS, DURATION_UNIT_LABELS } = require('../utils/catalogFormat.util');
@@ -47,6 +48,7 @@ async function uniqueSlug(title, excludedId = null) {
 
 function parseForm(body) {
   const data = {
+    ...parseStructure(body),
     title: body.title?.trim().slice(0, 160) || '',
     courseType: body.courseType,
     level: body.level?.trim().slice(0, 100) || '',
@@ -67,7 +69,7 @@ function parseForm(body) {
     prerequisites: body.prerequisites?.trim() || null,
     trainingMode: '100 % en ligne',
   };
-  if (!data.title || !data.level) throw validationError('Le titre et le niveau sont obligatoires.');
+  if (!data.title) throw validationError('Le titre est obligatoire.');
   if (!COURSE_TYPES.includes(data.courseType)) throw validationError('Type de formation invalide.');
   if (!Number.isInteger(data.durationValue) || data.durationValue <= 0) throw validationError('La durée doit être supérieure à zéro.');
   if (!DURATION_UNITS.includes(data.durationUnit)) throw validationError('Unité de durée invalide.');
@@ -111,7 +113,7 @@ async function index(req, res) {
 }
 
 function newForm(req, res) {
-  return res.render('admin/courses/new', viewData({ title: 'Nouvelle formation', form: { pricingState: 'UNAVAILABLE', currency: 'USD', registrationFee: '0' }, error: null }));
+  return res.render('admin/courses/new', viewData({ title: 'Nouvelle formation', form: { structureType: 'SIMPLE', accessPolicy: 'FULL_PAYMENT', pricingState: 'UNAVAILABLE', currency: 'USD', registrationFee: '0' }, error: null }));
 }
 
 async function create(req, res) {
@@ -146,7 +148,7 @@ async function editForm(req, res) {
 async function update(req, res) {
   const course = await getCourse(req.params.id);
   try {
-    const data = parseForm(req.body);
+    const data = parseForm({ ...course, ...req.body, ...(req.body.structureType === 'SIMPLE' && req.body.numberOfLevels === undefined ? { numberOfLevels: null } : {}) });
     data.slug = await uniqueSlug(data.title, course.id);
     await courseService.update(course.id, data);
     return res.redirect(`/admin/courses/${course.id}/edit?updated=1`);

@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const passwords = require('./passwordService');
 const prisma = require('../utils/prisma');
 const { normalizePhoneNumber } = require('../utils/phone.util');
 
@@ -30,7 +30,7 @@ async function updateProfile(userId, input) {
   const current = await prisma.user.findUnique({ where: { id: userId }, select: { phoneNumber: true, passwordHash: true } });
   if (!current) throw new StudentProfileError('NOT_FOUND', 'Profil introuvable.', 404);
   if (phoneNumber !== current.phoneNumber) {
-    if (!input.currentPassword || !(await bcrypt.compare(input.currentPassword, current.passwordHash))) {
+    if (!input.currentPassword || !(await passwords.comparePassword(input.currentPassword, current.passwordHash))) {
       throw new StudentProfileError('PASSWORD_REQUIRED', 'Le mot de passe actuel est requis pour modifier le téléphone.');
     }
     const duplicate = await prisma.user.findUnique({ where: { phoneNumber }, select: { id: true } });
@@ -45,20 +45,23 @@ async function updateProfile(userId, input) {
   });
 }
 
-async function changePassword(userId, input) {
+async function changePassword(userId, input, expectedAuthVersion) {
   if (!input.currentPassword) throw new StudentProfileError('CURRENT_REQUIRED', 'Le mot de passe actuel est obligatoire.');
-  if (!input.newPassword || input.newPassword.length < 10) {
-    throw new StudentProfileError('WEAK_PASSWORD', 'Le nouveau mot de passe doit contenir au moins 10 caractères.');
-  }
-  if (input.newPassword !== input.confirmPassword) {
-    throw new StudentProfileError('PASSWORD_MISMATCH', 'La confirmation du mot de passe ne correspond pas.');
+  try {
+    passwords.validatePassword(input.newPassword, input.confirmPassword);
+  } catch (error) {
+    if (!(error instanceof passwords.PasswordError)) throw error;
+    throw new StudentProfileError(error.code, error.message);
   }
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
-  if (!user || !(await bcrypt.compare(input.currentPassword, user.passwordHash))) {
+  if (!user || !(await passwords.comparePassword(input.currentPassword, user.passwordHash))) {
     throw new StudentProfileError('INVALID_CURRENT', 'Le mot de passe actuel est incorrect.');
   }
-  const passwordHash = await bcrypt.hash(input.newPassword, 12);
-  await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
+  const passwordHash = await passwords.hashPassword(input.newPassword);
+  const changed = await passwords.replacePasswordHash(userId, passwordHash, {
+    where: { role: 'STUDENT', isActive: true }, expectedPasswordHash: user.passwordHash, expectedAuthVersion,
+  });
+  if (!changed.count) throw new StudentProfileError('INVALID_CURRENT', 'Votre accès a changé. Reconnectez-vous.', 409);
 }
 
 module.exports = { StudentProfileError, getProfile, updateProfile, changePassword };

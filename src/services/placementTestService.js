@@ -38,7 +38,7 @@ async function getPendingEnrollment(enrollmentId, studentId, client = prisma) {
   if (!Number.isInteger(id) || id <= 0) throw new PlacementTestError('NOT_FOUND', 'Test de niveau introuvable.', 404);
   const enrollment = await client.enrollment.findFirst({
     where: { id, userId: Number(studentId) },
-    include: { trainingSession: { include: { course: { select: { title: true } } } } },
+    include: { trainingSession: { include: { course: { select: { title: true, structureType: true } } } } },
   });
   if (!enrollment) throw new PlacementTestError('NOT_FOUND', 'Test de niveau introuvable.', 404);
   if (!enrollment.placementTestRequired || enrollment.status !== 'PLACEMENT_TEST_REQUIRED') {
@@ -51,16 +51,18 @@ async function completePlacement({ enrollmentId, studentId, score }) {
   const level = recommendedLevel(score);
   return prisma.$transaction(async (tx) => {
     const enrollment = await getPendingEnrollment(enrollmentId, studentId, tx);
+    const explicitLevel = enrollment.trainingSession.course.structureType === 'LEVEL_BASED' ? enrollment.trainingSession.levelNumber : null;
+    if (explicitLevel && Number(level.replace('LEVEL_', '')) < explicitLevel) throw new PlacementTestError('SESSION_LEVEL_NOT_REACHED', 'Le niveau requis pour cette session n’est pas atteint. Contactez l’administration pour une session adaptée.');
     return tx.enrollment.update({
       where: { id: enrollment.id },
       data: {
         recommendedLevel: level,
-        approvedLevel: level,
+        approvedLevel: explicitLevel ? 'LEVEL_' + explicitLevel : level,
         placementTestScore: Math.round(Number(score)),
         placementTestCompletedAt: new Date(),
         status: 'TRIAL_ACTIVE',
       },
-      include: { trainingSession: { include: { course: { select: { title: true } } } } },
+      include: { trainingSession: { include: { course: { select: { title: true, structureType: true } } } } },
     });
   });
 }

@@ -1,3 +1,4 @@
+const { structureSelect } = require('./courseStructureService');
 const prisma = require('../utils/prisma');
 const { OCCUPYING_ENROLLMENT_STATUSES, remainingPlaces, isSessionOpenForRegistration } = require('./enrollmentPolicy');
 const { isPublicCourse } = require('./coursePublicationPolicy');
@@ -23,7 +24,7 @@ async function listPublished() {
       shortDescription: true,
       description: true,
       courseType: true,
-      level: true,
+      level: true, ...structureSelect,
       trainingMode: true,
       duration: true,
       durationValue: true,
@@ -40,7 +41,7 @@ async function listPublished() {
       trainingSessions: {
         where: { startDate: { gte: now }, status: { in: ['OPEN', 'DRAFT'] } },
         select: {
-          id: true,
+          id: true, levelNumber: true,
           startDate: true,
           capacity: true,
           status: true,
@@ -57,6 +58,7 @@ async function listPublished() {
 
   return courses.filter(isPublicCourse).map(({ trainingSessions, ...course }) => {
     const availableSessions = trainingSessions
+      .filter(session => course.structureType !== 'LEVEL_BASED' || (session.levelNumber >= 1 && session.levelNumber <= Math.min(course.numberOfLevels, 3)))
       .filter((session) => isSessionOpenForRegistration(session, now))
       .sort((left, right) => left.startDate - right.startDate || left.id - right.id);
     const plannedSessions = trainingSessions
@@ -84,7 +86,7 @@ async function listUpcomingSessions(limit = 3) {
     take: Math.max(1, Math.min(Number(limit) || 3, 6)),
     select: {
       id: true,
-      name: true,
+      name: true, levelNumber: true,
       startDate: true,
       weekDays: true,
       startTime: true,
@@ -93,7 +95,7 @@ async function listUpcomingSessions(limit = 3) {
       platform: true,
       capacity: true,
       courseId: true,
-      course: { select: { id: true, title: true, level: true, slug: true, trainingMode: true, shortDescription: true, description: true, duration: true, durationValue: true, durationUnit: true, price: true, currency: true, pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true, archivedAt: true, closedAt: true, createdAt: true } },
+      course: { select: { id: true, title: true, level: true, ...structureSelect, slug: true, trainingMode: true, shortDescription: true, description: true, duration: true, durationValue: true, durationUnit: true, price: true, currency: true, pricingMode: true, pricingActive: true, isPublished: true, lmsStatus: true, archivedAt: true, closedAt: true, createdAt: true } },
       _count: {
         select: {
           enrollments: { where: { status: { in: OCCUPYING_ENROLLMENT_STATUSES } } },
@@ -120,7 +122,7 @@ async function findPublishedBySlug(slug) {
       shortDescription: true,
       description: true,
       courseType: true,
-      level: true,
+      level: true, ...structureSelect,
       duration: true,
       durationValue: true,
       durationUnit: true,
@@ -142,7 +144,7 @@ async function findPublishedBySlug(slug) {
         orderBy: { startDate: 'asc' },
         select: {
           id: true,
-          name: true,
+          name: true, levelNumber: true,
           startDate: true,
           endDate: true,
           registrationDeadline: true,
@@ -171,6 +173,7 @@ async function findPublishedBySlug(slug) {
       const availablePlaces = remainingPlaces(session);
       const registrationOpen =
         session.status === 'OPEN' &&
+        (course.structureType !== 'LEVEL_BASED' || (session.levelNumber >= 1 && session.levelNumber <= Math.min(course.numberOfLevels, 3))) &&
         session.registrationDeadline >= now &&
         availablePlaces > 0;
       const { _count, ...publicSession } = session;

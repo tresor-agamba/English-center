@@ -8,4 +8,5 @@ module.exports = {
   exportCsv: make(15 * 60 * 1000, 30), payment: make(15 * 60 * 1000, 20),
   assessmentSubmit: make(15 * 60 * 1000, 30),
   passwordReset: make(60 * 60 * 1000, 10),
+  passwordResetDelivery: make(15 * 60 * 1000, 20),
 };

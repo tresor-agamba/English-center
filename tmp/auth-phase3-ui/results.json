@@ -1,0 +1,39 @@
+{
+  "layouts": [
+    {
+      "name": "list",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "detail",
+      "width": 1440,
+      "overflow": false
+    },
+    {
+      "name": "list",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "detail",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "name": "list",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "name": "detail",
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "rejectCancellation": true,
+  "approvalConfirmation": true,
+  "noToken": true,
+  "english": true,
+  "pageErrors": []
+}

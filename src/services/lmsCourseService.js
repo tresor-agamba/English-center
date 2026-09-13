@@ -51,7 +51,7 @@ function courseData(body) {
 async function create(body, actorId) {
   const user = await actor(actorId);
   try {
-    return await prisma.course.create({ data: { ...courseData(body), createdById: user.id, lmsStatus: 'DRAFT', isPublished: false } });
+    return await prisma.course.create({ data: { ...courseData(body), accessPolicy: 'FULL_PAYMENT', createdById: user.id, lmsStatus: 'DRAFT', isPublished: false } });
   } catch (error) {
     if (error.code === 'P2002') throw new LmsError('SLUG_TAKEN', 'Ce slug est déjà utilisé.', 409);
     throw error;

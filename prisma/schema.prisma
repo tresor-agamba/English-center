@@ -48,6 +48,16 @@ enum CourseType {
   OTHER
 }
 
+enum TrainingStructure {
+  SIMPLE
+  LEVEL_BASED
+}
+
+enum CourseAccessPolicy {
+  LEGACY_STAGED
+  FULL_PAYMENT
+}
+
 enum DurationUnit {
   HOURS
   DAYS
@@ -413,6 +423,7 @@ model User {
   phoneNumber                  String                      @unique @map("phone_number")
   email                        String?                     @unique
   passwordHash                 String                      @map("password_hash")
+  authVersion                  Int                         @default(0) @map("auth_version")
   whatsappNumber               String?                     @map("whatsapp_number")
   mustChangePassword           Boolean                     @default(false) @map("must_change_password")
   role                         Role                        @default(STUDENT)
@@ -425,6 +436,8 @@ model User {
   teachingAssignments          TrainingSessionTeacher[]
   registrationGroupsTaught     RegistrationGroup[]
   passwordResetTokens          PasswordResetToken[]
+  passwordResetRequests        PasswordResetRequest[] @relation("PasswordResetRequester")
+  passwordResetRequestsReviewed PasswordResetRequest[] @relation("PasswordResetReviewer")
   notifications                Notification[]
   scheduledReminders           ScheduledReminder[]
   createdAnnouncements         Announcement[]              @relation("AnnouncementCreator")
@@ -464,14 +477,64 @@ model User {
   @@map("users")
 }
 
+enum PasswordResetRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
+
+enum PasswordResetDeliveryChannel {
+  EMAIL
+  WHATSAPP
+  SMS
+}
+
+enum PasswordResetDeliveryStatus {
+  SENDING
+  SENT
+  FAILED
+}
+
+model PasswordResetRequest {
+  id           Int                        @id @default(autoincrement())
+  userId       Int                        @map("user_id")
+  authVersionAtRequest Int?               @map("auth_version_at_request")
+  deliveryChannel PasswordResetDeliveryChannel? @map("delivery_channel")
+  deliveryStatus PasswordResetDeliveryStatus? @map("delivery_status")
+  deliveryAttempts Int                    @default(0) @map("delivery_attempts")
+  deliveryAttemptedAt DateTime?            @map("delivery_attempted_at")
+  deliveredAt DateTime?                    @map("delivered_at")
+  status       PasswordResetRequestStatus @default(PENDING)
+  requestedAt  DateTime                   @default(now()) @map("requested_at")
+  reviewedAt   DateTime?                  @map("reviewed_at")
+  completedAt  DateTime?                  @map("completed_at")
+  reviewedById Int?                       @map("reviewed_by_id")
+  createdAt    DateTime                   @default(now()) @map("created_at")
+  updatedAt    DateTime                   @updatedAt @map("updated_at")
+  user         User                       @relation("PasswordResetRequester", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy   User?                      @relation("PasswordResetReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  resetToken   PasswordResetToken?
+
+  @@index([userId, status])
+  @@index([status])
+  @@index([requestedAt])
+  @@map("password_reset_requests")
+}
+
 model PasswordResetToken {
   id        Int       @id @default(autoincrement())
   userId    Int       @map("user_id")
+  requestId Int?      @unique @map("request_id")
+  deliveryPending Boolean @default(false) @map("delivery_pending")
   tokenHash String    @unique @map("token_hash")
   expiresAt DateTime  @map("expires_at")
   usedAt    DateTime? @map("used_at")
   createdAt DateTime  @default(now()) @map("created_at")
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  request   PasswordResetRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([expiresAt, usedAt])
@@ -597,6 +660,7 @@ model Announcement {
 }
 
 model TrainingSession {
+  levelNumber          Int?                     @map("level_number")
   id                   Int                      @id @default(autoincrement())
   name                 String
   courseId             Int                      @map("course_id")
@@ -652,6 +716,10 @@ model RegistrationGroup {
 }
 
 model Course {
+  structureType    TrainingStructure  @default(SIMPLE) @map("structure_type")
+  numberOfLevels   Int?               @map("number_of_levels")
+  sessionCount     Int?               @map("session_count")
+  accessPolicy     CourseAccessPolicy @default(LEGACY_STAGED) @map("access_policy")
   id               Int                @id @default(autoincrement())
   title            String
   slug             String             @unique

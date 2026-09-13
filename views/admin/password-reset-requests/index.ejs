@@ -1,0 +1,37 @@
+<%- include('../../partials/header', { title }) %>
+<section class="page-heading">
+  <div><p class="eyebrow"><%= text.security %></p><h1><%= text.title %></h1><p><%= total %> <%= text.total %></p></div>
+  <nav aria-label="Language"><a href="?status=<%= status %>&page=<%= page %>&lang=fr" lang="fr" aria-current="<%= language === 'fr' ? 'true' : 'false' %>">FR</a> · <a href="?status=<%= status %>&page=<%= page %>&lang=en" lang="en" aria-current="<%= language === 'en' ? 'true' : 'false' %>">EN</a></nav>
+</section>
+<form class="search-form reset-request-filters" method="get" action="/admin/password-reset-requests">
+  <input type="hidden" name="lang" value="<%= language %>">
+  <label for="request-status"><%= text.status %></label>
+  <select id="request-status" name="status"><% statuses.forEach(value => { %><option value="<%= value %>" <%= status === value ? 'selected' : '' %>><%= text[value] %></option><% }) %></select>
+  <button class="button button-small" type="submit"><%= text.filter %></button>
+</form>
+<% if (!requests.length) { %><div class="empty-state"><p><%= text.empty %></p></div><% } else { %>
+<div class="table-wrapper responsive-table">
+  <table class="reset-requests-table">
+    <thead><tr><th scope="col">ID</th><th scope="col"><%= text.user %></th><th scope="col"><%= text.phone %></th><th scope="col"><%= text.role %></th><th scope="col"><%= text.requestedAt %></th><th scope="col"><%= text.status %></th><th scope="col"><%= text.reviewedAt %></th><th scope="col"><%= text.reviewedBy %></th><th scope="col"><%= text.actions %></th></tr></thead>
+    <tbody><% requests.forEach(request => { %>
+      <tr>
+        <td data-label="ID">#<%= request.id %></td>
+        <td data-label="<%= text.user %>"><strong><%= request.user.firstName %> <%= request.user.lastName %></strong></td>
+        <td data-label="<%= text.phone %>"><%= request.user.phoneNumber %></td>
+        <td data-label="<%= text.role %>"><%= text[request.user.role] %></td>
+        <td data-label="<%= text.requestedAt %>"><%= formatDate(request.requestedAt) %></td>
+        <td data-label="<%= text.status %>"><span class="status reset-request-status-<%= request.status.toLowerCase() %>"><%= request.status === 'APPROVED' ? (request.deliveryStatus === 'SENT' ? text.approvedSent : text.approvedUnsent) : text[request.status] %></span></td>
+        <td data-label="<%= text.reviewedAt %>"><%= formatDate(request.reviewedAt) %></td>
+        <td data-label="<%= text.reviewedBy %>"><%= request.reviewedBy ? `${request.reviewedBy.firstName} ${request.reviewedBy.lastName}` : '—' %></td>
+        <td data-label="<%= text.actions %>"><a href="/admin/password-reset-requests/<%= request.id %>?lang=<%= language %>"><%= text.view %> #<%= request.id %></a></td>
+      </tr>
+    <% }) %></tbody>
+  </table>
+</div>
+<% if (totalPages > 1) { %><nav class="pagination" aria-label="Pagination">
+  <% if (page > 1) { %><a href="?status=<%= status %>&page=<%= page - 1 %>&lang=<%= language %>"><%= text.previous %></a><% } %>
+  <span><%= text.page %> <%= page %> <%= text.of %> <%= totalPages %></span>
+  <% if (page < totalPages) { %><a href="?status=<%= status %>&page=<%= page + 1 %>&lang=<%= language %>"><%= text.next %></a><% } %>
+</nav><% } %>
+<% } %>
+<%- include('../../partials/footer') %>

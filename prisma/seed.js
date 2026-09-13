@@ -1,6 +1,7 @@
 require('dotenv').config();
 
-const bcrypt = require('bcrypt');
+const { hashPassword } = require('../src/services/passwordService');
+const logger = require('../src/services/loggerService');
 const { PrismaClient } = require('@prisma/client');
 const { normalizePhoneNumber } = require('../src/utils/phone.util');
 const { configureLocalDatabaseUrl } = require('../src/utils/databaseUrl.util');
@@ -10,12 +11,16 @@ const prisma = new PrismaClient();
 
 async function main() {
   const phoneNumber = normalizePhoneNumber('+243812345678');
-  const passwordHash = await bcrypt.hash('Admin@2026', 12);
+  const passwordHash = await hashPassword('Admin@2026');
 
-  await prisma.user.upsert({
-    where: { phoneNumber },
-    update: { firstName: 'Centre', lastName: 'Administrateur', passwordHash, role: 'ADMIN' },
-    create: { firstName: 'Centre', lastName: 'Administrateur', phoneNumber, passwordHash, role: 'ADMIN' },
+  await prisma.$transaction(async (tx) => {
+    const user = await tx.user.upsert({
+      where: { phoneNumber },
+      update: { firstName: 'Centre', lastName: 'Administrateur', passwordHash, role: 'ADMIN', authVersion: { increment: 1 } },
+      create: { firstName: 'Centre', lastName: 'Administrateur', phoneNumber, passwordHash, role: 'ADMIN' },
+      select: { id: true },
+    });
+    await tx.passwordResetToken.updateMany({ where: { userId: user.id, usedAt: null }, data: { usedAt: new Date() } });
   });
 
   console.log('Administrateur local créé ou mis à jour.');
@@ -23,7 +28,7 @@ async function main() {
 
 main()
   .catch((error) => {
-    console.error(error);
+    logger.error('SEED_FAILED', { error });
     process.exitCode = 1;
   })
   .finally(async () => {

@@ -62,7 +62,9 @@
     "helmet": "^8.1.0",
     "multer": "^2.0.2",
     "music-metadata": "^11.15.0",
+    "nodemailer": "10.0.3",
     "pdfkit": "^0.19.1",
+    "pg": "^8.23.0",
     "qrcode": "^1.5.4"
   },
   "devDependencies": {

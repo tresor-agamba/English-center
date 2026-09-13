@@ -1,3 +1,4 @@
+const structure = require('./courseStructureService');
 const prisma = require('../utils/prisma');
 
 function list() {
@@ -32,12 +33,24 @@ function findCourse(id) {
   return prisma.course.findUnique({ where: { id }, select: { id: true } });
 }
 
-function create(data) {
-  return prisma.trainingSession.create({ data });
+async function create(data) {
+  return prisma.$transaction(async tx => {
+    await tx.$queryRaw`SELECT id FROM courses WHERE id = ${data.courseId} FOR UPDATE`;
+    const course = await tx.course.findUnique({ where: { id: data.courseId } });
+    return tx.trainingSession.create({ data: { ...data, levelNumber: structure.validateSessionLevel(course, data.levelNumber) } });
+  });
 }
 
-function update(id, data) {
-  return prisma.trainingSession.update({ where: { id }, data });
+async function update(id, data) {
+  return prisma.$transaction(async tx => {
+    const current = await tx.trainingSession.findUniqueOrThrow({ where: { id } });
+    const merged = { ...current, ...data };
+    for (const courseId of [...new Set([current.courseId, merged.courseId])].sort((a,b) => a-b)) await tx.$queryRaw`SELECT id FROM courses WHERE id = ${courseId} FOR UPDATE`;
+    const course = await tx.course.findUnique({ where: { id: merged.courseId } });
+    const levelNumber = structure.validateSessionLevel(course, merged.levelNumber);
+    if ((merged.courseId !== current.courseId || levelNumber !== current.levelNumber) && await tx.enrollment.count({ where: { trainingSessionId: id } })) throw structure.invalid('Formation et niveau verrouillés : cette session possède des inscriptions.');
+    return tx.trainingSession.update({ where: { id }, data: { ...data, levelNumber } });
+  });
 }
 
 function cancel(id) {

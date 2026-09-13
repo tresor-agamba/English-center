@@ -101,6 +101,20 @@
   .nva-admin-body .button, .nva-admin-body .action-row .button { width: 100%; justify-content: center; text-align: center; }
   .nva-admin-body .admin-footer { align-items: flex-start; flex-direction: column; padding-inline: 1rem; }
 }
+.nva-admin-body .reset-request-filters label { flex-shrink: 0; }
+.nva-admin-body .reset-requests-table th, .nva-admin-body .reset-requests-table td { white-space: normal; }
+.nva-admin-body .reset-request-details { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.nva-admin-body .reset-request-details .card { width: 100%; max-width: none; margin: 0; }
+.nva-admin-body .reset-request-details dd { margin: .25rem 0 1rem; overflow-wrap: anywhere; }
+.nva-admin-body .reset-request-details dt { font-weight: 600; }
+.nva-admin-body .reset-request-status-pending { color: #744400; background: #fff2cc; }
+.nva-admin-body .reset-request-status-approved, .nva-admin-body .reset-request-status-completed { color: #14532d; background: #dcfce7; }
+.nva-admin-body .reset-request-status-rejected { color: #991b1b; background: #fee2e2; }
+.nva-admin-body .reset-request-status-expired, .nva-admin-body .reset-request-status-cancelled { color: #374151; background: #e5e7eb; }
+@media (max-width: 768px) {
+  .nva-admin-body .reset-requests-table tbody { min-width: 0; }
+  .nva-admin-body .reset-requests-table td { overflow-wrap: anywhere; }
+}
 @media (prefers-reduced-motion: reduce) {
   .nva-admin-body .admin-sidebar, .nva-admin-body .card, .nva-admin-body .stat-card, .nva-admin-body .dashboard-panel { transition: none; }
 }

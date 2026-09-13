@@ -3,6 +3,7 @@ const studentCourseService = require('../services/studentCourseService');
 const studentScheduleService = require('../services/studentScheduleService');
 const studentPaymentService = require('../services/studentPaymentService');
 const studentProfileService = require('../services/studentProfileService');
+const { endSession } = require('../middlewares/validateSession');
 const learningAccessService = require('../services/learningAccessService');
 const lmsResourceService = require('../services/lmsResourceService');
 const studentClassMeetingService = require('../services/studentClassMeetingService');
@@ -80,10 +81,10 @@ async function updateProfile(req, res) {
   }
 }
 
-async function updatePassword(req, res) {
+async function updatePassword(req, res, next) {
   try {
-    await studentProfileService.changePassword(req.student.id, req.body);
-    return res.redirect('/student/profile?password=1');
+    await studentProfileService.changePassword(req.student.id, req.body, req.student.authVersion);
+    return endSession(req, res, next);
   } catch (error) {
     if (!(error instanceof studentProfileService.StudentProfileError)) throw error;
     return res.status(error.statusCode).render('student/profile/show', {

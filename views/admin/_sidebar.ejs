@@ -26,6 +26,7 @@
     <a href="/admin/certificates"<% if (isAdminActive('/certificates')) { %> aria-current="page"<% } %>><span aria-hidden="true">☆</span>Certificats</a>
     <a href="/admin/oral-assessments"<% if (isAdminActive('/oral-assessments', '/written-assessments')) { %> aria-current="page"<% } %>><span aria-hidden="true">✓</span>Évaluations</a>
     <p class="admin-nav-label">Configuration</p>
+    <a href="/admin/password-reset-requests"<% if (isAdminActive('/password-reset-requests')) { %> aria-current="page"<% } %>><span aria-hidden="true">◇</span><%= typeof documentLanguage !== 'undefined' && documentLanguage === 'en' ? 'Password recovery requests' : 'Demandes de récupération' %></a>
     <a href="/admin/settings"<% if (isAdminActive('/settings')) { %> aria-current="page"<% } %>><span aria-hidden="true">⚙</span>Paramètres</a>
     <a href="/admin/system/backups"<% if (isAdminActive('/system')) { %> aria-current="page"<% } %>><span aria-hidden="true">≡</span>Système</a>
   </nav>

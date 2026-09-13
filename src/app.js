@@ -15,6 +15,7 @@ const adminCourseRoutes = require('./routes/adminCourseRoutes');
 const adminClassMeetingRoutes = require('./routes/adminClassMeetingRoutes');
 const adminDashboardRoutes = require('./routes/adminDashboardRoutes');
 const adminStudentRoutes = require('./routes/adminStudentRoutes');
+const adminPasswordResetRequestRoutes = require('./routes/adminPasswordResetRequestRoutes');
 const adminSessionRoutes = require('./routes/adminSessionRoutes');
 const adminLearningRoutes = require('./routes/adminLearningRoutes');
 const adminAssignmentRoutes = require('./routes/adminAssignmentRoutes');
@@ -62,8 +63,12 @@ const seoRoutes = require('./routes/seoRoutes');
 const pwaRoutes = require('./routes/pwaRoutes');
 const csrfProtection = require('./middlewares/csrfProtection');
 const { getSessionStore } = require('./config/sessionStore');
+const validateSession = require('./middlewares/validateSession');
+const { PASSWORD_MIN_LENGTH } = require('./services/passwordService');
 
 const app = express();
+app.locals.passwordMinLength = PASSWORD_MIN_LENGTH;
+app.locals.courseTotals = require('./utils/publicCoursePresentation.util').courseTotals;
 const configuredSessionStore = getSessionStore();
 const production = process.env.NODE_ENV === 'production';
 app.locals.sessionStore = configuredSessionStore;
@@ -99,6 +104,10 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 app.use((req, res, next) => {
+  // Include parser and session failures on recovery pages, not only route responses.
+  if (/^\/(forgot-password|reset-password|change-password)(\/|$)/i.test(req.path)) {
+    res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+  }
   res.locals.csrfToken = '';
   res.locals.csrfField = () => '';
   next();
@@ -128,6 +137,7 @@ app.use(
     },
   })
 );
+app.use(validateSession);
 app.use(csrfProtection.protect);
 app.use(notificationLocals);
 app.use((req, res, next) => {
@@ -167,6 +177,7 @@ app.use('/notifications', requireAuthenticated, notificationRoutes);
 app.use('/settings/public', publicSettingsRoutes);
 app.use('/admin/dashboard', requireAdmin, adminDashboardRoutes);
 app.use('/admin/students', requireAdmin, adminStudentRoutes);
+app.use('/admin/password-reset-requests', requireAdmin, adminPasswordResetRequestRoutes);
 app.use('/admin/teachers', requireAdmin, adminTeacherRoutes);
 app.use('/admin/notifications', requireAdmin, adminNotificationRoutes);
 app.use('/admin/whatsapp', requireAdmin, adminWhatsAppRoutes);

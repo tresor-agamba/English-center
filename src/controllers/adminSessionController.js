@@ -37,6 +37,7 @@ function parseForm(body) {
   const endDate = new Date(`${body.endDate}T${endTime || '00:00'}:00`);
   const data = {
     name: body.name?.trim(),
+    levelNumber: body.levelNumber === '' || body.levelNumber == null ? null : Number(body.levelNumber),
     courseId: Number(body.courseId),
     startDate,
     endDate,

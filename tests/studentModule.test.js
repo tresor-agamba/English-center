@@ -8,10 +8,10 @@ const studentController = require('../src/controllers/adminStudentController');
 const requireAdmin = require('../src/middlewares/requireAdmin');
 const { normalizePhoneNumber } = require('../src/utils/phone.util');
 
-function middlewareResult(user) {
+function middlewareResult(user, authenticatedUser) {
   let result;
   requireAdmin(
-    { session: { user } },
+    { session: { user }, authenticatedUser },
     { redirect: (url) => { result = { redirect: url }; } },
     (error) => { result = error ? { status: error.statusCode } : { allowed: true }; }
   );
@@ -173,7 +173,8 @@ test('module administrateur des étudiants', async (t) => {
     await t.test('protège toutes les routes avec requireAdmin', () => {
       assert.deepEqual(middlewareResult(undefined), { redirect: '/login' });
       assert.deepEqual(middlewareResult({ role: 'STUDENT' }), { status: 403 });
-      assert.deepEqual(middlewareResult({ role: 'ADMIN' }), { allowed: true });
+      assert.deepEqual(middlewareResult({ role: 'ADMIN' }), { status: 403 });
+      assert.deepEqual(middlewareResult({ role: 'ADMIN' }, { id: adminId, role: 'ADMIN', isActive: true, authVersion: 0 }), { allowed: true });
     });
   } finally {
     if (studentId) await prisma.user.delete({ where: { id: studentId } });

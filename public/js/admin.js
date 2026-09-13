@@ -1,5 +1,11 @@
 'use strict';
 
+document.querySelectorAll('form[data-admin-confirm]').forEach((form) => {
+  form.addEventListener('submit', (event) => {
+    if (!window.confirm(form.dataset.adminConfirm)) event.preventDefault();
+  });
+});
+
 const adminMenuToggle = document.querySelector('[data-admin-menu-toggle]');
 const adminNavigation = document.querySelector('[data-admin-navigation]');
 
