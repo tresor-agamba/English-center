@@ -27,7 +27,7 @@ function buildPublicCoursePresentation(course) {
   const priceFact = (amount, indicative = false) => ({
     label: indicative ? 'Prix total indicatif' : (totals.levelBased ? 'Prix par niveau' : 'Tarif'),
     labelKey: indicative ? 'structure.totalPrice' : (totals.levelBased ? 'structure.pricePerLevel' : 'course.fact.price'),
-    value: `${Number(amount)} ${currency}`, amount: Number(amount), currency,
+    value: `${new Intl.NumberFormat('fr-FR', { minimumFractionDigits: Number.isInteger(Number(amount)) ? 0 : 2, maximumFractionDigits: 2 }).format(Number(amount))} ${currency}`, amount: Number(amount), currency,
     perLevel: totals.levelBased && !indicative,
   });
   const duration = durationFact(totals.totalDuration);

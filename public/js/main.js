@@ -232,7 +232,7 @@ const localizePublicValues = () => {
   });
   document.querySelectorAll('[data-local-price]').forEach((node) => {
     const amount = Number(node.dataset.amount);
-    if (Number.isFinite(amount)) node.textContent = new Intl.NumberFormat(locale, { style: 'currency', currency: node.dataset.currency, ...(node.dataset.currencyDisplay === 'code' ? { currencyDisplay: 'code', minimumFractionDigits: 0, maximumFractionDigits: 2 } : {}) }).format(amount);
+    if (Number.isFinite(amount)) node.textContent = new Intl.NumberFormat(locale, { style: 'currency', currency: node.dataset.currency, ...(node.dataset.currencyDisplay === 'code' ? { currencyDisplay: 'code', minimumFractionDigits: Number.isInteger(amount) ? 0 : 2, maximumFractionDigits: 2 } : {}) }).format(amount);
   });
   const durationUnits = {
     en: { HOURS: ['hour', 'hours'], DAYS: ['day', 'days'], WEEKS: ['week', 'weeks'], MONTHS: ['month', 'months'] },

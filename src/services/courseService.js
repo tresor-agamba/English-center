@@ -36,13 +36,23 @@ async function update(id, data) {
     const current = await tx.course.findUniqueOrThrow({ where: { id } });
     const merged = { ...current, ...data };
     const parsed = structure.parseStructure(merged);
-    if (merged.numberOfLevels !== current.numberOfLevels && await tx.academicCohort.count({ where: { courseId: id } })) throw structure.invalid('Le nombre de niveaux est verrouillé par les cohortes académiques existantes.');
+    if (merged.numberOfLevels !== current.numberOfLevels && await tx.academicCohort.count({ where: { courseId: id } })) throw structure.invalid('Modification refusée : le nombre de niveaux est verrouillé par les cohortes académiques existantes. Créez une nouvelle formation pour ce parcours afin de conserver leur historique.');
     const changed = ['structureType', 'sessionCount', 'accessPolicy'].some(key => merged[key] !== current[key]);
     if (changed && (await tx.enrollment.count({ where: { trainingSession: { courseId: id } } }) || await tx.academicCohort.count({ where: { courseId: id } }))) {
-      throw structure.invalid('Structure et règle d’accès verrouillées : des inscriptions ou cohortes existent. Créez une nouvelle formation.');
+      throw structure.invalid('Modification refusée : structure et règle d’accès verrouillées car des inscriptions ou cohortes existent. Créez une nouvelle formation pour ce parcours afin de conserver leur historique.');
     }
-    const sessions = await tx.trainingSession.findMany({ where: { courseId: id }, select: { levelNumber: true } });
-    for (const session of sessions) structure.validateSessionLevel(merged, session.levelNumber);
+    const sessions = await tx.trainingSession.findMany({ where: { courseId: id }, orderBy: { id: 'asc' }, select: { id: true, name: true, levelNumber: true } });
+    for (const session of sessions) {
+      try {
+        structure.validateSessionLevel(merged, session.levelNumber);
+      } catch (error) {
+        if (error.statusCode !== 400) throw error;
+        const reason = structure.isLevelBased(merged) && session.levelNumber == null
+          ? 'elle ne possède pas de numéro de niveau, obligatoire pour une formation par niveaux'
+          : error.message;
+        throw structure.invalid(`Modification refusée : la session existante « ${session.name} » (#${session.id}) est incompatible avec la structure demandée : ${reason}. Créez une nouvelle formation pour ce parcours afin de conserver les sessions historiques.`);
+      }
+    }
     return tx.course.update({ where: { id }, data: { ...data, ...parsed } });
   });
 }

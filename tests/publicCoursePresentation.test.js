@@ -64,3 +64,9 @@ test('tarif indisponible : aucun prix fictif ou total indicatif exposé', () => 
     assert.equal(presentation.indicativePrice, null);
   }
 });
+
+test('les tarifs fractionnaires conservent leurs deux décimales en français', () => {
+  const presentation = buildPublicCoursePresentation(course({ price: '150.50' }));
+  assert.equal(presentation.price.value, '150,50 USD');
+  assert.equal(presentation.price.amount, 150.5);
+});

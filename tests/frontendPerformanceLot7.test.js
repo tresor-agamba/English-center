@@ -48,7 +48,11 @@ test('Lot 7 - performance frontend, images et PWA', async (t) => {
     for (const url of ['/css/style.css?v=nva-performance-20260830-1', '/css/arena-public.css?v=nva-performance-20260830-1']) {
       assert.ok(sw.includes(url)); assert.ok(header.includes(url));
     }
-    assert.match(sw, /new-vision-academy-v16/);
+    const version = sw.match(/new-vision-academy-v(\d+)/);
+    assert.ok(version && Number(version[1]) >= 18, 'Le cache doit invalider les anciennes présentations de formation.');
+    const footer = fs.readFileSync('views/partials/footer.ejs', 'utf8');
+    const mainScript = footer.match(/src="(\/js\/main\.js\?v=[^"]+)"/);
+    assert.ok(mainScript && sw.includes(mainScript[1]), 'Le script de localisation doit partager la version du précache.');
   });
 
   await t.test('sert chaque nouvel asset en HTTP 200 avec son MIME', async () => {

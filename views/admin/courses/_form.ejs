@@ -1,5 +1,5 @@
 <form action="<%= action %>" method="post" class="course-admin-form"><%- csrfField() %>
-  <% if (error) { %><p class="form-error" role="alert"><%= error %></p><% } %>
+  <% if (error) { %><div class="form-error" role="alert" tabindex="-1" data-course-save-error><strong>Modifications non enregistrées.</strong><p><%= error %></p><p>Les valeurs saisies ci-dessous sont conservées pour correction, mais n’ont pas été enregistrées en base.</p></div><% } %>
 
   <label for="structureType">Structure de la formation</label>
   <select id="structureType" name="structureType" required><option value="SIMPLE" <%= form.structureType !== 'LEVEL_BASED' ? 'selected' : '' %>>Formation simple</option><option value="LEVEL_BASED" <%= form.structureType === 'LEVEL_BASED' ? 'selected' : '' %>>Formation par niveaux</option></select>
@@ -90,4 +90,4 @@
   </div>
 </form>
 
-<script src="/js/course-structure-admin.js" defer></script>
+<script src="/js/course-structure-admin.js?v=conversion-errors-20260914" defer></script>

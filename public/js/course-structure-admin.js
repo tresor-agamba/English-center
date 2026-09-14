@@ -19,6 +19,11 @@
         : 'Renseignez les niveaux, la durée, les séances et le tarif pour afficher le parcours complet.';
     };
     form.addEventListener('input', update); form.addEventListener('change', update); update();
+    const saveError = form.querySelector('[data-course-save-error]');
+    if (saveError) {
+      saveError.focus({ preventScroll: true });
+      saveError.scrollIntoView({ block: 'center' });
+    }
   }
   const sessionForm = document.querySelector('.session-form');
   if (sessionForm) {
