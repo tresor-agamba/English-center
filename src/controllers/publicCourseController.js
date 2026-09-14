@@ -1,6 +1,6 @@
 const publicCourseService = require('../services/publicCourseService');
 const { formatCourseType, formatDuration, formatWeekDays } = require('../utils/catalogFormat.util');
-const { buildPublicCourseCard } = require('../utils/publicCoursePresentation.util');
+const { buildPublicCourseCard, buildPublicCoursePresentation } = require('../utils/publicCoursePresentation.util');
 const { publicMetadata } = require('../services/seoService');
 
 async function index(req, res) {
@@ -41,6 +41,7 @@ async function show(req, res) {
   return res.render('public/courses/show', {
     title: course.title,
     course,
+    presentation: buildPublicCoursePresentation(course),
     formatCourseType,
     formatDuration,
     formatWeekDays,

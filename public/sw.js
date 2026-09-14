@@ -1,6 +1,6 @@
 'use strict';
 
-const CACHE_VERSION = 'new-vision-academy-v16';
+const CACHE_VERSION = 'new-vision-academy-v17';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PUBLIC_CACHE = `${CACHE_VERSION}-public`;
 const ALLOWED_CACHES = new Set([STATIC_CACHE, PUBLIC_CACHE]);
@@ -10,7 +10,7 @@ const ESSENTIAL_ASSETS = [
   '/css/style.css?v=nva-performance-20260830-1',
   '/css/arena-public.css?v=nva-performance-20260830-1',
   '/js/i18n.js?v=nva-public-stitch-20260824-1',
-  '/js/main.js?v=nva-student-navigation-20260827-1',
+  '/js/main.js?v=nva-course-presentation-20260914-1',
   '/js/pwa.js?v=nva-ui-20260730-3',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

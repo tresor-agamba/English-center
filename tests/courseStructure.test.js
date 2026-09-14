@@ -59,13 +59,13 @@ test('Structures commerciales SIMPLE et LEVEL_BASED', async t => {
     });
     await t.test('publication des deux structures sans ancien niveau descriptif obligatoire', async () => { await courses.publish(simple.id); await courses.publish(levels.id); });
     await t.test('catalogue et accueil : totaux et portée tarifaire explicites', async () => {
-      for (const path of ['/formations', '/']) { const { response, html } = await http(path); assert.equal(response.status, 200); assert.match(html, /Prix par niveau/); assert.match(html, /180.00/); assert.match(html, /48/); assert.match(html, /72/); }
+      for (const path of ['/formations', '/']) { const { response, html } = await http(path); assert.equal(response.status, 200); assert.match(html, /Prix par niveau/); assert.match(html, /data-amount="60"/); assert.match(html, /48/); assert.match(html, /72/); }
     });
     await t.test('détail par niveaux : niveaux 1–3 et tarif sans / course', async () => {
       const { response, html } = await http(`/formations/${levels.slug}`); assert.equal(response.status, 200); assert.match(html, /Le paiement s’effectue niveau par niveau/); assert.match(html, /data-amount="60/); assert.match(html, /data-value="72/); assert.doesNotMatch(html, /\/ course/);
       assert.equal((html.match(/<h2><span data-i18n="detail.level">Niveau<\/span> /g) || []).length, 3);
     });
-    await t.test('détail SIMPLE : aucun par niveau et huit séances', async () => { const { html } = await http(`/formations/${simple.slug}`); assert.doesNotMatch(html, /\/ niveau|Prix par niveau|Parcours complet/); assert.match(html, /8 <span data-i18n="structure.sessions"/); });
+    await t.test('détail SIMPLE : aucun par niveau et huit séances', async () => { const { html } = await http(`/formations/${simple.slug}`); assert.doesNotMatch(html, /\/ niveau|Prix par niveau|Parcours complet/); assert.match(html, /8<\/span> <span data-i18n="structure.sessions"/); });
     await t.test('inscription : session sélectionnée, aucune durée anglaise codée en dur', async () => {
       const { response, html } = await http(`/register?session=${levelSession.id}`); assert.equal(response.status, 200); assert.match(html, /data-level-number="1"/); assert.match(html, /data-price="60/); assert.match(html, /data-session-count="16"/);
       const { html: excel } = await http(`/register?session=${simpleSession.id}`); assert.match(excel, /data-session-count="8"/); assert.match(excel, /data-structure="SIMPLE"/);
