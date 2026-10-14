@@ -113,6 +113,12 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 2000 }));
+// Meta signatures cover the wire body; reject compression only on this webhook.
+app.use('/webhooks/whatsapp', (req, res, next) => {
+  const encoding = req.get('content-encoding');
+  if (encoding && encoding.toLowerCase() !== 'identity') return res.sendStatus(415);
+  return next();
+});
 app.use(express.json({ limit: '1mb', verify: (req, res, buffer) => {
   if (req.originalUrl.startsWith('/webhooks/whatsapp')) req.rawBody = Buffer.from(buffer);
 } }));

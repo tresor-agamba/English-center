@@ -416,6 +416,71 @@ enum WhatsAppDeliveryStatus {
   CANCELLED
 }
 
+enum WhatsAppConversationControlState {
+  BOT_ACTIVE
+  HUMAN_TAKEOVER
+  BOT_PAUSED
+  OPTED_OUT
+  CLOSED
+}
+
+enum WhatsAppConversationMessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WhatsAppConversationMessageType {
+  TEXT
+  MEDIA
+  INTERACTIVE
+  SYSTEM
+}
+
+enum WhatsAppInboundProcessingStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
+enum WhatsAppOutboundDeliveryStatus {
+  QUEUED
+  PROCESSING
+  ACCEPTED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}
+
+enum WhatsAppCommercialConsentScope {
+  COMMERCIAL_FOLLOW_UPS
+}
+
+enum WhatsAppCommercialConsentDecision {
+  GRANTED
+  REVOKED
+}
+
+enum WhatsAppCommercialConsentSource {
+  WHATSAPP_INBOUND
+  WEB_FORM
+  ADMIN_RECORDED
+}
+
+enum WhatsAppProspectFollowUpStatus {
+  PENDING
+  PROCESSING
+  ACCEPTED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  CANCELLED
+}
+
 model User {
   id                           Int                         @id @default(autoincrement())
   firstName                    String                      @map("first_name")
@@ -443,6 +508,10 @@ model User {
   createdAnnouncements         Announcement[]              @relation("AnnouncementCreator")
   whatsappPreference           WhatsAppPreference?
   whatsappDeliveries           WhatsAppDelivery[]
+  whatsappConversations        WhatsAppConversation[]            @relation("WhatsAppConversationUser")
+  assignedWhatsAppConversations WhatsAppConversation[]            @relation("WhatsAppConversationAdvisor")
+  whatsappConversationMessagesAuthored WhatsAppConversationMessage[] @relation("WhatsAppMessageAdvisor")
+  whatsappConsentEventsRecorded WhatsAppCommercialConsentEvent[]  @relation("WhatsAppConsentRecorder")
   certificatePayments          CertificatePayment[]        @relation("CertificateStudent")
   confirmedCertificatePayments CertificatePayment[]        @relation("CertificatePaymentConfirmer")
   waivedCertificateFees        CertificateRequest[]        @relation("CertificateFeeWaiverAdmin")
@@ -615,6 +684,118 @@ model WhatsAppDelivery {
   @@index([userId, createdAt])
   @@index([notificationId])
   @@map("whatsapp_deliveries")
+}
+
+model WhatsAppConversation {
+  id                Int                                @id @default(autoincrement())
+  phoneNumber       String                             @unique @map("phone_number") @db.VarChar(16)
+  userId            Int?                               @map("user_id")
+  assignedAdvisorId Int?                               @map("assigned_advisor_id")
+  controlState      WhatsAppConversationControlState   @default(BOT_ACTIVE) @map("control_state")
+  engineState       Json?                              @map("engine_state")
+  engineVersion     Int                                @default(1) @map("engine_version")
+  handoffAt         DateTime?                          @map("handoff_at")
+  resumedAt         DateTime?                          @map("resumed_at")
+  closedAt          DateTime?                          @map("closed_at")
+  lastMessageAt     DateTime?                          @map("last_message_at")
+  createdAt         DateTime                           @default(now()) @map("created_at")
+  updatedAt         DateTime                           @updatedAt @map("updated_at")
+  user              User?                              @relation("WhatsAppConversationUser", fields: [userId], references: [id], onDelete: SetNull)
+  assignedAdvisor   User?                              @relation("WhatsAppConversationAdvisor", fields: [assignedAdvisorId], references: [id], onDelete: SetNull)
+  messages          WhatsAppConversationMessage[]
+  consentEvents     WhatsAppCommercialConsentEvent[]
+  prospectFollowUps  WhatsAppProspectFollowUp[]
+
+  @@index([controlState, lastMessageAt])
+  @@index([userId, lastMessageAt])
+  @@index([assignedAdvisorId, controlState, lastMessageAt])
+  @@map("whatsapp_conversations")
+}
+
+model WhatsAppConversationMessage {
+  id                 Int                                  @id @default(autoincrement())
+  conversationId     Int                                  @map("conversation_id")
+  direction          WhatsAppConversationMessageDirection
+  messageType        WhatsAppConversationMessageType      @default(TEXT) @map("message_type")
+  body               String?                              @db.Text
+  providerMessageId  String?                              @unique @map("provider_message_id")
+  idempotencyKey     String?                              @unique @map("idempotency_key")
+  providerTimestamp  DateTime?                            @map("provider_timestamp")
+  receivedAt         DateTime                             @default(now()) @map("received_at")
+  processingStatus   WhatsAppInboundProcessingStatus?     @map("processing_status")
+  processingStartedAt DateTime?                           @map("processing_started_at")
+  processedAt        DateTime?                            @map("processed_at")
+  deliveryStatus     WhatsAppOutboundDeliveryStatus?      @map("delivery_status")
+  attempts           Int                                  @default(0)
+  failureCode        String?                              @map("failure_code") @db.VarChar(100)
+  senderUserId       Int?                                 @map("sender_user_id")
+  createdAt          DateTime                             @default(now()) @map("created_at")
+  updatedAt          DateTime                             @updatedAt @map("updated_at")
+  conversation       WhatsAppConversation                @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender             User?                               @relation("WhatsAppMessageAdvisor", fields: [senderUserId], references: [id], onDelete: SetNull)
+  consentEvidence    WhatsAppCommercialConsentEvent[]     @relation("WhatsAppConsentEvidence")
+
+  @@index([conversationId, createdAt, id])
+  @@index([processingStatus, receivedAt])
+  @@index([deliveryStatus, createdAt])
+  @@index([senderUserId, createdAt])
+  @@map("whatsapp_conversation_messages")
+}
+
+model WhatsAppCommercialConsentEvent {
+  id                        Int                                  @id @default(autoincrement())
+  conversationId            Int                                  @map("conversation_id")
+  scope                     WhatsAppCommercialConsentScope
+  decision                  WhatsAppCommercialConsentDecision
+  source                    WhatsAppCommercialConsentSource
+  evidenceMessageId         Int?                                 @map("evidence_message_id")
+  evidenceProviderMessageId String?                              @map("evidence_provider_message_id")
+  evidenceReference         String?                              @map("evidence_reference") @db.VarChar(200)
+  noticeVersion             String?                              @map("notice_version") @db.VarChar(100)
+  recordedByUserId          Int?                                 @map("recorded_by_user_id")
+  occurredAt                DateTime                             @map("occurred_at")
+  deduplicationKey          String                               @unique @map("deduplication_key")
+  createdAt                 DateTime                             @default(now()) @map("created_at")
+  conversation              WhatsAppConversation                @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  evidenceMessage           WhatsAppConversationMessage?         @relation("WhatsAppConsentEvidence", fields: [evidenceMessageId], references: [id], onDelete: SetNull)
+  recordedBy                User?                                @relation("WhatsAppConsentRecorder", fields: [recordedByUserId], references: [id], onDelete: SetNull)
+  followUps                 WhatsAppProspectFollowUp[]
+
+  @@index([conversationId, scope, occurredAt, id])
+  @@index([evidenceMessageId])
+  @@index([recordedByUserId, createdAt])
+  @@map("whatsapp_commercial_consent_events")
+}
+
+model WhatsAppProspectFollowUp {
+  id                  Int                            @id @default(autoincrement())
+  conversationId      Int                            @map("conversation_id")
+  consentEventId      Int                            @map("consent_event_id")
+  sequenceHours       Int                            @map("sequence_hours")
+  templateName        String                         @map("template_name") @db.VarChar(512)
+  templateLanguage    String                         @default("fr") @map("template_language") @db.VarChar(10)
+  templateParameters  Json?                          @map("template_parameters")
+  deduplicationKey    String                         @unique @map("deduplication_key")
+  status              WhatsAppProspectFollowUpStatus @default(PENDING)
+  providerMessageId   String?                        @unique @map("provider_message_id")
+  attempts            Int                            @default(0)
+  scheduledFor        DateTime                       @map("scheduled_for")
+  processingStartedAt DateTime?                      @map("processing_started_at")
+  acceptedAt          DateTime?                      @map("accepted_at")
+  sentAt              DateTime?                      @map("sent_at")
+  deliveredAt         DateTime?                      @map("delivered_at")
+  readAt              DateTime?                      @map("read_at")
+  failedAt            DateTime?                      @map("failed_at")
+  cancelledAt         DateTime?                      @map("cancelled_at")
+  failureCode         String?                        @map("failure_code") @db.VarChar(100)
+  createdAt           DateTime                       @default(now()) @map("created_at")
+  updatedAt           DateTime                       @updatedAt @map("updated_at")
+  conversation        WhatsAppConversation           @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  consentEvent        WhatsAppCommercialConsentEvent @relation(fields: [consentEventId], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledFor])
+  @@index([conversationId, status])
+  @@map("whatsapp_prospect_follow_ups")
 }
 
 model ScheduledReminder {

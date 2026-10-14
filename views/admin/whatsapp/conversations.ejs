@@ -1,0 +1,17 @@
+<%- include('../../partials/header', { title }) %>
+<section class="page-heading"><div><p class="eyebrow">WhatsApp Cloud API</p><h1>Conversations</h1><p class="heading-copy">Historique et contrôle de l’automatisation.</p></div><a class="button button-secondary" href="/admin/whatsapp/deliveries">Livraisons</a></section>
+<nav class="settings-tabs" aria-label="Filtrer les conversations">
+  <% const labels = { all: 'Toutes', prospects: 'Prospects', enrolled: 'Inscrits', handoff: 'Conseiller', 'opted-out': 'Désinscrites' }; %>
+  <% filters.forEach((item) => { %><a class="<%= filter === item ? 'active' : '' %>" href="/admin/whatsapp/conversations?filter=<%= encodeURIComponent(item) %>"<% if (filter === item) { %> aria-current="page"<% } %>><%= labels[item] %></a><% }) %>
+</nav>
+<% if (!conversations.length) { %><div class="empty-state"><strong>Aucune conversation</strong><p>Les conversations WhatsApp apparaîtront ici après réception d’un message.</p></div><% } else { %>
+<div class="wa-conversation-list">
+  <% conversations.forEach((conversation) => { const latest = conversation.messages[0]; const isEnrolled = Boolean(conversation.user?.enrollments?.length); const stateLabel = { BOT_ACTIVE: 'Bot actif', HUMAN_TAKEOVER: 'Conseiller', BOT_PAUSED: 'Bot suspendu', OPTED_OUT: 'Désinscrite', CLOSED: 'Clôturée' }[conversation.controlState] || conversation.controlState; %>
+  <a class="wa-conversation-card" href="/admin/whatsapp/conversations/<%= conversation.id %>">
+    <span class="wa-conversation-main"><strong><%= conversation.user ? `${conversation.user.firstName} ${conversation.user.lastName}` : 'Prospect' %></strong><span><%= maskPhoneNumber(conversation.phoneNumber) %></span><small><%= latest ? `${latest.direction === 'INBOUND' ? 'Entrant' : 'Sortant'} · ${latest.body || 'Message sans texte'}` : 'Aucun message' %></small></span>
+    <span class="wa-conversation-meta"><span class="wa-state wa-state-<%= conversation.controlState.toLowerCase().replace(/_/g, '-') %>"><%= stateLabel %></span><small><%= isEnrolled ? 'Inscrit' : (conversation.user ? 'Prospect lié à un compte' : 'Prospect') %></small><% if (conversation.lastMessageAt) { %><time datetime="<%= conversation.lastMessageAt.toISOString() %>"><%= conversation.lastMessageAt.toLocaleString('fr-FR') %></time><% } %><% if (conversation.assignedAdvisor) { %><small>Conseiller : <%= conversation.assignedAdvisor.firstName %> <%= conversation.assignedAdvisor.lastName %></small><% } %></span>
+  </a>
+  <% }) %>
+</div><p class="help-text">Affichage limité aux 100 conversations les plus récentes.</p>
+<% } %>
+<%- include('../../partials/footer') %>

@@ -7,6 +7,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "node scripts/runWithTestDatabase.js test",
+    "test:whatsapp:delivery": "node --test tests/whatsappConversationDelivery.test.js",
+    "test:whatsapp:followups": "node --test tests/whatsappProspectFollowUp.test.js tests/whatsappConversationPersistence.test.js tests/whatsappPreferenceOptOut.test.js",
     "test:db:prepare": "node scripts/runWithTestDatabase.js prepare",
     "test:db:reset": "node scripts/runWithTestDatabase.js reset",
     "fixtures:audit": "node scripts/cleanupTestFixtures.js audit",

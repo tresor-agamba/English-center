@@ -18,6 +18,16 @@ async function recordWhatsAppOptIn(userId, phone, source, client = prisma) {
 async function recordWhatsAppOptOut(userId, client = prisma) {
   const preference = await client.whatsAppPreference.upsert({ where: { userId }, create: { userId, isEnabled: false, hasOptedIn: false, optedOutAt: new Date() }, update: { isEnabled: false, hasOptedIn: false, optedOutAt: new Date() } });
   await client.whatsAppDelivery.updateMany({ where: { userId, status: { in: ['PENDING','PROCESSING','FAILED'] } }, data: { status: 'CANCELLED', cancelledAt: new Date(), failureReason: 'Consentement retiré.' } });
+  const conversationScope = { OR: [{ userId }, ...(preference.phoneNumber ? [{ phoneNumber: preference.phoneNumber }] : [])] };
+  await client.whatsAppConversation.updateMany({ where: { ...conversationScope, controlState: { not: 'CLOSED' } }, data: { controlState: 'OPTED_OUT' } });
+  await client.whatsAppConversationMessage.updateMany({
+    where: { conversation: conversationScope, direction: 'OUTBOUND', deliveryStatus: 'QUEUED' },
+    data: { deliveryStatus: 'CANCELLED', failureCode: 'CONSENT_WITHDRAWN' },
+  });
+  await client.whatsAppProspectFollowUp.updateMany({
+    where: { conversation: conversationScope, status: { in: ['PENDING', 'PROCESSING', 'FAILED'] } },
+    data: { status: 'CANCELLED', cancelledAt: new Date(), failureCode: 'CONSENT_WITHDRAWN' },
+  });
   return preference;
 }
 module.exports = { SOURCES, canReceiveWhatsApp, recordWhatsAppOptIn, recordWhatsAppOptOut, enableWhatsAppForUser: recordWhatsAppOptIn, disableWhatsAppForUser: recordWhatsAppOptOut };

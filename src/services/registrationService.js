@@ -4,6 +4,7 @@ const prisma = require('../utils/prisma');
 const { TRIAL_LIMIT, OCCUPYING_ENROLLMENT_STATUSES, remainingPlaces, sessionRegistrationState, isSessionOpenForRegistration } = require('./enrollmentPolicy');
 const enrollmentReminders = require('./enrollmentReminderService');
 const whatsappPreferences = require('./whatsappPreferenceService');
+const whatsappProspectFollowUps = require('./whatsappProspectFollowUpService');
 const placement = require('./placementTestService');
 const { isPublicCourse } = require('./coursePublicationPolicy');
 
@@ -371,6 +372,7 @@ async function createRegistration(data) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
       const result = await runRegistrationTransaction(data);
+      await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => console.error('Annulation relances WhatsApp:', error.message));
       await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
       if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => console.error('Consentement WhatsApp:', error.message));
       return result;

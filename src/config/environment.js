@@ -1,4 +1,5 @@
 const path = require('path');
+const { getWhatsAppConfig } = require('./whatsappConfig');
 
 const DEFAULT_SECRETS = ['development-secret-change-me', 'your-session-secret', 'changeme', 'secret'];
 class EnvironmentError extends Error {}
@@ -32,6 +33,7 @@ function validateEnvironment(env = process.env, { production = env.NODE_ENV === 
   if (!Number.isFinite(backupMaxMb) || backupMaxMb < 1) errors.push('BACKUP_MAX_SIZE_MB invalide');
   const privateRoot = path.resolve(env.PRIVATE_STORAGE_ROOT || path.join(__dirname, '..', '..', 'storage', 'private'));
   if (errors.length) throw new EnvironmentError(errors.join('; '));
+  getWhatsAppConfig(env, { requireValid: true });
   return {
     nodeEnv, production, port, host, sessionSecret, sessionPoolMax, databaseUrl: env.DATABASE_URL,
     publicAppUrl: env.PUBLIC_APP_URL || `http://localhost:${port}`,

@@ -3,6 +3,7 @@ const { validateEnvironment } = require('./config/environment');
 const logger = require('./services/loggerService');
 const prisma = require('./utils/prisma');
 const { verifySessionStore, closeSessionStore } = require('./config/sessionStore');
+const whatsappDeliveryPoller = require('./jobs/whatsappDeliveryPoller');
 
 let server, shuttingDown = false;
 async function start() {
@@ -14,13 +15,17 @@ async function start() {
     throw new Error('Stockage PostgreSQL des sessions indisponible au démarrage', { cause: error });
   }
   const app = require('./app');
-  server = app.listen(config.port, config.host, () => logger.info('APPLICATION_STARTED', { host: config.host, port: config.port, environment: config.nodeEnv }));
+  server = app.listen(config.port, config.host, () => {
+    logger.info('APPLICATION_STARTED', { host: config.host, port: config.port, environment: config.nodeEnv });
+    whatsappDeliveryPoller.start();
+  });
   return server;
 }
 async function shutdown(signal, { exit = true } = {}) {
   if (shuttingDown) return;
   shuttingDown = true;
   const config = validateEnvironment();
+  whatsappDeliveryPoller.stop();
   logger.info('APPLICATION_SHUTDOWN_STARTED', { signal });
   const closeServer = new Promise((resolve) => server ? server.close(resolve) : resolve());
   const deadline = Date.now() + config.shutdownTimeoutMs;

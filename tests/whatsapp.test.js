@@ -15,6 +15,7 @@ test('canal transactionnel WhatsApp', async (t) => {
   try {
     process.env.WHATSAPP_ENABLED = 'true'; process.env.WHATSAPP_FAKE_MODE = 'true';
     process.env.WHATSAPP_VERIFY_TOKEN = 'verify-test'; process.env.WHATSAPP_APP_SECRET = 'secret-test';
+    process.env.WHATSAPP_PHONE_NUMBER_ID = '1001'; process.env.WHATSAPP_BUSINESS_ACCOUNT_ID = '2001';
     await t.test('valide la configuration et refuse les secrets manquants', () => {
       assert.equal(getWhatsAppConfig(process.env, { requireValid: true }).fakeMode, true);
       assert.throws(() => getWhatsAppConfig({ WHATSAPP_ENABLED: 'true' }, { requireValid: true }), /incomplète/);

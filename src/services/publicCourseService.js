@@ -12,9 +12,9 @@ function futureSessionWhere(now) {
   };
 }
 
-async function listPublished() {
+async function listPublished(client = prisma) {
   const now = new Date();
-  const courses = await prisma.course.findMany({
+  const courses = await client.course.findMany({
     where: { isPublished: true, lmsStatus: 'PUBLISHED', archivedAt: null, closedAt: null },
     orderBy: [{ createdAt: 'desc' }, { title: 'asc' }],
     select: {
@@ -33,6 +33,8 @@ async function listPublished() {
       currency: true,
       pricingMode: true,
       pricingActive: true,
+      pricingStartsAt: true,
+      pricingEndsAt: true,
       isPublished: true,
       lmsStatus: true,
       archivedAt: true,

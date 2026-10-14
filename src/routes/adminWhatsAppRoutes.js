@@ -1,8 +1,15 @@
 const router = require('express').Router();
 const c = require('../controllers/adminWhatsAppController');
 const a = require('../middlewares/asyncHandler');
+router.use(require('../middlewares/requireAdmin'));
 router.get('/deliveries', a(c.deliveries));
 router.post('/deliveries/:id/retry', a(c.retry));
+router.get('/conversations', a(c.conversationList));
+router.get('/conversations/:id', a(c.conversationDetail));
+router.post('/conversations/:id/takeover', a(c.takeOver));
+router.post('/conversations/:id/pause', a(c.pause));
+router.post('/conversations/:id/resume', a(c.resume));
+router.post('/conversations/:id/reply', a(c.reply));
 router.post('/users/:id/enable', a(c.enable));
 router.post('/users/:id/disable', a(c.disable));
 module.exports = router;
