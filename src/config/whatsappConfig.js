@@ -6,6 +6,7 @@ function integer(value, fallback, min, max) {
 function getWhatsAppConfig(env = process.env, { requireValid = false } = {}) {
   const config = {
     enabled: flag(env.WHATSAPP_ENABLED), fakeMode: flag(env.WHATSAPP_FAKE_MODE),
+    workersEnabled: flag(env.WHATSAPP_WORKERS_ENABLED),
     graphApiVersion: env.WHATSAPP_GRAPH_API_VERSION?.trim() || 'v23.0',
     phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '',
     businessAccountId: env.WHATSAPP_BUSINESS_ACCOUNT_ID?.trim() || '',

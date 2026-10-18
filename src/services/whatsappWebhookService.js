@@ -4,6 +4,9 @@ const conversations = require('./whatsappConversationService');
 const conversationDeliveries = require('./whatsappConversationDeliveryService');
 const prospectFollowUps = require('./whatsappProspectFollowUpService');
 const notificationDeliveries = require('./whatsappDeliveryService');
+const logger = require('./loggerService');
+const knownStatuses = ['sent', 'delivered', 'read', 'failed'];
+const safeProviderCode = value => /^(?:0|[1-9]\d{0,9})$/.test(String(value)) ? String(value) : 'UNSPECIFIED';
 function verifySignature(rawBody, header, config = getWhatsAppConfig()) {
   const secret = config.appSecret;
   if (!config.enabled || typeof secret !== 'string' || !secret.trim()) return false;
@@ -39,7 +42,10 @@ function validatePayload(payload, config) {
           if (key === 'errors') continue;
           if (!nonempty(item.id) || !timestampValid(item.timestamp)) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
           if (key === 'statuses') {
-            if (!['sent', 'delivered', 'read', 'failed'].includes(item.status)) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
+            // A well-formed future status is unsupported, not falsely applied.
+            if (!nonempty(item.status) || item.status.length > 64) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
+            if (item.biz_opaque_callback_data !== undefined && (typeof item.biz_opaque_callback_data !== 'string'
+              || !item.biz_opaque_callback_data.length || item.biz_opaque_callback_data.length > 512)) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
           } else {
             if (typeof item.from !== 'string' || !/^[1-9]\d{6,14}$/.test(item.from) || !nonempty(item.type)) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
             if (item.type === 'text' && (!record(item.text) || !nonempty(item.text.body))) throw rejection(400, 'WHATSAPP_INVALID_PAYLOAD');
@@ -67,30 +73,60 @@ function createWebhookReceiver({ configProvider = getWhatsAppConfig, processor =
     return processor(payload);
   };
 }
-async function applyStatus(item) {
-  const map = { sent: 'SENT', delivered: 'DELIVERED', read: 'READ', failed: 'FAILED' }, next = map[item.status];
-  if (!next || !item.id) return false;
-  if (await conversationDeliveries.applyStatus(item)) return true;
-  if (await prospectFollowUps.applyStatus(item)) return true;
-  return notificationDeliveries.applyStatus(item);
+async function applyStatus(item, { detailed = false } = {}) {
+  let result = { outcome: 'invalid' };
+  if (knownStatuses.includes(item?.status) && nonempty(item?.id)) {
+    result = { outcome: 'uncorrelated' };
+    for (const service of [conversationDeliveries, prospectFollowUps, notificationDeliveries]) {
+      const observed = await service.applyStatus(item, { detailed: true });
+      // A legacy/injected boolean true proves handling, not that a row changed.
+      result = observed === true ? { outcome: 'ignored', reason: 'LEGACY_HANDLED' }
+        : observed === false ? { outcome: 'uncorrelated' } : observed;
+      if (!['applied', 'ignored', 'uncorrelated', 'invalid'].includes(result?.outcome)) throw rejection(500, 'WHATSAPP_INVALID_HANDLER_RESULT');
+      if (result.outcome !== 'uncorrelated') break;
+    }
+  }
+  return detailed ? result : ['applied', 'ignored'].includes(result.outcome);
 }
 async function handleInbound(message) {
   return conversations.processInboundMessage(message);
 }
-async function processPayload(payload) {
-  let statuses = 0;
-  let inbound = 0;
-  let duplicates = 0;
-  let queuedResponses = 0;
-  for (const entry of payload?.entry || []) for (const change of entry.changes || []) {
-    for (const status of change.value?.statuses || []) { await applyStatus(status); statuses += 1; }
-    for (const message of change.value?.messages || []) {
-      const result = await handleInbound(message);
-      if (!result.ignored) inbound += 1;
-      if (result.duplicate) duplicates += 1;
-      queuedResponses += result.queuedResponses || 0;
+function createPayloadProcessor({ statusHandler = applyStatus, inboundHandler = handleInbound, observe = logger.warn } = {}) {
+  return async function processPayload(payload) {
+    const summary = { received: 0, applied: 0, uncorrelated: 0, invalid: 0, unsupported: 0,
+      statusesReceived: 0, statuses: 0, statusesIgnored: 0, inbound: 0, duplicates: 0, queuedResponses: 0, providerErrors: 0 };
+    for (const entry of payload?.entry || []) for (const change of entry.changes || []) {
+      for (const status of change.value?.statuses || []) {
+        summary.received++; summary.statusesReceived++;
+        if (!nonempty(status?.id) || !nonempty(status?.status) || !timestampValid(status.timestamp)) { summary.invalid++; continue; }
+        if (!knownStatuses.includes(status.status)) { summary.unsupported++; continue; }
+        const result = await statusHandler(status, { detailed: true });
+        if (result?.outcome === 'applied') { summary.statuses++; summary.applied++; }
+        else if (result?.outcome === 'ignored' || result === true) summary.statusesIgnored++;
+        else if (result?.outcome === 'uncorrelated' || result === false) summary.uncorrelated++;
+        else if (result?.outcome === 'invalid') summary.invalid++;
+        else throw rejection(500, 'WHATSAPP_INVALID_HANDLER_RESULT');
+      }
+      for (const message of change.value?.messages || []) {
+        summary.received++;
+        if (!['text', 'interactive', 'image', 'audio', 'video', 'document', 'sticker'].includes(message?.type)) { summary.unsupported++; continue; }
+        const result = await inboundHandler(message);
+        if (!result.ignored) summary.inbound++;
+        if (result.duplicate) summary.duplicates++;
+        else if (!result.ignored) summary.applied++;
+        summary.queuedResponses += result.queuedResponses || 0;
+      }
+      for (const error of change.value?.errors || []) {
+        summary.received++; summary.providerErrors++;
+        // Numeric code only: no message, details, recipient, URL, trace, or body.
+        observe('WHATSAPP_PROVIDER_EVENT_ERROR', { providerCode: safeProviderCode(error?.code) });
+      }
     }
-  }
-  return { statuses, inbound, duplicates, queuedResponses };
+    if (summary.uncorrelated || summary.unsupported || summary.invalid) observe('WHATSAPP_EVENTS_UNRESOLVED', {
+      uncorrelated: summary.uncorrelated, unsupported: summary.unsupported, invalid: summary.invalid,
+    });
+    return summary;
+  };
 }
-module.exports = { verifySignature, validatePayload, createWebhookReceiver, processRequest: createWebhookReceiver(), applyStatus, processPayload };
+const processPayload = createPayloadProcessor();
+module.exports = { verifySignature, validatePayload, createWebhookReceiver, createPayloadProcessor, processRequest: createWebhookReceiver(), applyStatus, processPayload };

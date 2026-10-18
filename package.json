@@ -8,6 +8,8 @@
     "start": "node src/server.js",
     "test": "node scripts/runWithTestDatabase.js test",
     "test:whatsapp:delivery": "node --test tests/whatsappConversationDelivery.test.js",
+    "test:whatsapp:isolated": "node --test tests/whatsappIntegrationTarget.test.js tests/whatsappHumanHandoff.test.js tests/whatsappHumanHttp.test.js tests/whatsappConversationContext.test.js tests/whatsappConversationPersistence.test.js tests/whatsappConversationEngine.test.js tests/whatsappDeliveryReliability.test.js tests/whatsappConversationDelivery.test.js tests/whatsappProspectFollowUp.test.js tests/whatsappWebhookSecurity.test.js tests/whatsappAdminConversations.test.js tests/whatsappPreferenceOptOut.test.js",
+    "test:whatsapp:postgres": "node --test tests/whatsappPostgres.integration.test.js",
     "test:whatsapp:followups": "node --test tests/whatsappProspectFollowUp.test.js tests/whatsappConversationPersistence.test.js tests/whatsappPreferenceOptOut.test.js",
     "test:db:prepare": "node scripts/runWithTestDatabase.js prepare",
     "test:db:reset": "node scripts/runWithTestDatabase.js reset",

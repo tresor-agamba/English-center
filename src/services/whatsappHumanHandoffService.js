@@ -44,7 +44,8 @@ function createWhatsAppHumanHandoffService({ client = prisma, configProvider = g
       // Never revive old queued responses when returning the conversation to the bot.
       await tx.whatsAppConversationMessage.updateMany({ where: { conversationId: id, direction: 'OUTBOUND', deliveryStatus: 'QUEUED', messageType: { not: 'SYSTEM' } }, data: { deliveryStatus: 'CANCELLED', failureCode: 'CONTROL_STATE_CHANGED' } });
       if (action !== 'RESUME') await followUps.cancelForConversation(id, 'HUMAN_CONTROL', tx);
-      const event = await tx.whatsAppConversationMessage.create({ data: { conversationId: id, direction: 'OUTBOUND', messageType: 'SYSTEM', senderUserId: actorId,
+      // Internal audit entry: CANCELLED keeps it terminal and out of the send queue without claiming delivery.
+      const event = await tx.whatsAppConversationMessage.create({ data: { conversationId: id, direction: 'OUTBOUND', messageType: 'SYSTEM', senderUserId: actorId, deliveryStatus: 'CANCELLED',
         body: `Administrateur #${actorId} · ${action} : ${row.controlState} → ${target}`, receivedAt: at, idempotencyKey: `wa-control:${crypto.randomUUID()}` } });
       return { conversation: { ...row, ...data }, eventId: event.id, before: row.controlState, after: target };
     });

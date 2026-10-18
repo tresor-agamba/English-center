@@ -37,7 +37,8 @@ function createWhatsAppConversationDeliveryService({ client = prisma, sender = c
       await client.whatsAppConversationMessage.updateMany({ where: { id, deliveryStatus: 'PROCESSING' }, data: { deliveryStatus: 'CANCELLED', processingStartedAt: null, failureCode: 'AUTOMATION_NOT_ACTIVE' } });
       return { cancelled: true };
     }
-    if (!recipient || !(await getServiceWindow(client, message.conversationId, startedAt)).open) {
+    const serviceWindow = await getServiceWindow(client, message.conversationId, startedAt);
+    if (!recipient || !serviceWindow.open) {
       await client.whatsAppConversationMessage.updateMany({ where: { id, deliveryStatus: 'PROCESSING' }, data: { deliveryStatus: 'FAILED', processingStartedAt: null, failureCode: 'CUSTOMER_SERVICE_WINDOW_EXPIRED' } });
       return { failed: true, retryable: false };
     }
@@ -52,6 +53,10 @@ function createWhatsAppConversationDeliveryService({ client = prisma, sender = c
     if (!canDeliverMessage(active, active.conversation) || !authorAllowed) {
       await client.whatsAppConversationMessage.updateMany({ where: { id, deliveryStatus: 'PROCESSING' }, data: { deliveryStatus: 'CANCELLED', processingStartedAt: null, failureCode: 'AUTOMATION_NOT_ACTIVE' } });
       return { cancelled: true };
+    }
+    if (now() >= serviceWindow.expiresAt || now() < serviceWindow.lastInboundAt) {
+      await client.whatsAppConversationMessage.updateMany({ where: { id, deliveryStatus: 'PROCESSING', attempts: message.attempts }, data: { deliveryStatus: 'FAILED', processingStartedAt: null, failureCode: 'CUSTOMER_SERVICE_WINDOW_EXPIRED' } });
+      return { failed: true, retryable: false };
     }
 
     try {
@@ -87,8 +92,8 @@ function createWhatsAppConversationDeliveryService({ client = prisma, sender = c
     return results;
   }
 
-  async function applyStatus(item) {
-    return applyDeliveryStatus({ model: client.whatsAppConversationMessage, item, stateField: 'deliveryStatus', correlationField: 'idempotencyKey', conversation: true, now });
+  async function applyStatus(item, { detailed = false } = {}) {
+    return applyDeliveryStatus({ model: client.whatsAppConversationMessage, item, stateField: 'deliveryStatus', correlationField: 'idempotencyKey', conversation: true, now, detailed });
   }
 
   return { recoverAbandoned, sendMessage, processPending, applyStatus };

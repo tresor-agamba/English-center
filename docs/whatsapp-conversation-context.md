@@ -55,7 +55,7 @@ Une réponse courte, éventuellement un nom partiel unique, termine la question 
 
 Le moteur fournit uniquement un lien vers le formulaire public, après consultation du service d'inscription. Aucun compte, inscription ou paiement n'est créé par cette conversation. Une URL publique contenant des identifiants ou une configuration invalide n'est pas exposée.
 
-STOP reste prioritaire et bloque les réponses suivantes. Le transfert humain conserve le contexte ; les messages ordinaires et le menu ne réactivent pas le bot. Le service de persistance conserve les contrôles `BOT_ACTIVE`, `HUMAN_TAKEOVER` et `OPTED_OUT`, et n'enregistre aucune réponse automatique ordinaire pendant la prise en charge humaine. Le développement de la réponse manuelle et de l'accusé de transfert reste une phase distincte.
+STOP reste prioritaire et bloque les réponses suivantes. Le transfert humain conserve le contexte ; les messages ordinaires et le menu ne réactivent pas le bot. Le service de persistance conserve les contrôles `BOT_ACTIVE`, `HUMAN_TAKEOVER` et `OPTED_OUT`, et n'enregistre aucune réponse automatique ordinaire pendant la prise en charge humaine. La réponse manuelle et l'accusé de transfert sont décrits dans `whatsapp-human-handoff.md`.
 
 ## Validation et limites
 

@@ -40,6 +40,9 @@ function harness({ state = 'HUMAN_TAKEOVER', owner = 1, age = 60_000, enabled = 
         return { count: found.length };
       },
       create: async ({ data }) => {
+        const validInbound = data.direction === 'INBOUND' && data.processingStatus != null && data.deliveryStatus == null;
+        const validOutbound = data.direction === 'OUTBOUND' && data.processingStatus == null && data.deliveryStatus != null;
+        assert.ok(validInbound || validOutbound, 'Message must satisfy the PostgreSQL status/direction constraint');
         if (rows.some(row => row.idempotencyKey === data.idempotencyKey)) throw Object.assign(new Error('unique'), { code: 'P2002' });
         const row = { id: rows.length + 1, attempts: 0, failureCode: null, providerMessageId: null, senderUserId: null, createdAt: now, updatedAt: now, ...data }; rows.push(row); return structuredClone(row);
       },
@@ -92,6 +95,12 @@ test('window is rechecked by the worker after queueing', async () => {
   h.advance(2 * 3600_000); await h.delivery.processPending();
   assert.equal(h.rows[0].deliveryStatus, 'FAILED'); assert.equal(h.rows[0].failureCode, 'CUSTOMER_SERVICE_WINDOW_EXPIRED'); assert.equal(h.sends(), 0);
 });
+test('window expiring during administrator preflight prevents actual transmission', async () => {
+  const h = harness({ age: 24 * 3600_000 - 1000 }); await h.queue();
+  const original = h.client.user.findUnique;
+  h.client.user.findUnique = async args => { const author = await original(args); h.advance(2000); return author; };
+  await h.delivery.processPending(); assert.equal(h.sends(), 0); assert.equal(h.rows[0].failureCode, 'CUSTOMER_SERVICE_WINDOW_EXPIRED');
+});
 test('duplicate form submits produce one history message and one network attempt', async () => {
   const h = harness(); const key = crypto.randomUUID();
   const results = await Promise.all([h.queue('Bonjour', key), h.queue('Bonjour', key)]);
@@ -111,8 +120,38 @@ test('return to bot preserves memory, cancels pending manual replies and does no
   assert.equal(h.conversation.controlState, 'BOT_ACTIVE'); assert.equal(h.conversation.assignedAdvisorId, null);
   assert.equal(h.conversation.engineState.selectedCourseId, 11); assert.equal(h.conversation.engineState.automationPaused, false);
   assert.equal(h.rows[0].deliveryStatus, 'CANCELLED'); await h.delivery.processPending(); assert.equal(h.sends(), 0);
-  assert.equal(h.rows[1].messageType, 'SYSTEM'); assert.equal(h.rows[1].senderUserId, 1); assert.equal(h.rows[1].deliveryStatus, undefined);
+  assert.equal(h.rows[1].messageType, 'SYSTEM'); assert.equal(h.rows[1].senderUserId, 1); assert.equal(h.rows[1].deliveryStatus, 'CANCELLED');
 });
+
+for (const [action, state, owner, target] of [
+  ['takeOver', 'BOT_ACTIVE', null, 'HUMAN_TAKEOVER'],
+  ['pause', 'BOT_ACTIVE', null, 'BOT_PAUSED'],
+  ['resume', 'HUMAN_TAKEOVER', 1, 'BOT_ACTIVE'],
+]) {
+  test(`${action} records an internal SYSTEM event satisfying the SQL constraint without sending`, async () => {
+    const h = harness({ state, owner });
+    await h.human[action](7, 1);
+    assert.equal(h.conversation.controlState, target);
+    assert.equal(h.rows.length, 1);
+    const event = h.rows[0];
+    assert.equal(event.direction, 'OUTBOUND');
+    assert.equal(event.messageType, 'SYSTEM');
+    assert.equal(event.senderUserId, 1);
+    assert.match(event.idempotencyKey, /^wa-control:/);
+    assert.equal(event.processingStatus ?? null, null);
+    assert.equal(event.deliveryStatus, 'CANCELLED');
+    assert.equal(event.providerMessageId, null);
+    assert.equal(event.attempts, 0);
+    assert.equal(h.audits[0].messageId, event.id);
+    assert.deepEqual(await h.delivery.sendMessage(event.id), { skipped: true });
+    assert.deepEqual(await h.delivery.processPending(), []);
+    await h.human[action](7, 1);
+    assert.equal(h.rows.length, 1);
+    assert.equal(h.audits.length, 1);
+    assert.equal(event.deliveryStatus, 'CANCELLED');
+    assert.equal(h.sends(), 0);
+  });
+}
 test('STOP blocks replies and takeover/resume without altering consent', async () => {
   const h = harness({ state: 'OPTED_OUT' }); h.conversation.engineState.optedOut = true;
   await assert.rejects(h.queue(), { statusCode: 409 }); await assert.rejects(h.human.takeOver(7, 1), { statusCode: 409 });
@@ -169,9 +208,15 @@ test('conversation body renders history, window and escaped manual form without 
   const source = fs.readFileSync('views/admin/whatsapp/conversation.ejs', 'utf8').replace(/<%- include\([^\n]+?\) %>/g, '');
   const at = new Date('2026-10-14T12:00:00Z');
   const html = ejs.render(source, { conversation: { id: 7, phoneNumber: '+243812345678', controlState: 'HUMAN_TAKEOVER', assignedAdvisorId: 1,
-    lastMessageAt: at, serviceWindow: { open: true, expiresAt: at }, messages: [{ id: 1, createdAt: at, direction: 'INBOUND', body: '<script>attack</script>', messageType: 'TEXT' }],
+    lastMessageAt: at, serviceWindow: { open: true, expiresAt: at }, messages: [
+      { id: 1, createdAt: at, direction: 'INBOUND', body: '<script>attack</script>', messageType: 'TEXT' },
+      { id: 2, createdAt: at, direction: 'OUTBOUND', body: 'Control event', messageType: 'SYSTEM', deliveryStatus: 'CANCELLED', sender: { firstName: 'Test', lastName: 'Advisor' } },
+      { id: 3, createdAt: at, direction: 'OUTBOUND', body: 'Manual reply', messageType: 'TEXT', deliveryStatus: 'QUEUED', sender: { firstName: 'Test', lastName: 'Advisor' } },
+    ],
     prospectFollowUps: [], consentEvents: [] }, title: 'Conversation', currentAdminId: 1, whatsappEnabled: true, queryAction: '',
     manualError: '', messageBody: '</textarea><script>attack</script>', submissionId: crypto.randomUUID(), maxManualLength: 4000, csrfField: () => '<input name="_csrf" value="test">', maskPhoneNumber: value => value });
   assert.match(html, /Fenêtre de service ouverte/); assert.match(html, /name="message"/);
   assert.match(html, /\+243812345678/); assert.doesNotMatch(html, /<script>/); assert.match(html, /&lt;script&gt;/);
+  assert.equal((html.match(/Action administrative/g) || []).length, 1);
+  assert.equal((html.match(/Réponse manuelle/g) || []).length, 1);
 });

@@ -213,7 +213,7 @@ test('conversation cancelled during preflight is not sent', async () => {
   await h.send(); assert.equal(h.sends(), 0); assert.equal(h.row.deliveryStatus, 'CANCELLED');
 });
 
-const transportConfig = { fakeMode: false, graphApiVersion: 'v23.0', phoneNumberId: '1001', accessToken: 'isolated-test-token' };
+const transportConfig = { enabled: true, fakeMode: false, graphApiVersion: 'v23.0', phoneNumberId: '1001', accessToken: 'isolated-test-token' };
 for (const [name, fetchImpl] of [
   ['timeout', async () => { throw Object.assign(new Error('timeout'), { name: 'AbortError' }); }],
   ['unexpected network exception', async () => { throw new Error('connection lost'); }],

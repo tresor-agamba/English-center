@@ -3,6 +3,174 @@ generator client {
   binaryTargets = ["native", "windows", "debian-openssl-3.0.x"]
 }
 
+// Phase 4A: declarations only. No migration applied. CHECK/partial-index inventory:
+// docs/gupshup-phase4a-report.md. Never deploy a schema-only generated migration.
+model ProviderApplication {
+  id String @id @default(uuid()) @db.Uuid
+  provider String @db.VarChar(16)
+  environment String @db.VarChar(16)
+  applicationKey String @map("application_key") @db.VarChar(64)
+  externalAppId String? @map("external_app_id") @db.VarChar(128)
+  externalAppName String @map("external_app_name") @db.VarChar(128)
+  apiFamily String @map("api_family") @db.VarChar(32)
+  webhookVersion Int @map("webhook_version") @db.SmallInt
+  authMethod String @default("reject") @map("auth_method") @db.VarChar(32)
+  secretReference String? @map("secret_reference") @db.VarChar(200)
+  authConfirmedAt DateTime? @map("auth_confirmed_at") @db.Timestamptz(3)
+  inboundEnabled Boolean @default(false) @map("inbound_enabled")
+  outboundEnabled Boolean @default(false) @map("outbound_enabled")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deliveries ProviderDelivery[]
+  events ProviderWebhookEvent[]
+  @@unique([provider, environment, applicationKey], map: "provider_apps_scope_key")
+  @@unique([provider, environment, externalAppId], map: "provider_apps_external_id_key")
+  @@unique([provider, environment, externalAppName], map: "provider_apps_external_name_key")
+  @@map("provider_applications")
+}
+
+model ProviderDelivery {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @map("application_id") @db.Uuid
+  deliveryKind String @map("delivery_kind") @db.VarChar(16)
+  conversationMessageId Int? @unique(map: "provider_delivery_message_key") @map("conversation_message_id")
+  notificationDeliveryId Int? @unique(map: "provider_delivery_notification_key") @map("notification_delivery_id")
+  followUpId Int? @unique(map: "provider_delivery_follow_up_key") @map("follow_up_id")
+  activeAttemptId String? @map("active_attempt_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  application ProviderApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  conversationMessage WhatsAppConversationMessage? @relation(fields: [conversationMessageId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  notificationDelivery WhatsAppDelivery? @relation(fields: [notificationDeliveryId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  followUp WhatsAppProspectFollowUp? @relation(fields: [followUpId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  attempts ProviderSendAttempt[] @relation("DeliveryAttempts")
+  activeAttempt ProviderSendAttempt? @relation("ActiveAttempt", fields: [applicationId, id, activeAttemptId], references: [applicationId, deliveryRefId, id], onDelete: Restrict, onUpdate: Restrict)
+  @@unique([applicationId, id], map: "provider_delivery_app_id_key")
+  @@map("provider_deliveries")
+}
+
+model ProviderSendAttempt {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @map("application_id") @db.Uuid
+  deliveryRefId String @map("delivery_ref_id") @db.Uuid
+  attemptNumber Int @map("attempt_number")
+  operationKey String @map("operation_key") @db.VarChar(128)
+  payloadDigest Bytes @map("payload_digest")
+  state String @default("PREPARED") @db.VarChar(24)
+  submissionId String? @map("submission_id") @db.VarChar(512)
+  canonicalId String? @map("canonical_id") @db.VarChar(1700)
+  dispatchToken String? @map("dispatch_token") @db.Uuid
+  preparedAt DateTime @map("prepared_at") @db.Timestamptz(3)
+  dispatchStartedAt DateTime? @map("dispatch_started_at") @db.Timestamptz(3)
+  responseReceivedAt DateTime? @map("response_received_at") @db.Timestamptz(3)
+  acceptedAt DateTime? @map("accepted_at") @db.Timestamptz(3)
+  rejectedAt DateTime? @map("rejected_at") @db.Timestamptz(3)
+  uncertainAt DateTime? @map("uncertain_at") @db.Timestamptz(3)
+  httpStatus Int? @map("http_status") @db.SmallInt
+  errorCode String? @map("error_code") @db.VarChar(100)
+  rejectionIsDefinitive Boolean @default(false) @map("rejection_is_definitive")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  delivery ProviderDelivery @relation("DeliveryAttempts", fields: [applicationId, deliveryRefId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  activeFor ProviderDelivery[] @relation("ActiveAttempt")
+  aliases ProviderMessageAlias[]
+  events ProviderWebhookEvent[] @relation("EventAttempt")
+  audits ProviderReconciliationAudit[] @relation("AuditAttempt")
+  @@unique([applicationId, id], map: "provider_attempt_app_id_key")
+  @@unique([applicationId, deliveryRefId, id], map: "provider_attempt_delivery_id_key")
+  @@unique([applicationId, deliveryRefId, attemptNumber], map: "provider_attempt_number_key")
+  @@unique([applicationId, operationKey], map: "provider_attempt_operation_key")
+  @@unique([applicationId, submissionId], map: "provider_attempt_submission_key")
+  @@unique([applicationId, canonicalId], map: "provider_attempt_canonical_key")
+  @@index([applicationId, state, dispatchStartedAt], map: "provider_attempt_recovery_idx")
+  @@map("provider_send_attempts")
+}
+
+model ProviderMessageAlias {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @map("application_id") @db.Uuid
+  attemptId String @map("attempt_id") @db.Uuid
+  aliasType String @map("alias_type") @db.VarChar(24)
+  externalId String @map("external_id") @db.VarChar(512)
+  learnedFromEventId String? @map("learned_from_event_id") @db.Uuid
+  learnedAt DateTime @map("learned_at") @db.Timestamptz(3)
+  attempt ProviderSendAttempt @relation(fields: [applicationId, attemptId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  learnedFromEvent ProviderWebhookEvent? @relation("AliasSource", fields: [applicationId, learnedFromEventId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  @@unique([applicationId, aliasType, externalId], map: "provider_alias_external_key")
+  @@index([applicationId, attemptId], map: "provider_alias_attempt_idx")
+  @@map("provider_message_aliases")
+}
+
+model ProviderWebhookEvent {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @map("application_id") @db.Uuid
+  eventKind String @map("event_kind") @db.VarChar(24)
+  sourceEventId String? @map("source_event_id") @db.VarChar(512)
+  dedupVersion Int @map("dedup_version") @db.SmallInt
+  dedupKey Bytes @map("dedup_key")
+  payloadDigest Bytes @map("payload_digest")
+  externalGupshupId String? @map("external_gupshup_id") @db.VarChar(512)
+  externalWhatsappId String? @map("external_whatsapp_id") @db.VarChar(512)
+  normalizedStatus String? @map("normalized_status") @db.VarChar(16)
+  occurredAt DateTime? @map("occurred_at") @db.Timestamptz(3)
+  occurredAtSource String? @map("occurred_at_source") @db.VarChar(32)
+  firstReceivedAt DateTime @map("first_received_at") @db.Timestamptz(3)
+  lastReceivedAt DateTime @map("last_received_at") @db.Timestamptz(3)
+  receiptCount Int @default(1) @map("receipt_count")
+  payloadCiphertext Bytes? @map("payload_ciphertext")
+  encryptionKeyReference String? @map("encryption_key_reference") @db.VarChar(200)
+  payloadExpiresAt DateTime @map("payload_expires_at") @db.Timestamptz(3)
+  tombstoneExpiresAt DateTime @map("tombstone_expires_at") @db.Timestamptz(3)
+  authenticationMethod String @map("authentication_method") @db.VarChar(32)
+  credentialVersion String @map("credential_version") @db.VarChar(64)
+  state String @default("RECEIVED") @db.VarChar(32)
+  attemptId String? @map("attempt_id") @db.Uuid
+  linkedInboundMessageId Int? @map("linked_inbound_message_id")
+  processAttempts Int @default(0) @map("process_attempts")
+  nextProcessAt DateTime @map("next_process_at") @db.Timestamptz(3)
+  leaseToken String? @map("lease_token") @db.Uuid
+  leaseGeneration BigInt @default(0) @map("lease_generation")
+  leaseOwner String? @map("lease_owner") @db.VarChar(64)
+  leaseExpiresAt DateTime? @map("lease_expires_at") @db.Timestamptz(3)
+  processedAt DateTime? @map("processed_at") @db.Timestamptz(3)
+  quarantinedAt DateTime? @map("quarantined_at") @db.Timestamptz(3)
+  resolutionCode String? @map("resolution_code") @db.VarChar(100)
+  lastErrorCode String? @map("last_error_code") @db.VarChar(100)
+  application ProviderApplication @relation(fields: [applicationId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  attempt ProviderSendAttempt? @relation("EventAttempt", fields: [applicationId, attemptId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  linkedInboundMessage WhatsAppConversationMessage? @relation(fields: [linkedInboundMessageId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  learnedAliases ProviderMessageAlias[] @relation("AliasSource")
+  audits ProviderReconciliationAudit[] @relation("AuditEvent")
+  @@unique([applicationId, id], map: "provider_event_app_id_key")
+  @@unique([applicationId, dedupVersion, dedupKey], map: "provider_event_dedup_key")
+  @@index([applicationId, state, nextProcessAt, firstReceivedAt, id], map: "provider_event_queue_idx")
+  @@index([applicationId, state, leaseExpiresAt, id], map: "provider_event_lease_idx")
+  @@index([applicationId, externalGupshupId, state], map: "provider_event_gupshup_idx")
+  @@index([applicationId, externalWhatsappId, state], map: "provider_event_whatsapp_idx")
+  @@index([applicationId, state, firstReceivedAt, id], map: "provider_event_operations_idx")
+  @@index([payloadExpiresAt], map: "provider_event_payload_expiry_idx")
+  @@index([tombstoneExpiresAt], map: "provider_event_tombstone_expiry_idx")
+  @@map("provider_webhook_events")
+}
+
+model ProviderReconciliationAudit {
+  id String @id @default(uuid()) @db.Uuid
+  applicationId String @map("application_id") @db.Uuid
+  eventId String? @map("event_id") @db.Uuid
+  attemptId String? @map("attempt_id") @db.Uuid
+  action String @db.VarChar(32)
+  actorUserId Int? @map("actor_user_id")
+  evidenceReference String? @map("evidence_reference") @db.VarChar(200)
+  reasonCode String @map("reason_code") @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  event ProviderWebhookEvent? @relation("AuditEvent", fields: [applicationId, eventId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  attempt ProviderSendAttempt? @relation("AuditAttempt", fields: [applicationId, attemptId], references: [applicationId, id], onDelete: Restrict, onUpdate: Restrict)
+  actor User? @relation(fields: [actorUserId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  @@index([applicationId, eventId, createdAt], map: "provider_audit_event_idx")
+  @@index([applicationId, attemptId, createdAt], map: "provider_audit_attempt_idx")
+  @@map("provider_reconciliation_audits")
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -482,6 +650,7 @@ enum WhatsAppProspectFollowUpStatus {
 }
 
 model User {
+  providerReconciliationAudits ProviderReconciliationAudit[]
   id                           Int                         @id @default(autoincrement())
   firstName                    String                      @map("first_name")
   lastName                     String                      @map("last_name")
@@ -653,6 +822,7 @@ model WhatsAppPreference {
 }
 
 model WhatsAppDelivery {
+  providerDeliveries ProviderDelivery[]
   id                  Int                    @id @default(autoincrement())
   notificationId      Int?                   @map("notification_id")
   userId              Int                    @map("user_id")
@@ -713,6 +883,8 @@ model WhatsAppConversation {
 }
 
 model WhatsAppConversationMessage {
+  providerDeliveries ProviderDelivery[]
+  providerInboundEvents ProviderWebhookEvent[]
   id                 Int                                  @id @default(autoincrement())
   conversationId     Int                                  @map("conversation_id")
   direction          WhatsAppConversationMessageDirection
@@ -768,6 +940,7 @@ model WhatsAppCommercialConsentEvent {
 }
 
 model WhatsAppProspectFollowUp {
+  providerDeliveries ProviderDelivery[]
   id                  Int                            @id @default(autoincrement())
   conversationId      Int                            @map("conversation_id")
   consentEventId      Int                            @map("consent_event_id")
@@ -2210,3 +2383,135 @@ model Document {
   @@index([lessonId])
   @@map("documents")
 }
+
+// Meta inbox: SQL applied separately on the dedicated test database.
+// CHECKs, partial indexes and deferred manifest triggers remain SQL-managed.
+// Never apply a general schema migration: Provider* tables are not deployed.
+model MetaWebhookEndpoint {
+  id                   String   @id @default(uuid()) @db.Uuid
+  environment          String   @db.VarChar(16)
+  applicationKey       String   @map("application_key") @db.VarChar(64)
+  metaAppId            String   @map("meta_app_id") @db.VarChar(64)
+  wabaId               String   @map("waba_id") @db.VarChar(64)
+  phoneNumberId        String   @map("phone_number_id") @db.VarChar(64)
+  inboxEnabled         Boolean  @default(false) @map("inbox_enabled")
+  processingEnabled    Boolean  @default(false) @map("processing_enabled")
+  normalizationVersion Int      @default(1) @map("normalization_version") @db.SmallInt
+  identityVersion      Int      @default(1) @map("identity_version") @db.SmallInt
+  lookupKeyVersion     String   @map("lookup_key_version") @db.VarChar(64)
+  streamKeyVersion     String   @map("stream_key_version") @db.VarChar(64)
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  disabledAt           DateTime? @map("disabled_at") @db.Timestamptz(3)
+  receipts             MetaWebhookReceipt[]
+  events               MetaWebhookEvent[]
+  @@unique([environment, applicationKey], map: "meta_endpoint_application_key")
+  @@unique([environment, metaAppId, wabaId, phoneNumberId], map: "meta_endpoint_account_key")
+  @@map("meta_webhook_endpoints")
+}
+
+model MetaWebhookReceipt {
+  id                       String   @id @default(uuid()) @db.Uuid
+  endpointId               String   @map("endpoint_id") @db.Uuid
+  receivedAt               DateTime @map("received_at") @db.Timestamptz(3)
+  storedAt                 DateTime @map("stored_at") @db.Timestamptz(3)
+  requestDigest            Bytes    @map("request_digest")
+  digestKeyVersion         String   @map("digest_key_version") @db.VarChar(64)
+  authenticationKeyVersion String   @map("authentication_key_version") @db.VarChar(64)
+  requestBytes             Int      @map("request_bytes")
+  itemCount                Int      @map("item_count")
+  newCount                 Int      @map("new_count")
+  duplicateCount           Int      @map("duplicate_count")
+  conflictCount            Int      @map("conflict_count")
+  expiresAt                DateTime @map("expires_at") @db.Timestamptz(3)
+  endpoint MetaWebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "meta_receipt_endpoint_fkey")
+  items MetaWebhookReceiptItem[]
+  @@unique([endpointId, id], map: "meta_receipt_endpoint_id_key")
+  @@index([endpointId, storedAt, id], map: "meta_receipt_time_idx")
+  @@index([expiresAt, id], map: "meta_receipt_expiry_idx")
+  @@map("meta_webhook_receipts")
+}
+
+model MetaWebhookEvent {
+  id                          String   @id @default(uuid()) @db.Uuid
+  endpointId                  String   @map("endpoint_id") @db.Uuid
+  enqueueOrder                BigInt   @unique(map: "meta_webhook_events_enqueue_order_key") @default(autoincrement()) @map("enqueue_order")
+  kind                        String   @db.VarChar(24)
+  nativeMessageId             String?  @map("native_message_id") @db.VarChar(512)
+  nativeStatus                String?  @map("native_status") @db.VarChar(64)
+  occurredAt                  DateTime? @map("occurred_at") @db.Timestamptz(3)
+  occurredAtSource            String?  @map("occurred_at_source") @db.VarChar(32)
+  identityVersion             Int      @map("identity_version") @db.SmallInt
+  normalizationVersion        Int      @map("normalization_version") @db.SmallInt
+  lookupKeyVersion            String   @map("lookup_key_version") @db.VarChar(64)
+  identityKey                 Bytes    @map("identity_key")
+  contentDigest               Bytes    @map("content_digest")
+  correlationKeyHash          Bytes?   @map("correlation_key_hash")
+  streamKey                   Bytes?   @map("stream_key")
+  streamKeyVersion            String?  @map("stream_key_version") @db.VarChar(64)
+  firstReceivedAt             DateTime @map("first_received_at") @db.Timestamptz(3)
+  lastReceivedAt              DateTime @map("last_received_at") @db.Timestamptz(3)
+  storedAt                    DateTime @map("stored_at") @db.Timestamptz(3)
+  receiptCount                BigInt   @default(1) @map("receipt_count")
+  normalizedPayloadCiphertext Bytes?   @map("normalized_payload_ciphertext")
+  encryptionKeyVersion        String?  @map("encryption_key_version") @db.VarChar(64)
+  state                       String   @default("RECEIVED") @db.VarChar(32)
+  effectOutcome               String?  @map("effect_outcome") @db.VarChar(32)
+  reasonCode                  String?  @map("reason_code") @db.VarChar(100)
+  processingAttempts          Int      @default(0) @map("processing_attempts")
+  consecutiveFailures         Int      @default(0) @map("consecutive_failures")
+  nextAttemptAt               DateTime? @map("next_attempt_at") @db.Timestamptz(3)
+  leaseToken                  String?  @map("lease_token") @db.Uuid
+  leaseOwner                  String?  @map("lease_owner") @db.VarChar(64)
+  leaseExpiresAt              DateTime? @map("lease_expires_at") @db.Timestamptz(3)
+  leaseGeneration             BigInt   @default(0) @map("lease_generation")
+  processedAt                 DateTime? @map("processed_at") @db.Timestamptz(3)
+  failedAt                    DateTime? @map("failed_at") @db.Timestamptz(3)
+  uncorrelatedSince           DateTime? @map("uncorrelated_since") @db.Timestamptz(3)
+  targetKind                  String?  @map("target_kind") @db.VarChar(16)
+  targetId                    Int?     @map("target_id")
+  observedAttempt             Int?     @map("observed_attempt")
+  hasConflict                 Boolean  @default(false) @map("has_conflict")
+  reviewRequired              Boolean  @default(false) @map("review_required")
+  payloadExpiresAt            DateTime @map("payload_expires_at") @db.Timestamptz(3)
+  tombstoneExpiresAt          DateTime @map("tombstone_expires_at") @db.Timestamptz(3)
+  payloadPurgedAt             DateTime? @map("payload_purged_at") @db.Timestamptz(3)
+  endpoint MetaWebhookEndpoint @relation(fields: [endpointId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "meta_event_endpoint_fkey")
+  items MetaWebhookReceiptItem[]
+  @@unique([endpointId, id], map: "meta_event_endpoint_id_key")
+  @@unique([endpointId, identityVersion, lookupKeyVersion, identityKey], map: "meta_event_identity_key")
+  @@index([endpointId, state, nextAttemptAt, enqueueOrder], map: "meta_event_queue_idx")
+  @@index([endpointId, state, leaseExpiresAt], map: "meta_event_lease_idx")
+  @@index([endpointId, streamKey, enqueueOrder], map: "meta_event_stream_idx")
+  @@index([endpointId, nativeMessageId, state], map: "meta_event_native_idx")
+  @@index([endpointId, correlationKeyHash, state], map: "meta_event_correlation_idx")
+  @@index([endpointId, state, firstReceivedAt, id], map: "meta_event_operations_idx")
+  @@index([payloadExpiresAt, id], map: "meta_event_payload_expiry_idx")
+  @@index([tombstoneExpiresAt, id], map: "meta_event_tombstone_expiry_idx")
+  @@map("meta_webhook_events")
+}
+
+model MetaWebhookReceiptItem {
+  id                       String   @id @default(uuid()) @db.Uuid
+  endpointId               String   @map("endpoint_id") @db.Uuid
+  receiptId                String   @map("receipt_id") @db.Uuid
+  eventId                  String   @map("event_id") @db.Uuid
+  entryIndex               Int      @map("entry_index")
+  changeIndex              Int      @map("change_index")
+  itemIndex                Int      @map("item_index")
+  collection               String   @db.VarChar(16)
+  disposition              String   @db.VarChar(16)
+  observedContentDigest    Bytes    @map("observed_content_digest")
+  conflictPayloadCiphertext Bytes?  @map("conflict_payload_ciphertext")
+  encryptionKeyVersion     String?  @map("encryption_key_version") @db.VarChar(64)
+  conflictPayloadExpiresAt DateTime? @map("conflict_payload_expires_at") @db.Timestamptz(3)
+  payloadPurgedAt          DateTime? @map("payload_purged_at") @db.Timestamptz(3)
+  createdAt                DateTime @map("created_at") @db.Timestamptz(3)
+  expiresAt                DateTime @map("expires_at") @db.Timestamptz(3)
+  receipt MetaWebhookReceipt @relation(fields: [endpointId, receiptId], references: [endpointId, id], onDelete: Restrict, onUpdate: Restrict, map: "meta_receipt_item_receipt_fkey")
+  event MetaWebhookEvent @relation(fields: [endpointId, eventId], references: [endpointId, id], onDelete: Restrict, onUpdate: Restrict, map: "meta_receipt_item_event_fkey")
+  @@unique([endpointId, receiptId, entryIndex, changeIndex, collection, itemIndex], map: "meta_receipt_position_key")
+  @@index([endpointId, eventId, createdAt], map: "meta_receipt_item_event_idx")
+  @@index([expiresAt, id], map: "meta_receipt_item_expiry_idx")
+  @@map("meta_webhook_receipt_items")
+}
+

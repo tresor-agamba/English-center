@@ -103,7 +103,7 @@ function createWhatsAppDeliveryService({ client = defaultPrisma, configProvider 
     const rows = await prisma.whatsAppDelivery.findMany({ where: status ? { status } : {}, include: { user: { select: { firstName: true, lastName: true } }, notification: { select: { type: true, title: true } } }, orderBy: { createdAt: 'desc' }, take: 200 });
     return rows.map(row => ({ ...row, canRetry: canRetryDelivery(row) }));
   }
-  function applyStatus(item) { return applyDeliveryStatus({ model: prisma.whatsAppDelivery, item, notification: true, now }); }
+  function applyStatus(item, { detailed = false } = {}) { return applyDeliveryStatus({ model: prisma.whatsAppDelivery, item, notification: true, now, detailed }); }
   return { createDeliveryFromNotification, cancelPendingForEntity, recoverAbandonedDeliveries, sendDelivery, processPending, retryFailedDelivery, canRetryDelivery, list, applyStatus, maskPhoneNumber };
 }
 module.exports = { createWhatsAppDeliveryService, ...createWhatsAppDeliveryService() };

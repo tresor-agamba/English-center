@@ -118,8 +118,8 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
     return results;
   }
 
-  async function applyStatus(item) {
-    return applyDeliveryStatus({ model: client.whatsAppProspectFollowUp, item, now });
+  async function applyStatus(item, { detailed = false } = {}) {
+    return applyDeliveryStatus({ model: client.whatsAppProspectFollowUp, item, now, detailed });
   }
 
   return { schedule, cancelForConversation, cancelForPhoneNumbers, recoverAbandoned, sendFollowUp, processPending, applyStatus };

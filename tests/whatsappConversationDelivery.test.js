@@ -35,13 +35,13 @@ test('text payload correlates Cloud API status callbacks and fake transport neve
     messaging_product: 'whatsapp', to: '243812345678', type: 'text', text: { body: 'Bonjour', preview_url: false }, biz_opaque_callback_data: 'reply-1',
   });
   let called = false;
-  const result = await cloudApi.sendTextMessage({ phoneNumber: '+243812345678', text: 'Bonjour' }, { config: { fakeMode: true }, fetchImpl: async () => { called = true; } });
+  const result = await cloudApi.sendTextMessage({ phoneNumber: '+243812345678', text: 'Bonjour' }, { config: { enabled: true, fakeMode: true }, fetchImpl: async () => { called = true; } });
   assert.match(result.providerMessageId, /^fake-/);
   assert.equal(called, false);
 });
 
 test('Cloud API transport retries only explicit rate limits and marks server errors uncertain', async () => {
-  const config = { fakeMode: false, graphApiVersion: 'v23.0', phoneNumberId: 'test-phone-id', accessToken: 'test-token' };
+  const config = { enabled: true, fakeMode: false, graphApiVersion: 'v23.0', phoneNumberId: '1001', accessToken: 'test-token' };
   const response = (status) => ({ ok: status >= 200 && status < 300, status, json: async () => ({ error: { code: status } }) });
   await assert.rejects(cloudApi.sendTextMessage({ phoneNumber: '+243812345678', text: 'Bonjour' }, { config, fetchImpl: async () => response(429) }), (error) => error.retryable === true && error.code === '429');
   await assert.rejects(cloudApi.sendTextMessage({ phoneNumber: '+243812345678', text: 'Bonjour' }, { config, fetchImpl: async () => response(503) }), (error) => error.retryable === false && error.uncertain === true);
