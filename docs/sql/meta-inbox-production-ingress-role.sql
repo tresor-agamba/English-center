@@ -5,8 +5,14 @@ BEGIN;
 SET LOCAL lock_timeout = '5s';
 DO $$
 BEGIN
-  IF current_database() <> 'english_center' OR inet_server_addr() IS DISTINCT FROM '127.0.0.1'::inet
-    OR inet_server_port() IS DISTINCT FROM 5432 THEN
+  -- Unix socket administration: sudo -u postgres psql -d english_center.
+  -- Both network values must be NULL, and only the postgres role is allowed.
+  -- TCP sessions must still match exactly 127.0.0.1:5432.
+  IF current_database() IS DISTINCT FROM 'english_center' OR NOT (
+    (current_user = 'postgres' AND inet_server_addr() IS NULL AND inet_server_port() IS NULL)
+    OR (inet_server_addr() IS NOT DISTINCT FROM '127.0.0.1'::inet
+      AND inet_server_port() IS NOT DISTINCT FROM 5432)
+  ) THEN
     RAISE EXCEPTION 'Wrong production target; stop';
   END IF;
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname='nva_meta_inbox_ingress_prod') THEN
