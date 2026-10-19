@@ -1,9 +1,13 @@
 const express = require('express');
 const { timingSafeEqual } = require('node:crypto');
 const { createMetaInboxWebhookController } = require('../controllers/metaInboxWebhookController');
-const { createMetaInboxRuntime } = require('../services/metaInboxRuntime');
+const { createMetaInboxRuntime, validateMetaInboxTarget } = require('../services/metaInboxRuntime');
 function createMetaWebhookRouter({ env = process.env, inboxService, now } = {}) {
-  const router = express.Router(), enabled = env.META_WHATSAPP_INBOX_ENABLED === 'true';
+  const router = express.Router();
+  let enabled = env.META_WHATSAPP_INBOX_ENABLED === 'true';
+  if (enabled && env.NODE_ENV === 'production') {
+    try { validateMetaInboxTarget(env); } catch { enabled = false; }
+  }
   let runtime = inboxService;
   const receive = createMetaInboxWebhookController({ enabled, now, inboxService: { acceptRaw: input => {
     if (!runtime) runtime = createMetaInboxRuntime(env);

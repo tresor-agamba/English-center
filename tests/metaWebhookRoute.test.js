@@ -120,3 +120,15 @@ test('runtime refuses disabled, production, wrong role and forbidden port before
     assert.throws(() => createMetaInboxRuntime({ ...env, META_INBOX_ENVIRONMENT: 'test', META_INBOX_DATABASE_URL: target }), { code: 'META_INBOX_INVALID_CONFIGURATION' });
   }
 });
+
+test('production GET is closed until production mode, explicit authorization and target are valid', async t => {
+  const production = { ...env, NODE_ENV: 'production', META_INBOX_ENVIRONMENT: 'production',
+    META_INBOX_PRODUCTION_AUTHORIZED: 'true', WHATSAPP_ENABLED: 'false', WHATSAPP_WORKERS_ENABLED: 'false',
+    META_INBOX_DATABASE_URL: 'postgresql://nva_meta_inbox_ingress_prod:synthetic-unused@127.0.0.1:5432/english_center' };
+  for (const [changes, expected] of [[{ META_INBOX_PRODUCTION_AUTHORIZED: 'false' }, 503],
+    [{ META_INBOX_ENVIRONMENT: 'test' }, 503], [{ META_INBOX_DATABASE_URL: undefined }, 503],
+    [{ WHATSAPP_WORKERS_ENABLED: 'true' }, 503], [{}, 200]]) {
+    const request = await server(t, { env: { ...production, ...changes }, inboxService: setup().service });
+    assert.equal((await request('GET', '?hub.mode=subscribe&hub.verify_token=synthetic-verify&hub.challenge=12345')).status, expected);
+  }
+});
