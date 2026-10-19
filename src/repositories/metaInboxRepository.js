@@ -1,7 +1,8 @@
-// Unwired Prisma repository. The four delegates do not exist until an authorized
-// schema/client migration. No import of an application database or transport.
+// Unwired Prisma repository. Requires the four Meta delegates and dedicated SQL
+// constraints/triggers. No import of an application database or transport.
 const { randomUUID } = require('node:crypto');
 const { fail } = require('../services/metaInboxProtocol');
+const { lockRecipients } = require('../services/whatsappSubmissionCoordinator');
 const clearLease = { leaseToken: null, leaseOwner: null, leaseExpiresAt: null };
 const open = ['RECEIVED', 'READY', 'PROCESSING', 'UNCORRELATED', 'RETRY_WAIT', 'FAILED', 'EXPIRED'];
 const same = (a, b) => a != null && b != null && Buffer.from(a).equals(Buffer.from(b));
@@ -46,7 +47,9 @@ function createMetaInboxRepository({ database, scope, crypto } = {}) {
       // The keyed stream digest already includes the endpoint. Lookup-key
       // rotation must NOT change this lock namespace while flows are open.
       const lockId = Buffer.from(key, 'hex').readBigInt64BE(0);
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(${lockId}::bigint)`;
+      // Prisma cannot deserialize PostgreSQL void. The text projection preserves
+      // exactly the same transaction-scoped lock acquisition and lifetime.
+      await tx.$queryRaw`SELECT pg_advisory_xact_lock(${lockId}::bigint)::text AS locked`;
     }
   }
   async function accept({ rawBody, items, receivedAt, authenticationKeyVersion }) {
@@ -54,6 +57,7 @@ function createMetaInboxRepository({ database, scope, crypto } = {}) {
       || !(receivedAt instanceof Date) || !Number.isFinite(+receivedAt) || !/^[a-zA-Z0-9_-]{1,64}$/.test(authenticationKeyVersion || '')) fail('META_INBOX_INVALID_BATCH');
     return atomic(async (tx, now, endpoint) => {
       if (!endpoint.inboxEnabled) fail('META_INBOX_ACCEPTANCE_DISABLED');
+      await lockRecipients(tx, items.map(item => item.streamSender));
       const streams = items.map(item => item.streamSender ? crypto.stream(endpointId, item.streamSender) : null);
       await lockStreams(tx, streams);
       const receiptId = randomUUID(), counts = { itemCount: items.length, newCount: 0, duplicateCount: 0, conflictCount: 0 };
@@ -203,6 +207,21 @@ function createMetaInboxRepository({ database, scope, crypto } = {}) {
     return tx.metaWebhookEvent.findFirst({ where: { endpointId, kind: { in: ['INBOUND', 'UNSUPPORTED'] },
       AND: [{ OR: [{ streamKey }, { streamKey: null }] }, { OR: [{ state: { in: open } }, { hasConflict: true }] }] } });
   }
+  async function canSubmitIn(tx, sender) {
+    const endpoint = await tx.metaWebhookEndpoint.findFirst({ where: { id: endpointId,
+      environment: fixed.environment, applicationKey: fixed.applicationKey, wabaId: fixed.wabaId,
+      phoneNumberId: fixed.phoneNumberId, metaAppId: fixed.metaAppId, disabledAt: null,
+      inboxEnabled: true, processingEnabled: true } });
+    if (!endpoint || endpoint.identityVersion !== 1 || endpoint.normalizationVersion !== 1
+      || endpoint.lookupKeyVersion !== crypto.currentLookupVersion || endpoint.streamKeyVersion !== crypto.streamKeyVersion) return false;
+    // A wrong rotation/version must never hide a previously registered STOP.
+    const incompatible = await tx.metaWebhookEvent.findFirst({ where: { endpointId, OR: [
+      { lookupKeyVersion: { notIn: crypto.lookupVersions } },
+      { streamKey: { not: null }, streamKeyVersion: { not: crypto.streamKeyVersion },
+        OR: [{ state: { in: open } }, { hasConflict: true }] },
+    ] } });
+    return !incompatible && !await pendingIn(tx, crypto.stream(endpointId, sender.replace(/^\+/, '')));
+  }
   async function inspectBarrier(sender) {
     const stream = crypto.stream(endpointId, sender);
     return atomic(async tx => { await lockStreams(tx, [stream]); return { blocked: Boolean(await pendingIn(tx, stream)),
@@ -234,6 +253,6 @@ function createMetaInboxRepository({ database, scope, crypto } = {}) {
       return { expiredPayloads: events.length, expiredVariants: conflicts.count };
     });
   }
-  return Object.freeze({ scope: fixed, accept, lookup, claim, process: processEvent, wake, inspectBarrier, simulateDispatch, expirePayloads });
+  return Object.freeze({ scope: fixed, accept, lookup, claim, process: processEvent, wake, inspectBarrier, simulateDispatch, expirePayloads, canSubmitIn });
 }
 module.exports = { createMetaInboxRepository };

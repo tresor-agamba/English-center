@@ -8,7 +8,12 @@ const { validateEnvironment } = require('../src/config/environment');
 const webhook = require('../src/services/whatsappWebhookService');
 const conversations = require('../src/services/whatsappConversationService');
 const deliveries = require('../src/services/whatsappConversationDeliveryService');
-const routes = require('../src/routes/whatsappWebhookRoutes');
+// Historical controller contract. The mounted durable route is independently
+// exercised by metaWebhookRoute.test.js, including its disabled-by-default gate.
+const controller = require('../src/controllers/whatsappWebhookController');
+const routes = express.Router();
+routes.get('/', controller.verify);
+routes.post('/', controller.receive);
 
 const validEnv = {
   WHATSAPP_ENABLED: 'true', WHATSAPP_FAKE_MODE: 'false',

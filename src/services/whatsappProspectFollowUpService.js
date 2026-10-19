@@ -3,6 +3,7 @@ const { getWhatsAppConfig } = require('../config/whatsappConfig');
 const cloudApi = require('./whatsappCloudApiService');
 const { providerPhoneNumber } = require('../utils/phoneNumber');
 const { classifySendError, retryDelay, applyDeliveryStatus } = require('./whatsappDeliveryPolicy');
+const { engageSubmission, unengaged } = require('./whatsappSubmissionCoordinator');
 
 const STALE_PROCESSING_MS = 15 * 60 * 1000;
 const FOLLOW_UPS = [
@@ -11,7 +12,7 @@ const FOLLOW_UPS = [
 ];
 const STATUS_RANK = { ACCEPTED: 1, SENT: 2, DELIVERED: 3, READ: 4 };
 
-function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloudApi.sendTemplateMessage, configProvider = getWhatsAppConfig, now = () => new Date() } = {}) {
+function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloudApi.sendTemplateMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier } = {}) {
   async function schedule({ conversationId, consentEventId, consentedAt }, database = client) {
     const config = configProvider();
     const conversation = await database.whatsAppConversation.findUnique({ where: { id: conversationId }, select: { phoneNumber: true } });
@@ -38,7 +39,7 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
 
   async function cancelForConversation(conversationId, failureCode = 'FOLLOW_UP_CANCELLED', database = client) {
     return database.whatsAppProspectFollowUp.updateMany({
-      where: { conversationId, status: { in: ['PENDING', 'PROCESSING', 'FAILED'] } },
+      where: { conversationId, status: { in: ['PENDING', 'PROCESSING', 'FAILED'] }, ...unengaged },
       data: { status: 'CANCELLED', cancelledAt: now(), failureCode },
     });
   }
@@ -88,6 +89,8 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
     if (active?.status !== 'PROCESSING' || active.attempts !== row.attempts) return { skipped: true };
 
     try {
+      if (!await engageSubmission({ database: client, kind: 'prospect', id, attempts: row.attempts,
+        phoneNumber: row.conversation.phoneNumber, config, barrier: submissionBarrier })) return { cancelled: true };
       const result = await sender({ phoneNumber: row.conversation.phoneNumber, templateName: row.templateName, templateLanguage: row.templateLanguage, templateParameters: row.templateParameters || [], idempotencyKey: row.deduplicationKey }, { config });
       const update = await client.whatsAppProspectFollowUp.updateMany({
         where: { id, status: 'PROCESSING', attempts: row.attempts }, data: { status: 'ACCEPTED', providerMessageId: result.providerMessageId, acceptedAt: now(), failedAt: null, processingStartedAt: null },

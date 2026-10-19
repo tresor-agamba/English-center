@@ -1,4 +1,5 @@
 const prisma = require('../utils/prisma');
+const { lockRecipients } = require('./whatsappSubmissionCoordinator');
 const publicCourseService = require('./publicCourseService');
 const registrationService = require('./registrationService');
 const whatsappPreferences = require('./whatsappPreferenceService');
@@ -61,6 +62,7 @@ function createWhatsAppConversationService({
   // No transaction is opened, retried or committed here.
   async function executeInboundTransaction(tx, input, { engineNow = now, processedNow = now } = {}) {
     const { message, providerMessageId, phoneNumber, receivedAt, body, providerTimestamp, processingStartedAt = receivedAt } = input;
+    await lockRecipients(tx, [phoneNumber]);
     const userMatches = await tx.user.findMany({
       where: { OR: [{ phoneNumber }, { whatsappNumber: phoneNumber }] },
       select: { id: true },

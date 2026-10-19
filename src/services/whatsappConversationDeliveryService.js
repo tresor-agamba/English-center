@@ -4,12 +4,13 @@ const cloudApi = require('./whatsappCloudApiService');
 const { providerPhoneNumber } = require('../utils/phoneNumber');
 const { classifySendError, retryDelay, applyDeliveryStatus } = require('./whatsappDeliveryPolicy');
 const { getServiceWindow, canDeliverMessage } = require('./whatsappServiceWindow');
+const { engageSubmission } = require('./whatsappSubmissionCoordinator');
 
 const WINDOW_MS = 24 * 60 * 60 * 1000;
 const STALE_MS = 15 * 60 * 1000;
 const STATUS_RANK = { ACCEPTED: 1, SENT: 2, DELIVERED: 3, READ: 4 };
 
-function createWhatsAppConversationDeliveryService({ client = prisma, sender = cloudApi.sendTextMessage, configProvider = getWhatsAppConfig, now = () => new Date() } = {}) {
+function createWhatsAppConversationDeliveryService({ client = prisma, sender = cloudApi.sendTextMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier } = {}) {
   async function recoverAbandoned() {
     const cutoff = new Date(now().getTime() - STALE_MS);
     return client.whatsAppConversationMessage.updateMany({
@@ -60,6 +61,8 @@ function createWhatsAppConversationDeliveryService({ client = prisma, sender = c
     }
 
     try {
+      if (!await engageSubmission({ database: client, kind: 'conversation', id, attempts: message.attempts,
+        phoneNumber: conversation.phoneNumber, config, barrier: submissionBarrier })) return { cancelled: true };
       const result = await sender({ phoneNumber: conversation.phoneNumber, text: message.body, idempotencyKey: message.idempotencyKey }, { config });
       const updated = await client.whatsAppConversationMessage.updateMany({
         where: { id, deliveryStatus: 'PROCESSING', attempts: message.attempts },

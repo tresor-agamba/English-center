@@ -9,6 +9,8 @@ function makeClient({ now, controlState = 'BOT_ACTIVE', consentDecision = 'GRANT
   const rows = [];
   let isEnrolled = enrolled;
   const matches = (row, where) => Object.entries(where).every(([key, value]) => {
+    if (key === 'OR') return value.some(option => matches(row, option));
+    if (key === 'failureCode' && value?.not) return row.failureCode !== value.not;
     if (key === 'status' && value?.in) return value.in.includes(row.status);
     if (key === 'status' && typeof value === 'string') return row.status === value;
     if (key === 'scheduledFor' && value?.lte) return row.scheduledFor <= value.lte;

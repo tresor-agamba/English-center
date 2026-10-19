@@ -1,4 +1,4 @@
-// Prepared ingress only: deliberately not imported by any live route.
+// Incoming-only controller, mounted behind an explicit disabled-by-default flag.
 // Authentication, account validation and durable atomic acceptance belong to
 // the injected inbox service. No dispatcher, worker or sender runs here.
 function createMetaInboxWebhookController({ inboxService, enabled = false, now = () => new Date() } = {}) {

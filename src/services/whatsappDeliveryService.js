@@ -5,9 +5,10 @@ const defaultPreferences = require('./whatsappPreferenceService');
 const cloudApi = require('./whatsappCloudApiService');
 const { maskPhoneNumber } = require('../utils/phoneNumber');
 const { classifySendError, retryDelay, applyDeliveryStatus, UNCERTAIN } = require('./whatsappDeliveryPolicy');
+const { engageSubmission } = require('./whatsappSubmissionCoordinator');
 
 function createWhatsAppDeliveryService({ client = defaultPrisma, configProvider = getWhatsAppConfig,
-  preferences = defaultPreferences, sender = cloudApi.sendTemplateMessage, now = () => new Date() } = {}) {
+  preferences = defaultPreferences, sender = cloudApi.sendTemplateMessage, now = () => new Date(), submissionBarrier } = {}) {
   const prisma = client;
   const configModule = { getWhatsAppConfig: configProvider };
   const preferenceService = preferences;
@@ -65,6 +66,8 @@ function createWhatsAppDeliveryService({ client = defaultPrisma, configProvider 
     const active = await prisma.whatsAppDelivery.findUnique({ where: { id } });
     if (active?.status !== 'PROCESSING' || active.attempts !== delivery.attempts) return { skipped: true };
     try {
+      if (!await engageSubmission({ database: prisma, kind: 'notification', id, attempts: delivery.attempts,
+        phoneNumber: delivery.phoneNumber, config, barrier: submissionBarrier })) return { cancelled: true };
       const result = await sender({ ...delivery, idempotencyKey: delivery.deduplicationKey }, { config });
       const update = await prisma.whatsAppDelivery.updateMany({ where: { id, status: 'PROCESSING', attempts: delivery.attempts }, data: { status: 'ACCEPTED', providerMessageId: result.providerMessageId, acceptedAt: now(), failedAt: null, processingStartedAt: null } });
       console.log(`Livraison WhatsApp acceptée : id interne ${id}`);

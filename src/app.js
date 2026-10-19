@@ -112,6 +112,9 @@ app.use((req, res, next) => {
   res.locals.csrfField = () => '';
   next();
 });
+// Authenticate incoming Meta traffic before browser sessions, CSRF and business
+// middleware. The ingress route owns raw-byte parsing and is disabled by default.
+app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
 app.use(express.urlencoded({ extended: true, limit: '1mb', parameterLimit: 2000 }));
 // Meta signatures cover the wire body; reject compression only on this webhook.
 app.use('/webhooks/whatsapp', (req, res, next) => {
@@ -156,7 +159,6 @@ app.use((req, res, next) => {
 
 app.use(healthRoutes);
 app.use(seoRoutes);
-app.use('/webhooks/whatsapp', whatsappWebhookRoutes);
 app.use(webRoutes);
 app.use(authRoutes);
 app.use('/formations', publicCourseRoutes);
