@@ -43,9 +43,23 @@ GRANT UPDATE (receipt_count,last_received_at,has_conflict,review_required,state,
   ON public.meta_webhook_events TO nva_meta_inbox_ingress_prod;
 GRANT USAGE ON SEQUENCE public.meta_webhook_events_enqueue_order_seq TO nva_meta_inbox_ingress_prod;
 GRANT EXECUTE ON FUNCTION public.meta_inbox_lock_endpoint(uuid) TO nva_meta_inbox_ingress_prod;
+-- Ingress only: accept/deduplicate/lookup, not claim/process/retention.
+-- Existing SECURITY INVOKER triggers read Meta rows and lock endpoints/receipts:
+-- SELECT plus the column-limited UPDATE grants above cover SELECT FOR UPDATE.
+-- Trigger installation belongs to the schema owner, not to this role.
 DO $$
 BEGIN
-  IF has_database_privilege('nva_meta_inbox_ingress_prod',current_database(),'CREATE,TEMP')
+  -- These built-ins are called by the repository and SECURITY INVOKER triggers.
+  -- Usually available through PUBLIC, but do not assume that on a hardened VPS.
+  -- Fail closed rather than granting additional function privileges implicitly.
+  IF NOT has_function_privilege('nva_meta_inbox_ingress_prod',
+      'pg_catalog.pg_advisory_xact_lock(bigint)','EXECUTE')
+    OR NOT has_function_privilege('nva_meta_inbox_ingress_prod',
+      'pg_catalog.clock_timestamp()','EXECUTE') THEN
+    RAISE EXCEPTION 'Required inbox built-in function EXECUTE unavailable; roll back and request DBA review';
+  END IF;
+  IF has_database_privilege('nva_meta_inbox_ingress_prod',current_database(),'CREATE')
+    OR has_database_privilege('nva_meta_inbox_ingress_prod',current_database(),'TEMP')
     OR has_schema_privilege('nva_meta_inbox_ingress_prod','public','CREATE') THEN
     RAISE EXCEPTION 'PUBLIC grants CREATE/TEMP: strict isolation impossible with role grants alone. Roll back and request DBA review';
   END IF;
@@ -53,9 +67,21 @@ BEGIN
     WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','S')
       AND c.relname NOT IN ('meta_webhook_endpoints','meta_webhook_receipts','meta_webhook_events',
         'meta_webhook_receipt_items','meta_webhook_events_enqueue_order_seq')
-      AND CASE WHEN c.relkind='S' THEN has_sequence_privilege('nva_meta_inbox_ingress_prod',c.oid,'USAGE,SELECT,UPDATE')
-        ELSE has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'SELECT,INSERT,UPDATE,DELETE,TRUNCATE,REFERENCES,TRIGGER')
-          OR has_any_column_privilege('nva_meta_inbox_ingress_prod',c.oid,'SELECT,INSERT,UPDATE,REFERENCES') END) THEN
+      AND CASE WHEN c.relkind='S' THEN
+          has_sequence_privilege('nva_meta_inbox_ingress_prod',c.oid,'USAGE')
+          OR has_sequence_privilege('nva_meta_inbox_ingress_prod',c.oid,'SELECT')
+          OR has_sequence_privilege('nva_meta_inbox_ingress_prod',c.oid,'UPDATE')
+        ELSE has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'SELECT')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'INSERT')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'UPDATE')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'DELETE')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'TRUNCATE')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'REFERENCES')
+          OR has_table_privilege('nva_meta_inbox_ingress_prod',c.oid,'TRIGGER')
+          OR has_any_column_privilege('nva_meta_inbox_ingress_prod',c.oid,'SELECT')
+          OR has_any_column_privilege('nva_meta_inbox_ingress_prod',c.oid,'INSERT')
+          OR has_any_column_privilege('nva_meta_inbox_ingress_prod',c.oid,'UPDATE')
+          OR has_any_column_privilege('nva_meta_inbox_ingress_prod',c.oid,'REFERENCES') END) THEN
     RAISE EXCEPTION 'PUBLIC exposes business objects: roll back and request DBA review';
   END IF;
 END $$;
