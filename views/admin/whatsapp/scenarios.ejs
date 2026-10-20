@@ -1,0 +1,26 @@
+<%- include('../../partials/header',{title}) %>
+<div class="wa-chatbot wa-scenarios"><section class="page-heading"><div><p class="eyebrow">WhatsApp Chatbot</p><h1>Menus et scénarios</h1><p>Construisez un parcours, puis testez chaque choix sans envoyer de message.</p></div></section>
+<%- include('_chatbot-nav',{section:'scenarios'}) %>
+<% if(error){ %><p role="alert"><%= error %></p><% } %>
+<section class="card"><h2>Scénarios enregistrés</h2><p><a href="/admin/whatsapp/chatbot/scenarios">Nouveau scénario</a></p>
+<% if(!rows.length){ %><p>Aucun scénario. Créez votre premier menu ci-dessous.</p><% } %>
+<% rows.forEach(r=>{ %><p><a href="/admin/whatsapp/chatbot/scenarios?edit=<%= r.id %>"><%= r.title %></a> · <%= r.enabled?'Actif':'Inactif' %> · révision <%= r.revision %> · priorité <%= r.priority %></p><% }); %></section>
+<% const current=draft||selected||{}; const definition=typeof current.definition==='string'?current.definition:JSON.stringify(current.definition||{entry:'accueil',nodes:[{id:'accueil',type:'button',body:'Bienvenue à New Vision Academy. Comment pouvons-nous vous aider ?',options:[]}]}); %>
+<section class="card"><h2><%= current.id?'Modifier le scénario':'Créer un scénario' %></h2>
+<p>Les identifiants des options sont générés une seule fois et conservés quand le libellé change. Boutons : 3 options maximum, libellés de 20 caractères. Liste : 10 options maximum, libellés de 24 caractères.</p>
+<form method="post" action="/admin/whatsapp/chatbot/scenarios/save" data-scenario-editor><%- csrfField() %>
+<% if(current.id){ %><input name="id" type="hidden" value="<%= current.id %>"><input name="revision" type="hidden" value="<%= current.revision %>"><% } %>
+<div class="form-grid"><label>Nom<input name="title" maxlength="120" required value="<%= current.title||'' %>"></label><label>Déclencheurs texte<textarea name="triggers" required><%= Array.isArray(current.triggers)?current.triggers.join(', '):current.triggers||'menu' %></textarea></label><label>Priorité<input name="priority" type="number" min="0" max="1000" required value="<%= current.priority||0 %>"></label><label><input name="enabled" type="checkbox"<% if(current.enabled){ %> checked<% } %>> Actif</label></div>
+<label>Nœud initial<input name="entry" data-entry required value="<%= current.definition?.entry||'accueil' %>"></label>
+<p>Conditions disponibles : cours sélectionné, accord commercial ou prospect. Une condition ne recueille jamais de consentement. Pour tarifs, horaires et inscriptions, choisissez l’action « Catalogue ».</p>
+<textarea hidden name="definition" data-definition><%= definition %></textarea>
+<div data-nodes></div><button type="button" class="button button-secondary" data-add-node>Ajouter un nœud</button>
+<p data-editor-error role="alert"></p><button class="button" type="submit">Enregistrer le scénario</button></form></section>
+<section class="card" id="simulator"><h2>Simulateur cliquable</h2><p>Inclut les scénarios inactifs. Aucun message, livraison ou consentement n’est enregistré. L’historique de test reste dans votre session administrateur.</p>
+<form method="post" action="/admin/whatsapp/chatbot/scenarios/simulate"><%- csrfField() %><input name="reset" type="hidden" value="on"><label>Scénario de départ<select name="scenarioId" required><% rows.forEach(r=>{ %><option value="<%= r.id %>"><%= r.title %></option><% }); %></select></label><label><input name="prospect" type="checkbox" checked> Prospect non inscrit</label><label><input name="commercialConsent" type="checkbox"> Accord commercial déjà acquis (simulation)</label><label>ID du cours déjà sélectionné (facultatif)<input type="number" min="1" name="selectedCourseId"></label><button type="submit" class="button button-secondary">Recommencer</button></form>
+<% if(simulation){ %><div class="wa-simulation-history" aria-live="polite"><% simulation.history.forEach(turn=>{ %><article><small><%= turn.input %> · <%= turn.intent %></small><p class="wa-preserve"><%= turn.text||'Aucune réponse automatique.' %></p><% if(turn.actions.length){ %><p>Actions simulées : <%= turn.actions.join(', ') %></p><% } %></article><% }); %></div>
+<% const choices=simulation.interactive?.type==='button'?simulation.interactive.action.buttons.map(b=>b.reply):simulation.interactive?.action.sections[0].rows||[]; %>
+<div class="wa-simulation-options"><% choices.forEach(o=>{ %><form method="post" action="/admin/whatsapp/chatbot/scenarios/simulate"><%- csrfField() %><input type="hidden" name="interactionId" value="<%= o.id %>"><button class="button button-secondary" type="submit"><%= o.title %></button></form><% }); %></div>
+<form method="post" action="/admin/whatsapp/chatbot/scenarios/simulate"><%- csrfField() %><label>Texte ou numéro<input name="text" required maxlength="1000" placeholder="1, menu, STOP, conseiller…"></label><button class="button" type="submit">Simuler</button></form><% } %></section></div>
+<script src="/js/whatsapp-scenario-editor.js" defer></script>
+<%- include('../../partials/footer') %>

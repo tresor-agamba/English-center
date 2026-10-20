@@ -90,7 +90,10 @@ function normalizeMetaBatch(payload, { wabaId, phoneNumberId, receivedAt }) {
               const type = item.interactive?.button_reply?.title ? 'button_reply' : 'list_reply';
               const title = item.interactive?.[type]?.title;
               if (typeof title !== 'string' || !title.trim() || title.length > 4096) fail('META_INBOX_INVALID_PAYLOAD');
-              message.interactive = { [type]: { title } };
+              const optionId = item.interactive?.[type]?.id;
+              if (optionId !== undefined && (typeof optionId !== 'string' || !optionId.trim() || optionId.length > 256)) fail('META_INBOX_INVALID_PAYLOAD');
+              // Keep the stable ID encrypted with the normalized message; never route on its title.
+              message.interactive = { [type]: { title, ...(optionId === undefined ? {} : { id: optionId }) } };
             }
             kind = knownTypes.includes(item.type) ? 'INBOUND' : 'UNSUPPORTED';
             data = { message, timestampValidAtReceipt: Boolean(occurredAt && occurredAt <= receivedAt) };

@@ -154,3 +154,22 @@
 @media (prefers-reduced-motion: reduce) {
   .nva-admin-body .admin-sidebar, .nva-admin-body .card, .nva-admin-body .stat-card, .nva-admin-body .dashboard-panel { transition: none; }
 }
+
+/* WhatsApp Chatbot: scoped to its administration view. */
+.wa-chatbot label:has(> input[type="checkbox"]) { display: flex; align-items: center; gap: .65rem; }
+.wa-chatbot input[type="checkbox"] { flex: 0 0 auto; width: 1.15rem; height: 1.15rem; min-height: 0; margin: 0; padding: 0; }
+.wa-chatbot details { margin: 1rem 0; }
+.wa-chatbot summary { cursor: pointer; padding: .75rem 0; font-weight: 600; }
+.wa-chatbot form { margin-bottom: 1rem; }
+
+.wa-scenarios .card { max-width: none; margin: 1rem 0; }
+.wa-scenarios fieldset { min-width: 0; margin: 1rem 0; padding: 1rem; border: 1px solid var(--admin-line); border-radius: 10px; }
+.wa-scenarios [data-nodes] { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,400px),1fr)); gap: 1rem; }
+.wa-scenarios label { display: block; margin: .65rem 0; }
+.wa-scenarios input[readonly] { font-family: monospace; font-size: .8rem; }
+.wa-scenarios .wa-preserve { white-space: pre-wrap; overflow-wrap: anywhere; }
+.wa-scenarios .wa-simulation-history article { padding: 1rem; margin: 1rem 0; border-left: 3px solid var(--admin-primary); background: #f5f7fb; overflow-wrap: anywhere; }
+.wa-scenarios .wa-simulation-options { display: flex; flex-wrap: wrap; gap: .6rem; }
+.wa-scenarios [hidden] { display: none !important; }
+
+.wa-scenarios .wa-scenario-node, .wa-scenarios [data-nodes] details details { padding: 1rem; border: 1px solid var(--admin-line); border-radius: 10px; background: #fff; }

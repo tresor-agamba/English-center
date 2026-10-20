@@ -67,6 +67,13 @@ async function sendPayload(payload, options = {}) {
     });
   } finally { clearTimeout(timeout); }
 }
+function buildInteractivePayload({ phoneNumber, interactive, idempotencyKey }) {
+  const to = providerPhoneNumber(phoneNumber);
+  if (!to) throw localFailure('INVALID_PARAMETERS');
+  return { messaging_product: 'whatsapp', to, type: 'interactive', interactive: require('./whatsappInteractive').validateInteractive(interactive), ...correlation(idempotencyKey) };
+}
+async function sendInteractiveMessage(data, options = {}) { return sendPayload(buildInteractivePayload(data), options); }
+async function sendConversationMessage(data, options = {}) { return data.interactive ? sendInteractiveMessage(data, options) : sendTextMessage(data, options); }
 async function sendTemplateMessage(data, options = {}) { return sendPayload(buildTemplatePayload(data), options); }
 async function sendTextMessage(data, options = {}) { return sendPayload(buildTextPayload(data), options); }
-module.exports = { MAX_CORRELATION_LENGTH, buildTemplatePayload, buildTextPayload, sendTemplateMessage, sendTextMessage };
+module.exports = { buildInteractivePayload, sendInteractiveMessage, sendConversationMessage, MAX_CORRELATION_LENGTH, buildTemplatePayload, buildTextPayload, sendTemplateMessage, sendTextMessage };

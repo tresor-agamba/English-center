@@ -93,6 +93,10 @@ function createWhatsAppConversationService({
         receivedAt,
         processingStatus: 'PROCESSING',
         processingStartedAt,
+        ...(message.type === 'interactive' ? { interactivePayload: {
+          ...(message.interactive?.button_reply ? { button_reply: { title: body, id: require('./whatsappInteractive').interactionId(message) } } : {}),
+          ...(message.interactive?.list_reply ? { list_reply: { title: body, id: require('./whatsappInteractive').interactionId(message) } } : {}),
+        } } : {}),
       },
     });
 
@@ -101,9 +105,13 @@ function createWhatsAppConversationService({
       registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) },
       now: engineNow,
       whatsappConfig: followUpConfig,
+      scenarios: require('./whatsappScenarioService').createScenarioService({ database: tx, now: engineNow }),
+      chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
+        deferAI: process.env.NVA_CHATBOT_AI_ENABLED === 'true' }),
     });
     const result = await engine.handleMessage({
       text: body,
+      interactionId: message.type === 'interactive' ? require('./whatsappInteractive').interactionId(message) || 'unrecognized-interaction' : null,
       messageId: providerMessageId,
       state: stateForConversation(conversation),
       publicAppUrl,
@@ -193,10 +201,12 @@ function createWhatsAppConversationService({
         data: {
           conversationId: conversation.id,
           direction: 'OUTBOUND',
-          messageType: handoffAck ? 'SYSTEM' : 'TEXT',
+          messageType: handoffAck ? 'SYSTEM' : result.interactive ? 'INTERACTIVE' : 'TEXT',
+          ...(result.interactive ? { interactivePayload: result.interactive } : {}),
           body: result.text.slice(0, MAX_MESSAGE_BODY_LENGTH),
           idempotencyKey: `${handoffAck ? 'wa-handoff' : 'wa-reply'}:${providerMessageId}:0`,
           deliveryStatus: 'QUEUED',
+          ...(result.deferredAI ? { failureCode: 'AI_PENDING' } : {}),
           receivedAt,
         },
       });
@@ -223,8 +233,13 @@ function createWhatsAppConversationService({
 
     for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
       try {
-        return await client.$transaction(tx => executeInboundTransaction(tx,
+        const result = await client.$transaction(tx => executeInboundTransaction(tx,
           { message, providerMessageId, phoneNumber, receivedAt, body, providerTimestamp }), { isolationLevel: 'Serializable' });
+        // SQL has committed before any external request. A failed completion leaves a safe fallback.
+        if (process.env.NVA_CHATBOT_AI_ENABLED === 'true' && result.queuedResponses) {
+          try { await require('./whatsappChatbotAICompletionService').createAICompletionService({ database: client }).completeReply('wa-reply:' + providerMessageId + ':0'); } catch { /* Never retry ingress after its commit. */ }
+        }
+        return result;
       } catch (error) {
         if (isUniqueConstraint(error)) {
           const existing = await client.whatsAppConversationMessage.findUnique({
@@ -253,7 +268,8 @@ function createWhatsAppConversationService({
     const existing = await tx.whatsAppConversationMessage.findUnique({ where: { providerMessageId } });
     if (existing) {
       const conversation = await tx.whatsAppConversation.findUnique({ where: { id: existing.conversationId } });
-      if (existing.direction !== 'INBOUND' || conversation?.phoneNumber !== phoneNumber || existing.body !== (inboundText(message) || null)) {
+      if (existing.direction !== 'INBOUND' || conversation?.phoneNumber !== phoneNumber || existing.body !== (inboundText(message) || null)
+        || ((existing.interactivePayload?.button_reply?.id || existing.interactivePayload?.list_reply?.id || null) !== require('./whatsappInteractive').interactionId(message))) {
         throw Object.assign(new Error('Conflicting native message identity.'), { code: 'META_INBOX_NATIVE_IDENTIFIER_CONFLICT' });
       }
       return { ignored: false, duplicate: true, queuedResponses: 0 };

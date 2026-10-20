@@ -1,0 +1,27 @@
+<%- include('../../partials/header', { title }) %>
+<div class="wa-chatbot">
+<section class="page-heading"><div><p class="eyebrow">New Vision Academy</p><h1>WhatsApp Chatbot</h1><p class="heading-copy">Réponses officielles, assistance et conversations.</p></div></section>
+<%- include('_chatbot-nav', { section }) %>
+<% if(error){ %><p role="alert" class="error-message"><%= error %></p><% } %>
+<% if(section==='overview'){ %>
+<section class="card"><h2>Vue d’ensemble</h2><p><strong><%= rules.filter(r=>r.enabled).length %></strong> réponses actives · <%= rules.length %> réponses configurées.</p><p>Réponses personnalisées : <%= settings?.enabled===false?'suspendues':'actives' %>. IA : <%= settings?.aiEnabled && aiConfigured?'active':'désactivée' %>.</p><p><a href="/admin/whatsapp/conversations?filter=handoff">Conversations nécessitant un conseiller</a></p><p>Tarifs, formations, horaires, essais et inscriptions proviennent du catalogue NVA. STOP, consentement et transfert humain restent prioritaires.</p></section>
+<% } %>
+<% if(section==='messages'||section==='faq'){ const kind=section==='faq'?'FAQ':'MESSAGE'; %>
+<section class="card"><h2><%= labels[section] %></h2><p>Déclencheurs séparés par une virgule ou un saut de ligne. La priorité la plus élevée gagne ; à égalité, la première réponse créée gagne. Maximum 100 réponses.</p><p>Les demandes de tarifs, horaires, sessions et inscriptions sont réservées au catalogue. Les réponses personnalisées ne remplacent pas STOP ni le transfert humain.</p>
+<% const displayed=rules.filter(r=>r.kind===kind); [...displayed, {id:null,title:'',triggers:[],body:'',priority:0,enabled:false}].forEach(rule=>{ %>
+<details<% if(!rule.id){ %> open<% } %>><summary><%= rule.id?rule.title+' — '+(rule.enabled?'Active':'Inactive'):'Ajouter une réponse' %></summary>
+<form method="post" action="/admin/whatsapp/chatbot/<%= section %>/rules" class="form-grid"><%- csrfField() %>
+<input type="hidden" name="kind" value="<%= kind %>"><% if(rule.id){ %><input type="hidden" name="id" value="<%= rule.id %>"><% } %>
+<label>Titre<input name="title" maxlength="120" required value="<%= rule.title %>"></label>
+<label>Déclencheurs<textarea name="triggers" required maxlength="2000"><%= rule.triggers.join(', ') %></textarea></label>
+<label>Réponse officielle<textarea name="body" required maxlength="3000" rows="4"><%= rule.body %></textarea></label>
+<label>Priorité<input name="priority" type="number" min="0" max="1000" required value="<%= rule.priority %>"></label>
+<label><input type="checkbox" name="enabled"<% if(rule.enabled){ %> checked<% } %>> Active</label><button class="button" type="submit">Enregistrer</button></form>
+<% if(rule.id){ %><form method="post" action="/admin/whatsapp/chatbot/rules/<%= rule.id %>/delete"><%- csrfField() %><button type="submit" class="button button-secondary">Supprimer</button></form><% } %>
+</details><% }); %></section><% } %>
+<% if(section==='ai'){ %><section class="card"><h2>Intelligence artificielle</h2><p>OpenAI sélectionne une FAQ officielle validée. Aucun texte libre généré n’est envoyé au client. En cas d’incertitude, un conseiller est proposé.</p><p>Configuration serveur : <%= aiConfigured?'disponible':'désactivée ou incomplète' %>. Appels réservés aujourd’hui (UTC) : <%= budget?.calls||0 %>.</p><p>Délai maximal : 1,2 seconde. Aucun nouvel essai automatique. Plafond quotidien et limites de texte côté serveur. Le message courant et au plus 20 FAQ peuvent être transmis à OpenAI lorsque la fonction est activée.</p><a href="/admin/whatsapp/chatbot/settings">Gérer l’activation</a></section><% } %>
+<% if(section==='settings'){ %><section class="card"><h2>Paramètres</h2><form method="post" action="/admin/whatsapp/chatbot/settings"><%- csrfField() %><p><label><input name="enabled" type="checkbox"<% if(settings?.enabled!==false){ %> checked<% } %>> Activer les réponses automatiques du chatbot</label></p><p><label><input name="aiEnabled" type="checkbox"<% if(settings?.aiEnabled){ %> checked<% } %>> Autoriser le recours aux FAQ par OpenAI</label></p><p>L’IA exige aussi l’activation serveur. Ces options n’activent jamais les envois WhatsApp ni les workers.</p><button type="submit" class="button">Enregistrer</button></form></section><% } %>
+<section class="card"><h2>Simulateur sans envoi WhatsApp</h2><form method="post" action="/admin/whatsapp/chatbot/<%= section %>/simulate"><%- csrfField() %><label>Message à tester<textarea name="text" maxlength="1000" required rows="3"></textarea></label><p><label><input type="checkbox" name="useAI"> Tester aussi OpenAI (appel externe décompté du quota)</label></p><button class="button" type="submit">Tester</button></form>
+<% if(simulation){ %><div role="status"><p>Intention : <strong><%= simulation.intent %></strong></p><p style="white-space:pre-wrap;overflow-wrap:anywhere"><%= simulation.text||'Aucune réponse automatique.' %></p><% if(simulation.actions.length){ %><p>Actions simulées : <%= simulation.actions.map(a=>a.type).join(', ') %></p><% } %></div><% } %></section>
+</div>
+<%- include('../../partials/footer') %>

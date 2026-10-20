@@ -883,6 +883,8 @@ model WhatsAppConversation {
 }
 
 model WhatsAppConversationMessage {
+  interactivePayload Json? @map("interactive_payload")
+  textFallbackPending Boolean @default(false) @map("text_fallback_pending")
   providerDeliveries ProviderDelivery[]
   providerInboundEvents ProviderWebhookEvent[]
   id                 Int                                  @id @default(autoincrement())
@@ -2515,3 +2517,40 @@ model MetaWebhookReceiptItem {
   @@map("meta_webhook_receipt_items")
 }
 
+
+// Administration du moteur existant ; aucune activation des envois.
+model WhatsAppChatbotRule {
+  id Int @id @default(autoincrement())
+  kind String @default("MESSAGE") @db.VarChar(16)
+  title String @db.VarChar(120)
+  triggers Json
+  body String @db.VarChar(3000)
+  priority Int @default(0)
+  enabled Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([kind, enabled, priority])
+}
+model WhatsAppChatbotSettings {
+  id Int @id @default(1)
+  enabled Boolean @default(true)
+  aiEnabled Boolean @default(false)
+  updatedAt DateTime @updatedAt
+}
+model WhatsAppChatbotAiBudget {
+  day String @id @db.VarChar(10)
+  calls Int @default(0)
+}
+
+model WhatsAppScenario {
+  id String @id @default(uuid()) @db.Uuid
+  title String @db.VarChar(120)
+  triggers Json
+  definition Json
+  priority Int @default(0)
+  enabled Boolean @default(false)
+  revision Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([enabled, priority])
+}

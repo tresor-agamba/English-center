@@ -11,7 +11,7 @@ function makeClient({ status = 'QUEUED', conversationState = 'BOT_ACTIVE', lastM
     if (key === 'updatedAt' && value?.lte) return row.updatedAt <= value.lte;
     return row[key] === value;
   });
-  const apply = (row, data) => { for (const [key, value] of Object.entries(data)) row[key] = value?.increment ? row[key] + value.increment : value; };
+  const apply = (row, data) => { for (const [key, value] of Object.entries(data)) row[key] = value === require('@prisma/client').Prisma.DbNull ? null : value?.increment ? row[key] + value.increment : value; };
   return {
     message,
     whatsAppConversationMessage: {
@@ -108,4 +108,30 @@ test('recovery marks a stale processing reply uncertain and callback status adva
   assert.equal(pending.message.providerMessageId, 'wamid.2');
   await callbackService.applyStatus({ id: 'wamid.2', status: 'sent' });
   assert.equal(pending.message.deliveryStatus, 'DELIVERED');
+});
+
+
+test('interactive format rejection queues numbered text, then rechecks policies on a new attempt',async()=>{
+ const client=makeClient();client.message.interactivePayload={type:'button'};client.message.body='Menu\n1. Formation\n2. Conseiller';
+ let sends=0;
+ const service=createWhatsAppConversationDeliveryService({client,configProvider:()=>({...configProvider(),maxAttempts:1}),now:()=>new Date('2026-01-01T00:01:00Z'),sender:async data=>{
+  sends++;if(sends===1){assert.ok(data.interactive);throw Object.assign(Error('unsupported'),{code:'131009',acceptanceRejected:true,uncertain:false});}
+  assert.equal(data.interactive,undefined);assert.match(data.text,/1. Formation/);return {providerMessageId:'wamid.text-fallback'};
+ }});
+ assert.deepEqual(await service.sendMessage(1),{failed:true,retryable:true,textFallback:true});assert.equal(sends,1);assert.equal(client.message.interactivePayload,null);
+ assert.deepEqual(await service.processPending(),[{accepted:true}]);assert.equal(sends,2);assert.equal(client.message.attempts,2);
+});
+
+test('STOP between rejected interactive and fallback cancels the text send',async()=>{
+ const client=makeClient();client.message.interactivePayload={type:'button'};let sends=0;
+ const service=createWhatsAppConversationDeliveryService({client,configProvider,now:()=>new Date('2026-01-01T00:01:00Z'),sender:async()=>{sends++;throw Object.assign(Error('unsupported'),{code:'100',acceptanceRejected:true,uncertain:false})}});
+ await service.sendMessage(1);client.message.conversation.controlState='OPTED_OUT';
+ assert.deepEqual(await service.sendMessage(1),{cancelled:true});assert.equal(sends,1);
+});
+
+test('ambiguous interactive result never triggers text fallback or a second request',async()=>{
+ const client=makeClient();client.message.interactivePayload={type:'button'};let sends=0;
+ const service=createWhatsAppConversationDeliveryService({client,configProvider,now:()=>new Date('2026-01-01T00:01:00Z'),sender:async()=>{sends++;throw Object.assign(Error('timeout'),{code:'DELIVERY_UNCERTAIN',acceptanceRejected:false,uncertain:true})}});
+ assert.deepEqual(await service.sendMessage(1),{failed:true,retryable:false});assert.equal(client.message.deliveryStatus,'FAILED');
+ await service.sendMessage(1);assert.equal(sends,1);assert.equal(client.message.textFallbackPending,undefined);
 });

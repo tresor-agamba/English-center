@@ -258,3 +258,31 @@ test('persiste la prise en charge humaine et permet une reprise explicite', asyn
   assert.equal(resumed.controlState, 'BOT_ACTIVE');
   assert.equal(resumed.engineState.automationPaused, false);
 });
+
+
+test('scenario reply payload and stable inbound click survive persistence and native deduplication',async()=>{
+ const {client,state}=memoryClient(),{randomUUID}=require('node:crypto');
+ const scenario={id:randomUUID(),revision:1,enabled:true,triggers:['menu'],definition:{entry:'start',nodes:[{id:'start',type:'button',body:'NVA',options:[{id:randomUUID(),label:'Information',action:{type:'GOTO',nodeId:'info'}}]},{id:'info',type:'text',body:'Réponse officielle',next:{type:'END'}}]}};
+ // The existing mock transaction shares these model objects by reference.
+ const original=client.$transaction;client.$transaction=work=>original(tx=>work({...tx,whatsAppScenario:{findMany:async()=>[scenario]},whatsAppChatbotSettings:{findUnique:async()=>({enabled:true})}}));
+ const service=createWhatsAppConversationService({client,catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUps:{cancelForConversation:async()=>{}},followUpConfig:()=>({})});
+ await service.processInboundMessage({id:'wamid.start-menu',from:'243821234567',type:'text',text:{body:'menu'}});
+ const outbound=state.messages.find(m=>m.direction==='OUTBOUND');assert.equal(outbound.messageType,'INTERACTIVE');assert.ok(outbound.interactivePayload);
+ const wireId=outbound.interactivePayload.action.buttons[0].reply.id;
+ state.conversations[0].engineState=JSON.parse(JSON.stringify(state.conversations[0].engineState));
+ const click={id:'wamid.click-menu',from:'243821234567',type:'interactive',interactive:{button_reply:{id:wireId,title:'Changed display label'}}};
+ await service.processInboundMessage(click);
+ assert.equal(state.messages.at(-1).body,'Réponse officielle');assert.equal(state.messages.find(m=>m.providerMessageId===click.id).interactivePayload.button_reply.id,wireId);
+ const duplicate=await service.processInboundMessage(click);assert.equal(duplicate.duplicate,true);
+});
+
+
+test('historical ingress commits the AI fallback before its post-commit completion',async t=>{
+ const previous=process.env.NVA_CHATBOT_AI_ENABLED;process.env.NVA_CHATBOT_AI_ENABLED='true';t.after(()=>{if(previous===undefined)delete process.env.NVA_CHATBOT_AI_ENABLED;else process.env.NVA_CHATBOT_AI_ENABLED=previous});
+ const {client,state}=memoryClient();let inside=false,calls=0;const transaction=client.$transaction;
+ client.$transaction=async work=>{inside=true;try{return await transaction(tx=>work({...tx,whatsAppChatbotRule:{findMany:async()=>[]},whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,aiEnabled:true})}}))}finally{inside=false}};
+ const completion=require('../src/services/whatsappChatbotAICompletionService');t.mock.method(completion,'createAICompletionService',()=>({completeReply:async key=>{assert.equal(inside,false);assert.equal(key,'wa-reply:wamid.defer:0');assert.equal(state.messages.at(-1).failureCode,'AI_PENDING');calls++;return {completed:true}}}));
+ const service=createWhatsAppConversationService({client,catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUpConfig:()=>({})});
+ const incoming={id:'wamid.defer',from:'243821234567',type:'text',text:{body:'une question inconnue'}};
+ await service.processInboundMessage(incoming);assert.equal(calls,1);await service.processInboundMessage(incoming);assert.equal(calls,1);
+});

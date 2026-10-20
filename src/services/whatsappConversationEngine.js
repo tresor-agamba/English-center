@@ -52,6 +52,7 @@ function makeInitialState(value = {}) {
   const source = value && typeof value === 'object' ? value : {};
   return {
     automationPaused: source.automationPaused === true,
+    scenarioMenu: source.scenarioMenu && typeof source.scenarioMenu === 'object' && Array.isArray(source.scenarioMenu.options) ? source.scenarioMenu : null,
     optedOut: source.optedOut === true,
     processedMessageIds: Array.isArray(source.processedMessageIds)
       ? source.processedMessageIds.filter((id) => typeof id === 'string').slice(-MAX_PROCESSED_MESSAGE_IDS)
@@ -174,13 +175,16 @@ function createConversationEngine({
   limits = { accessLimits },
   now = () => new Date(),
   whatsappConfig = () => getWhatsAppConfig(),
+  chatbot = null,
+  scenarios = null,
 } = {}) {
-  async function handleMessage({ text, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
-    const state = makeInitialState(rawState);
+  async function handleMessage({ text, interactionId = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
+    let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
 
-    let intent = detectIntent(text);
+    let intent = detectIntent(interactionId ? '' : text);
+    if (!interactionId && intent !== 'UNKNOWN') state.scenarioMenu = null;
     if (intent === 'OPT_OUT') {
       const next = withMessageId({ ...state, optedOut: true, automationPaused: true, lastIntent: intent, pendingQuestion: null, step: 'OPTED_OUT' }, id);
       return { intent, duplicate: false, text: null, actions: [{ type: 'OPT_OUT', source: 'WHATSAPP_INBOUND' }], state: next };
@@ -219,7 +223,20 @@ function createConversationEngine({
     }
 
     try {
+      const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
+      if (scenario?.catalogIntent) {
+        state = { ...scenario.state, pendingQuestion: null };
+        intent = scenario.catalogIntent;
+        text = { CATALOG: 'formations', PRICE: 'prix', SCHEDULE: 'horaires', TRIAL: 'essai', REGISTRATION: 'inscription' }[intent];
+      } else if (scenario) {
+        return { ...scenario, intent: 'SCENARIO', duplicate: false, state: withMessageId(scenario.state, id) };
+      } else if (interactionId) {
+        return { intent: 'STALE_INTERACTION', duplicate: false, text: 'Ce choix n’est plus disponible. Écrivez « menu » pour recommencer.', actions: [], state: withMessageId({ ...state, scenarioMenu: null }, id) };
+      }
+      const configured = chatbot ? await chatbot.resolve({ text, intent, state, allowAI: false }) : null;
+      if (configured) return { intent, duplicate: false, text: configured.text, actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
       let reply;
+      let deferredAI = false;
       let next = state;
       const topicIntents = ['PRICE', 'SCHEDULE', 'TRIAL', 'REGISTRATION'];
       const finishSelection = course => {
@@ -317,6 +334,10 @@ function createConversationEngine({
           }
         }
       }
+      if (chatbot && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY) {
+        const fallback = await chatbot.resolve({ text, intent, state, allowAI: true });
+        if (fallback) { reply = fallback.text; deferredAI = fallback.deferredAI === true; }
+      }
       next = { ...next, lastIntent: intent === 'UNKNOWN' ? state.lastIntent : intent };
       const followUpConfig = whatsappConfig();
       const templatesConfigured = Boolean(followUpConfig.prospectFollowUp24hTemplate && followUpConfig.prospectFollowUp72hTemplate);
@@ -327,7 +348,7 @@ function createConversationEngine({
         reply = `${reply}\n\n${COMMERCIAL_FOLLOW_UP_INVITATION}`;
         next = { ...next, commercialFollowUpConsentRequestedAt: now().toISOString() };
       }
-      return { intent, duplicate: false, text: reply, actions: [], state: withMessageId(next, id) };
+      return { intent, duplicate: false, text: reply, actions: [], ...(deferredAI ? { deferredAI: true } : {}), state: withMessageId(next, id) };
     } catch {
       return { intent, duplicate: false, text: TEMPORARY_ERROR_REPLY, actions: [{ type: 'TEMPORARY_ERROR' }], retryable: true, state };
     }

@@ -126,3 +126,19 @@ test('receipt counters satisfy proposed immediate sum CHECK even before item wri
   };
   const result = await s.receive(); assert.equal(result.itemCount, 1); assert.equal(result.newCount, 1);
 });
+
+
+for (const format of ['button','list']) test('signed Meta Inbox → persisted '+format+' menu → stable click → original handoff engine', async()=>{
+ const s=setup(),{randomUUID}=require('node:crypto');
+ const scenario={id:randomUUID(),revision:1,enabled:true,triggers:['menu'],definition:{entry:'start',nodes:[{id:'start',type:format,body:'NVA',buttonLabel:'Choisir',options:[{id:randomUUID(),label:'Conseiller',action:{type:'HANDOFF'}}]}]}};
+ s.db.whatsAppScenario={findMany:async()=>[scenario]};s.db.whatsAppChatbotSettings={findUnique:async()=>({enabled:true,aiEnabled:false})};
+ s.seedConversation();await s.receive(s.message('menu',{id:'wamid.menu'}));
+ assert.equal((await s.repository.process(await s.repository.claim({owner:'test'}),s.dispatcher)).state,'PROCESSED');
+ const menu=s.rows('whatsAppConversationMessage').find(m=>m.direction==='OUTBOUND');assert.equal(menu.messageType,'INTERACTIVE');
+ const clickId=format==='button'?menu.interactivePayload.action.buttons[0].reply.id:menu.interactivePayload.action.sections[0].rows[0].id;
+ const kind=format==='button'?'button_reply':'list_reply';const click=s.message('',{id:'wamid.click',type:'interactive',interactive:{[kind]:{id:clickId,title:'Libellé différent'}}});
+ await s.receive(click);assert.equal((await s.repository.process(await s.repository.claim({owner:'test'}),s.dispatcher)).state,'PROCESSED');
+ assert.equal(s.rows('whatsAppConversation')[0].controlState,'HUMAN_TAKEOVER');
+ const inbound=s.rows('whatsAppConversationMessage').find(m=>m.providerMessageId==='wamid.click');assert.equal(inbound.interactivePayload[kind].id,clickId);
+ const before=s.rows('whatsAppConversationMessage').length;await s.receive(click);assert.equal(await s.repository.claim({owner:'duplicate'}),null);assert.equal(s.rows('whatsAppConversationMessage').length,before);
+});

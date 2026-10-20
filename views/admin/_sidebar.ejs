@@ -20,7 +20,7 @@
     <p class="admin-nav-label">Communication</p>
     <a href="/notifications"<% if (activeAdminPath === '/notifications') { %> aria-current="page"<% } %>><span aria-hidden="true">●</span>Notifications<% if (unreadNotificationCount) { %><b class="admin-nav-count"><%= unreadNotificationCount > 99 ? '99+' : unreadNotificationCount %></b><% } %></a>
     <a href="/admin/notifications/announcements"<% if (isAdminActive('/notifications/announcements')) { %> aria-current="page"<% } %>><span aria-hidden="true">✦</span>Annonces</a>
-    <a href="/admin/whatsapp/conversations"<% if (isAdminActive('/whatsapp')) { %> aria-current="page"<% } %>><span aria-hidden="true">◍</span>Conversations WhatsApp</a>
+    <a href="/admin/whatsapp/chatbot"<% if (isAdminActive('/whatsapp')) { %> aria-current="page"<% } %>><span aria-hidden="true">◍</span>WhatsApp Chatbot</a>
     <p class="admin-nav-label">Gestion</p>
     <a href="/admin/finances/manual-payments"<% if (isAdminActive('/finances')) { %> aria-current="page"<% } %>><span aria-hidden="true">$</span>Paiements manuels</a>
     <a href="/admin/certificates"<% if (isAdminActive('/certificates')) { %> aria-current="page"<% } %>><span aria-hidden="true">☆</span>Certificats</a>

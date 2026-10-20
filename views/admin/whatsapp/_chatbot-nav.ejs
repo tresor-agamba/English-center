@@ -1,0 +1,4 @@
+<nav class="settings-tabs" aria-label="WhatsApp Chatbot">
+<% const waLabels = { overview: "Vue d’ensemble", scenarios: 'Menus et scénarios', messages: 'Messages prédéfinis', faq: 'Questions fréquentes', ai: 'Intelligence artificielle', conversations: 'Conversations', settings: 'Paramètres' }; Object.entries(waLabels).forEach(([key,label])=>{ %>
+<a href="/admin/whatsapp/<%= key==='conversations'?'conversations':'chatbot/'+key %>"<% if(key===section){ %> class="active" aria-current="page"<% } %>><%= label %></a><% }); %>
+</nav>
