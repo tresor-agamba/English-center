@@ -1,13 +1,13 @@
 // Offline only: never opens a database connection or prints environment values.
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const root=path.resolve(__dirname,'..'),base=path.join(root,'prisma/migrations');
-const approved=['20261020120000_add_whatsapp_chatbot_admin','20261020140000_add_whatsapp_interactive_scenarios'];
+const approved=['20261020120000_add_whatsapp_chatbot_admin','20261020140000_add_whatsapp_interactive_scenarios','20261022120000_add_whatsapp_admission_requests'];
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const migrations=fs.readdirSync(base,{withFileTypes:true}).filter(x=>x.isDirectory()).map(x=>{const bytes=fs.readFileSync(path.join(base,x.name,'migration.sql'));const text=bytes.toString('utf8');return {name:x.name,sha256:sha(bytes),compatibleChecksums:[...new Set([sha(bytes),sha(text.replace(/\r\n/g,'\n')),sha(text.replace(/\r?\n/g,'\r\n'))])],approved:approved.includes(x.name)};}).sort((a,b)=>a.name.localeCompare(b.name));
 const blockers=[];
 for(const name of approved){
  const sql=fs.readFileSync(path.join(base,name,'migration.sql'),'utf8').replace(/--[^\n]*/g,'');
- for(const stmt of sql.split(';').map(x=>x.trim()).filter(Boolean))if(!/^(CREATE TABLE |CREATE INDEX |INSERT INTO "WhatsAppChatbotRule" |ALTER TABLE "whatsapp_conversation_messages" ADD COLUMN )/.test(stmt))blockers.push('Unapproved SQL statement in '+name);
+ for(const stmt of sql.split(';').map(x=>x.trim()).filter(Boolean))if(!/^(BEGIN$|COMMIT$|CREATE TABLE |CREATE (?:UNIQUE )?INDEX |ALTER TABLE "WhatsAppChatbotSettings" ADD COLUMN |INSERT INTO "WhatsAppChatbotRule" |ALTER TABLE "whatsapp_conversation_messages" ADD COLUMN )/.test(stmt))blockers.push('Unapproved SQL statement in '+name);
 }
 const arg=process.argv.indexOf('--history');let pending=null;
 if(arg>=0){const history=JSON.parse(fs.readFileSync(process.argv[arg+1],'utf8'));if(!Array.isArray(history))throw Error('History must be a JSON array');

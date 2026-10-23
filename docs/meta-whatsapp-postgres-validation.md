@@ -1,3 +1,5 @@
+> Mise à jour du 23 octobre 2026 : une nouvelle validation a été menée sur un cluster de laboratoire distinct, créé pour cette mission. Voir [le rapport et ses preuves](whatsapp-postgres-validation-20261023.md). Le constat historique ci-dessous concerne une autre intervention et une autre cible.
+
 # NVA — Validation PostgreSQL de la migration Meta WhatsApp
 
 Date : 16 octobre 2026.

@@ -200,6 +200,20 @@ async function getSessionForRegistration(rawSessionId, client = prisma) {
   return validateSession(session, now);
 }
 
+async function listSessionsForPublicRegistration(client = prisma) {
+  const now = new Date();
+  const rows = await client.trainingSession.findMany({
+    where: { status: 'OPEN', startDate: { gte: now }, registrationDeadline: { gte: now } },
+    select: sessionSelect(now), orderBy: [{ startDate: 'asc' }, { id: 'asc' }], take: 100,
+  });
+  const available = [];
+  for (const row of rows) {
+    try { available.push(validateSession(row, now)); }
+    catch (error) { if (!(error instanceof RegistrationError)) throw error; }
+  }
+  return available;
+}
+
 async function listCoursesForPublicRegistration(client = prisma) {
   const now = new Date();
   const courses = await client.course.findMany({
@@ -279,23 +293,23 @@ async function getEnrollmentIntent(userId, rawSessionId) {
   return { existingEnrollment, session };
 }
 
-async function runRegistrationTransaction({
+async function createRegistrationInTransaction(tx, {
   sessionId, courseId, groupId, firstName, lastName, phoneNumber, whatsappNumber = null, email = null,
-  passwordHash, requestedLevel = null, allowExistingUser = false, mustChangePassword = false,
+  passwordHash, requestedLevel = null, allowExistingUser = false, mustChangePassword = false, reuseExistingEnrollment = false,
 }) {
-  return prisma.$transaction(
-    async (tx) => {
       const session = !sessionId && courseId
         ? await getCourseRegistrationSession(courseId, tx)
-        : await getSessionForRegistration(sessionId, tx);
+        : (reuseExistingEnrollment ? validateSession((await getSessionSnapshot(sessionId, tx)).session, new Date(), { checkCapacity: false }) : await getSessionForRegistration(sessionId, tx));
       if (courseId && Number(courseId) !== session.course.id) throw new RegistrationError('COURSE_UNAVAILABLE', 'La session ne correspond pas à la formation.');
       const level = registrationLevel(session, requestedLevel);
-      const group = validateGroup(session, groupId);
+      const group = validateGroup(session, groupId, { checkCapacity: !reuseExistingEnrollment });
       const normalizedEmail = normalizeEmail(email);
       const existingUser = await tx.user.findUnique({
         where: { phoneNumber },
-        select: { id: true, role: true },
+        select: { id: true, role: true, isActive: true },
       });
+      let reusableEnrollment = null;
+      if (existingUser?.isActive === false) throw new RegistrationError('STUDENT_UNAVAILABLE', 'Ce compte est désactivé.', 403);
       if (existingUser) {
         const duplicate = await tx.enrollment.findUnique({
           where: {
@@ -304,9 +318,10 @@ async function runRegistrationTransaction({
               trainingSessionId: session.id,
             },
           },
-          select: { id: true },
+          select: { id: true, status: true },
         });
-        if (duplicate) throw new RegistrationError('DUPLICATE_ENROLLMENT', messages.DUPLICATE_ENROLLMENT);
+        if (duplicate && reuseExistingEnrollment && existingUser.role === 'STUDENT' && OCCUPYING_STATUSES.includes(duplicate.status)) reusableEnrollment = duplicate;
+        if (duplicate && !reusableEnrollment) throw new RegistrationError('DUPLICATE_ENROLLMENT', messages.DUPLICATE_ENROLLMENT);
         if (!allowExistingUser || existingUser.role !== 'STUDENT') throw new RegistrationError('ACCOUNT_EXISTS', messages.ACCOUNT_EXISTS);
       }
 
@@ -315,6 +330,8 @@ async function runRegistrationTransaction({
         if (emailOwner && emailOwner.id !== existingUser?.id) throw new RegistrationError('EMAIL_EXISTS', 'Cette adresse email est déjà utilisée.');
       }
 
+      if (reusableEnrollment) return { user: existingUser, enrollment: reusableEnrollment, accountCreated: false, reused: true };
+      if (reuseExistingEnrollment) { validateSession(session); validateGroup(session, groupId); }
       const user = existingUser ? await tx.user.update({
         where: { id: existingUser.id },
         data: { firstName, lastName, email: normalizedEmail || undefined, whatsappNumber: whatsappNumber || undefined },
@@ -363,18 +380,23 @@ async function runRegistrationTransaction({
       });
 
       return { user, enrollment, accountCreated: !existingUser };
-    },
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
-  );
+}
+
+async function runRegistrationTransaction(data) {
+  return prisma.$transaction(tx => createRegistrationInTransaction(tx, data), { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+async function completeRegistrationSideEffects(result, data) {
+      await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => console.error('Annulation relances WhatsApp:', error.message));
+      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
+      if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => console.error('Consentement WhatsApp:', error.message));
 }
 
 async function createRegistration(data) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
       const result = await runRegistrationTransaction(data);
-      await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => console.error('Annulation relances WhatsApp:', error.message));
-      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
-      if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => console.error('Consentement WhatsApp:', error.message));
+      await completeRegistrationSideEffects(result, data);
       return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
@@ -535,9 +557,12 @@ module.exports = {
   normalizeEmail,
   validateSession,
   getSessionForRegistration,
+  listSessionsForPublicRegistration,
   listCoursesForPublicRegistration,
   getCourseRegistrationSession,
   getEnrollmentIntent,
+  completeRegistrationSideEffects,
+  createRegistrationInTransaction,
   createRegistration,
   createStudentEnrollment,
   enrollExistingStudent,

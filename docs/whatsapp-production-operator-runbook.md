@@ -1,3 +1,5 @@
+> Mise à jour du 22 octobre 2026 : inclut désormais la migration 20261022120000_add_whatsapp_admission_requests. Consulter également whatsapp-admissions-implementation.md. L’archive du 20 octobre ne contient pas cette extension.
+
 ﻿# Préparation NVA — commandes Contabo à exécuter manuellement
 
 Ce document ne déclenche aucune action. Les commandes de sauvegarde, migration, copie finale et redémarrage sont réservées à l’opérateur après validation et autorisation. Aucun chemin, utilisateur ou processus réel Contabo n’a été vérifié. Ne jamais remplacer un arrêt de procédure par une suppression de table ou une réinitialisation Prisma.
@@ -90,7 +92,7 @@ node scripts/auditWhatsAppRelease.js --history "$NVA_BACKUP/migrations-before.js
 
 Node local testé : 24.18.0 ; vérifier un runtime compatible isolément pour NVA, sans mettre à jour celui de NovanceTech. Conserver Prisma et @prisma/client à 6.19.3 via le lockfile ; ne pas utiliser un npx qui téléchargerait une version récente. La CLI Prisma est une devDependency, donc `npm ci --omit=dev` ne suffit pas pour migrer.
 
-L’audit doit accepter exclusivement les deux migrations du module comme migrations en attente, ou aucune si elles sont déjà correctement appliquées. Il refuse les migrations échouées, manquantes, les sommes différentes et toute autre migration en attente. Ne pas masquer le problème en supprimant des dossiers de migration. Il ne détecte pas à lui seul un drift SQL : comparer schema-before.sql et le catalogue attendu, notamment contraintes/index/ACL/triggers Meta. Des modèles Provider* et Meta* sont présents dans le schéma sans migration correspondante dans l’historique local ; ne jamais générer/appliquer un diff global pour « corriger » cela.
+L’audit doit accepter exclusivement les trois migrations du module comme migrations en attente, ou aucune si elles sont déjà correctement appliquées. Il refuse les migrations échouées, manquantes, les sommes différentes et toute autre migration en attente. Ne pas masquer le problème en supprimant des dossiers de migration. Il ne détecte pas à lui seul un drift SQL : comparer schema-before.sql et le catalogue attendu, notamment contraintes/index/ACL/triggers Meta. Des modèles Provider* et Meta* sont présents dans le schéma sans migration correspondante dans l’historique local ; ne jamais générer/appliquer un diff global pour « corriger » cela.
 
 ## 5. Répéter sur une restauration isolée avant toute écriture en production
 

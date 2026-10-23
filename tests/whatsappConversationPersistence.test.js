@@ -286,3 +286,13 @@ test('historical ingress commits the AI fallback before its post-commit completi
  const incoming={id:'wamid.defer',from:'243821234567',type:'text',text:{body:'une question inconnue'}};
  await service.processInboundMessage(incoming);assert.equal(calls,1);await service.processInboundMessage(incoming);assert.equal(calls,1);
 });
+
+
+test('confirmed admission action uses the original conversation transaction and native deduplication',async t=>{
+ const {client,state}=memoryClient();state.conversations.push({id:1,phoneNumber:'+243821234567',controlState:'BOT_ACTIVE',engineState:{admission:{step:'REVIEW',expiresAt:'2100-01-01',draft:{fullName:'Marie Kalala',phoneNumber:'+243821234567',email:'synthetic@example.test',requestedLevel:'BEGINNER',consentToCollect:true},options:[{id:'confirm',value:'confirm',wireId:'adm:confirm:synthetic'}]}}});
+ const original=client.$transaction;client.$transaction=work=>original(tx=>work({...tx,whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}}));
+ const admissions=require('../src/services/whatsappAdmissionService');const record=t.mock.method(admissions,'recordConfirmed',async(tx,input)=>{assert.equal(tx.$transaction,undefined);assert.equal(input.conversationId,1);assert.equal(input.data.fullName,'Marie Kalala');return {id:1}});
+ const service=createWhatsAppConversationService({client,catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUpConfig:()=>({})});
+ const message={id:'wamid.admission-confirm',from:'243821234567',type:'interactive',interactive:{button_reply:{id:'adm:confirm:synthetic',title:'CONFIRMER'}}};
+ await service.processInboundMessage(message);assert.equal(record.mock.callCount(),1);assert.deepEqual(state.conversations[0].engineState.admission.draft,{});await service.processInboundMessage(message);assert.equal(record.mock.callCount(),1);
+});

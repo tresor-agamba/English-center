@@ -173,3 +173,7 @@
 .wa-scenarios [hidden] { display: none !important; }
 
 .wa-scenarios .wa-scenario-node, .wa-scenarios [data-nodes] details details { padding: 1rem; border: 1px solid var(--admin-line); border-radius: 10px; background: #fff; }
+
+.wa-admissions .card { max-width: none; margin: 1rem 0; }
+.wa-admissions p, .wa-admissions .wa-conversation-card { overflow-wrap: anywhere; }
+.wa-admissions form + form { margin-top: 1rem; }

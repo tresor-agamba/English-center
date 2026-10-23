@@ -1,3 +1,5 @@
+> Rapport historique du 20 octobre. Pour l’extension du 22 octobre (demandes consenties et conversion), voir [rapport actuel](whatsapp-admissions-implementation.md). La release candidate du 20 octobre ne contient pas cette extension.
+
 ﻿# Rapport de préparation au déploiement — NVA WhatsApp
 
 Date : 20 octobre 2026, Africa/Kinshasa. Audit local et correction d’intégration uniquement. Aucune connexion SSH, aucun accès à PostgreSQL Contabo, aucune installation distante, migration, modification de production, activation ou intervention NovanceTech.

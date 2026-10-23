@@ -650,6 +650,10 @@ enum WhatsAppProspectFollowUpStatus {
 }
 
 model User {
+  whatsappAdmissionsAssigned WhatsAppAdmissionRequest[] @relation("AdmissionAssignee")
+  whatsappAdmissionsConverted WhatsAppAdmissionRequest[] @relation("AdmissionConverter")
+  whatsappAdmissionEvents WhatsAppAdmissionEvent[]
+
   providerReconciliationAudits ProviderReconciliationAudit[]
   id                           Int                         @id @default(autoincrement())
   firstName                    String                      @map("first_name")
@@ -857,6 +861,7 @@ model WhatsAppDelivery {
 }
 
 model WhatsAppConversation {
+  admissionRequests WhatsAppAdmissionRequest[]
   id                Int                                @id @default(autoincrement())
   phoneNumber       String                             @unique @map("phone_number") @db.VarChar(16)
   userId            Int?                               @map("user_id")
@@ -1731,6 +1736,7 @@ model LessonResource {
 }
 
 model Enrollment {
+  whatsappAdmissionRequests WhatsAppAdmissionRequest[]
   id                       Int                    @id @default(autoincrement())
   userId                   Int                    @map("user_id")
   trainingSessionId        Int                    @map("training_session_id")
@@ -2532,6 +2538,8 @@ model WhatsAppChatbotRule {
   @@index([kind, enabled, priority])
 }
 model WhatsAppChatbotSettings {
+  admissionsEnabled Boolean @default(false)
+  admissionContent Json?
   id Int @id @default(1)
   enabled Boolean @default(true)
   aiEnabled Boolean @default(false)
@@ -2553,4 +2561,42 @@ model WhatsAppScenario {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   @@index([enabled, priority])
+}
+
+model WhatsAppAdmissionRequest {
+ id Int @id @default(autoincrement())
+ conversationId Int
+ fullName String @db.VarChar(120)
+ phoneNumber String @db.VarChar(20)
+ email String @db.VarChar(254)
+ requestedLevel String @db.VarChar(24)
+ source String @default("WHATSAPP") @db.VarChar(16)
+ status String @default("PENDING") @db.VarChar(20)
+ consentAt DateTime @default(now())
+ consentVersion String @default("admissions-v1") @db.VarChar(32)
+ sourceMessageId String @unique @db.VarChar(256)
+ assignedAdminId Int?
+ convertedById Int?
+ enrollmentId Int?
+ confirmationDraft String? @db.Text
+ createdAt DateTime @default(now())
+ updatedAt DateTime @updatedAt
+ conversation WhatsAppConversation @relation(fields:[conversationId],references:[id],onDelete:Restrict)
+ assignedAdmin User? @relation("AdmissionAssignee",fields:[assignedAdminId],references:[id],onDelete:SetNull)
+ convertedBy User? @relation("AdmissionConverter",fields:[convertedById],references:[id],onDelete:SetNull)
+ enrollment Enrollment? @relation(fields:[enrollmentId],references:[id],onDelete:Restrict)
+ events WhatsAppAdmissionEvent[]
+ @@index([status,createdAt])
+ @@index([phoneNumber])
+}
+model WhatsAppAdmissionEvent {
+ id Int @id @default(autoincrement())
+ requestId Int
+ adminId Int?
+ action String @db.VarChar(40)
+ metadata Json?
+ createdAt DateTime @default(now())
+ request WhatsAppAdmissionRequest @relation(fields:[requestId],references:[id],onDelete:Restrict)
+ admin User? @relation(fields:[adminId],references:[id],onDelete:SetNull)
+ @@index([requestId,createdAt])
 }

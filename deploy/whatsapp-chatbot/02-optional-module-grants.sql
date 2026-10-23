@@ -11,3 +11,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public."WhatsAppChatbotRule" TO :"nva_ap
 GRANT SELECT, INSERT, UPDATE ON public."WhatsAppChatbotSettings", public."WhatsAppChatbotAiBudget", public."WhatsAppScenario" TO :"nva_app_role";
 GRANT USAGE, SELECT ON SEQUENCE public."WhatsAppChatbotRule_id_seq" TO :"nva_app_role";
 COMMIT;
+
+-- Admissions extension: execute only after migration 20261022120000 and explicit DBA review.
+BEGIN;
+SET LOCAL lock_timeout = '3s';
+SELECT 1 / (current_database() = :'expected_database')::int AS correct_database;
+SELECT 1 / (:'nva_app_role' !~* '(novance|meta.*ingress)' AND :'nva_app_role' <> 'public')::int AS correct_application_role;
+GRANT SELECT, INSERT, UPDATE ON public."WhatsAppAdmissionRequest", public."WhatsAppAdmissionEvent" TO :"nva_app_role";
+GRANT USAGE, SELECT ON SEQUENCE public."WhatsAppAdmissionRequest_id_seq", public."WhatsAppAdmissionEvent_id_seq" TO :"nva_app_role";
+COMMIT;

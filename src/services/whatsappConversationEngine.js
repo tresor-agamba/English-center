@@ -52,6 +52,7 @@ function makeInitialState(value = {}) {
   const source = value && typeof value === 'object' ? value : {};
   return {
     automationPaused: source.automationPaused === true,
+    admission: source.admission && typeof source.admission === 'object' ? source.admission : null,
     scenarioMenu: source.scenarioMenu && typeof source.scenarioMenu === 'object' && Array.isArray(source.scenarioMenu.options) ? source.scenarioMenu : null,
     optedOut: source.optedOut === true,
     processedMessageIds: Array.isArray(source.processedMessageIds)
@@ -177,16 +178,18 @@ function createConversationEngine({
   whatsappConfig = () => getWhatsAppConfig(),
   chatbot = null,
   scenarios = null,
+  admissions = null,
 } = {}) {
-  async function handleMessage({ text, interactionId = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
+  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
     let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
 
     let intent = detectIntent(interactionId ? '' : text);
+    if (state.admission?.step === 'EMAIL' && String(text).includes('@')) intent = 'UNKNOWN';
     if (!interactionId && intent !== 'UNKNOWN') state.scenarioMenu = null;
     if (intent === 'OPT_OUT') {
-      const next = withMessageId({ ...state, optedOut: true, automationPaused: true, lastIntent: intent, pendingQuestion: null, step: 'OPTED_OUT' }, id);
+      const next = withMessageId({ ...state, admission: null, optedOut: true, automationPaused: true, lastIntent: intent, pendingQuestion: null, step: 'OPTED_OUT' }, id);
       return { intent, duplicate: false, text: null, actions: [{ type: 'OPT_OUT', source: 'WHATSAPP_INBOUND' }], state: next };
     }
     if (state.optedOut) return { intent: 'OPTED_OUT', duplicate: false, text: null, actions: [], state: withMessageId(state, id) };
@@ -223,6 +226,8 @@ function createConversationEngine({
     }
 
     try {
+      const admission = admissions ? await admissions.resolve({ text, interactionId, state, phoneNumber, messageId: id }) : null;
+      if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
       if (scenario?.catalogIntent) {
         state = { ...scenario.state, pendingQuestion: null };

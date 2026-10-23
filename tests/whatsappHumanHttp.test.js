@@ -22,7 +22,7 @@ async function harness(t, behavior = async () => ({ message: { id: 1 } })) {
     req.session.user = { id: 1 }; req.session.actor = { id: 1, role: req.body.role || 'ADMIN', isActive: req.body.active !== 'false', mustChangePassword: false };
     res.sendStatus(200);
   });
-  app.use((req, res, next) => { req.authenticatedUser = req.session.actor; res.render = (view, locals) => res.json({ error: locals.manualError, body: locals.messageBody, simulation: locals.simulation }); next(); });
+  app.use((req, res, next) => { req.authenticatedUser = req.session.actor; res.render = (view, locals) => res.json({ error: locals.manualError, body: locals.messageBody, simulation: locals.simulation, view, rows: locals.rows }); next(); });
   app.use(csrf.protect);
   app.get('/test-csrf', (req, res) => res.json({ token: req.session.csrfToken }));
   app.use('/admin/whatsapp', routes);
@@ -139,4 +139,29 @@ test('scenario saves detect concurrent edits instead of overwriting them',async 
  const definition={entry:'start',nodes:[{id:'start',type:'text',body:'Official answer',next:{type:'END'}}]};
  const result=await h.request('/admin/whatsapp/chatbot/scenarios/save','POST',{_csrf:token,id:randomUUID(),revision:'1',title:'NVA',triggers:'menu',priority:'0',definition:JSON.stringify(definition)});
  assert.equal(result.status,409);assert.equal(update.mock.callCount(),1);assert.equal(update.mock.calls[0].arguments[0].where.revision,1);
+});
+
+
+test('admission dashboard, content, simulation and conversion enforce ADMIN and CSRF',async t=>{
+ const h=await harness(t);assert.equal((await h.request('/admin/whatsapp/admissions')).headers.location,'/login');
+ const token=await h.login('STUDENT');for(const path of ['/admin/whatsapp/admissions','/admin/whatsapp/admissions/1','/admin/whatsapp/admissions/content','/admin/whatsapp/admissions/simulator'])assert.equal((await h.request(path)).status,403);
+ assert.equal((await h.request('/admin/whatsapp/admissions/1/convert','POST',{_csrf:token})).status,403);
+ await h.login();for(const path of ['/admin/whatsapp/admissions/1/update','/admin/whatsapp/admissions/1/convert','/admin/whatsapp/admissions/content','/admin/whatsapp/admissions/simulator'])assert.equal((await h.request(path,'POST',{})).status,403);
+});
+test('authorized admission list is rendered without public cache and conversion uses authenticated actor',async t=>{
+ const admissions=require('../src/services/whatsappAdmissionService'),passwords=require('../src/services/passwordService');
+ const h=await harness(t),token=await h.login();t.mock.method(admissions,'list',async()=>({rows:[{id:1,fullName:'Synthetic applicant'}],q:'',status:'',sort:'desc',page:1}));
+ const page=await h.request('/admin/whatsapp/admissions');assert.equal(page.status,200);assert.equal(page.headers['cache-control'],'no-store');assert.equal(JSON.parse(page.body).view,'admin/whatsapp/admissions');assert.equal(JSON.parse(page.body).rows.length,1);
+ t.mock.method(passwords,'hashPassword',async()=> 'synthetic-hash');const convert=t.mock.method(admissions,'convert',async()=>({already:true}));
+ const result=await h.request('/admin/whatsapp/admissions/1/convert','POST',{_csrf:token,confirm:'on',adminId:'99'});assert.equal(result.status,303);assert.equal(convert.mock.calls[0].arguments[1],1);assert.equal(convert.mock.calls[0].arguments[2].passwordHash,'synthetic-hash');
+});
+
+
+test('HTTP admissions simulator reaches confirmation without creating a real request or enrollment',async t=>{
+ const db=require('../src/utils/prisma'),catalog=require('../src/services/publicCourseService'),admission=require('../src/services/whatsappAdmissionService');
+ const h=await harness(t),token=await h.login();t.mock.method(db.whatsAppChatbotSettings,'findUnique',async()=>({enabled:false,admissionsEnabled:false}));t.mock.method(catalog,'listPublished',async()=>[]);t.mock.method(admission,'recordConfirmed',async()=>assert.fail('No request in simulator'));
+ const path='/admin/whatsapp/admissions/simulator';let simulation;
+ async function post(data){assert.equal((await h.request(path,'POST',{_csrf:token,...data})).status,303);simulation=JSON.parse((await h.request(path)).body).simulation;}
+ async function click(id){await post({interactionId:simulation.state.admission.options.find(o=>o.id===id).wireId});}
+ await post({reset:'on'});await click('registration');await click('yes');await click('admin');await click('accept');await post({text:'Marie Kalala'});await click('phone-confirm');await post({text:'synthetic@example.test'});await click('level-UNKNOWN');assert.equal(simulation.state.admission.step,'REVIEW');await click('confirm');assert.deepEqual(simulation.history.at(-1).actions,['ADMISSION_REQUEST']);assert.equal(simulation.state.admission.step,'DONE');
 });

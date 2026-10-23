@@ -105,12 +105,14 @@ function createWhatsAppConversationService({
       registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) },
       now: engineNow,
       whatsappConfig: followUpConfig,
+      admissions: require('./whatsappAdmissionJourney').createAdmissionJourney({ database: tx, catalog: { listPublished: () => catalog.listPublished(tx) }, registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) }, now: engineNow }),
       scenarios: require('./whatsappScenarioService').createScenarioService({ database: tx, now: engineNow }),
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
         deferAI: process.env.NVA_CHATBOT_AI_ENABLED === 'true' }),
     });
     const result = await engine.handleMessage({
       text: body,
+      phoneNumber,
       interactionId: message.type === 'interactive' ? require('./whatsappInteractive').interactionId(message) || 'unrecognized-interaction' : null,
       messageId: providerMessageId,
       state: stateForConversation(conversation),
@@ -120,7 +122,9 @@ function createWhatsAppConversationService({
 
     let controlState = conversation.controlState;
     for (const action of result.actions || []) {
-      if (action.type === 'HUMAN_HANDOFF') {
+      if (action.type === 'ADMISSION_REQUEST') {
+        await require('./whatsappAdmissionService').recordConfirmed(tx, { conversationId: conversation.id, ...action, sourceMessageId: providerMessageId }, receivedAt);
+      } else if (action.type === 'HUMAN_HANDOFF') {
         controlState = 'HUMAN_TAKEOVER';
         await tx.whatsAppConversation.update({
           where: { id: conversation.id },
