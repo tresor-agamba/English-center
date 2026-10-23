@@ -19,7 +19,9 @@ async function recordWhatsAppOptIn(userId, phone, source, client = prisma) {
 async function recordWhatsAppOptOut(userId, client = prisma) {
   if (typeof client.$transaction === 'function') return client.$transaction(tx => recordWhatsAppOptOut(userId, tx), { isolationLevel: 'ReadCommitted' });
   if (typeof client.$queryRaw === 'function') {
-    const user = await client.user.findUnique({ where: { id: userId }, include: { whatsappPreference: true } });
+    const user = await client.user.findUnique({ where: { id: userId }, select: {
+      phoneNumber: true, whatsappNumber: true, whatsappPreference: { select: { phoneNumber: true } },
+    } });
     const conversations = await client.whatsAppConversation.findMany({ where: { userId }, select: { phoneNumber: true } });
     await lockRecipients(client, [user?.phoneNumber, user?.whatsappNumber, user?.whatsappPreference?.phoneNumber,
       ...conversations.map(row => row.phoneNumber)]);

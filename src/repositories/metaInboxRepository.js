@@ -35,7 +35,9 @@ function createMetaInboxRepository({ database, scope, crypto } = {}) {
           return work(tx, clock, endpoint);
         }, { isolationLevel: 'Serializable', timeout: 5000 });
       } catch (error) {
-        if (retrySafe && retry < 2 && ['P2034', 'P2002'].includes(error?.code)) continue;
+        const conflict = ['P2034', 'P2002'].includes(error?.code)
+          || (error?.code === 'P2010' && ['40001', '40P01'].includes(error.meta?.code));
+        if (retrySafe && retry < 2 && conflict) continue;
         if (/^META_INBOX_[A-Z_]+$/.test(error?.code || '')) fail(error.code);
         fail('META_INBOX_STORAGE_FAILED'); // Never expose SQL parameters/payloads.
       }

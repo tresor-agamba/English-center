@@ -9,14 +9,16 @@ function match(row, where = {}) {
     const actual = row[key] ?? null;
     if (v && typeof v === 'object' && !(v instanceof Date) && !(v instanceof Uint8Array)) return Object.entries(v).every(([op, arg]) =>
       op === 'in' ? arg.includes(actual) : op === 'notIn' ? !arg.includes(actual) : op === 'lte' ? actual !== null && actual <= arg
-        : op === 'lt' ? actual !== null && actual < arg : op === 'gt' ? actual !== null && actual > arg : op === 'not' ? !equal(actual, arg) : false);
+        : op === 'lt' ? actual !== null && actual < arg : op === 'gt' ? actual !== null && actual > arg
+          : op === 'gte' ? actual !== null && actual >= arg : op === 'not' ? !equal(actual, arg) : false);
     return equal(actual, v);
   });
 }
-function createMetaInboxMock(endpoint) {
+function createMetaInboxMock(endpoint, { allowReadCommitted = false } = {}) {
   const names = ['metaWebhookEndpoint', 'metaWebhookReceipt', 'metaWebhookEvent', 'metaWebhookReceiptItem',
     'user', 'enrollment', 'whatsAppConversation', 'whatsAppPreference', 'whatsAppCommercialConsentEvent',
-    'whatsAppConversationMessage', 'whatsAppProspectFollowUp', 'whatsAppDelivery', 'simulationDelivery', 'simulationConsent'];
+    'whatsAppConversationMessage', 'whatsAppProspectFollowUp', 'whatsAppDelivery', 'simulationDelivery', 'simulationConsent',
+    'whatsAppChatbotSettings','whatsAppChatbotRule','whatsAppScenario','notification'];
   let rows = Object.fromEntries(names.map(n => [n, []])), queue = Promise.resolve(), now = new Date('2026-10-16T12:00:00Z'), order = 0n;
   let createFailure = null, commitFailure = false, beginFailure = null;
   rows.metaWebhookEndpoint.push(structuredClone(endpoint));
@@ -60,7 +62,7 @@ function createMetaInboxMock(endpoint) {
     };
   }
   db.$transaction = (work, options) => {
-    if (options?.isolationLevel !== 'Serializable') throw new Error('Serializable required');
+    if (options?.isolationLevel !== 'Serializable' && !(allowReadCommitted && options?.isolationLevel === 'ReadCommitted')) throw new Error('Serializable required');
     const result = queue.then(async () => {
       if (beginFailure) { const error = beginFailure; beginFailure = null; throw error; }
       const before = structuredClone(rows);
