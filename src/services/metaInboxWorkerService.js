@@ -19,7 +19,7 @@ async function verifyWorkerIdentity(tx, config) {
       OR has_column_privilege(r.oid,'public.whatsapp_conversation_messages','sender_user_id','INSERT,UPDATE')
       OR has_column_privilege(r.oid,'public."WhatsAppAdmissionRequest"','status','INSERT,UPDATE')
       OR has_any_column_privilege(r.oid,'public."WhatsAppAdmissionEvent"','INSERT,UPDATE')
-      OR NOT has_function_privilege(r.oid,'public.nva_record_admission_consent(integer,text,jsonb)','EXECUTE') AS forbidden
+      OR NOT COALESCE(has_function_privilege(r.oid,to_regprocedure('public.nva_record_admission_consent(integer,text,jsonb)'),'EXECUTE'),false) AS forbidden
     FROM pg_roles r WHERE r.rolname=current_user`;
   if (!r || r.database !== config.database || r.role !== config.role || r.address !== '127.0.0.1'
     || r.port !== config.port || r.rolcanlogin !== true
