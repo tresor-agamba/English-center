@@ -105,7 +105,7 @@ function createWhatsAppConversationService({
       registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) },
       now: engineNow,
       whatsappConfig: followUpConfig,
-      admissions: require('./whatsappAdmissionJourney').createAdmissionJourney({ database: tx, catalog: { listPublished: () => catalog.listPublished(tx) }, registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) }, now: engineNow }),
+      admissions: require('./whatsappAdmissionJourney').createAdmissionJourney({ database: tx, catalog: { listPublished: () => catalog.listPublished(tx) }, registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx), listSessionsForPublicRegistration: () => registration.listSessionsForPublicRegistration(tx) }, now: engineNow }),
       scenarios: require('./whatsappScenarioService').createScenarioService({ database: tx, now: engineNow }),
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
         deferAI: process.env.NVA_CHATBOT_AI_ENABLED === 'true' }),
@@ -123,7 +123,11 @@ function createWhatsAppConversationService({
     let controlState = conversation.controlState;
     for (const action of result.actions || []) {
       if (action.type === 'ADMISSION_REQUEST') {
-        await require('./whatsappAdmissionService').recordConfirmed(tx, { conversationId: conversation.id, ...action, sourceMessageId: providerMessageId }, receivedAt);
+        const request = await require('./whatsappAdmissionService').recordConfirmed(tx, { conversationId: conversation.id, ...action, sourceMessageId: providerMessageId }, receivedAt);
+        const statuses = {PENDING:'en attente de validation administrative',PROCESSING:'en cours de traitement administratif',ENROLLED:'validée',CANCELLED:'annulée'};
+        result.text = `Votre demande d’inscription #${request.id} est ${statuses[request.status] || 'à vérifier auprès d’un conseiller'}.`;
+        if (request.status !== 'ENROLLED') result.text += ' Ce statut ne confirme pas une nouvelle inscription.';
+        if (result.interactive) result.interactive.body.text = result.text;
       } else if (action.type === 'HUMAN_HANDOFF') {
         controlState = 'HUMAN_TAKEOVER';
         await tx.whatsAppConversation.update({

@@ -1,4 +1,5 @@
-require('dotenv').config();
+// Database configuration must be supplied by the isolated test launcher.
+// Never import the application .env from this test.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs/promises');

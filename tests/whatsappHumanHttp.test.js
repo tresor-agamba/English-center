@@ -163,5 +163,5 @@ test('HTTP admissions simulator reaches confirmation without creating a real req
  const path='/admin/whatsapp/admissions/simulator';let simulation;
  async function post(data){assert.equal((await h.request(path,'POST',{_csrf:token,...data})).status,303);simulation=JSON.parse((await h.request(path)).body).simulation;}
  async function click(id){await post({interactionId:simulation.state.admission.options.find(o=>o.id===id).wireId});}
- await post({reset:'on'});await click('registration');await click('yes');await click('admin');await click('accept');await post({text:'Marie Kalala'});await click('phone-confirm');await post({text:'synthetic@example.test'});await click('level-UNKNOWN');assert.equal(simulation.state.admission.step,'REVIEW');await click('confirm');assert.deepEqual(simulation.history.at(-1).actions,['ADMISSION_REQUEST']);assert.equal(simulation.state.admission.step,'DONE');
+ await post({reset:'on'});await click('registration');await click('admin');await click('accept');await post({text:'Marie Kalala'});await click('phone-confirm');await post({text:'synthetic@example.test'});await click('level-UNKNOWN');assert.equal(simulation.state.admission.step,'REVIEW');await click('confirm');assert.deepEqual(simulation.history.at(-1).actions,['ADMISSION_REQUEST']);assert.equal(simulation.state.admission.step,'DONE');
 });

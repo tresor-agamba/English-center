@@ -10,7 +10,7 @@ function match(row, where = {}) {
     if (v && typeof v === 'object' && !(v instanceof Date) && !(v instanceof Uint8Array)) return Object.entries(v).every(([op, arg]) =>
       op === 'in' ? arg.includes(actual) : op === 'notIn' ? !arg.includes(actual) : op === 'lte' ? actual !== null && actual <= arg
         : op === 'lt' ? actual !== null && actual < arg : op === 'gt' ? actual !== null && actual > arg
-          : op === 'gte' ? actual !== null && actual >= arg : op === 'not' ? !equal(actual, arg) : false);
+          : op === 'gte' ? actual !== null && actual >= arg : op === 'not' ? !equal(actual, arg) : op==='startsWith'?typeof actual==='string'&&actual.startsWith(arg):op==='endsWith'?typeof actual==='string'&&actual.endsWith(arg):false);
     return equal(actual, v);
   });
 }
@@ -18,7 +18,8 @@ function createMetaInboxMock(endpoint, { allowReadCommitted = false } = {}) {
   const names = ['metaWebhookEndpoint', 'metaWebhookReceipt', 'metaWebhookEvent', 'metaWebhookReceiptItem',
     'user', 'enrollment', 'whatsAppConversation', 'whatsAppPreference', 'whatsAppCommercialConsentEvent',
     'whatsAppConversationMessage', 'whatsAppProspectFollowUp', 'whatsAppDelivery', 'simulationDelivery', 'simulationConsent',
-    'whatsAppChatbotSettings','whatsAppChatbotRule','whatsAppScenario','notification'];
+    'whatsAppChatbotSettings','whatsAppChatbotRule','whatsAppScenario','notification',
+    'course','trainingSession','whatsAppAdmissionRequest','whatsAppAdmissionEvent'];
   let rows = Object.fromEntries(names.map(n => [n, []])), queue = Promise.resolve(), now = new Date('2026-10-16T12:00:00Z'), order = 0n;
   let createFailure = null, commitFailure = false, beginFailure = null;
   rows.metaWebhookEndpoint.push(structuredClone(endpoint));

@@ -11,6 +11,7 @@ router.post('/admissions/simulator', a(admission.simulate));
 router.get('/admissions/:id', a(admission.detail));
 router.post('/admissions/:id/update', a(admission.update));
 router.post('/admissions/:id/convert', a(admission.convert));
+router.post('/admissions/:id/verify-email', require('../middlewares/rateLimits').passwordResetDelivery, a(admission.verifyEmail));
 const chatbot = require('../controllers/adminWhatsAppChatbotController');
 const scenario = require('../controllers/adminWhatsAppScenarioController');
 router.get('/chatbot/scenarios', a(scenario.render));

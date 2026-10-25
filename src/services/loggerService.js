@@ -2,19 +2,23 @@ const crypto = require('crypto');
 const sanitizeUrl = require('../utils/sanitizeUrl');
 const LEVELS = new Set(['INFO', 'WARN', 'ERROR', 'SECURITY', 'AUDIT']);
 const SECRET_KEYS = /password|secret|token|cookie|authorization|signature|stamp|binary|card|bank/i;
+const PERSONAL_KEYS = /^(?:email|e_mail|phone|phoneNumber|phone_number|whatsappNumber|whatsapp_number|fullName|firstName|lastName|recipient|payload|messageBody)$/i;
 function sanitizeString(value) {
   return sanitizeUrl(value)
     .replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, '[DATABASE_URL]')
     .replace(/\bBearer\s+[A-Za-z0-9._~+/=-]+/gi, 'Bearer [REDACTED]')
     .replace(/(["']?\b[\w-]*(?:password|secret|token|cookie|authorization)[\w-]*["']?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;}]+)/gi, '$1[REDACTED]')
     .replace(/\$2[aby]\$\d{2}\$[./A-Za-z0-9]{53}/g, '[REDACTED]')
+    .replace(/[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[EMAIL]')
+    .replace(/\+\d[\d .()-]{5,22}\d/g, '[PHONE]')
+    .replace(/(["']?\b(?:fullName|firstName|lastName|phoneNumber|whatsappNumber)["']?\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,;}]+)/gi, '$1[REDACTED]')
     .slice(0, 2000);
 }
 function sanitize(value, depth = 0) {
   if (depth > 4) return '[TRUNCATED]';
-  if (value instanceof Error) return { name: sanitizeString(value.name), code: value.code ? sanitizeString(value.code) : undefined, message: sanitizeString(value.message || '').replace(/[A-Z]:\\[^\s]+/gi, '[PATH]') };
+  if (value instanceof Error) return { name: sanitizeString(value.name), code: value.code ? sanitizeString(value.code) : undefined, message: /^Prisma/.test(value.name) ? 'DATABASE_OPERATION_FAILED' : sanitizeString(value.message || '').replace(/[A-Z]:\\[^\s]+/gi, '[PATH]') };
   if (Array.isArray(value)) return value.slice(0, 30).map((item) => sanitize(item, depth + 1));
-  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([key]) => !SECRET_KEYS.test(key)).map(([key, item]) => [key, sanitize(item, depth + 1)]));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).filter(([key]) => !SECRET_KEYS.test(key) && !PERSONAL_KEYS.test(key)).map(([key, item]) => [key, sanitize(item, depth + 1)]));
   if (typeof value === 'string') return sanitizeString(value);
   return value;
 }

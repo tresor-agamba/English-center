@@ -37,7 +37,7 @@ FROM expected ORDER BY name;
 \echo === Column definitions only; no row values ===
 SELECT table_name, ordinal_position, column_name, data_type, udt_name,
        is_nullable, character_maximum_length, numeric_precision, numeric_scale,
-       datetime_precision, column_default
+       datetime_precision, md5(column_default) AS column_default_md5
 FROM information_schema.columns
 WHERE table_schema='public' AND table_name IN
  ('courses','training_sessions','registration_groups','http_sessions',
@@ -49,7 +49,7 @@ ORDER BY table_name,ordinal_position;
 
 \echo === Constraints: validation, referential actions, deferred checks ===
 SELECT c.relname AS table_name,k.conname,k.contype,k.convalidated,
-       k.condeferrable,k.condeferred,pg_get_constraintdef(k.oid) AS definition
+       k.condeferrable,k.condeferred,md5(pg_get_constraintdef(k.oid)) AS definition_md5
 FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid
 JOIN pg_namespace n ON n.oid=c.relnamespace
 WHERE n.nspname='public' AND (c.relname LIKE 'meta\_webhook\_%' ESCAPE '\'
@@ -59,8 +59,8 @@ ORDER BY c.relname,k.conname;
 
 \echo === Indexes: include partial predicates, validity and readiness ===
 SELECT t.relname AS table_name,c.relname AS index_name,i.indisunique,
-       i.indisvalid,i.indisready,pg_get_indexdef(i.indexrelid) AS definition,
-       pg_get_expr(i.indpred,i.indrelid) AS partial_predicate
+       i.indisvalid,i.indisready,md5(pg_get_indexdef(i.indexrelid)) AS definition_md5,
+       md5(pg_get_expr(i.indpred,i.indrelid)) AS partial_predicate_md5
 FROM pg_index i JOIN pg_class t ON t.oid=i.indrelid
 JOIN pg_class c ON c.oid=i.indexrelid JOIN pg_namespace n ON n.oid=t.relnamespace
 WHERE n.nspname='public' AND (t.relname LIKE 'meta\_webhook\_%' ESCAPE '\'
@@ -73,7 +73,7 @@ WITH expected(name) AS (VALUES ('meta_endpoint_guard'),('meta_receipt_guard'),
  ('meta_event_guard'),('meta_item_guard'),('meta_receipt_complete'),
  ('meta_item_complete'),('meta_new_event_complete'))
 SELECT e.name,t.oid IS NOT NULL AS present,c.relname,t.tgenabled,
-       t.tgdeferrable,t.tginitdeferred,pg_get_triggerdef(t.oid) AS definition
+       t.tgdeferrable,t.tginitdeferred,md5(pg_get_triggerdef(t.oid)) AS definition_md5
 FROM expected e LEFT JOIN (pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
  JOIN pg_namespace n ON n.oid=c.relnamespace AND n.nspname='public')
  ON t.tgname=e.name AND NOT t.tgisinternal ORDER BY e.name;
@@ -83,7 +83,7 @@ WITH expected(name) AS (VALUES ('meta_inbox_lock_endpoint'),('meta_inbox_endpoin
  ('meta_inbox_receipt_guard'),('meta_inbox_event_guard'),('meta_inbox_item_guard'),
  ('meta_inbox_check_manifest'),('meta_inbox_check_new_event'))
 SELECT e.name,p.oid IS NOT NULL AS present,pg_get_function_identity_arguments(p.oid) AS arguments,
-       p.prosecdef AS security_definer,p.proconfig AS function_settings,
+       p.prosecdef AS security_definer,md5(p.proconfig::text) AS function_settings_md5,
        md5(pg_get_functiondef(p.oid)) AS definition_md5
 FROM expected e LEFT JOIN (pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace AND n.nspname='public')
  ON p.proname=e.name ORDER BY e.name,arguments;

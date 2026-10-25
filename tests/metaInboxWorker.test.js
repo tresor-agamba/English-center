@@ -103,7 +103,7 @@ test('Bonjour persists menu then delivers an interactive Cloud API payload with 
   assert.equal(s.sent[0].type, 'interactive'); assert.match(s.sent[0].interactive.body.text, /100 % en ligne/);
   assert.equal(s.rows('metaWebhookEvent')[0].state, 'PROCESSED'); assert.equal(s.rows('whatsAppConversationMessage').find(m => m.direction === 'OUTBOUND').deliveryStatus, 'ACCEPTED');
 });
-for (const [input, pattern] of [['formations', /trois niveaux/], ['tarifs', /60 USD par niveau/], ['horaires', /vendredi et samedi/], ['inscription', /INSCRIPTIONS/]]) {
+for (const [input, pattern] of [['formations', /trois niveaux/], ['tarifs', /60 USD par niveau/], ['horaires', /vendredi et samedi/], ['inscription', /inscription/]]) {
   test('actual worker engine handles ' + input, async () => { const s = setup(); await s.receive(input); const r = await s.makeWorker().runOnce(); assert.equal(r.accepted, 1); assert.match(s.sent[0].interactive.body.text, pattern); });
 }
 test('processing-only mode commits reply but cannot send; later worker can deliver it', async () => {
@@ -184,9 +184,9 @@ test('worker delivers list and button clicks by stable IDs through the existing 
   const s = setup(); const w = s.makeWorker(); await s.receive('bonjour'); await w.runOnce();
   let conv = s.rows('whatsAppConversation')[0]; let option = conv.engineState.admission.options.find(o => o.id === 'registration');
   await s.receive('', { type: 'interactive', interactive: { list_reply: { id: option.wireId, title: 'Label changed' } } }); await w.runOnce();
-  conv = s.rows('whatsAppConversation')[0]; option = conv.engineState.admission.options.find(o => o.id === 'yes');
+  conv = s.rows('whatsAppConversation')[0]; option = conv.engineState.admission.options.find(o => o.id === 'admin');
   await s.receive('', { type: 'interactive', interactive: { button_reply: { id: option.wireId, title: 'Other label' } } }); await w.runOnce();
-  assert.equal(s.sent.length, 3); assert.match(s.sent[2].interactive.body.text, /Comment souhaitez-vous procéder/);
+  assert.equal(s.sent.length, 3); assert.match(s.sent[2].interactive.body.text, /collecte temporaire/);
 });
 test('CLI polls again after a temporary batch failure and closes on its disable switch', async () => {
   const env = { META_INBOX_WORKER_ENABLED: 'true' }; let calls = 0, closed = 0;

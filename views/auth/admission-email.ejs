@@ -1,0 +1,8 @@
+<%- include('../partials/header',{title}) %>
+<section class="card"><h1>Vérifier votre adresse e-mail</h1><% if(message){ %><p role="status"><%= message %></p><% } %>
+<p>Utilisez le code reçu par e-mail. Cette vérification ne confirme pas votre inscription.</p>
+<form method="post" action="/whatsapp/admission-email" class="form-grid"><%- csrfField() %>
+<label>Numéro de demande<input name="requestId" inputmode="numeric" required maxlength="9"></label>
+<label>Code à usage unique<input name="token" required maxlength="43" autocomplete="one-time-code"></label>
+<button class="button" type="submit">Vérifier mon adresse</button></form></section>
+<%- include('../partials/footer') %>

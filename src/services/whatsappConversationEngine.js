@@ -186,6 +186,10 @@ function createConversationEngine({
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
 
     let intent = detectIntent(interactionId ? '' : text);
+    if (!interactionId && !['OPT_OUT','RESUME_AUTOMATION','COMMERCIAL_CONSENT_GRANT'].includes(intent)) {
+      if (require('./whatsappCommercialResponder').identityInput(text,state.admission)) intent = 'UNKNOWN';
+      else if (require('./whatsappCommercialIntents').isRefusal(text)) intent = 'REFUSAL';
+    }
     if (state.admission?.step === 'EMAIL' && String(text).includes('@')) intent = 'UNKNOWN';
     if (!interactionId && intent !== 'UNKNOWN') state.scenarioMenu = null;
     if (intent === 'OPT_OUT') {
@@ -226,7 +230,7 @@ function createConversationEngine({
     }
 
     try {
-      const admission = admissions ? await admissions.resolve({ text, interactionId, state, phoneNumber, messageId: id }) : null;
+      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id }) : null;
       if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
       if (scenario?.catalogIntent) {
@@ -256,15 +260,13 @@ function createConversationEngine({
         next = { ...next, pendingQuestion: { type: 'TOPIC', intent: null }, step: 'SELECT_TOPIC' };
         return `Vous avez choisi ${course.title}. Souhaitez-vous connaître le tarif, les horaires, les conditions d’essai ou les modalités d’inscription ?`;
       };
-      if (['MENU', 'CANCEL_REQUEST'].includes(intent)) {
+      if (['MENU', 'GREETING', 'CANCEL_REQUEST'].includes(intent)) {
         next = { ...next, selectedCourseId: null, selectedCourseSlug: null, pendingQuestion: null, step: 'MENU' };
         reply = `${intent === 'CANCEL_REQUEST' ? 'La demande en cours est annulée. ' : ''}Menu NVA : formations, prix, horaires, essai, inscription ou conseiller.`;
       } else if (intent === 'CHANGE_COURSE') {
         const courses = await catalog.listPublished();
         next = { ...next, selectedCourseId: null, selectedCourseSlug: null, pendingQuestion: null, step: 'MENU' };
         reply = courses.length ? askCourse(courses, null, 'Quelle autre formation souhaitez-vous choisir ?') : courseListReply(courses);
-      } else if (intent === 'GREETING') {
-        reply = 'Bonjour et bienvenue à New Vision Academy ! Je peux vous renseigner sur les formations, les tarifs, les horaires, les séances d’essai ou l’inscription. Que recherchez-vous ?';
       } else if (intent === 'AMBIGUOUS') {
         next = { ...next, pendingQuestion: { type: 'TOPIC', intent: null }, step: 'SELECT_TOPIC' };
         const courses = await catalog.listPublished();
@@ -339,9 +341,24 @@ function createConversationEngine({
           }
         }
       }
+      // A first unrecognized contact gets the existing official menu, after
+      // explicit topics, course selections, scenarios and configured rules.
+      if (admissions && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY
+        && !state.processedMessageIds.length && !state.lastIntent
+        && !state.admission && !state.scenarioMenu && !state.pendingQuestion
+        && !state.selectedCourseId && !state.selectedCourseSlug) {
+        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id });
+        if (welcome) return { ...welcome, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(welcome.state, id) };
+      }
       if (chatbot && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY) {
+        const deterministic = admissions?.resolveUnknown ? await admissions.resolveUnknown({ state }) : null;
+        if (deterministic) return { ...deterministic, intent: 'UNKNOWN', duplicate: false, state: withMessageId(deterministic.state, id) };
         const fallback = await chatbot.resolve({ text, intent, state, allowAI: true });
         if (fallback) { reply = fallback.text; deferredAI = fallback.deferredAI === true; }
+      }
+      if (!chatbot && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY && admissions?.resolveUnknown) {
+        const deterministic = await admissions.resolveUnknown({ state });
+        if (deterministic) return { ...deterministic, intent: 'UNKNOWN', duplicate: false, state: withMessageId(deterministic.state, id) };
       }
       next = { ...next, lastIntent: intent === 'UNKNOWN' ? state.lastIntent : intent };
       const followUpConfig = whatsappConfig();

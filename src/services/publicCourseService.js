@@ -30,6 +30,7 @@ async function listPublished(client = prisma) {
       durationValue: true,
       durationUnit: true,
       price: true,
+      certificateFee: true,
       currency: true,
       pricingMode: true,
       pricingActive: true,

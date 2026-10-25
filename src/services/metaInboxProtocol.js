@@ -10,6 +10,10 @@ function canonical(value, depth = 0) {
   if (!value || typeof value !== 'object') fail('META_INBOX_INVALID_PAYLOAD');
   return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k], depth + 1)).join(',') + '}';
 }
+function streamDigest(key,endpointId,sender){
+  if(!/^[1-9]\d{6,14}$/.test(sender))fail('META_INBOX_INVALID_SENDER');
+  return createHmac('sha256',key).update(canonical([endpointId,'stream-v1',sender])).digest();
+}
 function createMetaInboxCrypto({ lookupKeys, currentLookupVersion, streamKey, streamKeyVersion,
   encryptionKeys, currentEncryptionVersion } = {}) {
   const copy = keys => Object.fromEntries(Object.entries(keys || {}).map(([v, key]) => {
@@ -30,7 +34,7 @@ function createMetaInboxCrypto({ lookupKeys, currentLookupVersion, streamKey, st
       if (!Object.hasOwn(lookups, v)) fail('META_INBOX_MISSING_LOOKUP_KEY');
       return hmac(lookups[v], [endpointId, domain, value]);
     },
-    stream(endpointId, sender) { if (!/^[1-9]\d{6,14}$/.test(sender)) fail('META_INBOX_INVALID_SENDER'); return hmac(flowSecret, [endpointId, 'stream-v1', sender]); },
+    stream(endpointId, sender) { return streamDigest(flowSecret,endpointId,sender); },
     seal(value, context) {
       const plaintext = Buffer.from(canonical(value));
       if (plaintext.length > 1024 * 1024) fail('META_INBOX_PAYLOAD_TOO_LARGE');
@@ -121,4 +125,4 @@ function normalizeMetaBatch(payload, { wabaId, phoneNumberId, receivedAt }) {
   });
   return out;
 }
-module.exports = { fail, canonical, normalizeMetaBatch, createMetaInboxCrypto };
+module.exports = { fail, canonical, normalizeMetaBatch, createMetaInboxCrypto, streamDigest };

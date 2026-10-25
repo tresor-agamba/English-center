@@ -87,7 +87,7 @@ test('demande un accord explicite après une information commerciale et refuse u
 test('accueille et présente les cours depuis le fournisseur du catalogue', async () => {
   const engine = makeEngine();
   const greeting = await engine.handleMessage({ text: 'Bonjour' });
-  assert.match(greeting.text, /New Vision Academy/);
+  assert.equal(greeting.text, (await engine.handleMessage({ text: 'Menu' })).text);
   const response = await engine.handleMessage({ text: 'Quelles formations ?' });
   assert.match(response.text, /Anglais général/);
   assert.match(response.text, /inscriptions ouvertes/);

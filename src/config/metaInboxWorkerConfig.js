@@ -7,7 +7,7 @@ function readMetaInboxWorkerConfig(env = process.env) {
   if (base.production && env.META_INBOX_WORKER_PRODUCTION_AUTHORIZED !== 'true') fail('META_WORKER_NOT_AUTHORIZED');
   // Never coexist with a second sender, even outside production.
   if (['WHATSAPP_ENABLED', 'WHATSAPP_WORKERS_ENABLED'].some(k => String(env[k] || '').trim().toLowerCase() === 'true')) fail('META_WORKER_LEGACY_CONFLICT');
-  const role = base.production ? 'nva_meta_inbox_worker_prod' : 'nva_meta_inbox_worker';
+  const role = base.production ? 'nva_meta_inbox_worker_prod' : base.target.workerRole||'nva_meta_inbox_worker';
   let url; try { url = new URL(env.META_INBOX_WORKER_DATABASE_URL); } catch { fail('META_WORKER_INVALID_DATABASE'); }
   try {
     if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.hostname !== base.url.hostname

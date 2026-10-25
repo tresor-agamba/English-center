@@ -21,6 +21,7 @@ async function enable(req, res) {
 async function disable(req, res) { await preferences.recordWhatsAppOptOut(Number(req.params.id)); res.redirect(req.get('referer') || '/admin/dashboard'); }
 
 async function conversationList(req, res) {
+  res.set('Cache-Control', 'no-store');
   const result = await conversationAdmin.list(req.query.filter);
   res.render('admin/whatsapp/conversations', { title: 'Conversations WhatsApp', ...result, filters: conversationAdmin.FILTERS, maskPhoneNumber: deliveryService.maskPhoneNumber });
 }
@@ -32,7 +33,7 @@ function renderConversation(req, res, conversation, error = '', messageBody = ''
   res.set('Cache-Control', 'no-store');
   res.render('admin/whatsapp/conversation', { title: 'Conversation WhatsApp', conversation, queryAction: req.query.action,
     maskPhoneNumber: deliveryService.maskPhoneNumber, currentAdminId: req.authenticatedUser.id,
-    whatsappEnabled: getWhatsAppConfig().enabled, manualError: error, messageBody, submissionId, maxManualLength: human.MAX_MANUAL_LENGTH });
+    whatsappEnabled: human.channelEnabled(), manualError: error, messageBody, submissionId, maxManualLength: human.MAX_MANUAL_LENGTH });
 }
 async function reply(req, res) {
   const id = conversationAdmin.parseConversationId(req.params.id);

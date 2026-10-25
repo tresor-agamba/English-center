@@ -27,7 +27,8 @@ try {
  const dotenv=require(dir+'/node_modules/dotenv');
  const file=dotenv.parse(fs.readFileSync(dir+'/.env'));
  if(file.WHATSAPP_ENABLED!=='false'||file.WHATSAPP_WORKERS_ENABLED!=='false'||file.NVA_CHATBOT_AI_ENABLED!=='false')throw Error('Outbound flags must be false');
- const env={...process.env,...file,NODE_ENV:'production',WHATSAPP_ENABLED:'false',WHATSAPP_WORKERS_ENABLED:'false',NVA_CHATBOT_AI_ENABLED:'false'};
+ if(['META_INBOX_SEND_ENABLED','META_INBOX_WORKER_ENABLED'].some(k=>String(file[k]||'').trim().toLowerCase()==='true'))throw Error('Meta processing and sending must be disabled');
+ const env={...process.env,...file,NODE_ENV:'production',WHATSAPP_ENABLED:'false',WHATSAPP_WORKERS_ENABLED:'false',NVA_CHATBOT_AI_ENABLED:'false',META_INBOX_SEND_ENABLED:'false',META_INBOX_WORKER_ENABLED:'false'};
  const result=spawnSync('pm2',['restart',process.env.NVA_PROCESS,'--update-env'],{env,stdio:['ignore','inherit','inherit']});
  if(result.error||result.status!==0)process.exit(1);
 } catch {console.error('NVA_RESTART_REFUSED');process.exit(1);}

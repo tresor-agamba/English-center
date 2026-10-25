@@ -7,11 +7,12 @@ const { getServiceWindow } = require('./whatsappServiceWindow');
 const { parseConversationId } = require('./whatsappConversationAdminService');
 const MAX_MANUAL_LENGTH = 4000;
 function refuse(message, statusCode = 409) { return Object.assign(new Error(message), { statusCode, code: 'WHATSAPP_HUMAN_ACTION_REFUSED' }); }
-function createWhatsAppHumanHandoffService({ client = prisma, configProvider = getWhatsAppConfig, now = () => new Date(), audit = logger.audit } = {}) {
+function createWhatsAppHumanHandoffService({ client = prisma, configProvider = getWhatsAppConfig, now = () => new Date(), audit = logger.audit, env = process.env } = {}) {
+  function channelEnabled(){try{const scope=require('./metaManualReplyScope').readScope(env);return scope?scope.enabled:configProvider().enabled;}catch{return false;}}
   async function transaction(work) {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try { return await client.$transaction(work, { isolationLevel: 'Serializable' }); }
-      catch (error) { if (['P2034', 'P2002'].includes(error.code) && attempt < 2) continue; throw error; }
+      catch (error) { const conflict=error.code==='P2034'||error.code==='P2010'&&['40001','40P01'].includes(error.meta?.code);if ((conflict||error.code==='P2002')&&attempt<2)continue;if(conflict)throw refuse('Une autre opération a modifié la conversation. Rechargez la page.');throw error; }
     }
   }
   async function authorize(tx, actorId) {
@@ -25,11 +26,17 @@ function createWhatsAppHumanHandoffService({ client = prisma, configProvider = g
     if (['OPTED_OUT', 'CLOSED'].includes(row.controlState) || row.engineState?.optedOut) throw refuse('Conversation arrêtée : aucune réponse ou reprise autorisée.');
     return row;
   }
+  async function lockedConversation(tx,id){
+    const row=await getConversation(tx,id);
+    await require('./whatsappSubmissionCoordinator').lockRecipients(tx,[row.phoneNumber]);
+    if(typeof tx.$queryRaw==='function')await tx.$queryRaw`SELECT id FROM whatsapp_conversations WHERE id=${id} FOR UPDATE`;
+    return getConversation(tx,id);
+  }
   async function changeControl(rawId, actorId, action) {
     const id = parseConversationId(rawId);
     const result = await transaction(async tx => {
       await authorize(tx, actorId);
-      const row = await getConversation(tx, id);
+      const row = await lockedConversation(tx, id);
       if (row.assignedAdvisorId && row.assignedAdvisorId !== actorId) throw refuse('Cette conversation est déjà attribuée à un autre administrateur.');
       const target = { TAKEOVER: 'HUMAN_TAKEOVER', PAUSE: 'BOT_PAUSED', RESUME: 'BOT_ACTIVE' }[action];
       if (row.controlState === target && (action !== 'TAKEOVER' || row.assignedAdvisorId === actorId)) return { conversation: row, unchanged: true };
@@ -58,17 +65,28 @@ function createWhatsAppHumanHandoffService({ client = prisma, configProvider = g
     if (body.length > MAX_MANUAL_LENGTH) throw refuse(`Le message est limité à ${MAX_MANUAL_LENGTH} caractères.`, 400);
     if (typeof submissionId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(submissionId)) throw refuse('Identifiant de formulaire invalide. Rechargez la page.', 400);
     const text = body.trim();
-    const key = `wa-manual:${id}:${submissionId}`;
+    let scope;try{scope=require('./metaManualReplyScope').readScope(env);}catch{throw refuse('Le canal Meta est indisponible ou en conflit avec un ancien expéditeur.');}
+    const key = scope ? require('./metaManualReplyScope').prefix(scope.endpointId)+id+':'+submissionId : `wa-manual:${id}:${submissionId}`;
     const result = await transaction(async tx => {
       await authorize(tx, actorId);
-      const row = await getConversation(tx, id);
+      const row = await lockedConversation(tx, id);
       if (row.controlState !== 'HUMAN_TAKEOVER' || row.assignedAdvisorId !== actorId) throw refuse('Prenez la conversation en charge avant de répondre.');
       const existing = await tx.whatsAppConversationMessage.findUnique({ where: { idempotencyKey: key } });
       if (existing) {
         if (existing.senderUserId !== actorId || existing.body !== text) throw refuse('Ce formulaire a déjà été utilisé pour un autre message. Rechargez la page.');
         return { message: existing, duplicate: true };
       }
-      if (!configProvider().enabled) throw refuse('Le canal WhatsApp est désactivé.');
+      if(scope){
+        const prior=await tx.whatsAppConversationMessage.findUnique({where:{idempotencyKey:`wa-manual:${id}:${submissionId}`}})
+          ||await tx.whatsAppConversationMessage.findFirst({where:{conversationId:id,senderUserId:actorId,idempotencyKey:{startsWith:'wa-meta-manual:',endsWith:':'+id+':'+submissionId}}});
+        if(prior)throw refuse('Ce formulaire a déjà été utilisé sur un autre canal ou endpoint. Vérifiez le statut du message ; aucun nouvel envoi n’a été créé.');
+      }
+      if(scope){
+        if(!scope.enabled)throw refuse('L’envoi Meta est désactivé.');
+        const endpoint=await tx.metaWebhookEndpoint.findFirst({where:{id:scope.endpointId,environment:scope.environment,applicationKey:scope.applicationKey,metaAppId:scope.metaAppId,wabaId:scope.wabaId,phoneNumberId:scope.phoneNumberId,disabledAt:null,inboxEnabled:true,processingEnabled:true},select:{id:true}});
+        const source=endpoint&&await tx.metaWebhookEvent.findFirst({where:{endpointId:scope.endpointId,streamKey:scope.stream(row.phoneNumber),kind:'INBOUND',state:'PROCESSED',effectOutcome:'APPLIED'},select:{id:true}});
+        if(!source)throw refuse('Cette conversation ne possède pas de message traité par cet endpoint Meta.');
+      }else if (!configProvider().enabled) throw refuse('Le canal WhatsApp est désactivé.');
       if (!(await getServiceWindow(tx, id, now())).open) throw refuse('La fenêtre de service de 24 heures est fermée. Attendez un nouveau message du contact.');
       const message = await tx.whatsAppConversationMessage.create({ data: { conversationId: id, direction: 'OUTBOUND', messageType: 'TEXT', body: text,
         senderUserId: actorId, idempotencyKey: key, deliveryStatus: 'QUEUED', receivedAt: now() } });
@@ -77,6 +95,6 @@ function createWhatsAppHumanHandoffService({ client = prisma, configProvider = g
     if (!result.duplicate) audit('WHATSAPP_MANUAL_REPLY_QUEUED', { actorId, conversationId: id, messageId: result.message.id, status: result.message.deliveryStatus });
     return result;
   }
-  return { queueManualReply, takeOver: (id, actor) => changeControl(id, actor, 'TAKEOVER'), pause: (id, actor) => changeControl(id, actor, 'PAUSE'), resume: (id, actor) => changeControl(id, actor, 'RESUME') };
+  return { channelEnabled, queueManualReply, takeOver: (id, actor) => changeControl(id, actor, 'TAKEOVER'), pause: (id, actor) => changeControl(id, actor, 'PAUSE'), resume: (id, actor) => changeControl(id, actor, 'RESUME') };
 }
 module.exports = { MAX_MANUAL_LENGTH, createWhatsAppHumanHandoffService, ...createWhatsAppHumanHandoffService() };

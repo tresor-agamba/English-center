@@ -1,3 +1,4 @@
+const logger = require('./loggerService');
 const { structureSelect, isLevelBased, validateSessionLevel, accessLimits } = require('./courseStructureService');
 const { Prisma } = require('@prisma/client');
 const prisma = require('../utils/prisma');
@@ -387,9 +388,9 @@ async function runRegistrationTransaction(data) {
 }
 
 async function completeRegistrationSideEffects(result, data) {
-      await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => console.error('Annulation relances WhatsApp:', error.message));
-      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
-      if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => console.error('Consentement WhatsApp:', error.message));
+      await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
+      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
+      if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
 }
 
 async function createRegistration(data) {
@@ -473,14 +474,14 @@ async function enrollExistingStudent(data) {
   for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
     try {
       const result = await runExistingStudentTransaction(data);
-      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => console.error('Synchronisation rappels inscription:', error.message));
+      await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
       return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;
       if (error?.code === 'P2002') {
           const existing = await findUserEnrollment(prisma, data.userId, parseSessionId(data.sessionId));
           if (existing) {
-            await enrollmentReminders.synchronizeEnrollmentReminders(existing.id).catch((syncError) => console.error('Synchronisation rappels inscription:', syncError.message));
+            await enrollmentReminders.synchronizeEnrollmentReminders(existing.id).catch((syncError) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: syncError }));
             return { enrollment: existing, reused: true, reactivated: false };
           }
       }

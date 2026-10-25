@@ -161,6 +161,7 @@ app.use(healthRoutes);
 app.use(seoRoutes);
 app.use(webRoutes);
 app.use(authRoutes);
+app.use(require('./routes/whatsappAdmissionVerificationRoutes'));
 app.use('/formations', publicCourseRoutes);
 app.use('/certificates', certificateVerificationRoutes);
 app.use(registrationRoutes);

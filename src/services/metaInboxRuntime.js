@@ -9,19 +9,23 @@ function validateMetaInboxTarget(env) {
       : env.META_INBOX_ENVIRONMENT !== 'test' || env.NODE_ENV === 'production')) fail('META_INBOX_NOT_ACTIVATED');
   if (production && ['WHATSAPP_ENABLED', 'WHATSAPP_WORKERS_ENABLED'].some(k =>
     String(env[k] || '').trim().toLowerCase() === 'true')) fail('META_INBOX_OUTBOUND_MUST_BE_DISABLED');
+  const lab=!production&&env.NODE_ENV==='test'&&env.NVA_V2_DATABASE_TESTS_ENABLED==='true'
+    && typeof env.NVA_V2_DATABASE_EXPECTED_DIRECTORY==='string'
+    && require('node:path').resolve(env.NVA_V2_DATABASE_EXPECTED_DIRECTORY).toLowerCase()===require('node:path').resolve(__dirname,'../../output/nva-whatsapp-v2-postgres-20261024/cluster').toLowerCase();
   const target = production ? { port: '5432', database: 'english_center', role: 'nva_meta_inbox_ingress_prod' }
+    : lab?{port:'58432',database:'nva_whatsapp_v2_test',role:'nva_v2_meta_ingress',workerRole:'nva_v2_meta_worker'}
     : { port: '55432', database: 'nva_whatsapp_test', role: 'nva_meta_inbox_ingress' };
   let url; try { url = new URL(env.META_INBOX_DATABASE_URL); } catch { fail('META_INBOX_INVALID_CONFIGURATION'); }
   let role; try { role = decodeURIComponent(url.username); decodeURIComponent(url.password); } catch { fail('META_INBOX_INVALID_CONFIGURATION'); }
   if (!['postgres:', 'postgresql:'].includes(url.protocol) || url.hostname !== '127.0.0.1'
     || url.port !== target.port || url.pathname !== '/' + target.database || url.hash || url.search
     || role !== target.role || !url.password) fail('META_INBOX_INVALID_CONFIGURATION');
-  return { url, production, target };
+  return { url, production, target, lab };
 }
 function createMetaInboxRuntime(env = process.env, { createDatabase = options => {
   const { PrismaClient } = require('@prisma/client'); return new PrismaClient(options);
 } } = {}) {
-  const { url, production, target } = validateMetaInboxTarget(env);
+  const { url, production, target, lab } = validateMetaInboxTarget(env);
   if (production && (['WHATSAPP_PHONE_NUMBER_ID','WHATSAPP_BUSINESS_ACCOUNT_ID','META_INBOX_APP_ID']
     .some(k => !/^[1-9]\d{0,63}$/.test(env[k] || ''))
     || typeof env.WHATSAPP_APP_SECRET !== 'string' || env.WHATSAPP_APP_SECRET.trim().length < 32
@@ -45,7 +49,7 @@ function createMetaInboxRuntime(env = process.env, { createDatabase = options =>
   // Validate scope and authentication before constructing any database client.
   let database;
   const verifiedDatabase = { $transaction: (work, options) => database.$transaction(async tx => {
-    if (production) await verifyProductionIdentity(tx, target);
+    if (production||lab) await verifyProductionIdentity(tx, target);
     return work(tx);
   }, options) };
   const repository = createMetaInboxRepository({ database: verifiedDatabase, scope, crypto });

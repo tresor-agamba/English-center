@@ -73,7 +73,7 @@ SELECT to_regclass('public.http_sessions') IS NOT NULL AS http_sessions_present;
 SELECT a.attname,format_type(a.atttypid,a.atttypmod) AS type,a.attnotnull
 FROM pg_attribute a WHERE a.attrelid=to_regclass('public.http_sessions')
  AND a.attnum>0 AND NOT a.attisdropped ORDER BY a.attnum;
-SELECT indexname,indexdef FROM pg_indexes WHERE schemaname='public' AND tablename='http_sessions';
+SELECT indexname,md5(indexdef) AS definition_md5 FROM pg_indexes WHERE schemaname='public' AND tablename='http_sessions';
 SELECT r.rolname,has_table_privilege(r.oid,c.oid,'SELECT') AS sel,
  has_table_privilege(r.oid,c.oid,'INSERT') AS ins,has_table_privilege(r.oid,c.oid,'UPDATE') AS upd,
  has_table_privilege(r.oid,c.oid,'DELETE') AS del

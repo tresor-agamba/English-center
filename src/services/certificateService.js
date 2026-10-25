@@ -50,8 +50,8 @@ async function academicEligibility(enrollmentId, client = prisma) {
   const enrollment = await client.enrollment.findUnique({
     where: { id: parseId(enrollmentId) },
     select: {
-      id: true, status: true, trainingSession: { select: { id: true, status: true, courseId: true,
-        course: { select: { modules: { where: { isPublished: true }, select: { lessons: { where: { isPublished: true }, select: { id: true } } } } } },
+      id: true, userId: true, status: true, trainingSession: { select: { id: true, status: true, courseId: true, levelNumber: true,
+        course: { select: { title: true, slug: true, structureType: true, numberOfLevels: true, modules: { where: { isPublished: true }, select: { lessons: { where: { isPublished: true }, select: { id: true } } } } } },
       } },
       lessonProgress: { where: { completedAt: { not: null } }, select: { lessonId: true } },
     },
@@ -59,7 +59,19 @@ async function academicEligibility(enrollmentId, client = prisma) {
   if (!enrollment) throw new CertificateError('NOT_FOUND', 'Inscription introuvable.', 404);
   const lessonIds = enrollment.trainingSession.course.modules.flatMap(module => module.lessons.map(lesson => lesson.id));
   const completed = new Set(enrollment.lessonProgress.map(progress => progress.lessonId));
-  const valid = enrollment.status === 'CONFIRMED' && enrollment.trainingSession.status === 'COMPLETED' && lessonIds.every(id => completed.has(id));
+  let completePath = true;
+  const course = enrollment.trainingSession.course;
+  const requiredLevels = course.numberOfLevels || 1;
+  if (requiredLevels > 1) {
+    // Fail closed when the required student/path identity is missing.
+    completePath = false;
+    if (enrollment.userId && course.numberOfLevels === requiredLevels && typeof client.enrollment.findMany === 'function') {
+      const levels = await client.enrollment.findMany({where:{userId:enrollment.userId,status:'CONFIRMED',trainingSession:{courseId:enrollment.trainingSession.courseId,status:'COMPLETED'}},select:{trainingSession:{select:{levelNumber:true}},lessonProgress:{where:{completedAt:{not:null}},select:{lessonId:true}}}});
+      const passed = new Set(levels.filter(row=>lessonIds.every(id=>row.lessonProgress.some(p=>p.lessonId===id))).map(row=>row.trainingSession.levelNumber));
+      completePath = Array.from({length:requiredLevels},(_,i)=>i+1).every(level=>passed.has(level));
+    }
+  }
+  const valid = completePath && enrollment.status === 'CONFIRMED' && enrollment.trainingSession.status === 'COMPLETED' && lessonIds.every(id => completed.has(id));
   return { valid, totalLessons: lessonIds.length, completedLessons: lessonIds.filter(id => completed.has(id)).length, reason: valid ? null : 'La session, l’inscription ou le parcours académique n’est pas terminé.' };
 }
 async function state(enrollmentId, client = prisma) {

@@ -18,6 +18,7 @@ async function start() {
   server = app.listen(config.port, config.host, () => {
     logger.info('APPLICATION_STARTED', { host: config.host, port: config.port, environment: config.nodeEnv });
     whatsappDeliveryPoller.start();
+    if (process.connected && typeof process.send === 'function') process.send('ready', () => {});
   });
   return server;
 }

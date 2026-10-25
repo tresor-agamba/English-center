@@ -15,7 +15,11 @@ async function verifyWorkerIdentity(tx, config) {
     has_schema_privilege(current_user,'public','CREATE') AS schema_create,
     EXISTS(SELECT 1 FROM pg_class c WHERE c.relnamespace='public'::regnamespace
       AND (c.relowner=r.oid OR (c.relkind IN ('r','p','v','m')
-        AND has_table_privilege(r.oid,c.oid,'DELETE,TRUNCATE,REFERENCES,TRIGGER')))) AS forbidden
+        AND has_table_privilege(r.oid,c.oid,'DELETE,TRUNCATE,REFERENCES,TRIGGER'))))
+      OR has_column_privilege(r.oid,'public.whatsapp_conversation_messages','sender_user_id','INSERT,UPDATE')
+      OR has_column_privilege(r.oid,'public."WhatsAppAdmissionRequest"','status','INSERT,UPDATE')
+      OR has_any_column_privilege(r.oid,'public."WhatsAppAdmissionEvent"','INSERT,UPDATE')
+      OR NOT has_function_privilege(r.oid,'public.nva_record_admission_consent(integer,text,jsonb)','EXECUTE') AS forbidden
     FROM pg_roles r WHERE r.rolname=current_user`;
   if (!r || r.database !== config.database || r.role !== config.role || r.address !== '127.0.0.1'
     || r.port !== config.port || r.rolcanlogin !== true
@@ -38,7 +42,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
   const dispatch = createMetaInboxDispatcher({ inboundTransaction: createMetaInboxPrismaAdapter({ endpointId: config.scope.endpointId, conversationService: conversation }) });
   const owner = 'meta-worker-' + randomUUID();
   let running = false, closing = false;
-  const fixedKeys = ['NODE_ENV','META_INBOX_ENVIRONMENT','META_INBOX_DATABASE_URL','META_INBOX_WORKER_DATABASE_URL',
+  const fixedKeys = ['NODE_ENV','NVA_V2_DATABASE_TESTS_ENABLED','NVA_V2_DATABASE_EXPECTED_DIRECTORY','META_INBOX_ENVIRONMENT','META_INBOX_DATABASE_URL','META_INBOX_WORKER_DATABASE_URL',
     'META_INBOX_ENDPOINT_ID','META_INBOX_APPLICATION_KEY','META_INBOX_APP_ID','WHATSAPP_BUSINESS_ACCOUNT_ID','WHATSAPP_PHONE_NUMBER_ID',
     'META_INBOX_LOOKUP_KEYS_JSON','META_INBOX_LOOKUP_KEY_VERSION','META_INBOX_STREAM_KEY_HEX','META_INBOX_STREAM_KEY_VERSION',
     'META_INBOX_ENCRYPTION_KEYS_JSON','META_INBOX_ENCRYPTION_KEY_VERSION','META_INBOX_SEND_NOT_BEFORE'];
@@ -58,6 +62,12 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
     }, { isolationLevel: 'Serializable', timeout: 5000 });
   }
   async function belongs(tx, row, cutoff) {
+    if(require('./metaManualReplyScope').matches(row,config.scope.endpointId)){
+      if(cutoff&&new Date(row.createdAt)<cutoff)return false;
+      const conversation=await tx.whatsAppConversation.findUnique({where:{id:row.conversationId}});
+      if(!conversation?.phoneNumber)return false;
+      return Boolean(await tx.metaWebhookEvent.findFirst({where:{endpointId:config.scope.endpointId,streamKey:config.crypto.stream(config.scope.endpointId,conversation.phoneNumber.replace(/^\+/,'')),kind:'INBOUND',state:'PROCESSED',effectOutcome:'APPLIED'},select:{id:true}}));
+    }
     const native = sourceId(row.idempotencyKey);
     if (!native || row.senderUserId || row.direction !== 'OUTBOUND') return false;
     const event = await tx.metaWebhookEvent.findFirst({ where: { endpointId: config.scope.endpointId, nativeMessageId: native,
@@ -68,7 +78,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
   async function outgoing(summary) {
     if (!live().sendEnabled) return;
     const messages = client.whatsAppConversationMessage;
-    // Never recover/send arbitrary legacy messages, manual replies or other endpoints.
+    // Only native replies and explicitly endpoint-scoped new manual replies.
     // Prisma stores these DateTime columns as UTC timestamp WITHOUT time zone.
     // Raw Date parameters are timestamptz: convert explicitly, never via session TZ.
     const oldIds = await client.$queryRaw`SELECT m.id AS outgoing_id FROM whatsapp_conversation_messages m
@@ -78,6 +88,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
       WHERE m.direction='OUTBOUND' AND m.delivery_status='PROCESSING' AND m.sender_user_id IS NULL
        AND m.updated_at < (${new Date(+now() - 15 * 60000)}::timestamptz AT TIME ZONE 'UTC') ORDER BY m.id LIMIT ${config.batchSize}`;
     const old = oldIds.length ? await messages.findMany({ where: { id: { in: oldIds.map(r => r.outgoing_id) } } }) : [];
+    old.push(...await messages.findMany({where:{direction:'OUTBOUND',deliveryStatus:'PROCESSING',senderUserId:{not:null},idempotencyKey:{startsWith:require('./metaManualReplyScope').prefix(config.scope.endpointId)},updatedAt:{lt:new Date(+now()-15*60000)}},take:config.batchSize}));
     for (const row of old) if (await belongs(client, row)) {
       const changed = await messages.updateMany({ where: { id: row.id, deliveryStatus: 'PROCESSING', attempts: row.attempts, updatedAt: row.updatedAt },
         data: { deliveryStatus: 'FAILED', processingStartedAt: null, failureCode: 'DELIVERY_UNCERTAIN' } }); summary.uncertain += changed.count;
@@ -92,6 +103,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
        AND m.attempts < ${config.cloudConfig.maxAttempts + 1}
       ORDER BY m.created_at,m.id LIMIT ${config.batchSize}`;
     const rows = ids.length ? await messages.findMany({ where: { id: { in: ids.map(r => r.outgoing_id) } } }) : [];
+    rows.push(...await messages.findMany({where:{direction:'OUTBOUND',deliveryStatus:'QUEUED',senderUserId:{not:null},idempotencyKey:{startsWith:require('./metaManualReplyScope').prefix(config.scope.endpointId)},createdAt:{gte:live().notBefore},updatedAt:{lte:now()},attempts:{lt:config.cloudConfig.maxAttempts+1}},orderBy:[{createdAt:'asc'},{id:'asc'}],take:config.batchSize}));
     for (const row of rows) {
       if (closing || !live().sendEnabled) break;
       if (!await belongs(client, row, live().notBefore)) continue;
@@ -128,12 +140,13 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
       emit('META_WORKER_ERROR', { code }); throw Object.assign(new Error('Meta worker batch failed.'), { code });
     } finally { running = false; }
   }
+  function requestStop() { closing = true; }
   async function close() {
-    closing = true;
+    requestStop();
     // Do not disconnect during a transaction or an in-flight Meta request.
     while (running) await new Promise(resolve => setTimeout(resolve, 25));
     await raw.$disconnect();
   }
-  return { runOnce, ready, close, intervalMs: config.intervalMs };
+  return { runOnce, ready, requestStop, close, intervalMs: config.intervalMs };
 }
 module.exports = { createMetaInboxWorker, verifyWorkerIdentity, sourceId };
