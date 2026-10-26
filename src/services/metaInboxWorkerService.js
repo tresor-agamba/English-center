@@ -38,7 +38,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
   } });
   const repository = createMetaInboxRepository({ database: client, scope: config.scope, crypto: config.crypto });
   // Lazy imports: a disabled worker never imports application database modules.
-  const conversation = require('./whatsappConversationService').createWhatsAppConversationService({ client, ...(catalog ? { catalog } : {}), ...(registration ? { registration } : {}), now });
+  const conversation = require('./whatsappConversationService').createWhatsAppConversationService({ client, env, ...(catalog ? { catalog } : {}), ...(registration ? { registration } : {}), now });
   const dispatch = createMetaInboxDispatcher({ inboundTransaction: createMetaInboxPrismaAdapter({ endpointId: config.scope.endpointId, conversationService: conversation }) });
   const owner = 'meta-worker-' + randomUUID();
   let running = false, closing = false;
@@ -107,7 +107,7 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
     for (const row of rows) {
       if (closing || !live().sendEnabled) break;
       if (!await belongs(client, row, live().notBefore)) continue;
-      const delivery = require('./whatsappConversationDeliveryService').createWhatsAppConversationDeliveryService({ client, now,
+      const delivery = require('./whatsappConversationDeliveryService').createWhatsAppConversationDeliveryService({ client, now, env,
         configProvider: () => live().cloudConfig,
         submissionBarrier: async (tx, phone) => live().sendEnabled && await belongs(tx, row, live().notBefore) && await repository.canSubmitIn(tx, phone),
         sender: async (data, options) => {

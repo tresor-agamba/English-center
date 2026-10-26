@@ -209,3 +209,26 @@ test('STOP for an existing student works without selecting password hashes', asy
   assert.equal(s.rows('whatsAppPreference')[0].hasOptedIn, false);
   assert.equal(s.rows('whatsAppConversation')[0].controlState, 'OPTED_OUT');
 });
+
+test('Meta worker completes QUESTION_AI after commit and sends through the existing unique delivery path',async()=>{
+ const s=setup({NVA_AI_ENABLED:'true',OPENAI_API_KEY:randomUUID(),OPENAI_MODEL:'mock-model'});
+ const settings=s.rows('whatsAppChatbotSettings')[0];settings.admissionsEnabled=true;
+ s.seed('course',{id:1,title:'Anglais général',slug:'anglais-general',shortDescription:'Cours en ligne',durationValue:8,durationUnit:'WEEK',structureType:'LEVEL_BASED',numberOfLevels:3,sessionCount:16,accessPolicy:'LEGACY_STAGED',price:60,currency:'USD',pricingMode:'ONE_TIME',pricingActive:true,isPublished:true,lmsStatus:'PUBLISHED',archivedAt:null,closedAt:null,trainingSessions:[]});
+ s.db.whatsAppChatbotAiBudget={upsert:async()=>{},updateMany:async()=>({count:1})};
+ const create=s.db.whatsAppConversationMessage.create;let next=0;
+ s.db.whatsAppConversationMessage.create=args=>create({...args,data:{...args.data,id:++next}});
+ const original=global.fetch;let apiCalls=0,observed;
+ global.fetch=async(url,options)=>{
+  assert.equal(url,'https://api.openai.com/v1/responses');apiCalls++;
+  const input=JSON.parse(JSON.parse(options.body).input);observed={state:s.rows('metaWebhookEvent').at(-1).state,ids:input.facts.map(f=>f.id)};
+  return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({language:'fr',factIds:['c1_payment']})}]}]})};
+ };
+ const worker=s.makeWorker();
+ try{
+  await s.receive('menu');await worker.runOnce();assert.equal(apiCalls,0);
+  const option=s.rows('whatsAppConversation')[0].engineState.admission.options.find(o=>o.id==='question');
+  await s.receive('',{type:'interactive',interactive:{button_reply:{id:option.wireId,title:'Poser une question'}}});await worker.runOnce();assert.equal(apiCalls,0);
+  await s.receive('Je peux payer en deux fois ?');await worker.runOnce();assert.equal(apiCalls,1);assert.equal(observed.state,'PROCESSED');assert.ok(observed.ids.includes('c1_payment'));assert.match(s.sent.at(-1).text.body,/6e séance/);
+  await s.receive('Menu');await worker.runOnce();assert.equal(apiCalls,1);assert.notEqual(s.rows('whatsAppConversation')[0].engineState.mode,'QUESTION_AI');
+ }finally{global.fetch=original;await worker.close();}
+});

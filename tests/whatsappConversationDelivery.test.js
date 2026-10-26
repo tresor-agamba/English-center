@@ -30,6 +30,18 @@ function makeClient({ status = 'QUEUED', conversationState = 'BOT_ACTIVE', lastM
 
 const configProvider = () => ({ enabled: true, fakeMode: false, maxAttempts: 3, batchSize: 10 });
 
+test('historical AI markers release only prewritten fallback without any FAQ API call',async t=>{
+ t.mock.method(require('../src/services/whatsappChatbotAICompletionService'),'createAICompletionService',()=>assert.fail('Historical FAQ must not call OpenAI'));
+ for(const marker of ['AI_PENDING','AI_PROCESSING']){
+  const client=makeClient();client.message.failureCode=marker;client.message.body='Repli officiel';let sends=0;
+  const service=createWhatsAppConversationDeliveryService({client,configProvider,now:()=>new Date('2026-01-01T00:03:00Z'),sender:async data=>{assert.equal(data.text,'Repli officiel');sends++;return {providerMessageId:'wamid.fallback'};}});
+  assert.equal((await service.sendMessage(1)).accepted,true);assert.equal(sends,1);
+ }
+ const busy=makeClient();busy.message.failureCode='AI_PROCESSING';
+ const service=createWhatsAppConversationDeliveryService({client:busy,configProvider,now:()=>new Date('2026-01-01T00:01:00Z'),sender:async()=>assert.fail('owner is still in flight')});
+ assert.deepEqual(await service.sendMessage(1),{skipped:true});
+});
+
 test('text payload correlates Cloud API status callbacks and fake transport never makes a request', async () => {
   assert.deepEqual(cloudApi.buildTextPayload({ phoneNumber: '+243812345678', text: 'Bonjour', idempotencyKey: 'reply-1' }), {
     messaging_product: 'whatsapp', to: '243812345678', type: 'text', text: { body: 'Bonjour', preview_url: false }, biz_opaque_callback_data: 'reply-1',

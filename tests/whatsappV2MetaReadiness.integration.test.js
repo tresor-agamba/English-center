@@ -137,4 +137,30 @@ test('NVA V2 real Meta SQL roles and human handoff',{skip:process.env.NVA_V2_DAT
   finally{await admin.$executeRaw`REVOKE INSERT (status) ON public."WhatsAppAdmissionRequest" FROM nva_v2_meta_worker`;}
   await worker.ready();
  });
+ await t.test('QUESTION_AI uses restricted SQL budget and committed inbox with OpenAI mocked',async()=>{
+  const day=new Date().toISOString().slice(0,10),beforeBudget=await admin.whatsAppChatbotAiBudget.findUnique({where:{day}});
+  const previousFetch=global.fetch;let apiCalls=0;
+  Object.assign(env,{NVA_AI_ENABLED:'true',OPENAI_MODEL:'mock-model',OPENAI_API_KEY:randomUUID()});
+  await admin.course.update({where:{id:course.id},data:{title:'Anglais général'}});
+  const p='+243890000012';
+  global.fetch=async(target,options)=>{
+   assert.equal(target,'https://api.openai.com/v1/responses');apiCalls++;
+   const c=await admin.whatsAppConversation.findUnique({where:{phoneNumber:p}});assert.equal(c.engineState.mode,'QUESTION_AI');
+   assert.ok(await admin.whatsAppConversationMessage.findFirst({where:{conversationId:c.id,direction:'OUTBOUND',failureCode:'QUESTION_AI_PROCESSING'}}));
+   assert.equal(JSON.parse(options.body).store,false);
+   return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({language:'fr',factIds:['c'+course.id+'_payment']})}]}]})};
+  };
+  try{
+   const c=await receive(p,'Menu');const choice=c.engineState.admission.options.find(o=>o.id==='question');
+   await receive(p,'',{type:'interactive',interactive:{button_reply:{id:choice.wireId,title:'Poser une question'}}});assert.equal(apiCalls,0);
+   await receive(p,'Je peux payer en deux fois ?');assert.equal(apiCalls,1);assert.match(sent.at(-1).text.body,/6e séance/);
+   assert.equal((await admin.whatsAppChatbotAiBudget.findUnique({where:{day}})).calls,(beforeBudget?.calls||0)+1);
+   await receive(p,'Menu');assert.equal(apiCalls,1);
+  }finally{
+   env.NVA_AI_ENABLED='false';delete env.OPENAI_API_KEY;delete env.OPENAI_MODEL;global.fetch=previousFetch;
+   await admin.course.update({where:{id:course.id},data:{title:course.title}});
+   if(beforeBudget)await admin.whatsAppChatbotAiBudget.update({where:{day},data:{calls:beforeBudget.calls}});
+   else await admin.whatsAppChatbotAiBudget.deleteMany({where:{day}});
+  }
+ });
 });

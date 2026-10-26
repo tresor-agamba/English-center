@@ -57,6 +57,7 @@ function createWhatsAppConversationService({
   publicAppUrl = process.env.PUBLIC_APP_URL || '',
   now = () => new Date(),
   engineFactory = createConversationEngine,
+  env = process.env,
 } = {}) {
   // One SQL transaction body shared by the historical wrapper and the inbox adapter.
   // No transaction is opened, retried or committed here.
@@ -101,6 +102,7 @@ function createWhatsAppConversationService({
     });
 
     const engine = engineFactory({
+      env,
       catalog: { listPublished: () => catalog.listPublished(tx) },
       registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx) },
       now: engineNow,
@@ -108,7 +110,7 @@ function createWhatsAppConversationService({
       admissions: require('./whatsappAdmissionJourney').createAdmissionJourney({ database: tx, catalog: { listPublished: () => catalog.listPublished(tx) }, registration: { listCoursesForPublicRegistration: () => registration.listCoursesForPublicRegistration(tx), listSessionsForPublicRegistration: () => registration.listSessionsForPublicRegistration(tx) }, now: engineNow }),
       scenarios: require('./whatsappScenarioService').createScenarioService({ database: tx, now: engineNow }),
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
-        deferAI: process.env.NVA_CHATBOT_AI_ENABLED === 'true' }),
+        deferAI: false }),
     });
     const result = await engine.handleMessage({
       text: body,
@@ -215,6 +217,7 @@ function createWhatsAppConversationService({
           idempotencyKey: `${handoffAck ? 'wa-handoff' : 'wa-reply'}:${providerMessageId}:0`,
           deliveryStatus: 'QUEUED',
           ...(result.deferredAI ? { failureCode: 'AI_PENDING' } : {}),
+          ...(result.deferredQuestionAI ? { failureCode: 'QUESTION_AI_PENDING' } : {}),
           receivedAt,
         },
       });
@@ -244,8 +247,8 @@ function createWhatsAppConversationService({
         const result = await client.$transaction(tx => executeInboundTransaction(tx,
           { message, providerMessageId, phoneNumber, receivedAt, body, providerTimestamp }), { isolationLevel: 'Serializable' });
         // SQL has committed before any external request. A failed completion leaves a safe fallback.
-        if (process.env.NVA_CHATBOT_AI_ENABLED === 'true' && result.queuedResponses) {
-          try { await require('./whatsappChatbotAICompletionService').createAICompletionService({ database: client }).completeReply('wa-reply:' + providerMessageId + ':0'); } catch { /* Never retry ingress after its commit. */ }
+        if (env.NVA_AI_ENABLED === 'true' && result.queuedResponses) {
+          try { await require('./whatsappQuestionAICompletionService').createQuestionAICompletionService({ database: client, env }).completeReply('wa-reply:' + providerMessageId + ':0'); } catch { /* Never retry ingress after its commit. */ }
         }
         return result;
       } catch (error) {

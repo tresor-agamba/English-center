@@ -277,12 +277,13 @@ test('scenario reply payload and stable inbound click survive persistence and na
 });
 
 
-test('historical ingress commits the AI fallback before its post-commit completion',async t=>{
- const previous=process.env.NVA_CHATBOT_AI_ENABLED;process.env.NVA_CHATBOT_AI_ENABLED='true';t.after(()=>{if(previous===undefined)delete process.env.NVA_CHATBOT_AI_ENABLED;else process.env.NVA_CHATBOT_AI_ENABLED=previous});
+test('historical ingress commits QUESTION_AI fallback before post-commit completion',async t=>{
  const {client,state}=memoryClient();let inside=false,calls=0;const transaction=client.$transaction;
- client.$transaction=async work=>{inside=true;try{return await transaction(tx=>work({...tx,whatsAppChatbotRule:{findMany:async()=>[]},whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,aiEnabled:true})}}))}finally{inside=false}};
- const completion=require('../src/services/whatsappChatbotAICompletionService');t.mock.method(completion,'createAICompletionService',()=>({completeReply:async key=>{assert.equal(inside,false);assert.equal(key,'wa-reply:wamid.defer:0');assert.equal(state.messages.at(-1).failureCode,'AI_PENDING');calls++;return {completed:true}}}));
- const service=createWhatsAppConversationService({client,catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUpConfig:()=>({})});
+ state.conversations.push({id:1,phoneNumber:'+243821234567',controlState:'BOT_ACTIVE',engineState:{mode:'QUESTION_AI',questionAIStartedAt:'2026-10-26T00:00:00Z'}});
+ client.$transaction=async work=>{inside=true;try{return await transaction(tx=>work({...tx,whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}}))}finally{inside=false}};
+ const completion=require('../src/services/whatsappQuestionAICompletionService');
+ t.mock.method(completion,'createQuestionAICompletionService',()=>({completeReply:async key=>{assert.equal(inside,false);assert.equal(key,'wa-reply:wamid.defer:0');assert.equal(state.messages.find(m=>m.direction==='OUTBOUND').failureCode,'QUESTION_AI_PENDING');calls++;}}));
+ const service=createWhatsAppConversationService({client,env:{NVA_AI_ENABLED:'true'},catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUpConfig:()=>({})});
  const incoming={id:'wamid.defer',from:'243821234567',type:'text',text:{body:'une question inconnue'}};
  await service.processInboundMessage(incoming);assert.equal(calls,1);await service.processInboundMessage(incoming);assert.equal(calls,1);
 });

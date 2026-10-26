@@ -43,7 +43,8 @@
     "test:whatsapp:admissions": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappAdmissions.test.js tests/whatsappHumanHttp.test.js tests/whatsappConversationPersistence.test.js tests/whatsappScenarios.test.js",
     "whatsapp:meta-inbox": "node src/jobs/processMetaInbox.js",
     "test:whatsapp:meta-worker": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/metaInboxWorker.test.js tests/metaInboxProduction.test.js tests/metaInboxPrismaAdapter.test.js tests/whatsappDeliveryReliability.test.js",
-    "test:whatsapp:v2": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappCommercialV2.test.js"
+    "test:whatsapp:v2": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappCommercialV2.test.js",
+    "test:whatsapp:question-ai": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappQuestionAI.test.js tests/metaInboxWorker.test.js"
   },
   "keywords": [
     "english",

@@ -26,3 +26,4 @@ global.fetch = async () => { throw new Error('ISOLATED_TEST_EXTERNAL_FETCH_FORBI
 process.env.NODE_ENV = 'test';
 process.env.WHATSAPP_ENABLED = 'false';
 process.env.WHATSAPP_WORKERS_ENABLED = 'false';
+process.env.NVA_AI_ENABLED = 'false';

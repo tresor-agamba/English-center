@@ -46,7 +46,7 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    const t=token(),options=choices.map(([id,label,value])=>({id,label,value:value||id,wireId:'adm:'+id+':'+t}));
    let interactive=null;if(options.length&&body.length<=1024){const useButtons=options.length<=3&&options.every(o=>[...o.label].length<=20);interactive=useButtons?{type:'button',body:{text:body},action:{buttons:options.map(o=>({type:'reply',reply:{id:o.wireId,title:o.label}}))}}:{type:'list',body:{text:body},action:{button:'Voir les options',sections:[{title:'Options',rows:options.map(o=>({id:o.wireId,title:o.label}))}]}};interactive=validateInteractive(interactive);}
    const fallback=body+(options.length?'\n\n'+options.map((o,i)=>(i+1)+'. '+o.label).join('\n')+'\nRépondez par numéro.':'');
-   return {text:fallback.slice(0,4000),interactive,actions:[],state:{...state,pendingQuestion:null,scenarioMenu:null,admission:{step,draft,options,certificationExplained,declined:active?.declined===true,expiresAt:new Date(+now()+conversationTtlMs).toISOString()}},...extra};
+   return {text:fallback.slice(0,4000),interactive,actions:[],state:{...state,mode:step==='FREE'?state.mode:null,questionAIStartedAt:step==='FREE'?state.questionAIStartedAt:null,pendingQuestion:null,scenarioMenu:null,admission:{step,draft,options,certificationExplained,declined:active?.declined===true,expiresAt:new Date(+now()+conversationTtlMs).toISOString()}},...extra};
   };
   const allCourses=()=>catalog.listPublished();
   const openSessions=async()=>registration.listSessionsForPublicRegistration
@@ -80,7 +80,10 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   else value=active.options?.find(o=>normalizeText(o.label)===normalized)?.value;
   if(value==='menu')return menu();
   const method=()=>send('🎉 Excellent choix !\n\nPour faciliter votre inscription, deux possibilités s’offrent à vous :\n\n🌐 Vous inscrire personnellement sur notre site NVA.\n\n💬 Vous inscrire directement ici avec mon assistance.\n\n😊 Quelle méthode préférez-vous ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
-  if(value==='question')return send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nVous pouvez me poser vos questions concernant nos formations, les tarifs, les horaires, les séances gratuites, les certificats ou les inscriptions.\n\n💬 Quelle est votre question ?','FREE');
+  if(value==='question'){
+   const result=send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nPosez vos questions sur NVA, sans partager de coordonnées personnelles. Une aide IA peut être utilisée. Écrivez « Menu », « Nos formations » ou « M’inscrire » pour quitter ce mode.\n\n💬 Quelle est votre question ?','FREE');
+   result.state.mode='QUESTION_AI';result.state.questionAIStartedAt=now().toISOString();return result;
+  }
   if(active.step==='FREE'&&!value)return null;
   if(!interactionId&&active.step==='METHOD'){
    if(/whatsapp|deuxieme|option 2/.test(normalized))value='admin';

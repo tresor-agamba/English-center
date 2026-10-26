@@ -10,7 +10,7 @@ const WINDOW_MS = 24 * 60 * 60 * 1000;
 const STALE_MS = 15 * 60 * 1000;
 const STATUS_RANK = { ACCEPTED: 1, SENT: 2, DELIVERED: 3, READ: 4 };
 
-function createWhatsAppConversationDeliveryService({ client = prisma, sender = cloudApi.sendConversationMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier } = {}) {
+function createWhatsAppConversationDeliveryService({ client = prisma, sender = cloudApi.sendConversationMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier, env = process.env } = {}) {
   async function recoverAbandoned() {
     const cutoff = new Date(now().getTime() - STALE_MS);
     return client.whatsAppConversationMessage.updateMany({
@@ -23,12 +23,17 @@ function createWhatsAppConversationDeliveryService({ client = prisma, sender = c
     const config = configProvider(process.env, { requireValid: true });
     if (!config.enabled) return { skipped: true };
     const candidate = await client.whatsAppConversationMessage.findUnique({ where: { id } });
-    if (['AI_PENDING', 'AI_PROCESSING'].includes(candidate?.failureCode)) {
-      const completion = await require('./whatsappChatbotAICompletionService').createAICompletionService({ database: client }).completeReply(candidate.idempotencyKey);
+    if (['QUESTION_AI_PENDING','QUESTION_AI_PROCESSING'].includes(candidate?.failureCode)) {
+      const completion = await require('./whatsappQuestionAICompletionService').createQuestionAICompletionService({ database: client, env, now }).completeReply(candidate.idempotencyKey);
       if (completion.busy) return { skipped: true };
-      // Disabled server AI releases the prewritten fallback without making a request.
-      if (completion.skipped) await client.whatsAppConversationMessage.updateMany({
-        where: { id, deliveryStatus: 'QUEUED', attempts: 0, failureCode: 'AI_PENDING' }, data: { failureCode: null },
+      const ready = await client.whatsAppConversationMessage.findUnique({ where: { id } });
+      if (['QUESTION_AI_PENDING','QUESTION_AI_PROCESSING'].includes(ready?.failureCode)) return { skipped: true };
+    }
+    if (['AI_PENDING', 'AI_PROCESSING'].includes(candidate?.failureCode)) {
+      // Historical FAQ markers cannot trigger OpenAI outside QUESTION_AI.
+      if (candidate.failureCode === 'AI_PROCESSING' && (!candidate.updatedAt || +now()-+candidate.updatedAt <= 120000)) return { skipped: true };
+      await client.whatsAppConversationMessage.updateMany({
+        where: { id, deliveryStatus: 'QUEUED', attempts: 0, failureCode: candidate.failureCode, updatedAt: candidate.updatedAt }, data: { failureCode: null },
       });
       const ready = await client.whatsAppConversationMessage.findUnique({ where: { id } });
       if (['AI_PENDING', 'AI_PROCESSING'].includes(ready?.failureCode)) return { skipped: true };

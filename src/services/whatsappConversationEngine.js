@@ -55,6 +55,8 @@ function makeInitialState(value = {}) {
     admission: source.admission && typeof source.admission === 'object' ? source.admission : null,
     scenarioMenu: source.scenarioMenu && typeof source.scenarioMenu === 'object' && Array.isArray(source.scenarioMenu.options) ? source.scenarioMenu : null,
     optedOut: source.optedOut === true,
+    mode: source.mode === 'QUESTION_AI' ? 'QUESTION_AI' : null,
+    questionAIStartedAt: typeof source.questionAIStartedAt === 'string' ? source.questionAIStartedAt : null,
     processedMessageIds: Array.isArray(source.processedMessageIds)
       ? source.processedMessageIds.filter((id) => typeof id === 'string').slice(-MAX_PROCESSED_MESSAGE_IDS)
       : [],
@@ -179,6 +181,7 @@ function createConversationEngine({
   chatbot = null,
   scenarios = null,
   admissions = null,
+  env = process.env,
 } = {}) {
   async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
     let state = makeInitialState(rawState);
@@ -230,6 +233,20 @@ function createConversationEngine({
     }
 
     try {
+      if (state.mode === 'QUESTION_AI' && !interactionId) {
+        const command = normalizeText(text);
+        const registrationIntent = /\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(command);
+        const navigation = /^(menu|main menu|nos formations|formations|our courses|courses|m inscrire|annuler|cancel)$/.test(command);
+        if (registrationIntent || navigation) {
+          state = { ...state, mode: null, questionAIStartedAt: null, admission: null };
+          if (registrationIntent) { text = 'Je veux m’inscrire'; intent = 'REGISTRATION'; }
+          else if (/formations|courses/.test(command)) { text = 'formations'; intent = 'CATALOG'; }
+          else { text = 'menu'; intent = 'MENU'; }
+        } else if (env.NVA_AI_ENABLED === 'true') {
+          return { intent: 'QUESTION_AI', duplicate: false, text: require('./whatsappQuestionAIService').fallback(text),
+            deferredQuestionAI: true, actions: [], state: withMessageId(state, id) };
+        }
+      }
       const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id }) : null;
       if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
