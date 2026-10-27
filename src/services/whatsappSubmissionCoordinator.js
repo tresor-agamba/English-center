@@ -53,7 +53,9 @@ async function engageSubmission({ database, kind, id, attempts, phoneNumber, con
       const enrolled = users.length && await tx.enrollment.findFirst({ where: { userId: { in: users.map(user => user.id) } }, select: { id: true } });
       allowed = allowed && row.conversation?.phoneNumber === phoneNumber && row.conversation.controlState === 'BOT_ACTIVE'
         && !row.conversation.engineState?.optedOut && consent?.decision === 'GRANTED' && consent.id === row.consentEventId
-        && [config.prospectFollowUp24hTemplate, config.prospectFollowUp72hTemplate].includes(row.templateName) && !enrolled;
+        && (config.followUp48h ? config.prospectFollowUpsEnabled === true && config.prospectFollowUpsDryRun === false
+          && await require('./whatsappFollowUp48Policy').eligible48(tx, row, now, config)
+          : [config.prospectFollowUp24hTemplate, config.prospectFollowUp72hTemplate].includes(row.templateName)) && !enrolled;
     } else {
       const user = await tx.user.findUnique({ where: { id: row.userId }, include: { whatsappPreference: true } });
       const pref = user?.whatsappPreference;

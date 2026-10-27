@@ -36,7 +36,7 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
    if(eligible){
     const history=await database.whatsAppConversationMessage.findMany({where:{conversationId:message.conversationId,createdAt:{gte:started},id:{lt:latest.id},senderUserId:null,messageType:'TEXT'},orderBy:{id:'desc'},take:6,select:{direction:true,body:true}});
     const facts=await factsFor(message.conversation.engineState,latest.body);
-    answer=await ai.answer({question:latest.body,history:history.reverse().map(r=>({role:r.direction==='INBOUND'?'user':'assistant',content:r.body})),facts,reserve:async cap=>{
+    answer=await ai.answer({question:latest.body,preferredLanguage:message.conversation.engineState.preferredLanguage,history:history.reverse().map(r=>({role:r.direction==='INBOUND'?'user':'assistant',content:r.body})),facts,reserve:async cap=>{
      const day=now().toISOString().slice(0,10);
      await database.whatsAppChatbotAiBudget.upsert({where:{day},create:{day,calls:0},update:{}});
      const reserved=await database.whatsAppChatbotAiBudget.updateMany({where:{day,calls:{lt:cap}},data:{calls:{increment:1}}});return reserved.count===1;
@@ -50,7 +50,7 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
     const inbound=await tx.whatsAppConversationMessage.findFirst({where:{conversationId:message.conversationId,direction:'INBOUND'},orderBy:{id:'desc'}});
     const settingsNow=await tx.whatsAppChatbotSettings.findUnique({where:{id:1}});
     const valid=active(current)&&inbound?.id===latest?.id&&inbound?.providerMessageId===expected&&current.engineState.questionAIStartedAt===message.conversation.engineState.questionAIStartedAt&&settingsNow?.enabled!==false;
-    const body=config(env)&&settingsNow?.admissionsEnabled===true&&answer?answer:fallback(latest?.body);
+    const body=config(env)&&settingsNow?.admissionsEnabled===true&&answer?answer:fallback(latest?.body,current?.engineState?.preferredLanguage);
     const changed=await tx.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:valid?{body,failureCode:null}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED'}});
     return {completed:changed.count===1,cancelled:!valid};
    },{isolationLevel:'Serializable',timeout:5000});

@@ -4,6 +4,7 @@ const cloudApi = require('./whatsappCloudApiService');
 const { providerPhoneNumber } = require('../utils/phoneNumber');
 const { classifySendError, retryDelay, applyDeliveryStatus } = require('./whatsappDeliveryPolicy');
 const { engageSubmission, unengaged } = require('./whatsappSubmissionCoordinator');
+const { eligible48, templateFor, verifyTemplate } = require('./whatsappFollowUp48Policy');
 
 const STALE_PROCESSING_MS = 15 * 60 * 1000;
 const FOLLOW_UPS = [
@@ -12,23 +13,24 @@ const FOLLOW_UPS = [
 ];
 const STATUS_RANK = { ACCEPTED: 1, SENT: 2, DELIVERED: 3, READ: 4 };
 
-function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloudApi.sendTemplateMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier } = {}) {
+function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloudApi.sendTemplateMessage, configProvider = getWhatsAppConfig, now = () => new Date(), submissionBarrier, templateVerifier = verifyTemplate } = {}) {
   async function schedule({ conversationId, consentEventId, consentedAt }, database = client) {
     const config = configProvider();
-    const conversation = await database.whatsAppConversation.findUnique({ where: { id: conversationId }, select: { phoneNumber: true } });
+    const conversation = await database.whatsAppConversation.findUnique({ where: { id: conversationId } });
     const phone = providerPhoneNumber(conversation?.phoneNumber);
     const users = phone ? await database.user.findMany({ where: { OR: [{ phoneNumber: `+${phone}` }, { whatsappNumber: `+${phone}` }] }, select: { id: true } }) : [];
     if (users.length && await database.enrollment.findFirst({ where: { userId: { in: users.map((user) => user.id) } }, select: { id: true } })) return [];
     const rows = [];
-    for (const followUp of FOLLOW_UPS) {
-      const templateName = config[followUp.configKey];
+    for (const followUp of config.followUp48h ? [{ hours: 48 }] : FOLLOW_UPS) {
+      const lang = conversation?.engineState?.preferredLanguage === 'en' ? 'en' : 'fr';
+      const templateName = config.followUp48h ? templateFor(config, lang) : config[followUp.configKey];
       if (!templateName) continue;
-      const deduplicationKey = `wa-prospect-follow-up:consent-${consentEventId}:${followUp.hours}h`;
+      const deduplicationKey = config.followUp48h ? `wa-prospect-follow-up:v3:${conversationId}:48h` : `wa-prospect-follow-up:consent-${consentEventId}:${followUp.hours}h`;
       rows.push(await database.whatsAppProspectFollowUp.upsert({
         where: { deduplicationKey },
         create: {
           conversationId, consentEventId, sequenceHours: followUp.hours,
-          templateName, templateLanguage: 'fr', templateParameters: [],
+          templateName, templateLanguage: config.followUp48h ? lang : 'fr', templateParameters: [],
           deduplicationKey, scheduledFor: new Date(new Date(consentedAt).getTime() + followUp.hours * 60 * 60 * 1000),
         },
         update: {},
@@ -62,7 +64,22 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
 
   async function sendFollowUp(id) {
     const config = configProvider(process.env, { requireValid: true });
-    if (!config.enabled) return { skipped: true };
+    if (!config.enabled || config.prospectFollowUpsEnabled === false) return { skipped: true };
+    if (config.followUp48h) {
+      const row = await client.whatsAppProspectFollowUp.findUnique({ where: { id }, include: { conversation: true } });
+      if (!row || row.status !== 'PENDING' || row.scheduledFor > now()) return { skipped: true };
+      if (!await eligible48(client, row, now(), config)) {
+        if (config.prospectFollowUpsDryRun === false) {
+          const last = await client.whatsAppConversationMessage.findFirst({ where: { conversationId: row.conversationId, direction: 'INBOUND' }, orderBy: { id: 'desc' }, select: { receivedAt: true } });
+          const nextDue = new Date(+new Date(last?.receivedAt) + 48 * 3600000);
+          await client.whatsAppProspectFollowUp.updateMany({ where: { id, status: 'PENDING', attempts: row.attempts, scheduledFor: row.scheduledFor },
+            data: +nextDue > +now() ? { scheduledFor: nextDue } : { status: 'CANCELLED', cancelledAt: now(), failureCode: 'FOLLOW_UP_NOT_ELIGIBLE' } });
+        }
+        return { skipped: true };
+      }
+      if (config.prospectFollowUpsDryRun !== false) return { simulated: true, id };
+      if (!await templateVerifier(config, row)) return { skipped: true, reason: 'TEMPLATE_NOT_VERIFIED' };
+    }
     const claim = await client.whatsAppProspectFollowUp.updateMany({
       where: { id, status: 'PENDING', scheduledFor: { lte: now() }, attempts: { lt: config.maxAttempts } },
       data: { status: 'PROCESSING', attempts: { increment: 1 }, processingStartedAt: now(), failureCode: null },
@@ -77,7 +94,7 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
     });
     const blockedState = !row?.conversation || row.conversation.controlState !== 'BOT_ACTIVE';
     const invalidConsent = latestConsent?.decision !== 'GRANTED' || latestConsent?.id !== row?.consentEventId;
-    const templateStillConfigured = row && [config.prospectFollowUp24hTemplate, config.prospectFollowUp72hTemplate].includes(row.templateName);
+    const templateStillConfigured = row && (config.followUp48h ? await eligible48(client, row, now(), config) : [config.prospectFollowUp24hTemplate, config.prospectFollowUp72hTemplate].includes(row.templateName));
     const users = recipient ? await client.user.findMany({ where: { OR: [{ phoneNumber: `+${recipient}` }, { whatsappNumber: `+${recipient}` }] }, select: { id: true } }) : [];
     const enrolled = users.length ? Boolean(await client.enrollment.findFirst({ where: { userId: { in: users.map((user) => user.id) } }, select: { id: true } })) : false;
     if (!recipient || blockedState || invalidConsent || !templateStillConfigured || enrolled) {
@@ -110,10 +127,10 @@ function createWhatsAppProspectFollowUpService({ client = prisma, sender = cloud
 
   async function processPending() {
     const config = configProvider(process.env, { requireValid: true });
-    if (!config.enabled) return [];
-    await recoverAbandoned();
+    if (!config.enabled || config.prospectFollowUpsEnabled === false) return [];
+    if (!config.followUp48h || config.prospectFollowUpsDryRun === false) await recoverAbandoned();
     const rows = await client.whatsAppProspectFollowUp.findMany({
-      where: { status: 'PENDING', scheduledFor: { lte: now() }, attempts: { lt: config.maxAttempts } },
+      where: { status: 'PENDING', ...(config.followUp48h ? { sequenceHours: 48 } : {}), scheduledFor: { lte: now() }, attempts: { lt: config.maxAttempts } },
       select: { id: true }, orderBy: { scheduledFor: 'asc' }, take: config.batchSize,
     });
     const results = [];

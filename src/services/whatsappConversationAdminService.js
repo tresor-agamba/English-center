@@ -49,6 +49,7 @@ function createWhatsAppConversationAdminService({ client = prisma } = {}) {
         messages: { ...(cursor ? { where: { id: { lt: cursor } } } : {}), orderBy: [{ id: 'desc' }], take: MESSAGE_TAKE, include: { sender: { select: { id: true, firstName: true, lastName: true } } } },
         prospectFollowUps: { orderBy: [{ sequenceHours: 'asc' }, { id: 'asc' }] },
         consentEvents: { orderBy: [{ occurredAt: 'desc' }, { id: 'desc' }], take: 10 },
+        admissionRequests: { where: { status: { in: ['PENDING', 'PROCESSING'] } }, select: { status: true }, take: 1 },
       },
     });
     if (!conversation) {

@@ -4,6 +4,9 @@
   "description": "Plateforme simple de centre de formation d'anglais en ligne",
   "main": "src/server.js",
   "scripts": {
+    "test:whatsapp:v3:corrections": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappV3Corrections.test.js",
+    "test:whatsapp:v3": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappAdvisorV3.test.js tests/whatsappQuestionAI.test.js tests/metaInboxWorker.test.js",
+    "whatsapp:prospects:cleanup": "node scripts/cleanupWhatsAppProspects.js",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "test": "node scripts/runWithTestDatabase.js test",

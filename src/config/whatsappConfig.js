@@ -16,6 +16,13 @@ function getWhatsAppConfig(env = process.env, { requireValid = false } = {}) {
     defaultCountryCode: env.WHATSAPP_DEFAULT_COUNTRY_CODE?.replace(/\D/g, '') || '243',
     maxAttempts: integer(env.WHATSAPP_MAX_ATTEMPTS, 3, 1, 10),
     batchSize: integer(env.WHATSAPP_BATCH_SIZE, 50, 1, 100),
+    followUp48h: true,
+    prospectFollowUpsEnabled: flag(env.NVA_FOLLOWUPS_ENABLED),
+    prospectFollowUpsDryRun: env.NVA_FOLLOWUPS_DRY_RUN !== 'false',
+    prospectFollowUpFrTemplate: env.NVA_FOLLOWUP_FR_TEMPLATE?.trim() || 'nva_followup_fr',
+    prospectFollowUpEnTemplate: env.NVA_FOLLOWUP_EN_TEMPLATE?.trim() || 'nva_followup_en',
+    prospectFollowUpFrTemplateId: env.NVA_FOLLOWUP_FR_TEMPLATE_ID?.trim() || '',
+    prospectFollowUpEnTemplateId: env.NVA_FOLLOWUP_EN_TEMPLATE_ID?.trim() || '',
     prospectFollowUp24hTemplate: env.WHATSAPP_PROSPECT_FOLLOW_UP_24H_TEMPLATE?.trim() || '',
     prospectFollowUp72hTemplate: env.WHATSAPP_PROSPECT_FOLLOW_UP_72H_TEMPLATE?.trim() || '',
   };

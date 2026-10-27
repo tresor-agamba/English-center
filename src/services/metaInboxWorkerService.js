@@ -27,7 +27,7 @@ async function verifyWorkerIdentity(tx, config) {
 }
 function createMetaInboxWorker({ env = process.env, database, createDatabase = options => {
   const { PrismaClient } = require('@prisma/client'); return new PrismaClient(options);
-}, sender, catalog, registration, now = () => new Date(), observe = () => {} } = {}) {
+}, sender, followUpSender, followUpTemplateVerifier, catalog, registration, now = () => new Date(), observe = () => {} } = {}) {
   const config = readMetaInboxWorkerConfig(env);
   const raw = database || createDatabase({ datasourceUrl: config.datasourceUrl, log: [] });
   const client = new Proxy(raw, { get(target, prop) {
@@ -38,7 +38,9 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
   } });
   const repository = createMetaInboxRepository({ database: client, scope: config.scope, crypto: config.crypto });
   // Lazy imports: a disabled worker never imports application database modules.
-  const conversation = require('./whatsappConversationService').createWhatsAppConversationService({ client, env, ...(catalog ? { catalog } : {}), ...(registration ? { registration } : {}), now });
+  const followUpConfig = () => readMetaInboxWorkerConfig(env).cloudConfig;
+  const followUps = require('./whatsappProspectFollowUpService').createWhatsAppProspectFollowUpService({ client, configProvider: followUpConfig, now });
+  const conversation = require('./whatsappConversationService').createWhatsAppConversationService({ client, env, followUps, followUpConfig, ...(catalog ? { catalog } : {}), ...(registration ? { registration } : {}), now });
   const dispatch = createMetaInboxDispatcher({ inboundTransaction: createMetaInboxPrismaAdapter({ endpointId: config.scope.endpointId, conversationService: conversation }) });
   const owner = 'meta-worker-' + randomUUID();
   let running = false, closing = false;
@@ -134,6 +136,31 @@ function createMetaInboxWorker({ env = process.env, database, createDatabase = o
         else summary.processed++;
       }
       if (!closing && env.META_INBOX_WORKER_ENABLED === 'true') await outgoing(summary);
+      if (!closing && env.META_INBOX_WORKER_ENABLED === 'true' && live().sendEnabled && live().cloudConfig.prospectFollowUpsEnabled) {
+        const followups = require('./whatsappProspectFollowUpService').createWhatsAppProspectFollowUpService({
+          client, now, configProvider: () => live().cloudConfig, ...(followUpTemplateVerifier ? { templateVerifier: followUpTemplateVerifier } : {}),
+          submissionBarrier: async (tx, phone) => {
+            if (closing || !live().sendEnabled || !live().cloudConfig.prospectFollowUpsEnabled) return false;
+            const conversation = await tx.whatsAppConversation.findUnique({ where: { phoneNumber: phone } });
+            if (!conversation) return false;
+            const last = await tx.whatsAppConversationMessage.findFirst({ where: { conversationId: conversation.id, direction: 'INBOUND' }, orderBy: { id: 'desc' } });
+            if (!last?.providerMessageId) return false;
+            const event = await tx.metaWebhookEvent.findFirst({ where: { endpointId: config.scope.endpointId,
+              nativeMessageId: last.providerMessageId, kind: 'INBOUND', state: 'PROCESSED', effectOutcome: 'APPLIED', firstReceivedAt: { gte: live().notBefore } } });
+            return Boolean(event?.streamKey && Buffer.from(event.streamKey).equals(config.crypto.stream(config.scope.endpointId, phone.replace(/^\+/, ''))))
+              && await repository.canSubmitIn(tx, phone);
+          },
+          sender: async (data, options) => {
+            if (closing || !live().sendEnabled || !live().cloudConfig.prospectFollowUpsEnabled || live().cloudConfig.prospectFollowUpsDryRun) fail('META_WORKER_SEND_DISABLED');
+            return (followUpSender || require('./whatsappCloudApiService').sendTemplateMessage)(data, { ...options, config: live().cloudConfig });
+          },
+        });
+        for (const result of await followups.processPending()) {
+          if (result.accepted) summary.accepted++;
+          else if (result.cancelled) summary.cancelled++;
+          else if (result.failed) summary.failed++;
+        }
+      }
       emit('META_WORKER_BATCH', summary); return summary;
     } catch (error) {
       const code = /^META_(?:INBOX|WORKER)_[A-Z_]+$/.test(error?.code || '') ? error.code : 'META_WORKER_BATCH_FAILED';

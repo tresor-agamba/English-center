@@ -186,7 +186,7 @@ function createWhatsAppConversationService({
           },
         });
         const config = followUpConfig();
-        if (config.prospectFollowUp24hTemplate && config.prospectFollowUp72hTemplate) {
+        if (config.followUp48h ? config.prospectFollowUpsEnabled === true : (config.prospectFollowUp24hTemplate && config.prospectFollowUp72hTemplate)) {
           await followUps.schedule({ conversationId: conversation.id, consentEventId: consentEvent.id, consentedAt: receivedAt }, tx);
         }
       }
@@ -203,6 +203,15 @@ function createWhatsAppConversationService({
       where: { id: conversation.id },
       data: { controlState, engineState, lastMessageAt: receivedAt },
     });
+    const config48 = followUpConfig();
+    if (config48.followUp48h && config48.prospectFollowUpsEnabled === true) {
+      await tx.whatsAppProspectFollowUp.updateMany({
+        where: { conversationId: conversation.id, sequenceHours: 48, status: 'PENDING', attempts: 0 },
+        data: { scheduledFor: new Date(+receivedAt + 48 * 3600000),
+          templateName: require('./whatsappFollowUp48Policy').templateFor(config48, engineState.preferredLanguage),
+          templateLanguage: engineState.preferredLanguage === 'en' ? 'en' : 'fr' },
+      });
+    }
 
     let queuedResponses = 0;
     const handoffAck = (result.actions || []).some(action => action.type === 'HUMAN_HANDOFF');

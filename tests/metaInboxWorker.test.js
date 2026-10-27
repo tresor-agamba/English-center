@@ -59,7 +59,7 @@ function setup(changes = {}) {
     if (rejectSend) { const fn = rejectSend; rejectSend = null; return fn(); }
     return { ok: true, status: 200, json: async () => ({ messages: [{ id: 'wamid.sent.' + sent.length }] }) };
   } });
-  const makeWorker = () => createMetaInboxWorker({ env, database: { ...s.db, $disconnect: async () => {} }, catalog, registration, sender, now: s.time,
+  const makeWorker = (extra = {}) => createMetaInboxWorker({ env, database: { ...s.db, $disconnect: async () => {} }, catalog, registration, sender, now: s.time, ...extra,
     observe: (action, data) => logs.push({ action, ...data }) });
   let lastMessage;
   const receive = async (text, extra = {}) => {
@@ -71,6 +71,27 @@ function setup(changes = {}) {
   return { ...s, env, cfg, repo, makeWorker, receive, sent, logs, last: () => lastMessage,
     badIdentity: () => { badIdentity = true; }, rejectSend: fn => { rejectSend = fn; } };
 }
+test('Meta V3 persists explicit consent and sends one scoped template after 48h of inactivity', async () => {
+  const s = setup({ NVA_AI_ENABLED: 'true', NVA_FOLLOWUPS_ENABLED: 'true', NVA_FOLLOWUPS_DRY_RUN: 'false' });
+  const model = s.db.whatsAppProspectFollowUp, read = model.findUnique;
+  model.findUnique = async args => { const r = await read(args); if (r && args.include?.conversation) r.conversation = await s.db.whatsAppConversation.findUnique({ where: { id: r.conversationId } }); return r; };
+  let followupCalls = 0;
+  const w = s.makeWorker({ followUpTemplateVerifier: async () => true, followUpSender: async data => {
+    assert.equal(data.templateName, 'nva_followup_fr'); assert.deepEqual(data.templateParameters, []);
+    followupCalls++; return { providerMessageId: 'wamid.v3.followup' };
+  } });
+  for (const text of ['menu', '3', 'Je veux apprendre anglais pratique', 'relances', 'OUI RELANCES']) { await s.receive(text); await w.runOnce(); }
+  assert.equal(s.rows('whatsAppCommercialConsentEvent')[0].noticeVersion, 'lead-follow-up-48h-v3');
+  const row = s.rows('whatsAppProspectFollowUp')[0]; assert.ok(row);
+  // The contract mock does not implement PostgreSQL defaults.
+  Object.assign(row, { status: 'PENDING', attempts: 0, providerMessageId: null, failureCode: null, updatedAt: s.time() });
+  s.advance(48 * 3600000 - 1); await w.runOnce(); assert.equal(followupCalls, 0);
+  await s.receive('merci', { timestamp: String(Math.floor(+s.time() / 1000)) }); await w.runOnce();
+  s.advance(1); await w.runOnce(); assert.equal(followupCalls, 0);
+  s.advance(48 * 3600000 - 1); await w.runOnce(); assert.equal(followupCalls, 1);
+  await w.runOnce(); assert.equal(followupCalls, 1);
+});
+
 test('worker and CLI are disabled by default without constructing DB or transport', async () => {
   let calls = 0; assert.throws(() => createMetaInboxWorker({ env: {}, createDatabase: () => { calls++; } }), { code: 'META_WORKER_DISABLED' });
   assert.deepEqual(await require('../src/jobs/processMetaInbox').run({ env: {}, createWorker: () => { calls++; } }), { disabled: true }); assert.equal(calls, 0);

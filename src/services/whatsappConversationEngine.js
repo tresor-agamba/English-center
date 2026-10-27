@@ -6,8 +6,8 @@ const { getWhatsAppConfig } = require('../config/whatsappConfig');
 
 const MAX_PROCESSED_MESSAGE_IDS = 100;
 const CONSENT_REQUEST_TTL_MS = 7 * 24 * 60 * 60 * 1000;
-const CONSENT_NOTICE_VERSION = 'lead-follow-up-24h-72h-v1';
-const COMMERCIAL_FOLLOW_UP_INVITATION = 'Souhaitez-vous recevoir deux messages commerciaux de suivi de NVA au sujet de votre demande, environ 24 h puis 72 h après ? C’est facultatif. Répondez « OUI RELANCES » pour accepter. Vous pouvez arrêter à tout moment en répondant STOP.';
+const CONSENT_NOTICE_VERSION = 'lead-follow-up-48h-v3';
+const COMMERCIAL_FOLLOW_UP_INVITATION = 'Souhaitez-vous une relance commerciale WhatsApp facultative de NVA après 48 h sans message ? Répondez « OUI RELANCES » pour accepter. Vous pouvez retirer votre accord à tout moment en répondant STOP.';
 const UNKNOWN_REPLY = 'Je n’ai pas bien compris votre demande. Vous pouvez écrire « formations », « prix », « horaires », « essai », « inscription » ou « conseiller ».';
 const TEMPORARY_ERROR_REPLY = 'Je ne peux pas consulter ces informations pour le moment. Réessayez dans quelques instants ou écrivez « conseiller ».';
 
@@ -26,8 +26,9 @@ function hasAny(text, values) {
 function detectIntent(value) {
   const text = normalizeText(value);
   if (!text) return 'UNKNOWN';
-  if (/^(stop|arret|desinscrire|desabonner|unsubscribe)$/.test(text)) return 'OPT_OUT';
-  if (/^oui relances?$/.test(text)) return 'COMMERCIAL_CONSENT_GRANT';
+  if (/\b(stop|unsubscribe)\b|ne m envoyez plus|ne me contactez plus|arretez les (messages|relances)|no more messages|do not contact|non relances|no follow ups/.test(text) || /^(arret|desinscrire|desabonner)$/.test(text)) return 'OPT_OUT';
+  if (/^(oui relances?|yes follow ups?)$/.test(text)) return 'COMMERCIAL_CONSENT_GRANT';
+  if (/\b(human adviser|human advisor|human agent|speak to someone)\b/.test(text)) return 'HUMAN_HANDOFF';
   if (hasAny(text, ['reprendre bot', 'reactiver bot', 'reprendre automatisation', 'reactiver automatisation'])) return 'RESUME_AUTOMATION';
   if (hasAny(text, ['conseiller', 'conseillere', 'humain', 'personne', 'parler a quelqu', 'agent', 'rappeler'])) return 'HUMAN_HANDOFF';
   if (/^(menu|menu principal|retour au menu|retour au menu principal|accueil)$/.test(text)) return 'MENU';
@@ -57,6 +58,9 @@ function makeInitialState(value = {}) {
     optedOut: source.optedOut === true,
     mode: source.mode === 'QUESTION_AI' ? 'QUESTION_AI' : null,
     questionAIStartedAt: typeof source.questionAIStartedAt === 'string' ? source.questionAIStartedAt : null,
+    preferredLanguage: source.preferredLanguage === 'en' ? 'en' : 'fr',
+    commercialConsentNoticeVersion: source.commercialConsentNoticeVersion || null,
+    commercialConsentRequestedVersion: source.commercialConsentRequestedVersion || null,
     processedMessageIds: Array.isArray(source.processedMessageIds)
       ? source.processedMessageIds.filter((id) => typeof id === 'string').slice(-MAX_PROCESSED_MESSAGE_IDS)
       : [],
@@ -187,6 +191,7 @@ function createConversationEngine({
     let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
+    if (!interactionId) state.preferredLanguage = require('./whatsappAdvisorPolicy').detectLanguage(text, state.preferredLanguage);
 
     let intent = detectIntent(interactionId ? '' : text);
     if (!interactionId && !['OPT_OUT','RESUME_AUTOMATION','COMMERCIAL_CONSENT_GRANT'].includes(intent)) {
@@ -202,23 +207,24 @@ function createConversationEngine({
     if (state.optedOut) return { intent: 'OPTED_OUT', duplicate: false, text: null, actions: [], state: withMessageId(state, id) };
     if (intent === 'COMMERCIAL_CONSENT_GRANT') {
       state.lastIntent = intent;
-      if (state.commercialFollowUpsGranted) {
-        return { intent: 'COMMERCIAL_CONSENT_ALREADY_GRANTED', duplicate: false, text: 'Votre accord pour les deux messages de suivi est déjà enregistré. Répondez STOP pour les arrêter.', actions: [], state: withMessageId(state, id) };
+      if (state.commercialFollowUpsGranted && (!whatsappConfig().followUp48h || state.commercialConsentNoticeVersion === CONSENT_NOTICE_VERSION)) {
+        return { intent: 'COMMERCIAL_CONSENT_ALREADY_GRANTED', duplicate: false, text: state.preferredLanguage === 'en' ? 'Your follow-up consent is already recorded. Reply STOP to withdraw.' : 'Votre accord pour la relance est déjà enregistré. Répondez STOP pour le retirer.', actions: [], state: withMessageId(state, id) };
       }
       if (!allowCommercialFollowUpConsent) {
         return { intent: 'COMMERCIAL_FOLLOW_UP_UNAVAILABLE', duplicate: false, text: 'Aucun accord n’est enregistré : ces relances commerciales sont réservées aux prospects non inscrits.', actions: [], state: withMessageId(state, id) };
       }
       const askedAt = state.commercialFollowUpConsentRequestedAt ? new Date(state.commercialFollowUpConsentRequestedAt) : null;
       const requestAge = askedAt ? now().getTime() - askedAt.getTime() : -1;
-      const validRequest = !state.automationPaused && askedAt && !Number.isNaN(askedAt.getTime()) && requestAge >= 0 && requestAge <= CONSENT_REQUEST_TTL_MS;
+      const validRequest = !state.automationPaused && askedAt && !Number.isNaN(askedAt.getTime()) && requestAge >= 0 && requestAge <= CONSENT_REQUEST_TTL_MS
+        && (!whatsappConfig().followUp48h || state.commercialConsentRequestedVersion === CONSENT_NOTICE_VERSION);
       if (!validRequest) {
         return { intent: 'COMMERCIAL_CONSENT_NOT_REQUESTED', duplicate: false, text: 'Je n’enregistre aucun accord sans demande de consentement en attente. Vous pouvez demander les informations souhaitées ou écrire « conseiller ». ', actions: [], state: withMessageId(state, id) };
       }
       return {
         intent, duplicate: false,
-        text: 'Votre accord pour les deux messages de suivi commerciaux de NVA est enregistré. Répondez STOP à tout moment pour les arrêter.',
+        text: state.preferredLanguage === 'en' ? 'Your consent to one NVA marketing follow-up after 48 hours of inactivity is recorded. Reply STOP at any time to withdraw.' : 'Votre accord pour une relance commerciale NVA après 48 h sans message est enregistré. Répondez STOP à tout moment pour le retirer.',
         actions: [{ type: 'COMMERCIAL_CONSENT_GRANT', scope: 'COMMERCIAL_FOLLOW_UPS', noticeVersion: CONSENT_NOTICE_VERSION }],
-        state: withMessageId({ ...state, commercialFollowUpsGranted: true, commercialFollowUpConsentRequestedAt: null }, id),
+        state: withMessageId({ ...state, commercialFollowUpsGranted: true, commercialConsentNoticeVersion: CONSENT_NOTICE_VERSION, commercialFollowUpConsentRequestedAt: null }, id),
       };
     }
     if (intent === 'RESUME_AUTOMATION') {
@@ -243,7 +249,19 @@ function createConversationEngine({
           else if (/formations|courses/.test(command)) { text = 'formations'; intent = 'CATALOG'; }
           else { text = 'menu'; intent = 'MENU'; }
         } else if (env.NVA_AI_ENABLED === 'true') {
-          return { intent: 'QUESTION_AI', duplicate: false, text: require('./whatsappQuestionAIService').fallback(text),
+          const courses = await catalog.listPublished();
+          const resolved = require('./whatsappCommercialPolicy').resolveCourse(text, courses, state);
+          // A sole catalogue entry is not itself evidence of a prospect's interest.
+          const interest = /\b(anglais|english|formation|course|apprendre|learn|niveau|level|prix|price|cost|tarif|essai|trial|horaire|schedule)\b/i.test(text);
+          if (resolved.course && interest) state = { ...state, selectedCourseId: resolved.course.id, selectedCourseSlug: resolved.course.slug };
+          if (/^(relances|follow ups|marketing consent)$/.test(command)) {
+            const english = state.preferredLanguage === 'en';
+            return { intent: 'COMMERCIAL_CONSENT_REQUEST', actions: [], text: english
+              ? 'Would you like one optional NVA WhatsApp marketing follow-up after 48 hours without a message? Reply YES FOLLOW UPS to agree. Reply STOP at any time to withdraw.'
+              : 'Souhaitez-vous une relance commerciale WhatsApp facultative de NVA après 48 h sans message ? Répondez OUI RELANCES pour accepter. STOP permet de retirer votre accord à tout moment.',
+              state: withMessageId({ ...state, commercialFollowUpConsentRequestedAt: now().toISOString(), commercialConsentRequestedVersion: CONSENT_NOTICE_VERSION }, id) };
+          }
+          return { intent: 'QUESTION_AI', duplicate: false, text: require('./whatsappQuestionAIService').fallback(text,state.preferredLanguage),
             deferredQuestionAI: true, actions: [], state: withMessageId(state, id) };
         }
       }
@@ -379,13 +397,13 @@ function createConversationEngine({
       }
       next = { ...next, lastIntent: intent === 'UNKNOWN' ? state.lastIntent : intent };
       const followUpConfig = whatsappConfig();
-      const templatesConfigured = Boolean(followUpConfig.prospectFollowUp24hTemplate && followUpConfig.prospectFollowUp72hTemplate);
+      const templatesConfigured = followUpConfig.followUp48h || Boolean(followUpConfig.prospectFollowUp24hTemplate && followUpConfig.prospectFollowUp72hTemplate);
       const mayAskConsent = allowCommercialFollowUpConsent && templatesConfigured
         && ['CATALOG', 'PRICE', 'SCHEDULE', 'TRIAL', 'REGISTRATION', 'OBJECTION', 'QUALIFICATION'].includes(intent)
-        && !state.commercialFollowUpsGranted && !state.commercialFollowUpConsentRequestedAt;
+        && (!state.commercialFollowUpsGranted || state.commercialConsentNoticeVersion !== CONSENT_NOTICE_VERSION) && !state.commercialFollowUpConsentRequestedAt;
       if (mayAskConsent) {
         reply = `${reply}\n\n${COMMERCIAL_FOLLOW_UP_INVITATION}`;
-        next = { ...next, commercialFollowUpConsentRequestedAt: now().toISOString() };
+        next = { ...next, commercialFollowUpConsentRequestedAt: now().toISOString(), commercialConsentRequestedVersion: CONSENT_NOTICE_VERSION };
       }
       return { intent, duplicate: false, text: reply, actions: [], ...(deferredAI ? { deferredAI: true } : {}), state: withMessageId(next, id) };
     } catch {

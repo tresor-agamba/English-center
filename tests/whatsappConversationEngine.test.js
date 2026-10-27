@@ -68,7 +68,7 @@ test('détecte les intentions déterministes, les ambiguïtés et les messages i
 test('demande un accord explicite après une information commerciale et refuse un accord sans demande préalable', async () => {
   const engine = makeEngine({ whatsappConfig: () => ({ prospectFollowUp24hTemplate: 'nva_follow_up_24h', prospectFollowUp72hTemplate: 'nva_follow_up_72h' }), now: () => new Date('2026-10-09T12:00:00Z') });
   const prompt = await engine.handleMessage({ text: 'formations', messageId: 'inquiry-1' });
-  assert.match(prompt.text, /deux messages commerciaux de suivi/);
+  assert.match(prompt.text, /relance commerciale WhatsApp facultative.*48 h/);
   assert.equal(prompt.state.commercialFollowUpConsentRequestedAt, '2026-10-09T12:00:00.000Z');
   const accepted = await engine.handleMessage({ text: 'OUI RELANCES', messageId: 'grant-1', state: prompt.state });
   assert.equal(accepted.actions[0].type, 'COMMERCIAL_CONSENT_GRANT');

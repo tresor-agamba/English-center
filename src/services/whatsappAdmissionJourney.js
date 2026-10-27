@@ -82,7 +82,8 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   const method=()=>send('🎉 Excellent choix !\n\nPour faciliter votre inscription, deux possibilités s’offrent à vous :\n\n🌐 Vous inscrire personnellement sur notre site NVA.\n\n💬 Vous inscrire directement ici avec mon assistance.\n\n😊 Quelle méthode préférez-vous ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
   if(value==='question'){
    const result=send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nPosez vos questions sur NVA, sans partager de coordonnées personnelles. Une aide IA peut être utilisée. Écrivez « Menu », « Nos formations » ou « M’inscrire » pour quitter ce mode.\n\n💬 Quelle est votre question ?','FREE');
-   result.state.mode='QUESTION_AI';result.state.questionAIStartedAt=now().toISOString();return result;
+    result.text += '\n\nPour choisir une relance commerciale facultative après 48 h sans message, écrivez « relances » (English: “follow ups”).';
+    result.state.mode='QUESTION_AI';result.state.questionAIStartedAt=now().toISOString();return result;
   }
   if(active.step==='FREE'&&!value)return null;
   if(!interactionId&&active.step==='METHOD'){
