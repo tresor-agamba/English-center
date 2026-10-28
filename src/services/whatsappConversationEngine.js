@@ -26,6 +26,8 @@ function hasAny(text, values) {
 function detectIntent(value) {
   const text = normalizeText(value);
   if (!text) return 'UNKNOWN';
+  if (/^(bonjour|bonsoir|salut|hello|hi|coucou)( nva)?$/.test(text)) return 'GREETING';
+  if (/^(merci( beaucoup| bien)?|thanks|thank you)$/.test(text)) return 'THANKS';
   if (/\b(stop|unsubscribe)\b|ne m envoyez plus|ne me contactez plus|arretez les (messages|relances)|no more messages|do not contact|non relances|no follow ups/.test(text) || /^(arret|desinscrire|desabonner)$/.test(text)) return 'OPT_OUT';
   if (/^(oui relances?|yes follow ups?)$/.test(text)) return 'COMMERCIAL_CONSENT_GRANT';
   if (/\b(human adviser|human advisor|human agent|speak to someone)\b/.test(text)) return 'HUMAN_HANDOFF';
@@ -239,6 +241,12 @@ function createConversationEngine({
     }
 
     try {
+      // Social turns must not reuse the previous question's AI history.
+      if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
+        const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id }) : null;
+        if (social) return { ...social, intent, duplicate: false, state: withMessageId(social.state, id) };
+        return { intent, text: intent === 'THANKS' ? 'Avec plaisir ! 😊' : '👋 Bonjour ! Comment puis-je vous aider aujourd’hui ?', actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
+      }
       if (state.mode === 'QUESTION_AI' && !interactionId) {
         const command = normalizeText(text);
         const registrationIntent = /\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(command);

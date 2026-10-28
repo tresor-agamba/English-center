@@ -9,7 +9,8 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
  if(active?.step==='EMAIL'&&String(text).includes('@')||identityInput(text,active))return null;
  const a=analyzeMessage(text,{registrationMethod:active?.step==='METHOD'});let intents=a.intents;
  if(a.ambiguity==='REGISTRATION_METHOD')return send('Pour éviter de choisir à votre place, quelle méthode souhaitez-vous utiliser ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
- if(active?.pendingIntents?.length){
+ // Only a course-only clarification may resume an old topic. A new question wins.
+ if(active?.pendingIntents?.length && a.intents.every(i=>['UNKNOWN','ENGLISH_TRAINING','TRAINING_INFORMATION'].includes(i))){
   const candidates=await catalog.listPublished();const selected=resolveCourse(text,candidates,{}).course;
   if(selected&&normalize(selected.title).split(' ').some(w=>w.length>3&&normalize(text).split(' ').includes(w))){
    state={...state,selectedCourseId:selected.id,selectedCourseSlug:selected.slug||null};

@@ -53,7 +53,11 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    ? registration.listSessionsForPublicRegistration()
    : (await registration.listCoursesForPublicRegistration()).filter(c=>c.session).map(c=>({...c.session,course:c}));
   const review=draft=>send('Récapitulatif :\n'+draft.fullName+'\n'+draft.phoneNumber+'\n'+draft.email+'\nNiveau souhaité : '+LEVELS[draft.requestedLevel]+(draft.courseTitle?'\nFormation : '+draft.courseTitle:'')+(draft.sessionLabel?'\nSession : '+draft.sessionLabel:'\nAucune session sélectionnée : demande à examiner par un conseiller.')+'\n\n'+c.confirm,'REVIEW',[['confirm','CONFIRMER'],['modify','MODIFIER']],draft);
-  const menu=async()=>{const eligible=(await allCourses()).some(c=>require('./whatsappCommercialPolicy').englishCourse(c)&&accessLimits(c).trial===5);const body='👋 Bienvenue chez New Vision Academy (NVA) ! 🎓\n\nNous sommes un centre de formation 100 % en ligne, proposant des formations pratiques et certifiantes.\n\n🎁 Découvrez notre formation d’anglais avec 5 séances d’essai gratuites !\n\n😊 Comment puis-je vous accompagner aujourd’hui ?';return send(eligible?body:body.replace(/\n\n[^\n]*5[^\n]*!/u,''),'MENU',[['catalog','Nos formations'],['registration','M’inscrire'],['question','Poser une question']]);};
+  const menu=async()=>{
+   const first=!state.processedMessageIds?.length&&!state.lastIntent&&!active;
+   const body=first?'👋 *Bienvenue chez NEW VISION ACADEMY (NVA) !* 🎓\n\n🌍 NVA est un centre de formation 100 % en ligne proposant des cours d’anglais pratiques, interactifs et certifiants.\n\n🎯 Notre mission est de vous aider à développer vos compétences linguistiques pour vos études, votre carrière et vos opportunités professionnelles.\n\n🤖 Je suis votre assistant virtuel NVA.\n\n👇 *Comment puis-je vous aider aujourd’hui ?*':'👋 Bonjour ! 😊\n\nRavi de vous retrouver chez *New Vision Academy* ! 🎓\n\nComment puis-je vous aider aujourd’hui ?';
+   return send(body,'MENU',[['registration','S’inscrire'],['catalog','Menu'],['question','Poser une question']]);
+  };
   const info=async topic=>{const courses=await allCourses();let body;if(topic==='catalog')body=c.catalog+'\n\n'+courses.slice(0,8).map(x=>'• '+x.title+(x.shortDescription?' — '+x.shortDescription:'')).join('\n');else if(topic==='price'){const open=await registration.listCoursesForPublicRegistration();body=c.price+'\n\n'+prices(courses.map(x=>({...x,session:open.find(y=>y.id===x.id)?.session})),now());}else if(topic==='schedule')body=c.schedule+'\n\n'+schedules(await registration.listCoursesForPublicRegistration());else body=c.registration;
    const certified=['catalog','price','registration'].includes(topic)&&courses.some(require('./whatsappCommercialPolicy').englishCourse);
    const label=certified?c.certificationLabel+'\n'+(topic==='catalog'?CERTIFICATION_LEVELS+'\n':'')+CERTIFICATION_RULE+'\n':'';
@@ -62,6 +66,11 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    if(certified)certificationExplained=true;
    const choices=topic==='catalog'?[['trial','Essai gratuit'],['price','Tarifs'],['schedule','Horaires']]:[['yes','✅ OUI'],['no','❌ NON']];
    return send(label+body.slice(0,Math.max(0,1024-label.length-suffix.length))+suffix,'INVITE',choices);};
+  if(!interactionId && ['GREETING','THANKS'].includes(intent)) {
+   if(active && !['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step))return {text:(intent==='THANKS'?'Avec plaisir ! 😊':'👋 Bonjour ! 😊')+'\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours.',actions:[],state};
+   if(intent==='THANKS')return {text:'Avec plaisir ! 😊 Je reste disponible pour vos questions.',actions:[],state};
+   return menu();
+  }
   if(['annuler','abandonner'].includes(normalized))return send('Votre saisie a été annulée. Aucune nouvelle demande n’a été transmise.','DONE',[['menu','Menu principal']]);
   if(/^(menu|accueil|menu principal|retour au menu(?: principal)?)$/.test(normalized))return menu();
   // Greetings reopen the official menu, but must not interrupt identity collection.

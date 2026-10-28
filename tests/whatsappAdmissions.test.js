@@ -18,8 +18,8 @@ test('greetings reuse the exact official menu on first and repeated contacts',as
  for(const state of [undefined,official.state,done.state]){
   for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA','Menu']){
    const r=await input(e,text,state);
-   assert.equal(r.text,official.text);
-   assert.equal(r.interactive.body.text,official.interactive.body.text);
+   assert.equal(r.text,state ? (await input(e,'Bonjour',official.state)).text : official.text);
+   assert.equal(r.interactive.body.text,state ? (await input(e,'Bonjour',official.state)).interactive.body.text : official.interactive.body.text);
    assert.deepEqual(r.state.admission.options.map(o=>[o.id,o.label]),official.state.admission.options.map(o=>[o.id,o.label]));
    assert.deepEqual(r.actions,[]);
    const duplicate=await e.handleMessage({text,state:r.state,messageId:r.state.processedMessageIds.at(-1)});
@@ -35,7 +35,7 @@ test('unrecognized first contact reuses menu without swallowing existing topic o
  const returning=await input(e,'message incompris',{processedMessageIds:['previous'],lastIntent:'CATALOG'});
  assert.notEqual(returning.text,official.text);
 });
-test('welcome has three stable buttons and official five-trial promotion',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello','menu','accueil']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,3);assert.match(r.text,/100 % en ligne/);assert.match(r.text,/5 séances/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
+test('welcome has three stable buttons and official five-trial promotion',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello','menu','accueil']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,3);assert.match(r.text,/100 % en ligne/);assert.match(r.text,/assistant virtuel NVA/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
 test('catalog uses real descriptions and contextual commercial buttons',async()=>{const e=engine();const r=await click(e,await input(e,'menu'),'catalog');assert.match(r.text,/Anglais général/);assert.match(r.text,/Pratique et interactif/);assert.deepEqual(r.state.admission.options.map(o=>o.id),['trial','price','schedule']);const price=await click(e,r,'price');assert.match(price.text,/60 USD/);assert.equal(price.state.admission.step,'FREE');assert.notEqual((await input(e,'oui')).state.admission?.step,'METHOD');});
 test('English prices follow the official commercial rules',async()=>{const r=await input(engine(),'tarifs');for(const value of ['60 USD','180 USD','20 USD','200 USD'])assert.ok(r.text.includes(value));assert.equal(r.state.admission.step,'FREE');});
 

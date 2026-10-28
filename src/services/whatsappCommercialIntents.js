@@ -60,7 +60,7 @@ function analyzeMessage(value,context={}){
  if(/\b(?:catalogue|programmes)\b/.test(t)||/\b(?:formations|cours)\b/.test(t)&&/\b(?:quelles?|quels|enumerer|liste|nos|differentes|toutes|propose\w*|comparer)\b/.test(t))add('TRAINING_LIST');
  if(/\b(anglais|english)\b/.test(t))add('ENGLISH_TRAINING');
  if(/\b(?:formation\w*|renseignement\w*|information\w*)\b/.test(t))add('TRAINING_INFORMATION',0.8);
- if(/\b(?:bonjour|bonsoir|salut|hello|coucou|bon apres midi)\b/.test(t))add('GREETING');
+ if(/\b(?:bonjour|bonsoir|salut|hello|hi|coucou|bon apres midi)\b/.test(t))add('GREETING');
  if(/\b(?:merci|remercie)\b/.test(t))add('THANKS');
  if(/\b(?:au revoir|a (?:tres )?bientot|a demain|je vous laisse)\b/.test(t)||/\b(?:bonne|excellente)\b.{0,15}\b(?:journee|soiree)\b/.test(t))add('GOODBYE');
  if(!Object.keys(scores).length&&/\b(?:quand|comment|combien|option|choix)\b/.test(t))add('TRAINING_INFORMATION',0.4);
