@@ -80,7 +80,7 @@ test('Meta V3 persists explicit consent and sends one scoped template after 48h 
     assert.equal(data.templateName, 'nva_followup_fr'); assert.deepEqual(data.templateParameters, []);
     followupCalls++; return { providerMessageId: 'wamid.v3.followup' };
   } });
-  for (const text of ['menu', '3', 'Je veux apprendre anglais pratique', 'relances', 'OUI RELANCES']) { await s.receive(text); await w.runOnce(); }
+  for (const text of ['menu', '2', 'Je veux apprendre anglais pratique', 'relances', 'OUI RELANCES']) { await s.receive(text); await w.runOnce(); }
   assert.equal(s.rows('whatsAppCommercialConsentEvent')[0].noticeVersion, 'lead-follow-up-48h-v3');
   const row = s.rows('whatsAppProspectFollowUp')[0]; assert.ok(row);
   // The contract mock does not implement PostgreSQL defaults.
@@ -121,11 +121,11 @@ test('production requires separate processing and sending authorizations, dedica
 test('Bonjour persists menu then delivers an interactive Cloud API payload with a mocked transport', async () => {
   const s = setup(); await s.receive('Bonjour'); const w = s.makeWorker(); const r = await w.runOnce();
   assert.equal(r.processed, 1); assert.equal(r.accepted, 1); assert.equal(s.sent.length, 1);
-  assert.equal(s.sent[0].type, 'interactive'); assert.match(s.sent[0].interactive.body.text, /100 % en ligne/);
+  assert.equal(s.sent[0].type, 'interactive'); assert.match(s.sent[0].interactive.body.text, /formation en ligne/);
   assert.equal(s.rows('metaWebhookEvent')[0].state, 'PROCESSED'); assert.equal(s.rows('whatsAppConversationMessage').find(m => m.direction === 'OUTBOUND').deliveryStatus, 'ACCEPTED');
 });
 for (const [input, pattern] of [['formations', /trois niveaux/], ['tarifs', /60 USD par niveau/], ['horaires', /vendredi et samedi/], ['inscription', /inscription/]]) {
-  test('actual worker engine handles ' + input, async () => { const s = setup(); await s.receive(input); const r = await s.makeWorker().runOnce(); assert.equal(r.accepted, 1); assert.match(s.sent[0].interactive.body.text, pattern); });
+  test('actual worker engine handles ' + input, async () => { const s = setup(); const w=s.makeWorker(); await s.receive('Bonjour'); await w.runOnce(); await s.receive(input); const r = await w.runOnce(); assert.equal(r.accepted, 1); assert.match(s.sent[1].interactive.body.text, pattern); });
 }
 test('processing-only mode commits reply but cannot send; later worker can deliver it', async () => {
   const s = setup({ META_INBOX_SEND_ENABLED: 'false' }); await s.receive('bonjour'); await s.makeWorker().runOnce(); assert.equal(s.sent.length, 0);

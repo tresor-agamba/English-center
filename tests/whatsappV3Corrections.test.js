@@ -7,7 +7,7 @@ const course={id:1,title:'Anglais général',slug:'anglais-general',structureTyp
 const facts=buildFacts([course],[]);
 async function answer(result,options={}){
  const ai=createQuestionAIService({env:{NVA_AI_ENABLED:'true',OPENAI_API_KEY:randomUUID(),OPENAI_MODEL:'gpt-4.1-mini'},fetchImpl:async(url,opts)=>{
-  const request=JSON.parse(opts.body);assert.equal(request.store,false);assert.equal(request.tools,undefined);assert.equal(request.text.format.schema.properties.reply,undefined);
+  const request=JSON.parse(opts.body);assert.equal(request.store,false);assert.equal(request.tools,undefined);assert.equal(request.text.format.schema.properties.reply.type,'string');
   return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(result)}]}]})};
  }});return ai.answer({question:'Quels sont les tarifs ?',facts,reserve:async()=>true,...options});
 }

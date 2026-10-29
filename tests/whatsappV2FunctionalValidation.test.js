@@ -2,7 +2,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const {harness,collect,db,course,baseSession}=require('./helpers/nvaV2ValidationHarness');
 const {recordConfirmed,createAdmissionService}=require('../src/services/whatsappAdmissionService');
 test('interested prospect: complete collection, real service pending request, consent and deduplication',async()=>{
- const h=harness();await h.send('Bonjour');await h.click('catalog');await h.click('trial');assert.match(h.transcript.at(-1).text,/incluses.*16/);
+ const h=harness();await h.send('Bonjour');await h.send('formations');await h.click('trial');assert.match(h.transcript.at(-1).text,/incluses.*16/);
  await collect(h);await h.click('course-12');await h.click('session-22');assert.equal(h.state.admission.step,'REVIEW');assert.match(h.transcript.at(-1).text,/2100/);
  const d=db();assert.equal(d.rows.length,0);const r=await h.send('je confirme');assert.equal(r.actions.length,1);const action=r.actions[0];
  assert.equal(action.type,'ADMISSION_REQUEST');const input={...action,conversationId:3,sourceMessageId:'validation-final'};

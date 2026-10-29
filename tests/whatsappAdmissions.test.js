@@ -1,4 +1,4 @@
-const test=require('node:test'),assert=require('node:assert/strict'),{randomUUID}=require('node:crypto');
+﻿const test=require('node:test'),assert=require('node:assert/strict'),{randomUUID}=require('node:crypto');
 const {createConversationEngine}=require('../src/services/whatsappConversationEngine');
 const journey=require('../src/services/whatsappAdmissionJourney');
 const {createAdmissionService,recordConfirmed}=require('../src/services/whatsappAdmissionService');
@@ -7,19 +7,21 @@ const course={id:11,title:'Anglais général',slug:'anglais-general',shortDescri
 const group={id:31,name:'Matin',capacity:10,isActive:true,isFull:false,weekDays:['Friday','Saturday'],startTime:'10:00',endTime:'11:30',_count:{enrollments:0}};
 const session={id:10,name:'Prochaine session',course,levelNumber:1,status:'OPEN',startDate:new Date('2100-01-01'),registrationDeadline:new Date('2099-12-30'),capacity:10,registrationGroups:[group],_count:{enrollments:0}};
 function engine({courses=[course],enabled=true,admissionContent={}}={}){const catalog={listPublished:async()=>courses},reg={listCoursesForPublicRegistration:async()=>courses.map(c=>({...c,session}))};return createConversationEngine({admissions:journey.createAdmissionJourney({database:{whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:enabled,admissionContent})}},catalog,registration:reg}),catalog,registration:reg,whatsappConfig:()=>({})});}
-async function input(e,text,state){return e.handleMessage({text,state,phoneNumber:'+243812345678',messageId:randomUUID()});}
+async function input(e,text,state){if(!state&&!/^(bonjour|bonsoir|salut|hello|hi|menu|accueil|👋)/i.test(text))state={welcomeSentAt:"2026-10-28T00:00:00Z",processedMessageIds:["existing"]};return e.handleMessage({text,state,phoneNumber:'+243812345678',messageId:randomUUID()});}
 async function click(e,r,id){const wire=r.state.admission.options.find(o=>o.id===id)?.wireId;assert.ok(wire,'Missing option '+id);return e.handleMessage({text:'',interactionId:wire,state:JSON.parse(JSON.stringify(r.state)),phoneNumber:'+243812345678',messageId:randomUUID()});}
 async function collect(e){let r=await input(e,'bonjour');r=await click(e,r,'registration');r=await click(e,r,'admin');r=await click(e,r,'accept');r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');r=await input(e,'marie@example.test',r.state);r=await click(e,r,'level-BEGINNER');r=await click(e,r,'course-11');r=await click(e,r,'session-10');r=await click(e,r,'group-31');return r;}
 
 test('greetings reuse the exact official menu on first and repeated contacts',async()=>{
  const e=engine({admissionContent:{welcome:'Bienvenue dans notre académie.'}});
  const official=await input(e,'Menu');
+ const englishOfficial=await input(e,'Hello');
  const done=await input(e,'annuler',official.state);
  for(const state of [undefined,official.state,done.state]){
   for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA','Menu']){
    const r=await input(e,text,state);
-   assert.equal(r.text,state ? (await input(e,'Bonjour',official.state)).text : official.text);
-   assert.equal(r.interactive.body.text,state ? (await input(e,'Bonjour',official.state)).interactive.body.text : official.interactive.body.text);
+   const expected=state ? await input(e,text,official.state) : text==='Hello'?englishOfficial:official;
+   assert.equal(r.text,expected.text);
+   assert.equal(r.interactive.body.text,expected.interactive.body.text);
    assert.deepEqual(r.state.admission.options.map(o=>[o.id,o.label]),official.state.admission.options.map(o=>[o.id,o.label]));
    assert.deepEqual(r.actions,[]);
    const duplicate=await e.handleMessage({text,state:r.state,messageId:r.state.processedMessageIds.at(-1)});
@@ -35,8 +37,8 @@ test('unrecognized first contact reuses menu without swallowing existing topic o
  const returning=await input(e,'message incompris',{processedMessageIds:['previous'],lastIntent:'CATALOG'});
  assert.notEqual(returning.text,official.text);
 });
-test('welcome has three stable buttons and official five-trial promotion',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello','menu','accueil']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,3);assert.match(r.text,/100 % en ligne/);assert.match(r.text,/assistant virtuel NVA/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
-test('catalog uses real descriptions and contextual commercial buttons',async()=>{const e=engine();const r=await click(e,await input(e,'menu'),'catalog');assert.match(r.text,/Anglais général/);assert.match(r.text,/Pratique et interactif/);assert.deepEqual(r.state.admission.options.map(o=>o.id),['trial','price','schedule']);const price=await click(e,r,'price');assert.match(price.text,/60 USD/);assert.equal(price.state.admission.step,'FREE');assert.notEqual((await input(e,'oui')).state.admission?.step,'METHOD');});
+test('welcome has two stable button actions and unique anti-replay tokens',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello','menu','accueil']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,2);assert.match(r.text,/formation en ligne|online training academy/);assert.match(r.text,/New Vision Academy/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
+test('catalog uses real descriptions and contextual commercial buttons',async()=>{const e=engine();const r=await input(e,'formations');assert.match(r.text,/Anglais général/);assert.match(r.text,/Pratique et interactif/);assert.deepEqual(r.state.admission.options.map(o=>o.id),['trial','price','schedule']);const price=await click(e,r,'price');assert.match(price.text,/60 USD/);assert.equal(price.state.admission.step,'FREE');assert.notEqual((await input(e,'oui')).state.admission?.step,'METHOD');});
 test('English prices follow the official commercial rules',async()=>{const r=await input(engine(),'tarifs');for(const value of ['60 USD','180 USD','20 USD','200 USD'])assert.ok(r.text.includes(value));assert.equal(r.state.admission.step,'FREE');});
 
 test('days are French and only official available slots are offered',async()=>{const r=await input(engine(),'horaires');assert.match(r.text,/vendredi et samedi/);assert.match(r.text,/10:00 – 11:30/);assert.doesNotMatch(r.text,/Friday|Saturday|16:00|18:00/);});

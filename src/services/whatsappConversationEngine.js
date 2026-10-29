@@ -55,6 +55,7 @@ function makeInitialState(value = {}) {
   const source = value && typeof value === 'object' ? value : {};
   return {
     automationPaused: source.automationPaused === true,
+    welcomeSentAt: typeof source.welcomeSentAt === 'string' ? source.welcomeSentAt : null,
     admission: source.admission && typeof source.admission === 'object' ? source.admission : null,
     scenarioMenu: source.scenarioMenu && typeof source.scenarioMenu === 'object' && Array.isArray(source.scenarioMenu.options) ? source.scenarioMenu : null,
     optedOut: source.optedOut === true,
@@ -241,21 +242,50 @@ function createConversationEngine({
     }
 
     try {
+      // The state is committed together with the durable outbound message.
+      // Existing contacts are grandfathered; never replay an introduction on upgrade.
+      const collecting = state.admission && !['MENU', 'DONE', 'FREE', 'INVITE'].includes(state.admission.step);
+      if (admissions && !interactionId && !state.welcomeSentAt && !state.processedMessageIds.length && !state.lastIntent && !state.admission && !state.mode && !state.pendingQuestion && !state.selectedCourseId && !state.selectedCourseSlug) {
+        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id });
+        if (welcome) return { ...welcome, intent: 'WELCOME', duplicate: false, state: withMessageId({ ...welcome.state, welcomeSentAt: now().toISOString() }, id) };
+      }
+      const commandText = normalizeText(text);
+      // Only choices that were actually offered and are still live belong to
+      // the backend. A number in ordinary conversation is never an action.
+      const activeMenu = state.admission?.options?.length ? state.admission : state.scenarioMenu;
+      const menuLive = activeMenu && Number.isFinite(Date.parse(activeMenu.expiresAt)) && Date.parse(activeMenu.expiresAt) > +now();
+      const number = /^[1-9]\d?$/.test(commandText) ? Number(commandText) : null;
+      const offeredNumber = menuLive && number && number <= activeMenu.options.length;
+      const offeredLabel = menuLive && state.admission?.options?.some(o => normalizeText(o.label) === commandText);
+      const explicitConfirmation = menuLive && state.admission?.step === 'INVITE' && /^(oui|non|yes|no)$/.test(commandText);
+      // Documented control commands remain deterministic; course names and
+      // enrollment words in free text are not navigation commands.
+      const navigationCommand = /^(menu|main menu|menu principal|retour au menu|retour au menu principal|accueil|annuler|cancel|relances|follow ups|marketing consent)$/.test(commandText);
+      if (admissions && env.NVA_AI_ENABLED === 'true' && !interactionId && !collecting && !offeredNumber && !offeredLabel && !explicitConfirmation && !navigationCommand) {
+        const courses = await catalog.listPublished();
+        const resolved = require('./whatsappCommercialPolicy').resolveCourse(text, courses, state);
+        if (resolved.course && /\b(anglais|english|formation|course|apprendre|learn|niveau|level|prix|price|cost|tarif|essai|trial|horaire|schedule)\b/i.test(text)) {
+          state = { ...state, selectedCourseId: resolved.course.id, selectedCourseSlug: resolved.course.slug };
+        }
+        return { intent: 'QUESTION_AI', duplicate: false, deferredQuestionAI: true, actions: [],
+          text: require('./whatsappQuestionAIService').fallback(text, state.preferredLanguage),
+          // A free turn consumes the previous menu. An old '1' cannot later
+          // replay its enrollment choice, nor can a stale button be reused.
+          state: withMessageId({ ...state, admission: null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
+      }
       // Social turns must not reuse the previous question's AI history.
       if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
         const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id }) : null;
         if (social) return { ...social, intent, duplicate: false, state: withMessageId(social.state, id) };
         return { intent, text: intent === 'THANKS' ? 'Avec plaisir ! 😊' : '👋 Bonjour ! Comment puis-je vous aider aujourd’hui ?', actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
       }
-      if (state.mode === 'QUESTION_AI' && !interactionId) {
+      if (state.mode === 'QUESTION_AI' && !interactionId && !offeredNumber && !offeredLabel && !explicitConfirmation) {
         const command = normalizeText(text);
-        const registrationIntent = /\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(command);
-        const navigation = /^(menu|main menu|nos formations|formations|our courses|courses|m inscrire|annuler|cancel)$/.test(command);
-        if (registrationIntent || navigation) {
+        const navigation = /^(menu|main menu|menu principal|retour au menu|retour au menu principal|accueil|annuler|cancel)$/.test(command);
+        if (navigation) {
           state = { ...state, mode: null, questionAIStartedAt: null, admission: null };
-          if (registrationIntent) { text = 'Je veux m’inscrire'; intent = 'REGISTRATION'; }
-          else if (/formations|courses/.test(command)) { text = 'formations'; intent = 'CATALOG'; }
-          else { text = 'menu'; intent = 'MENU'; }
+          text = /^(annuler|cancel)$/.test(command) ? 'annuler' : 'menu';
+          intent = /^(annuler|cancel)$/.test(command) ? 'CANCEL_REQUEST' : 'MENU';
         } else if (env.NVA_AI_ENABLED === 'true') {
           const courses = await catalog.listPublished();
           const resolved = require('./whatsappCommercialPolicy').resolveCourse(text, courses, state);

@@ -1,6 +1,8 @@
 // Claims a durable reply after inbound commit. OpenAI is always outside SQL locks.
 const {lockRecipients}=require('./whatsappSubmissionCoordinator');
 const {createQuestionAIService,buildFacts,fallback,config}=require('./whatsappQuestionAIService');
+const logger=require('./loggerService');
+const {vetoRegistration}=require('./whatsappRegistrationActionPolicy');
 function createQuestionAICompletionService({database,env=process.env,now=()=>new Date(),
  ai=createQuestionAIService({env}),catalog=require('./publicCourseService'),registration=require('./registrationService')}={}){
  const active=c=>c?.controlState==='BOT_ACTIVE'&&c.engineState?.mode==='QUESTION_AI'&&!c.engineState?.optedOut&&!c.engineState?.automationPaused;
@@ -26,6 +28,7 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
   }
   const claimed=await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PENDING'},data:{failureCode:'QUESTION_AI_PROCESSING'}});
   if(!claimed.count)return {busy:true};
+  logger.info('NVA_AI_ATTEMPT',{phase:'claimed'});
   try{
    const expected=idempotencyKey.startsWith('wa-reply:')?idempotencyKey.slice(9,-2):'';
    const latest=await database.whatsAppConversationMessage.findFirst({where:{conversationId:message.conversationId,direction:'INBOUND'},orderBy:{id:'desc'}});
@@ -43,6 +46,10 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
     }});
     // A price/session changed during HTTP must not publish the old snapshot.
     if(answer&&JSON.stringify(await factsFor(message.conversation.engineState,latest.body))!==JSON.stringify(facts))answer=null;
+    if(answer?.action==='REGISTER'&&vetoRegistration(latest.body)){
+     logger.info('NVA_AI_ACTION_REJECTED',{reason:'REGISTRATION_VETO'});
+     answer=null;
+    }
    }
    return await database.$transaction(async tx=>{
     await lockRecipients(tx,[message.conversation.phoneNumber]);
@@ -50,11 +57,19 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
     const inbound=await tx.whatsAppConversationMessage.findFirst({where:{conversationId:message.conversationId,direction:'INBOUND'},orderBy:{id:'desc'}});
     const settingsNow=await tx.whatsAppChatbotSettings.findUnique({where:{id:1}});
     const valid=active(current)&&inbound?.id===latest?.id&&inbound?.providerMessageId===expected&&current.engineState.questionAIStartedAt===message.conversation.engineState.questionAIStartedAt&&settingsNow?.enabled!==false;
-    const body=config(env)&&settingsNow?.admissionsEnabled===true&&answer?answer:fallback(latest?.body,current?.engineState?.preferredLanguage);
-    const changed=await tx.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:valid?{body,failureCode:null}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED'}});
+    let body=config(env)&&settingsNow?.admissionsEnabled===true&&answer?answer:fallback(latest?.body,current?.engineState?.preferredLanguage);
+    let registrationReply=null;
+    if(valid&&body?.action==='REGISTER'){
+     registrationReply=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({intent:'AI_REGISTRATION',state:current.engineState,text:'',messageId:expected});
+     body=registrationReply?.text||fallback(latest?.body,current.engineState.preferredLanguage);
+    }
+    const changed=await tx.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:valid?{body,failureCode:null,...(registrationReply?.interactive?{messageType:'INTERACTIVE',interactivePayload:registrationReply.interactive}:{})}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED'}});
+    if(changed.count&&registrationReply)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:registrationReply.state}});
+    logger.info('NVA_AI_COMPLETION',{outcome:!valid?'cancelled':registrationReply?'registration':answer?'answered':'unavailable'});
     return {completed:changed.count===1,cancelled:!valid};
    },{isolationLevel:'Serializable',timeout:5000});
   }catch{
+   logger.warn('NVA_AI_COMPLETION_FAILED',{reason:'API_OR_CONTEXT_UNAVAILABLE'});
    // DB/context failure is not a verified reply. No transaction or API retry.
    await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:{deliveryStatus:'CANCELLED',failureCode:'AI_COMPLETION_FAILED'}});
    return {cancelled:true};

@@ -33,6 +33,7 @@ function detectLanguage(text, previous='fr') {
   const s=String(text||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[’']/g,' ').replace(/[-_]/g,' ')
     .replace(/\b(?:not|pas|rather than|plutot que)\s+(?:(?:in|en|le|la|l)\s+)?(?:english|anglais|french|francais)\b/g,'').trim();
   const current=previous==='en'?'en':'fr';
+  if(/^(hello|hi|thanks|thank you)[.!\s]*$/.test(s))return 'en';
   const explicit=name=>new RegExp('^(?:'+name+')(?: please| svp| s il vous plait)?[.!?,;\\s]*$').test(s)
     ||new RegExp('\\b(?:in|en) (?:'+name+')\\b').test(s)
     ||new RegExp('\\b(?:repond\\w*|parl\\w*|ecri\\w*|continu\\w*|prefer\\w*|choisi\\w*|utilis\\w*|pass\\w*|switch|answer|reply|respond|speak|choose|use)[^.!?\\n]{0,40}\\b(?:'+name+')\\b').test(s);

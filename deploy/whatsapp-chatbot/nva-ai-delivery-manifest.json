@@ -1,0 +1,148 @@
+{
+  "format": 1,
+  "application": "NVA",
+  "baseCommit": "5c465e1c066f044fff601615849ebe76c3334157",
+  "branch": "release/nva-whatsapp-ai-20261029",
+  "normalization": "UTF-8 text canonicalized to LF; no custom Git clean filter; manifest excludes its own recursive hash",
+  "runtimePaths": [
+    "src/services/whatsappAdmissionJourney.js",
+    "src/services/whatsappAdvisorPolicy.js",
+    "src/services/whatsappConversationEngine.js",
+    "src/services/whatsappNaturalAdvisorPolicy.js",
+    "src/services/whatsappQuestionAICompletionService.js",
+    "src/services/whatsappQuestionAIService.js",
+    "src/services/whatsappRegistrationActionPolicy.js"
+  ],
+  "deliveryPaths": [
+    "deploy/whatsapp-chatbot/nva-ai-delivery-manifest.json",
+    "docs/nva-contabo-delivery-preparation-2026-10-29.md",
+    "docs/nva-natural-advisor-2026-10-28.md",
+    "docs/nva-whatsapp-final-audit-2026-10-29.md",
+    "docs/nva-whatsapp-routing-corrections-2026-10-29.md",
+    "docs/whatsapp-contabo-safe-sync-2026-10-28.md",
+    "package.json",
+    "src/services/whatsappAdmissionJourney.js",
+    "src/services/whatsappAdvisorPolicy.js",
+    "src/services/whatsappConversationEngine.js",
+    "src/services/whatsappNaturalAdvisorPolicy.js",
+    "src/services/whatsappQuestionAICompletionService.js",
+    "src/services/whatsappQuestionAIService.js",
+    "src/services/whatsappRegistrationActionPolicy.js",
+    "tests/helpers/nvaV2ValidationHarness.js",
+    "tests/metaInboxWorker.test.js",
+    "tests/whatsappAdmissions.test.js",
+    "tests/whatsappCommercialV2.test.js",
+    "tests/whatsappConversationPersistence.test.js",
+    "tests/whatsappFinalAudit.test.js",
+    "tests/whatsappNaturalAdvisor.test.js",
+    "tests/whatsappQuestionAI.test.js",
+    "tests/whatsappSocialRouting.test.js",
+    "tests/whatsappV2FunctionalValidation.test.js",
+    "tests/whatsappV3Corrections.test.js"
+  ],
+  "files": [
+    {
+      "path": "docs/nva-contabo-delivery-preparation-2026-10-29.md",
+      "gitBlob": "fa9bde18826c5d8373574e9c65e1d31d1fd63162"
+    },
+    {
+      "path": "docs/nva-natural-advisor-2026-10-28.md",
+      "gitBlob": "369f0096c8b9858971c3b2f7240ecf7d9d124a2c"
+    },
+    {
+      "path": "docs/nva-whatsapp-final-audit-2026-10-29.md",
+      "gitBlob": "1f70a60934e3c250ec6410904a41accb5be47b1d"
+    },
+    {
+      "path": "docs/nva-whatsapp-routing-corrections-2026-10-29.md",
+      "gitBlob": "89392c87b5bc07d5f5c522027e11ce058d7d6420"
+    },
+    {
+      "path": "docs/whatsapp-contabo-safe-sync-2026-10-28.md",
+      "gitBlob": "06e129565a26d145794de6b632feef0ac5521eb8"
+    },
+    {
+      "path": "package.json",
+      "gitBlob": "e9da2000d21b630cdfe240215bce7897aaab37a2"
+    },
+    {
+      "path": "src/services/whatsappAdmissionJourney.js",
+      "gitBlob": "9b2dcad22a649ce2bb28741f03c0127e04959f49"
+    },
+    {
+      "path": "src/services/whatsappAdvisorPolicy.js",
+      "gitBlob": "b84ff1f90ed701b34a4bf80b116111fc89f1dad6"
+    },
+    {
+      "path": "src/services/whatsappConversationEngine.js",
+      "gitBlob": "97fb7344e2ef167c948796279d4430fc12bff39c"
+    },
+    {
+      "path": "src/services/whatsappNaturalAdvisorPolicy.js",
+      "gitBlob": "6da73f6492909ee19cd786e3296fd0859bccf967"
+    },
+    {
+      "path": "src/services/whatsappQuestionAICompletionService.js",
+      "gitBlob": "2b75290dd1f81d72bff0d3a99d09c1d09fad5b75"
+    },
+    {
+      "path": "src/services/whatsappQuestionAIService.js",
+      "gitBlob": "3cbe11682ee96510f7a60a8cf892eb896594dc38"
+    },
+    {
+      "path": "src/services/whatsappRegistrationActionPolicy.js",
+      "gitBlob": "6be7ed8bf0dfd3867341e5794146e88267e560a4"
+    },
+    {
+      "path": "tests/helpers/nvaV2ValidationHarness.js",
+      "gitBlob": "435878fa4e0f0543c6dd429121e677305d390591"
+    },
+    {
+      "path": "tests/metaInboxWorker.test.js",
+      "gitBlob": "8812630f68f888c949f4324e448e8336c52afff2"
+    },
+    {
+      "path": "tests/whatsappAdmissions.test.js",
+      "gitBlob": "e655f975f9cae617f939ab7cbc3eee7469ce284a"
+    },
+    {
+      "path": "tests/whatsappCommercialV2.test.js",
+      "gitBlob": "d53814d88e7b4ebff02a4ac69bed222c7d8e75a1"
+    },
+    {
+      "path": "tests/whatsappConversationPersistence.test.js",
+      "gitBlob": "c5c69eb229621549459f52965e81613c9ac7b3b4"
+    },
+    {
+      "path": "tests/whatsappFinalAudit.test.js",
+      "gitBlob": "6a13694c2cc4fadd0e99deb2eb28286701e9218b"
+    },
+    {
+      "path": "tests/whatsappNaturalAdvisor.test.js",
+      "gitBlob": "2d23031ab181b2b29bc81e1fc1bae2c243bcd43d"
+    },
+    {
+      "path": "tests/whatsappQuestionAI.test.js",
+      "gitBlob": "7cc9a77cf29f0420bf1d07df28b8e04a0c995941"
+    },
+    {
+      "path": "tests/whatsappSocialRouting.test.js",
+      "gitBlob": "dcb8847395908f8f0753d92688362998e6b8b17d"
+    },
+    {
+      "path": "tests/whatsappV2FunctionalValidation.test.js",
+      "gitBlob": "850454491f0b346c40f3eca59fdef08129cb651d"
+    },
+    {
+      "path": "tests/whatsappV3Corrections.test.js",
+      "gitBlob": "fb005bdd77cde60d90002be7d3a3226b4420cc47"
+    }
+  ],
+  "checks": {
+    "finalAudit": 49,
+    "conversation": 105,
+    "release": 416,
+    "failures": 0
+  },
+  "migrationRequired": false
+}

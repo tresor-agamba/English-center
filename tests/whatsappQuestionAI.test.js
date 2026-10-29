@@ -37,9 +37,16 @@ test('question button persists QUESTION_AI; only subsequent questions defer API'
  next=await e.handleMessage({text:'Et le certificat ?',state:JSON.parse(JSON.stringify(next.state)),messageId:'q2'});assert.equal(next.deferredQuestionAI,true);assert.equal(next.state.mode,'QUESTION_AI');
  const duplicate=await e.handleMessage({text:'Et le certificat ?',state:next.state,messageId:'q2'});assert.equal(duplicate.duplicate,true);
 });
-test('navigation and any enrollment intent leave AI before the deferred path',async()=>{
- for(const text of ['Menu','Nos formations','M’inscrire','Comment je m’inscris ?','How do I register?','sign up']){
+test('explicit menu command leaves AI before the deferred path',async()=>{
+ for(const text of ['Menu','main menu','annuler']){
   const e=engine(),r=await enter(e);const out=await e.handleMessage({text,state:r.state,messageId:randomUUID()});assert.equal(out.deferredQuestionAI,undefined,text);assert.notEqual(out.state.mode,'QUESTION_AI',text);assert.deepEqual(out.actions,[]);
+ }
+});
+
+test('free course and enrollment messages require model understanding instead of keyword navigation',async()=>{
+ for(const text of ['Nos formations','M’inscrire','Comment je m’inscris ?','How do I register?','sign up','Je veux m’inscrire maintenant']){
+  const e=engine(),r=await enter(e),out=await e.handleMessage({text,state:r.state,messageId:randomUUID()});
+  assert.equal(out.deferredQuestionAI,true,text);assert.equal(out.state.mode,'QUESTION_AI',text);assert.deepEqual(out.actions,[]);assert.equal(out.state.admission,null);
  }
 });
 test('normal menus, identity collection and disabled AI never defer new API calls',async()=>{
@@ -109,4 +116,20 @@ test('crashed completion releases only prewritten fallback without another API c
 });
 test('state belonging to another mode cancels a pending AI reply without HTTP',async()=>{
  const s=completion();s.conversation().engineState.mode=null;await s.service.completeReply('wa-reply:second:0');assert.equal(s.calls(),0);assert.equal(s.message().deliveryStatus,'CANCELLED');
+});
+
+test('semantic enrollment opens existing method buttons atomically, without creating an application',async()=>{
+ const s=completion({fetchImpl:async()=>({ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({language:'fr',reply:'Commençons.',factIds:[],action:'REGISTER'})}]}]})})});
+ await s.service.completeReply('wa-reply:second:0');
+ assert.equal(s.conversation().engineState.admission.step,'METHOD');
+ assert.equal(s.conversation().engineState.mode,null);
+ assert.deepEqual(s.conversation().engineState.admission.options.map(o=>o.id),['online','admin','menu']);
+ assert.equal(s.message().messageType,'INTERACTIVE');assert.equal(s.message().interactivePayload.action.buttons.length,3);
+ assert.equal(s.rows('enrollment').length,0);
+ await s.service.completeReply('wa-reply:second:0');assert.equal(s.calls(),1);
+});
+
+test('semantic enrollment cannot override a human takeover during HTTP',async()=>{
+ let s;s=completion({fetchImpl:async()=>{s.conversation().controlState='HUMAN_TAKEOVER';return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({language:'fr',reply:'Commençons.',factIds:[],action:'REGISTER'})}]}]})};}});
+ await s.service.completeReply('wa-reply:second:0');assert.equal(s.message().deliveryStatus,'CANCELLED');assert.equal(s.conversation().engineState.admission,undefined);
 });

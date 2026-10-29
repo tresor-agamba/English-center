@@ -49,14 +49,20 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    return {text:fallback.slice(0,4000),interactive,actions:[],state:{...state,mode:step==='FREE'?state.mode:null,questionAIStartedAt:step==='FREE'?state.questionAIStartedAt:null,pendingQuestion:null,scenarioMenu:null,admission:{step,draft,options,certificationExplained,declined:active?.declined===true,expiresAt:new Date(+now()+conversationTtlMs).toISOString()}},...extra};
   };
   const allCourses=()=>catalog.listPublished();
+  const method=()=>send(state.preferredLanguage==='en'?'🎉 Choose registration on our official website or guided registration here on WhatsApp. 😊':'🎉 Pour votre inscription, choisissez le site officiel ou mon assistance sur WhatsApp. 😊','METHOD',[['online',state.preferredLanguage==='en'?'Via website':'Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
+  if(intent==='AI_REGISTRATION')return method();
   const openSessions=async()=>registration.listSessionsForPublicRegistration
    ? registration.listSessionsForPublicRegistration()
    : (await registration.listCoursesForPublicRegistration()).filter(c=>c.session).map(c=>({...c.session,course:c}));
   const review=draft=>send('Récapitulatif :\n'+draft.fullName+'\n'+draft.phoneNumber+'\n'+draft.email+'\nNiveau souhaité : '+LEVELS[draft.requestedLevel]+(draft.courseTitle?'\nFormation : '+draft.courseTitle:'')+(draft.sessionLabel?'\nSession : '+draft.sessionLabel:'\nAucune session sélectionnée : demande à examiner par un conseiller.')+'\n\n'+c.confirm,'REVIEW',[['confirm','CONFIRMER'],['modify','MODIFIER']],draft);
   const menu=async()=>{
-   const first=!state.processedMessageIds?.length&&!state.lastIntent&&!active;
+   const first=!state.welcomeSentAt&&!state.processedMessageIds?.length&&!state.lastIntent&&!active;
    const body=first?'👋 *Bienvenue chez NEW VISION ACADEMY (NVA) !* 🎓\n\n🌍 NVA est un centre de formation 100 % en ligne proposant des cours d’anglais pratiques, interactifs et certifiants.\n\n🎯 Notre mission est de vous aider à développer vos compétences linguistiques pour vos études, votre carrière et vos opportunités professionnelles.\n\n🤖 Je suis votre assistant virtuel NVA.\n\n👇 *Comment puis-je vous aider aujourd’hui ?*':'👋 Bonjour ! 😊\n\nRavi de vous retrouver chez *New Vision Academy* ! 🎓\n\nComment puis-je vous aider aujourd’hui ?';
-   return send(body,'MENU',[['registration','S’inscrire'],['catalog','Menu'],['question','Poser une question']]);
+   const english=state.preferredLanguage==='en';
+   const introduction=english?'👋 Welcome to *New Vision Academy (NVA)*! We are an online training academy. Discover our courses and ask me your questions. 🎓\nhttps://www.newvisionacademy.org': '👋 Bienvenue chez *New Vision Academy (NVA)* ! Nous sommes une académie de formation en ligne. Découvrez nos formations et posez-moi vos questions. 🎓\nhttps://www.newvisionacademy.org';
+   const result=send(first?introduction:(english?'How can I help you today? 😊':body),'MENU',[['registration',"📝 S'inscrire"],['question','💬 Poser une question']]);
+   result.state.welcomeSentAt=state.welcomeSentAt||now().toISOString();
+   return result;
   };
   const info=async topic=>{const courses=await allCourses();let body;if(topic==='catalog')body=c.catalog+'\n\n'+courses.slice(0,8).map(x=>'• '+x.title+(x.shortDescription?' — '+x.shortDescription:'')).join('\n');else if(topic==='price'){const open=await registration.listCoursesForPublicRegistration();body=c.price+'\n\n'+prices(courses.map(x=>({...x,session:open.find(y=>y.id===x.id)?.session})),now());}else if(topic==='schedule')body=c.schedule+'\n\n'+schedules(await registration.listCoursesForPublicRegistration());else body=c.registration;
    const certified=['catalog','price','registration'].includes(topic)&&courses.some(require('./whatsappCommercialPolicy').englishCourse);
@@ -88,9 +94,8 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   else if(active.step==='REVIEW'&&['oui','je confirme','confirmer'].includes(normalized))value='confirm';
   else value=active.options?.find(o=>normalizeText(o.label)===normalized)?.value;
   if(value==='menu')return menu();
-  const method=()=>send('🎉 Excellent choix !\n\nPour faciliter votre inscription, deux possibilités s’offrent à vous :\n\n🌐 Vous inscrire personnellement sur notre site NVA.\n\n💬 Vous inscrire directement ici avec mon assistance.\n\n😊 Quelle méthode préférez-vous ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
   if(value==='question'){
-   const result=send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nPosez vos questions sur NVA, sans partager de coordonnées personnelles. Une aide IA peut être utilisée. Écrivez « Menu », « Nos formations » ou « M’inscrire » pour quitter ce mode.\n\n💬 Quelle est votre question ?','FREE');
+   const result=send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nPosez vos questions sur NVA, sans partager de coordonnées personnelles. Une aide IA peut être utilisée. Écrivez « Menu » pour afficher les choix, ou indiquez que vous souhaitez vous inscrire.\n\n💬 Quelle est votre question ?','FREE');
     result.text += '\n\nPour choisir une relance commerciale facultative après 48 h sans message, écrivez « relances » (English: “follow ups”).';
     result.state.mode='QUESTION_AI';result.state.questionAIStartedAt=now().toISOString();return result;
   }

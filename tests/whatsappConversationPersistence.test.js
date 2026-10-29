@@ -288,6 +288,21 @@ test('historical ingress commits QUESTION_AI fallback before post-commit complet
  await service.processInboundMessage(incoming);assert.equal(calls,1);await service.processInboundMessage(incoming);assert.equal(calls,1);
 });
 
+test('welcome marker survives service reconstruction and duplicate first delivery',async t=>{
+ const {client,state}=memoryClient();const transaction=client.$transaction;
+ client.$transaction=work=>transaction(tx=>work({...tx,whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}}));
+ const completion=require('../src/services/whatsappQuestionAICompletionService');
+ t.mock.method(completion,'createQuestionAICompletionService',()=>({completeReply:async()=>({skipped:true})}));
+ const make=()=>createWhatsAppConversationService({client,env:{NVA_AI_ENABLED:'true'},catalog:{listPublished:async()=>[]},registration:{listCoursesForPublicRegistration:async()=>[]},followUpConfig:()=>({})});
+ const first={id:'wamid.welcome.persist',from:'243821234567',type:'text',text:{body:'Comment débuter ?'}};
+ await make().processInboundMessage(first);assert.ok(state.conversations[0].engineState.welcomeSentAt);
+ assert.equal(state.messages.filter(m=>m.direction==='OUTBOUND').length,1);
+ assert.equal((await make().processInboundMessage(first)).duplicate,true);
+ await make().processInboundMessage({...first,id:'wamid.welcome.next',text:{body:'Bonjour'}});
+ const replies=state.messages.filter(m=>m.direction==='OUTBOUND');assert.equal(replies.length,2);assert.equal(replies[1].failureCode,'QUESTION_AI_PENDING');
+ assert.ok(state.conversations[0].engineState.welcomeSentAt);
+});
+
 
 test('confirmed admission action uses the original conversation transaction and native deduplication',async t=>{
  const {client,state}=memoryClient();state.conversations.push({id:1,phoneNumber:'+243821234567',controlState:'BOT_ACTIVE',engineState:{admission:{step:'REVIEW',expiresAt:'2100-01-01',draft:{fullName:'Marie Kalala',phoneNumber:'+243821234567',email:'synthetic@example.test',requestedLevel:'BEGINNER',consentToCollect:true},options:[{id:'confirm',value:'confirm',wireId:'adm:confirm:synthetic'}]}}});

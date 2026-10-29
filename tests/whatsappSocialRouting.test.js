@@ -11,20 +11,18 @@ function engine() {
  return createConversationEngine({catalog,registration,admissions,env:{NVA_AI_ENABLED:'true'},whatsappConfig:()=>({})});
 }
 const input=(e,text,state)=>e.handleMessage({text,state,messageId:randomUUID()});
-test('AI question followed by repeated greetings bypasses AI and renders real buttons',async()=>{
+test('AI questions and repeated greetings stay in the natural conversation',async()=>{
  const e=engine(); let r=await input(e,'Combien de séances gratuites ?', {mode:'QUESTION_AI',questionAIStartedAt:new Date().toISOString()});
  assert.equal(r.deferredQuestionAI,true);
  for(const text of ['Bonjour','Bonjour','Bonsoir','Salut','Hello','Hi']) {
   r=await input(e,text,r.state);
-  assert.equal(r.deferredQuestionAI,undefined); assert.match(r.text,/Ravi de vous retrouver/);
-  assert.equal(r.interactive.type,'button');
-  assert.deepEqual(r.interactive.action.buttons.map(b=>b.reply.title),['S’inscrire','Menu','Poser une question']);
+  assert.equal(r.deferredQuestionAI,true); assert.equal(r.interactive,undefined); assert.equal(r.state.mode,'QUESTION_AI');
  }
 });
-test('thanks bypasses AI while preserving question mode',async()=>{
+test('thanks uses AI while preserving question mode',async()=>{
  const state={mode:'QUESTION_AI',questionAIStartedAt:new Date().toISOString(),processedMessageIds:['old']};
  const r=await input(engine(),'Merci.',state);
- assert.match(r.text,/Avec plaisir/);assert.equal(r.deferredQuestionAI,undefined);assert.equal(r.state.mode,'QUESTION_AI');
+ assert.equal(r.deferredQuestionAI,true);assert.equal(r.state.mode,'QUESTION_AI');
 });
 test('greetings and thanks preserve every collection step and draft',async()=>{
  const e=engine();
@@ -35,5 +33,5 @@ test('greetings and thanks preserve every collection step and draft',async()=>{
 });
 test('current topic overrides pending trial when the course is explicitly named',async()=>{
  const r=await input(engine(),'Quelle durée pour Anglais général ?', {admission:{step:'FREE',pendingIntents:['FREE_TRIAL'],options:[],draft:{},expiresAt:new Date(Date.now()+60000).toISOString()}});
- assert.match(r.text,/16 séances/);assert.doesNotMatch(r.text,/gratuites/);
+ assert.equal(r.deferredQuestionAI,true);assert.equal(r.state.admission,null);assert.equal(r.state.selectedCourseId,1);
 });

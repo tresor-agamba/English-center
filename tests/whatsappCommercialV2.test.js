@@ -10,7 +10,7 @@ function setup({courses=[course],sessions=[],ttl=86400000,chatbot=null}={}){
  const registration={listSessionsForPublicRegistration:async()=>sessions,listCoursesForPublicRegistration:async()=>sessions.map(s=>({...s.course,session:s}))};
  const admissions=createAdmissionJourney({database:{whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}},catalog,registration,conversationTtlMs:ttl});
  const engine=createConversationEngine({catalog,registration,admissions,chatbot,whatsappConfig:()=>({})});
- let n=0;return {admissions,engine,send:(text,state,interactionId)=>engine.handleMessage({text,state,interactionId,messageId:'test-'+(++n),phoneNumber:'+243812345678'})};
+ let n=0;return {admissions,engine,send:(text,state,interactionId)=>engine.handleMessage({text,state:state||(!/^(bonjour|menu)$/i.test(text)?{processedMessageIds:["existing"]}:undefined),interactionId,messageId:'test-'+(++n),phoneNumber:'+243812345678'})};
 }
 test('authored evaluation corpus measures exact intent sets on at least 200 questions',t=>{
  assert.ok(corpus.length>=200);let correct=0;const failures=[];
@@ -26,7 +26,7 @@ test('multiple topics, accents, bounded fuzzy matching and context',()=>{
  assert.deepEqual(detectIntents('la deuxième'),['UNKNOWN']);
 });
 test('free questions answer multiple topics with live dates and no fictional availability',async()=>{
- const s=setup();const greeting=await s.send('Bonjour');assert.equal(greeting.interactive.action.buttons.length,3);
+ const s=setup();const greeting=await s.send('Bonjour');assert.equal(greeting.interactive.action.buttons.length,2);
  const question=greeting.state.admission.options.find(o=>o.id==='question');const free=await s.send('',greeting.state,question.wireId);assert.match(free.text,/assistant virtuel/);
  const response=await s.send('Combien ça coûte et quand commence-t-on ?',free.state);assert.match(response.text,/180 USD/);assert.match(response.text,/Aucune session ouverte/);assert.deepEqual(response.actions,[]);
 });

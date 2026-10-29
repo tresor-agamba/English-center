@@ -1,6 +1,7 @@
 // Grounded conversational replies; no DB driver, tools, identity or logs here.
-const {INSTRUCTIONS,detectLanguage,renderPlan,OPENINGS,QUESTIONS}=require('./whatsappAdvisorPolicy');
+const {detectLanguage,renderPlan}=require('./whatsappAdvisorPolicy');
 const {publishedPrice,officialEnglishCourse}=require('./whatsappCommercialPolicy');
+const NATURAL_INSTRUCTIONS=require('./whatsappNaturalAdvisorPolicy').INSTRUCTIONS;
 function redact(value){return String(value||'').slice(0,1800)
  .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email]')
  .replace(/https?:\/\/\S+/gi,'[link]').replace(/\+?\d[\d ().-]{6,}\d/g,'[contact]')
@@ -15,6 +16,7 @@ function config(env){
 function buildFacts(courses,sessions,now=new Date()){
  const facts=[];const add=(id,fr,en)=>facts.push({id,fr,en});
  add('clarify','Pour quelle formation souhaitez-vous ces informations ?','Which course would you like information about?');
+ add('website','Site officiel NVA : https://www.newvisionacademy.org','Official NVA website: https://www.newvisionacademy.org');
  if(courses.length&&courses.every(c=>c.trainingMode==='ONLINE'))add('online','Ces formations NVA sont 100 % en ligne.','These NVA courses are entirely online.');
  add('payment_methods','Les moyens de paiement doivent être confirmés par un conseiller NVA ; aucun paiement n’est effectué dans ce chat.','Please confirm payment methods with an NVA adviser; this chat does not process payments.');
  add('status','Une demande reste en attente de vérification e-mail et de décision administrative. Le chatbot ne confirme pas une inscription.','A request remains subject to email verification and an administrative decision. The chatbot cannot confirm enrollment.');
@@ -25,6 +27,9 @@ function buildFacts(courses,sessions,now=new Date()){
   add(prefix+'price',price?title+' : '+price+(c.structureType==='LEVEL_BASED'?' par niveau.':'.'):'Le tarif actuel de '+title+' n’est pas publié. Un conseiller peut le vérifier.',price?title+': '+price+(c.structureType==='LEVEL_BASED'?' per level.':'.'):'The current price for '+title+' is not published. Please ask an adviser.');
   if(general){
    add(prefix+'duration','Pour l’anglais général : 3 niveaux, 16 séances de 90 minutes par niveau (48 séances au total).','General English: 3 levels, 16 sessions of 90 minutes per level (48 sessions in total).');
+   add(prefix+'frequency','L’anglais général prévoit 2 séances par semaine.','General English has 2 sessions per week.');
+   add(prefix+'weeks','À raison de 2 séances par semaine, un niveau d’anglais général dure normalement 8 semaines ; les trois niveaux représentent environ 24 semaines si les sessions se suivent sans interruption. Ces durées sont indicatives.','At 2 sessions per week, a General English level normally takes 8 weeks; all three levels take about 24 weeks if sessions run consecutively without interruption. These durations are indicative.');
+   add(prefix+'usual_schedule','Les créneaux habituels d’anglais général sont le vendredi et le samedi : 10:00–11:30, 16:00–17:30 et 18:00–19:30, heure de Kinshasa. Ce sont des horaires habituels, pas une confirmation de session ouverte ni de place disponible ; consulter les sessions actualisées.','Usual General English time slots are Friday and Saturday: 10:00–11:30, 16:00–17:30 and 18:00–19:30, Kinshasa time. These are usual hours, not confirmation of an open session or an available place; check current sessions.');
    if(price==='60 USD'){
     add(prefix+'total','L’anglais général coûte 60 USD par niveau, soit 180 USD pour les trois niveaux.','General English costs USD 60 per level, USD 180 for all three levels.');
     if(c.accessPolicy==='LEGACY_STAGED'){
@@ -62,13 +67,27 @@ function createQuestionAIService({env=process.env,fetchImpl=globalThis.fetch}={}
    const response=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',redirect:'error',signal:controller.signal,
     headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},
     body:JSON.stringify({model:env.OPENAI_MODEL,store:false,max_output_tokens:cfg.tokens,
-     instructions:INSTRUCTIONS,
-     input:JSON.stringify({preferredLanguage:outputLanguage,question:redact(question),history:history.slice(-6).map(h=>({role:h.role==='assistant'?'assistant':'user',content:redact(h.content).slice(0,600)})),facts,dialogue:{openings:OPENINGS,questions:QUESTIONS}}),
-     text:{format:{type:'json_schema',name:'nva_commercial_plan',strict:true,schema:{type:'object',additionalProperties:false,properties:{language:{type:'string',enum:['fr','en']},opening:{type:'string',enum:Object.keys(OPENINGS)},followUp:{type:'string',enum:Object.keys(QUESTIONS)},factIds:{type:'array',items:{type:'string',enum:facts.map(f=>f.id)},maxItems:3}},required:['language','factIds','opening','followUp']}}}})});
+     instructions:NATURAL_INSTRUCTIONS,
+     input:JSON.stringify({preferredLanguage:outputLanguage,question:redact(question),history:history.slice(-6).map(h=>({role:h.role==='assistant'?'assistant':'user',content:redact(h.content).slice(0,600)})),facts}),
+     text:{format:{type:'json_schema',name:'nva_advisor_reply',strict:true,schema:{type:'object',additionalProperties:false,properties:{language:{type:'string',enum:['fr','en']},reply:{type:'string'},action:{type:'string',enum:['NONE','REGISTER']},factIds:{type:'array',items:{type:'string',enum:facts.map(f=>f.id)},maxItems:3}},required:['language','reply','factIds','action']}}}})});
    if(!response.ok)return null;const payload=await response.json();if(payload.status!=='completed')return null;
    const text=(payload.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('');
    const result=JSON.parse(text);if(!['fr','en'].includes(result.language)||!Array.isArray(result.factIds)||result.factIds.length>3)return null;
    if(result.factIds.some(id=>!facts.some(f=>f.id===id)))return null;
+   if(Object.hasOwn(result,'reply')&&Object.hasOwn(result,'action')){
+    if(Object.keys(result).length!==4||result.language!==outputLanguage||!['NONE','REGISTER'].includes(result.action)||typeof result.reply!=='string')return null;
+    const body=result.reply.trim();
+    if(!body||body.length>1600||/sk-[\w-]+|Bearer\s|[\x00-\x08\x0b\x0c\x0e-\x1f]/i.test(body))return null;
+    const evidence=result.factIds.map(id=>facts.find(f=>f.id===id)[outputLanguage]).join(' ');
+    const numbers=body.match(/\d+(?:[.,:]\d+)*/g)||[];
+    if(numbers.some(n=>!(evidence.match(/\d+(?:[.,:]\d+)*/g)||[]).includes(n)))return null;
+    const links=body.match(/https?:\/\/[^\s<>]+/gi)||[];
+    if(links.some(link=>!evidence.includes(link)))return null;
+    // Reject high-risk claims even when they contain no invented number.
+    if(/paypal|western union|cambridge|international(?:ly|ement)?\s+(?:accredit|reconn|recogn)|reconnu.{0,20}monde entier|(?:inscription|dossier|admission|enrollment|payment|paiement).{0,35}(?:confirm[ée]|approuv|accept[ée]|approved|confirmed|received|reçu)|garanti|guarantee/i.test(body))return null;
+    if(result.action==='REGISTER')return {action:'REGISTER'};
+    return body;
+   }
    const selected=[...new Set(result.factIds)].map(id=>facts.find(f=>f.id===id));
    // Legacy prose/extra properties never reach the prospect. If the plan cannot
    // be validated, fall back exclusively to its verified official fact IDs.
