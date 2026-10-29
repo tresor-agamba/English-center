@@ -34,6 +34,8 @@ function detectLanguage(text, previous='fr') {
     .replace(/\b(?:not|pas|rather than|plutot que)\s+(?:(?:in|en|le|la|l)\s+)?(?:english|anglais|french|francais)\b/g,'').trim();
   const current=previous==='en'?'en':'fr';
   if(/^(hello|hi|thanks|thank you)[.!\s]*$/.test(s))return 'en';
+  // A bare course/language label is ambiguous, not an explicit switch request.
+  if(/^(anglais|english|francais|french)[.!?,\s]*$/.test(s))return current;
   const explicit=name=>new RegExp('^(?:'+name+')(?: please| svp| s il vous plait)?[.!?,;\\s]*$').test(s)
     ||new RegExp('\\b(?:in|en) (?:'+name+')\\b').test(s)
     ||new RegExp('\\b(?:repond\\w*|parl\\w*|ecri\\w*|continu\\w*|prefer\\w*|choisi\\w*|utilis\\w*|pass\\w*|switch|answer|reply|respond|speak|choose|use)[^.!?\\n]{0,40}\\b(?:'+name+')\\b').test(s);
@@ -41,7 +43,7 @@ function detectLanguage(text, previous='fr') {
   if(explicit('anglais|english'))return 'en';
   const words=new Set(s.match(/[a-z]+/g)||[]);
   const score=list=>list.split(' ').filter(w=>words.has(w)).length;
-  const fr=score('je vous nous mon ma pour avec pourquoi combien souhaite voudrais veux peux est les une apprendre merci bonjour');
+  const fr=score('je vous nous mon ma pour avec pourquoi combien souhaite voudrais veux peux est les une apprendre merci bonjour formation dure duree horaires');
   const en=score('i you we my what how when can would want am is are to for with do does this please learn too expensive the about need more where which should could will have and your');
   if(en>=2&&en>fr)return 'en';
   if(fr>=2&&fr>en)return 'fr';

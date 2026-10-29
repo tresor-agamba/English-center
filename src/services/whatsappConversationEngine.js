@@ -26,7 +26,7 @@ function hasAny(text, values) {
 function detectIntent(value) {
   const text = normalizeText(value);
   if (!text) return 'UNKNOWN';
-  if (/^(bonjour|bonsoir|salut|hello|hi|coucou)( nva)?$/.test(text)) return 'GREETING';
+  if (/^(bonjour|bonsoir|salut|hello|hi|coucou|hey)( nva)?$/.test(text)) return 'GREETING';
   if (/^(merci( beaucoup| bien)?|thanks|thank you)$/.test(text)) return 'THANKS';
   if (/\b(stop|unsubscribe)\b|ne m envoyez plus|ne me contactez plus|arretez les (messages|relances)|no more messages|do not contact|non relances|no follow ups/.test(text) || /^(arret|desinscrire|desabonner)$/.test(text)) return 'OPT_OUT';
   if (/^(oui relances?|yes follow ups?)$/.test(text)) return 'COMMERCIAL_CONSENT_GRANT';
@@ -190,7 +190,7 @@ function createConversationEngine({
   admissions = null,
   env = process.env,
 } = {}) {
-  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
+  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, isFirstContact, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
     let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
@@ -245,8 +245,8 @@ function createConversationEngine({
       // The state is committed together with the durable outbound message.
       // Existing contacts are grandfathered; never replay an introduction on upgrade.
       const collecting = state.admission && !['MENU', 'DONE', 'FREE', 'INVITE'].includes(state.admission.step);
-      if (admissions && !interactionId && !state.welcomeSentAt && !state.processedMessageIds.length && !state.lastIntent && !state.admission && !state.mode && !state.pendingQuestion && !state.selectedCourseId && !state.selectedCourseSlug) {
-        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id });
+      if (admissions && isFirstContact !== false && !interactionId && !state.welcomeSentAt && !state.processedMessageIds.length && !state.lastIntent && !state.admission && !state.mode && !state.pendingQuestion && !state.selectedCourseId && !state.selectedCourseSlug) {
+        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id, isFirstContact });
         if (welcome) return { ...welcome, intent: 'WELCOME', duplicate: false, state: withMessageId({ ...welcome.state, welcomeSentAt: now().toISOString() }, id) };
       }
       const commandText = normalizeText(text);
@@ -273,9 +273,9 @@ function createConversationEngine({
           // replay its enrollment choice, nor can a stale button be reused.
           state: withMessageId({ ...state, admission: null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
       }
-      // Social turns must not reuse the previous question's AI history.
+      // Legacy AI-off social handling; ordinary AI turns were routed above.
       if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
-        const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id }) : null;
+        const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id, isFirstContact }) : null;
         if (social) return { ...social, intent, duplicate: false, state: withMessageId(social.state, id) };
         return { intent, text: intent === 'THANKS' ? 'Avec plaisir ! 😊' : '👋 Bonjour ! Comment puis-je vous aider aujourd’hui ?', actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
       }
@@ -303,7 +303,7 @@ function createConversationEngine({
             deferredQuestionAI: true, actions: [], state: withMessageId(state, id) };
         }
       }
-      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id }) : null;
+      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id, isFirstContact }) : null;
       if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
       if (scenario?.catalogIntent) {
@@ -416,7 +416,7 @@ function createConversationEngine({
       }
       // A first unrecognized contact gets the existing official menu, after
       // explicit topics, course selections, scenarios and configured rules.
-      if (admissions && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY
+      if (admissions && isFirstContact !== false && intent === 'UNKNOWN' && reply === UNKNOWN_REPLY
         && !state.processedMessageIds.length && !state.lastIntent
         && !state.admission && !state.scenarioMenu && !state.pendingQuestion
         && !state.selectedCourseId && !state.selectedCourseSlug) {

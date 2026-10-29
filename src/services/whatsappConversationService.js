@@ -75,6 +75,13 @@ function createWhatsAppConversationService({
       create: { phoneNumber, userId: linkedUserId, controlState: 'BOT_ACTIVE' },
       update: {},
     });
+    // Inspect durable history under the recipient lock, before inserting this
+    // inbound. An empty/repaired engineState does not make an old prospect new.
+    const previousMessage = await tx.whatsAppConversationMessage.findFirst({
+      where: { conversationId: conversation.id },
+      select: { id: true },
+    });
+    const isFirstContact = !previousMessage;
     if (!conversation.userId && linkedUserId) {
       await tx.whatsAppConversation.update({ where: { id: conversation.id }, data: { userId: linkedUserId } });
       conversation.userId = linkedUserId;
@@ -118,6 +125,7 @@ function createWhatsAppConversationService({
       interactionId: message.type === 'interactive' ? require('./whatsappInteractive').interactionId(message) || 'unrecognized-interaction' : null,
       messageId: providerMessageId,
       state: stateForConversation(conversation),
+      isFirstContact,
       publicAppUrl,
       allowCommercialFollowUpConsent,
     });

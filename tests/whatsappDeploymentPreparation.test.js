@@ -10,7 +10,7 @@ test('migration audit accepts only the reviewed module migrations and refuses dr
  assert.equal(run(baseline.map((r,i)=>i?r:{...r,finished_at:null})).status,2);
 });
 test('operator helper embedded Node scripts compile and contain no global PM2 operation',()=>{
- const shell=fs.readFileSync('deploy/whatsapp-chatbot/operator-functions.sh','utf8');const blocks=[...shell.matchAll(/<<'NODE'\n([\s\S]*?)\nNODE/g)];assert.equal(blocks.length,3);for(const [,code]of blocks)new vm.Script(code);
+ const shell=fs.readFileSync('deploy/whatsapp-chatbot/operator-functions.sh','utf8').replace(/\r\n/g,'\n');const blocks=[...shell.matchAll(/<<'NODE'\n([\s\S]*?)\nNODE/g)];assert.equal(blocks.length,3);for(const [,code]of blocks)new vm.Script(code);
  assert.doesNotMatch(shell,/restart all|reload all|pm2 kill|pm2 save/);assert.match(shell,/WHATSAPP_ENABLED:'false'/);assert.match(shell,/WHATSAPP_WORKERS_ENABLED:'false'/);
 });
 

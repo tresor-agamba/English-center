@@ -47,14 +47,17 @@ test('dialogue varies reviewed fragments and limits registration invitations',()
  const next=renderPlan({opening:'welcome',followUp:'register'},[],'fr',[{role:'assistant',content:invite}]);assert.ok(!next.includes('M’inscrire'));
  assert.ok(!renderPlan({opening:'respect',followUp:'register'},[],'fr').includes('?'));
 });
-const switches=[['English please','fr','en'],['Je préfère l’anglais','fr','en'],['Je prefere l anglais','fr','en'],['Parlez-moi en anglais','fr','en'],['Please reply in English','fr','en'],['Switch to English please','fr','en'],['anglais','fr','en'],['French please','en','fr'],['Je préfère le français','en','fr'],['Please answer in French','en','fr'],['Français','en','fr'],['English please, not French','fr','en'],['Parlez-moi en anglais, pas en français','fr','en']];
+const switches=[['English please','fr','en'],['Je préfère l’anglais','fr','en'],['Je prefere l anglais','fr','en'],['Parlez-moi en anglais','fr','en'],['Please reply in English','fr','en'],['Switch to English please','fr','en'],['French please','en','fr'],['Je préfère le français','en','fr'],['Please answer in French','en','fr'],['English please, not French','fr','en'],['Parlez-moi en anglais, pas en français','fr','en']];
 for(const [input,previous,expected]of switches)test('explicit language '+input,()=>assert.equal(detectLanguage(input,previous),expected));
+test('bare language or course labels preserve the established language',()=>{
+ for(const previous of ['fr','en'])for(const word of ['anglais','English','Français','French'])assert.equal(detectLanguage(word,previous),previous);
+});
 const mixed=[['Je veux apprendre English pour mon travail','fr','fr'],['Mon niveau est beginner','fr','fr'],['budget','fr','fr'],['certificate','fr','fr'],['OK','en','en'],['Merci','en','en'],['English is the course I want to study','fr','en'],['I want to learn for my work','fr','en'],['Je souhaite progresser pour mon travail','en','fr'],['What about the certificate?','fr','en']];
 for(const [input,previous,expected]of mixed)test('mixed/short language '+input,()=>assert.equal(detectLanguage(input,previous),expected));
 test('language changes persist across engine messages; foreign vocabulary does not switch',async()=>{
  const engine=createConversationEngine({env:{NVA_AI_ENABLED:'true'},catalog:{listPublished:async()=>[course]}});
  let state={mode:'QUESTION_AI',questionAIStartedAt:new Date().toISOString()};
- for(const [text,expected]of [['English please','en'],['OK','en'],['certificate','en'],['Répondez en français','fr'],['Mon niveau est beginner','fr'],['English','en']]){
+ for(const [text,expected]of [['English please','en'],['OK','en'],['certificate','en'],['Répondez en français','fr'],['Mon niveau est beginner','fr'],['English','fr']]){
   const result=await engine.handleMessage({text,state,messageId:randomUUID()});assert.equal(result.state.preferredLanguage,expected);assert.equal(result.deferredQuestionAI,true);state=result.state;
  }
 });

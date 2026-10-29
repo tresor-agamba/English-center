@@ -11,18 +11,25 @@ async function input(e,text,state){if(!state&&!/^(bonjour|bonsoir|salut|hello|hi
 async function click(e,r,id){const wire=r.state.admission.options.find(o=>o.id===id)?.wireId;assert.ok(wire,'Missing option '+id);return e.handleMessage({text:'',interactionId:wire,state:JSON.parse(JSON.stringify(r.state)),phoneNumber:'+243812345678',messageId:randomUUID()});}
 async function collect(e){let r=await input(e,'bonjour');r=await click(e,r,'registration');r=await click(e,r,'admin');r=await click(e,r,'accept');r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');r=await input(e,'marie@example.test',r.state);r=await click(e,r,'level-BEGINNER');r=await click(e,r,'course-11');r=await click(e,r,'session-10');r=await click(e,r,'group-31');return r;}
 
-test('greetings reuse the exact official menu on first and repeated contacts',async()=>{
+test('only first contact receives the two welcome buttons; returning greetings and menu are distinct',async()=>{
  const e=engine({admissionContent:{welcome:'Bienvenue dans notre académie.'}});
  const official=await input(e,'Menu');
- const englishOfficial=await input(e,'Hello');
  const done=await input(e,'annuler',official.state);
  for(const state of [undefined,official.state,done.state]){
   for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA','Menu']){
    const r=await input(e,text,state);
-   const expected=state ? await input(e,text,official.state) : text==='Hello'?englishOfficial:official;
-   assert.equal(r.text,expected.text);
-   assert.equal(r.interactive.body.text,expected.interactive.body.text);
-   assert.deepEqual(r.state.admission.options.map(o=>[o.id,o.label]),official.state.admission.options.map(o=>[o.id,o.label]));
+   if(!state){
+    assert.equal(r.interactive.type,'button');
+    assert.deepEqual(r.state.admission.options.map(o=>o.id),['registration','question']);
+    assert.match(r.text,/Bienvenue|Welcome/);
+   }else if(text==='Menu'){
+    assert.match(r.text,/MENU PRINCIPAL NVA/);
+    assert.deepEqual(r.state.admission.options.map(o=>o.id),['catalog','registration','question']);
+   }else{
+    assert.equal(r.interactive,undefined);
+    assert.doesNotMatch(r.text,/Bienvenue|Welcome/);
+    assert.equal(r.state.welcomeSentAt,official.state.welcomeSentAt);
+   }
    assert.deepEqual(r.actions,[]);
    const duplicate=await e.handleMessage({text,state:r.state,messageId:r.state.processedMessageIds.at(-1)});
    assert.equal(duplicate.duplicate,true);assert.equal(duplicate.text,null);assert.deepEqual(duplicate.actions,[]);

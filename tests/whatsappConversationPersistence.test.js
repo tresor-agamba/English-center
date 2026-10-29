@@ -32,6 +32,7 @@ function memoryClient() {
       findUnique: async ({ where }) => state.conversations.find((item) => item.id === where.id) || null,
     },
     whatsAppConversationMessage: {
+      findFirst: async ({ where }) => state.messages.find(item => Object.entries(where).every(([key,value]) => item[key] === value)) || null,
       updateMany: async ({ where, data }) => {
         const rows = state.messages.filter(item => Object.entries(where).every(([key, value]) => item[key] === value));
         rows.forEach(row => Object.assign(row, data));

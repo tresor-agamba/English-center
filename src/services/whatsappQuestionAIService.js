@@ -13,6 +13,14 @@ function config(env){
  const options={timeout:bounded('NVA_AI_TIMEOUT_MS',4000,250,10000),tokens:bounded('NVA_AI_MAX_OUTPUT_TOKENS',256,64,1024),cap:bounded('NVA_AI_DAILY_CALL_LIMIT',50,1,1000)};
  return env.NVA_AI_ENABLED==='true'&&env.OPENAI_API_KEY&&/^[\w.-]{1,100}$/.test(env.OPENAI_MODEL||'')&&Object.values(options).every(Boolean)?options:null;
 }
+function formatWeekDays(days,language='fr'){
+ const translations={MONDAY:['lundi','Monday'],TUESDAY:['mardi','Tuesday'],WEDNESDAY:['mercredi','Wednesday'],THURSDAY:['jeudi','Thursday'],FRIDAY:['vendredi','Friday'],SATURDAY:['samedi','Saturday'],SUNDAY:['dimanche','Sunday']};
+ const french={LUNDI:'MONDAY',MARDI:'TUESDAY',MERCREDI:'WEDNESDAY',JEUDI:'THURSDAY',VENDREDI:'FRIDAY',SAMEDI:'SATURDAY',DIMANCHE:'SUNDAY'};
+ return (Array.isArray(days)?days:[]).map(day=>{
+  const key=String(day).trim().toUpperCase(),entry=translations[french[key]||key];
+  return entry?entry[language==='en'?1:0]:null;
+ }).filter(Boolean).join(', ');
+}
 function buildFacts(courses,sessions,now=new Date()){
  const facts=[];const add=(id,fr,en)=>facts.push({id,fr,en});
  add('clarify','Pour quelle formation souhaitez-vous ces informations ?','Which course would you like information about?');
@@ -28,7 +36,7 @@ function buildFacts(courses,sessions,now=new Date()){
   if(general){
    add(prefix+'duration','Pour l’anglais général : 3 niveaux, 16 séances de 90 minutes par niveau (48 séances au total).','General English: 3 levels, 16 sessions of 90 minutes per level (48 sessions in total).');
    add(prefix+'frequency','L’anglais général prévoit 2 séances par semaine.','General English has 2 sessions per week.');
-   add(prefix+'weeks','À raison de 2 séances par semaine, un niveau d’anglais général dure normalement 8 semaines ; les trois niveaux représentent environ 24 semaines si les sessions se suivent sans interruption. Ces durées sont indicatives.','At 2 sessions per week, a General English level normally takes 8 weeks; all three levels take about 24 weeks if sessions run consecutively without interruption. These durations are indicative.');
+   add(prefix+'weeks','À raison de 2 séances par semaine, un niveau d’anglais général dure normalement 8 semaines ; les trois niveaux représentent environ 24 semaines (environ 6 mois) si les sessions se suivent sans interruption. Ces durées sont indicatives.','At 2 sessions per week, a General English level normally takes 8 weeks; all three levels take about 24 weeks (about 6 months) if sessions run consecutively without interruption. These durations are indicative.');
    add(prefix+'usual_schedule','Les créneaux habituels d’anglais général sont le vendredi et le samedi : 10:00–11:30, 16:00–17:30 et 18:00–19:30, heure de Kinshasa. Ce sont des horaires habituels, pas une confirmation de session ouverte ni de place disponible ; consulter les sessions actualisées.','Usual General English time slots are Friday and Saturday: 10:00–11:30, 16:00–17:30 and 18:00–19:30, Kinshasa time. These are usual hours, not confirmation of an open session or an available place; check current sessions.');
    if(price==='60 USD'){
     add(prefix+'total','L’anglais général coûte 60 USD par niveau, soit 180 USD pour les trois niveaux.','General English costs USD 60 per level, USD 180 for all three levels.');
@@ -47,10 +55,15 @@ function buildFacts(courses,sessions,now=new Date()){
    const date=new Date(s.startDate);if(!Number.isFinite(+date))continue;
    const groups=(s.registrationGroups||[]).filter(g=>g.isActive&&!g.isFull).slice(0,4);
    const slots=groups.length?groups:!s.registrationGroups?.length?[s]:[];
-   const times=slots.filter(g=>/^\d{2}:\d{2}$/.test(g.startTime||'')&&/^\d{2}:\d{2}$/.test(g.endTime||''))
-    .map(g=>(g.weekDays||[]).filter(d=>/^[A-Za-zÀ-ÿ]{2,12}$/.test(d)).join(', ')+' '+g.startTime+'–'+g.endTime).join('; ');
-   const details=title+' — '+date.toISOString().slice(0,10)+(s.levelNumber?' — '+s.levelNumber:'')+(times?' — '+times:'')+' ('+(/^[A-Za-z_\/+-]{1,50}$/.test(s.timezone||'')?s.timezone:'Africa/Kinshasa')+')';
-   add(prefix+'session'+s.id,details+'. Disponibilité à revérifier lors de l’inscription.',details+'. Availability must be checked again during registration.');
+   const validSlots=slots.filter(g=>/^\d{2}:\d{2}$/.test(g.startTime||'')&&/^\d{2}:\d{2}$/.test(g.endTime||''));
+   const times=language=>validSlots.map(g=>{
+    const days=formatWeekDays(g.weekDays,language);
+    return (days?days+' : ':'')+g.startTime+'–'+g.endTime;
+   }).join('; ');
+   const timezone=/^[A-Za-z_\/+-]{1,50}$/.test(s.timezone||'')?s.timezone:'Africa/Kinshasa';
+   const base=title+' — '+date.toISOString().slice(0,10)+(s.levelNumber?' — '+s.levelNumber:'');
+   const details=language=>base+(times(language)?' — '+times(language):'')+' ('+timezone+')';
+   add(prefix+'session'+s.id,details('fr')+'. Disponibilité à revérifier lors de l’inscription.',details('en')+'. Availability must be checked again during registration.');
   }
  }
  return facts;

@@ -4,6 +4,7 @@
   "description": "Plateforme simple de centre de formation d'anglais en ligne",
   "main": "src/server.js",
   "scripts": {
+    "test:whatsapp:contabo-merge": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappContaboMerge.test.js",
     "test:whatsapp:final-audit": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappFinalAudit.test.js",
     "test:whatsapp:natural": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappNaturalAdvisor.test.js tests/whatsappQuestionAI.test.js tests/whatsappSocialRouting.test.js tests/whatsappAdvisorV3.test.js tests/whatsappV3Corrections.test.js",
     "test:whatsapp:v3:corrections": "node --require ./tests/helpers/whatsappIsolationGuard.cjs --test tests/whatsappV3Corrections.test.js",
