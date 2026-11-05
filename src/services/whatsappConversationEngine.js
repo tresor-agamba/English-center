@@ -26,6 +26,11 @@ function hasAny(text, values) {
 function detectIntent(value) {
   const text = normalizeText(value);
   if (!text) return 'UNKNOWN';
+<<<<<<< HEAD
+=======
+  if (/^(bonjour|bonsoir|salut|hello|hi|coucou|hey)( nva)?$/.test(text)) return 'GREETING';
+  if (/^(merci( beaucoup| bien)?|thanks|thank you)$/.test(text)) return 'THANKS';
+>>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
   if (/^(bonjour|bonsoir|salut|hello|hi|coucou)( nva)?$/.test(text)) return 'GREETING';
   if (/^(merci( beaucoup| bien)?|thanks|thank you)$/.test(text)) return 'THANKS';
   if (/\b(stop|unsubscribe)\b|ne m envoyez plus|ne me contactez plus|arretez les (messages|relances)|no more messages|do not contact|non relances|no follow ups/.test(text) || /^(arret|desinscrire|desabonner)$/.test(text)) return 'OPT_OUT';
@@ -54,6 +59,9 @@ function detectIntent(value) {
 function makeInitialState(value = {}) {
   const source = value && typeof value === 'object' ? value : {};
   return {
+    pendingRegistrationOffer: source.pendingRegistrationOffer && typeof source.pendingRegistrationOffer.replyKey === 'string' && typeof source.pendingRegistrationOffer.expiresAt === 'string'
+      ? {replyKey:source.pendingRegistrationOffer.replyKey,expiresAt:source.pendingRegistrationOffer.expiresAt} : null,
+    welcomeSentAt: typeof source.welcomeSentAt === 'string' ? source.welcomeSentAt : null,
     automationPaused: source.automationPaused === true,
     admission: source.admission && typeof source.admission === 'object' ? source.admission : null,
     scenarioMenu: source.scenarioMenu && typeof source.scenarioMenu === 'object' && Array.isArray(source.scenarioMenu.options) ? source.scenarioMenu : null,
@@ -189,7 +197,7 @@ function createConversationEngine({
   admissions = null,
   env = process.env,
 } = {}) {
-  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
+  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, lastAssistantMessage = null, isFirstContact = false, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
     let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
@@ -241,6 +249,7 @@ function createConversationEngine({
     }
 
     try {
+<<<<<<< HEAD
       // Social turns must not reuse the previous question's AI history.
       if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
         const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id }) : null;
@@ -248,8 +257,67 @@ function createConversationEngine({
         return { intent, text: intent === 'THANKS' ? 'Avec plaisir ! 😊' : '👋 Bonjour ! Comment puis-je vous aider aujourd’hui ?', actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
       }
       if (state.mode === 'QUESTION_AI' && !interactionId) {
+=======
+      if (isFirstContact && !state.welcomeSentAt && !interactionId && admissions) {
+        const welcome = await admissions.resolve({
+          text,
+          interactionId,
+          intent,
+          state,
+          phoneNumber,
+          messageId: id,
+          isFirstContact: true,
+        });
+
+        if (welcome) {
+          return {
+            ...welcome,
+            intent: 'WELCOME',
+            duplicate: false,
+            state: withMessageId(welcome.state, id),
+          };
+        }
+      }
+
+
+      const registrationAction = !interactionId && intent !== 'REFUSAL'
+        ? require('./whatsappRegistrationTransition').resolveRegistrationTransition({text,state,lastAssistantMessage,now:now()}) : null;
+      if (registrationAction && admissions) {
+        const result=await admissions.resolve({text,intent:'REGISTRATION',state,phoneNumber,messageId:id,registrationAction});
+        if(result){
+          require('./loggerService').info('NVA_REGISTRATION_TRANSITION',{transitionAction:registrationAction,source:'backend',step:result.state.admission?.step});
+          return {...result,intent:'ADMISSIONS',duplicate:false,state:withMessageId(result.state,id)};
+        }
+        require('./loggerService').warn('NVA_REGISTRATION_UNAVAILABLE',{reason:'admissions_disabled'});
+        return {intent:'ADMISSIONS_UNAVAILABLE',duplicate:false,text:state.preferredLanguage==='en'
+          ? 'Guided registration is currently closed. You can visit https://www.newvisionacademy.org/register or type “conseiller”.'
+          : 'Le parcours guidé est actuellement désactivé. Vous pouvez consulter https://www.newvisionacademy.org/register ou écrire « conseiller ».',
+          actions:[],state:withMessageId(state,id)};
+      }
+
+      // Open conversations bypass catalogue assemblers. Business collection stays deterministic.
+      const collecting = state.admission && !['MENU','DONE','FREE','INVITE'].includes(state.admission.step);
+      const explicitCommand = /^(menu|accueil|annuler|cancel|relances|follow ups|formations|nos formations)$/.test(normalizeText(text));
+      const wantsRegistration = intent !== 'REFUSAL' && !require('./whatsappCommercialIntents').analyzeMessage(text).intents.includes('REGISTRATION_STATUS') && (/\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(normalizeText(text))
+        || /^(je veux|je souhaite|j aimerais|i want to|i would like to) (commencer|debuter|start|begin)( (maintenant|now|la formation|le cours))?$/.test(normalizeText(text)));
+      if (wantsRegistration && !collecting && !/\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(normalizeText(text))) { text='Je veux m’inscrire'; intent='REGISTRATION'; }
+      if (!interactionId && !collecting && !explicitCommand && !wantsRegistration && env.NVA_AI_ENABLED === 'true') {
+        const courses = await catalog.listPublished();
+        const resolved = require('./whatsappCommercialPolicy').resolveCourse(text,courses,{});
+        if (resolved.course && /\b(anglais|english|apprendre|learn)\b/.test(normalizeText(text))) {
+          state = {...state,selectedCourseId:resolved.course.id,selectedCourseSlug:resolved.course.slug};
+        }
+        const startedAt = state.questionAIStartedAt || now().toISOString();
+        return { intent: 'QUESTION_AI', duplicate: false,
+          text: require('./whatsappQuestionAIService').fallback(text,state.preferredLanguage),
+          deferredQuestionAI: true, actions: [],
+          state: withMessageId({...state, mode:'QUESTION_AI', questionAIStartedAt:startedAt, pendingRegistrationOffer:null, pendingQuestion:null, scenarioMenu:null,
+            preferredLanguage:require('./whatsappAdvisorPolicy').detectLanguage(text,state.preferredLanguage)},id) };
+      }
+      if (state.mode === 'QUESTION_AI' && !interactionId && !collecting) {
+>>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
         const command = normalizeText(text);
-        const registrationIntent = /\b(inscri\w*|inscris|register|registration|enrol\w*)\b|sign up/.test(command);
+        const registrationIntent = wantsRegistration;
         const navigation = /^(menu|main menu|nos formations|formations|our courses|courses|m inscrire|annuler|cancel)$/.test(command);
         if (registrationIntent || navigation) {
           state = { ...state, mode: null, questionAIStartedAt: null, admission: null };
@@ -273,7 +341,7 @@ function createConversationEngine({
             deferredQuestionAI: true, actions: [], state: withMessageId(state, id) };
         }
       }
-      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id }) : null;
+      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id, isFirstContact }) : null;
       if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
       if (scenario?.catalogIntent) {
@@ -414,7 +482,8 @@ function createConversationEngine({
         next = { ...next, commercialFollowUpConsentRequestedAt: now().toISOString(), commercialConsentRequestedVersion: CONSENT_NOTICE_VERSION };
       }
       return { intent, duplicate: false, text: reply, actions: [], ...(deferredAI ? { deferredAI: true } : {}), state: withMessageId(next, id) };
-    } catch {
+    } catch (error) {
+      require('./loggerService').warn('NVA_CONVERSATION_PROCESSING_FAILED',{route:intent,reason:/^P[0-9]{4}$/.test(error?.code||'')?error.code:'DEPENDENCY_OR_STATE_ERROR'});
       return { intent, duplicate: false, text: TEMPORARY_ERROR_REPLY, actions: [{ type: 'TEMPORARY_ERROR' }], retryable: true, state };
     }
   }

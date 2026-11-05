@@ -1,0 +1,387 @@
+[
+  {
+    "file": "tests/metaInbox.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 39",
+      "ℹ suites 0",
+      "ℹ pass 39",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 424.916198"
+    ]
+  },
+  {
+    "file": "tests/metaInboxPrismaAdapter.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 16",
+      "ℹ suites 0",
+      "ℹ pass 16",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 106.231199"
+    ]
+  },
+  {
+    "file": "tests/metaInboxProduction.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 46",
+      "ℹ suites 0",
+      "ℹ pass 46",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 61.625557"
+    ]
+  },
+  {
+    "file": "tests/metaInboxWebhookController.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 7",
+      "ℹ suites 0",
+      "ℹ pass 7",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 11.053953"
+    ]
+  },
+  {
+    "file": "tests/metaInboxWorker.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 29",
+      "ℹ suites 0",
+      "ℹ pass 29",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 391.096248"
+    ]
+  },
+  {
+    "file": "tests/whatsappAdminConversations.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 4",
+      "ℹ suites 0",
+      "ℹ pass 4",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 13.545952"
+    ]
+  },
+  {
+    "file": "tests/whatsappAdmissions.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 31",
+      "ℹ suites 0",
+      "ℹ pass 31",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 110.868073"
+    ]
+  },
+  {
+    "file": "tests/whatsappAdvisorV3.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 26",
+      "ℹ suites 0",
+      "ℹ pass 26",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 45.301673"
+    ]
+  },
+  {
+    "file": "tests/whatsappChatbot.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 8",
+      "ℹ suites 0",
+      "ℹ pass 8",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 34.932809"
+    ]
+  },
+  {
+    "file": "tests/whatsappChatbotAICompletion.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 7",
+      "ℹ suites 0",
+      "ℹ pass 7",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 30.313853"
+    ]
+  },
+  {
+    "file": "tests/whatsappCommercialV2.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ {\"total\":210,\"correct\":209,\"accuracy\":0.9952380952380953,\"failures\":[{\"text\":\"Quel tarif pour commencer ?\",\"expected\":[\"PRICING\"],\"actual\":[\"PRICING\",\"SESSION_START_DATE\"]}]}",
+      "ℹ tests 8",
+      "ℹ suites 0",
+      "ℹ pass 8",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 73.359612"
+    ]
+  },
+  {
+    "file": "tests/whatsappConversationContext.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 29",
+      "ℹ suites 0",
+      "ℹ pass 29",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 77.295617"
+    ]
+  },
+  {
+    "file": "tests/whatsappConversationDelivery.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 10",
+      "ℹ suites 0",
+      "ℹ pass 10",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 89.404252"
+    ]
+  },
+  {
+    "file": "tests/whatsappConversationEngine.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 18",
+      "ℹ suites 0",
+      "ℹ pass 18",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 74.625482"
+    ]
+  },
+  {
+    "file": "tests/whatsappConversationPersistence.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 14",
+      "ℹ suites 0",
+      "ℹ pass 14",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 82.105484"
+    ]
+  },
+  {
+    "file": "tests/whatsappDeliveryReliability.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 57",
+      "ℹ suites 0",
+      "ℹ pass 57",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 44.637451"
+    ]
+  },
+  {
+    "file": "tests/whatsappDeploymentPreparation.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 3",
+      "ℹ suites 0",
+      "ℹ pass 3",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 278.778576"
+    ]
+  },
+  {
+    "file": "tests/whatsappHumanHandoff.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 25",
+      "ℹ suites 0",
+      "ℹ pass 25",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 61.959254"
+    ]
+  },
+  {
+    "file": "tests/whatsappHumanHttp.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 13",
+      "ℹ pass 13",
+      "ℹ fail 0"
+    ],
+    "execution": "HTTP validation already passed outside sandbox with isolation guard: 41/41; /tmp/nva-registration-http.log"
+  },
+  {
+    "file": "tests/whatsappIntegrationTarget.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 5",
+      "ℹ suites 0",
+      "ℹ pass 5",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 9.459597"
+    ]
+  },
+  {
+    "file": "tests/whatsappNaturalAssistant.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 20",
+      "ℹ suites 0",
+      "ℹ pass 20",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 297.609773"
+    ]
+  },
+  {
+    "file": "tests/whatsappPreferenceOptOut.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 1",
+      "ℹ suites 0",
+      "ℹ pass 1",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 12.026425"
+    ]
+  },
+  {
+    "file": "tests/whatsappProspectFollowUp.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 9",
+      "ℹ suites 0",
+      "ℹ pass 9",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 21.29776"
+    ]
+  },
+  {
+    "file": "tests/whatsappQuestionAI.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 18",
+      "ℹ suites 0",
+      "ℹ pass 18",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 336.548289"
+    ]
+  },
+  {
+    "file": "tests/whatsappRegistrationTransition.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 21",
+      "ℹ suites 0",
+      "ℹ pass 21",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 129.814043"
+    ]
+  },
+  {
+    "file": "tests/whatsappScenarios.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 13",
+      "ℹ suites 0",
+      "ℹ pass 13",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 54.172751"
+    ]
+  },
+  {
+    "file": "tests/whatsappV3Corrections.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 48",
+      "ℹ suites 0",
+      "ℹ pass 48",
+      "ℹ fail 0",
+      "ℹ cancelled 0",
+      "ℹ skipped 0",
+      "ℹ todo 0",
+      "ℹ duration_ms 59.115311"
+    ]
+  },
+  {
+    "file": "tests/whatsappWebhookSecurity.test.js",
+    "exitCode": 0,
+    "summary": [
+      "ℹ tests 28",
+      "ℹ pass 28",
+      "ℹ fail 0"
+    ],
+    "execution": "HTTP validation already passed outside sandbox with isolation guard: 41/41; /tmp/nva-registration-http.log"
+  }
+]

@@ -35,7 +35,7 @@ function schedules(courses){return courses.slice(0,8).map(c=>{const session=c.se
  const lines=slots.map(g=>(g.weekDays||[]).map(frenchDay).join(' et ')+' : '+g.startTime+' – '+g.endTime);return '• '+c.title+'\n'+(lines.join('\n')||'Aucun créneau disponible confirmé.');}).join('\n\n')||'Aucune session ouverte aux inscriptions.';}
 function createAdmissionJourney({database,catalog,registration,now=()=>new Date(),token=()=>randomUUID(),conversationTtlMs=86400000}={}){
  if(!Number.isFinite(conversationTtlMs)||conversationTtlMs<60000||conversationTtlMs>604800000)throw new TypeError('Durée de conversation invalide.');
- async function resolve({text,interactionId,state,phoneNumber,messageId,intent}){
+ async function resolve({text,interactionId,state,phoneNumber,messageId,intent,isFirstContact=false,registrationAction=null}){
   if(!database?.whatsAppChatbotSettings)return null;const settings=await database.whatsAppChatbotSettings.findUnique({where:{id:1}});
   if(!settings?.admissionsEnabled||settings.enabled===false)return null;
   if(interactionId&&!interactionId.startsWith('adm:'))return null;
@@ -53,11 +53,46 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    ? registration.listSessionsForPublicRegistration()
    : (await registration.listCoursesForPublicRegistration()).filter(c=>c.session).map(c=>({...c.session,course:c}));
   const review=draft=>send('Récapitulatif :\n'+draft.fullName+'\n'+draft.phoneNumber+'\n'+draft.email+'\nNiveau souhaité : '+LEVELS[draft.requestedLevel]+(draft.courseTitle?'\nFormation : '+draft.courseTitle:'')+(draft.sessionLabel?'\nSession : '+draft.sessionLabel:'\nAucune session sélectionnée : demande à examiner par un conseiller.')+'\n\n'+c.confirm,'REVIEW',[['confirm','CONFIRMER'],['modify','MODIFIER']],draft);
+<<<<<<< HEAD
   const menu=async()=>{
    const first=!state.processedMessageIds?.length&&!state.lastIntent&&!active;
    const body=first?'👋 *Bienvenue chez NEW VISION ACADEMY (NVA) !* 🎓\n\n🌍 NVA est un centre de formation 100 % en ligne proposant des cours d’anglais pratiques, interactifs et certifiants.\n\n🎯 Notre mission est de vous aider à développer vos compétences linguistiques pour vos études, votre carrière et vos opportunités professionnelles.\n\n🤖 Je suis votre assistant virtuel NVA.\n\n👇 *Comment puis-je vous aider aujourd’hui ?*':'👋 Bonjour ! 😊\n\nRavi de vous retrouver chez *New Vision Academy* ! 🎓\n\nComment puis-je vous aider aujourd’hui ?';
    return send(body,'MENU',[['registration','S’inscrire'],['catalog','Menu'],['question','Poser une question']]);
   };
+=======
+  const welcome=async()=>{
+    const result=send('👋 Bonjour et bienvenue chez *New Vision Academy (NVA)* ! 🎓\n\n🌍 Nous proposons des formations en ligne pour développer vos compétences.\n\n😊 Je suis votre assistant virtuel. Je peux vous renseigner sur nos formations, tarifs, horaires et inscriptions.\n\n👇 Comment souhaitez-vous commencer ?', 'MENU',[
+      ['registration',"📝 S'inscrire"],['question','💬 Poser une question']
+    ]);
+    result.state.welcomeSentAt=now().toISOString();
+    result.state.admission.options=result.state.admission.options.map(o=>({...o,wireId:'adm:welcome:'+o.id}));
+    result.interactive.action.buttons=result.state.admission.options.map(o=>({type:'reply',reply:{id:o.wireId,title:o.label}}));
+    return result;
+  };
+
+  const menu=async()=>{
+    return send(
+      '📋 *MENU PRINCIPAL NVA*\n\nQue souhaitez-vous découvrir ?',
+      'MENU',
+      [
+        ['catalog','Nos formations'],
+        ['registration',"S'inscrire"],
+        ['question','Poser une question']
+      ]
+    );
+  };
+  const method=()=>send('Pour votre inscription, choisissez la méthode qui vous convient :','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
+  const viaWebsite=()=>send('Complétez le formulaire officiel puis choisissez votre formation et une session disponible :\nhttps://www.newvisionacademy.org/register','DONE',[['menu','Menu principal']]);
+  const viaWhatsApp=()=>send('Acceptez-vous la collecte temporaire de vos coordonnées pour préparer votre demande ? Rien ne sera transmis à l’équipe avant votre confirmation finale. Annulez à tout moment ; saisie valable 24 h.','CONSENT',[['accept','J’accepte'],['cancel','Annuler']]);
+  if(registrationAction){
+   if(!['CHOOSE_METHOD','WEBSITE','WHATSAPP'].includes(registrationAction))throw invalid('Transition d’inscription invalide.');
+   if(require('./whatsappRegistrationTransition').isCollecting(state))return null;
+   state={...state,mode:null,questionAIStartedAt:null,pendingRegistrationOffer:null};
+   const result={CHOOSE_METHOD:method,WEBSITE:viaWebsite,WHATSAPP:viaWhatsApp}[registrationAction]();
+   result.state.admission.declined=false;
+   return result;
+  }
+>>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
   const info=async topic=>{const courses=await allCourses();let body;if(topic==='catalog')body=c.catalog+'\n\n'+courses.slice(0,8).map(x=>'• '+x.title+(x.shortDescription?' — '+x.shortDescription:'')).join('\n');else if(topic==='price'){const open=await registration.listCoursesForPublicRegistration();body=c.price+'\n\n'+prices(courses.map(x=>({...x,session:open.find(y=>y.id===x.id)?.session})),now());}else if(topic==='schedule')body=c.schedule+'\n\n'+schedules(await registration.listCoursesForPublicRegistration());else body=c.registration;
    const certified=['catalog','price','registration'].includes(topic)&&courses.some(require('./whatsappCommercialPolicy').englishCourse);
    const label=certified?c.certificationLabel+'\n'+(topic==='catalog'?CERTIFICATION_LEVELS+'\n':'')+CERTIFICATION_RULE+'\n':'';
@@ -66,17 +101,57 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    if(certified)certificationExplained=true;
    const choices=topic==='catalog'?[['trial','Essai gratuit'],['price','Tarifs'],['schedule','Horaires']]:[['yes','✅ OUI'],['no','❌ NON']];
    return send(label+body.slice(0,Math.max(0,1024-label.length-suffix.length))+suffix,'INVITE',choices);};
+<<<<<<< HEAD
   if(!interactionId && ['GREETING','THANKS'].includes(intent)) {
    if(active && !['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step))return {text:(intent==='THANKS'?'Avec plaisir ! 😊':'👋 Bonjour ! 😊')+'\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours.',actions:[],state};
    if(intent==='THANKS')return {text:'Avec plaisir ! 😊 Je reste disponible pour vos questions.',actions:[],state};
    return menu();
+=======
+  if (isFirstContact && !interactionId && intent !== 'OPT_OUT') return welcome();
+
+  if (!interactionId && intent === 'THANKS') {
+    if (active && !['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step)) {
+      return {
+        text: 'Avec plaisir ! 😊\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours.',
+        actions: [],
+        state
+      };
+    }
+    return {
+      text: 'Avec plaisir ! 😊 Je reste disponible pour vos questions.',
+      actions: [],
+      state
+    };
+  }
+
+  if (!interactionId && intent === 'GREETING'
+      && active
+      && !['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step)) {
+    return {
+      text: '👋 Bonjour ! 😊\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours.',
+      actions: [],
+      state
+    };
+>>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
   }
   if(['annuler','abandonner'].includes(normalized))return send('Votre saisie a été annulée. Aucune nouvelle demande n’a été transmise.','DONE',[['menu','Menu principal']]);
   if(/^(menu|accueil|menu principal|retour au menu(?: principal)?)$/.test(normalized))return menu();
   // Greetings reopen the official menu, but must not interrupt identity collection.
-  if(!interactionId && intent==='GREETING' && (!active || ['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step)))return menu();
+  if(!interactionId && intent==='GREETING' && (!active || ['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step))){
+    return send(
+      state.preferredLanguage==='en'
+        ? '👋 Hello! 😊 How can I help you today?'
+        : '👋 Bonjour ! 😊 Ravi de vous retrouver chez New Vision Academy. Comment puis-je vous aider aujourd’hui ?',
+      'MENU',
+      [
+        ['registration','S’inscrire'],
+         ['menu','Menu'],
+         ['question','Poser une question']
+      ]
+    );
+  }
   if(!interactionId){
-   const commercial=await require('./whatsappCommercialResponder').respond({text,state,active,send,menu,catalog,registration,now,schedules,info});
+   const commercial=await require('./whatsappCommercialResponder').respond({text,state,active,send,menu,catalog,registration,now,schedules,info,registrationNavigation:{method,viaWebsite,viaWhatsApp}});
    if(commercial)return commercial;
   }
   if(!active){if(interactionId?.startsWith('adm:'))return send('Ce choix a expiré. Revenez au menu.','DONE',[['menu','Menu principal']]);if(['bonjour','bonsoir','salut','hello'].includes(normalized))return menu();if(['formations','formation','cours'].includes(normalized))return info('catalog');if(['prix','tarifs','tarif'].includes(normalized))return info('price');if(['horaires','horaire'].includes(normalized))return info('schedule');if(['inscription','inscriptions'].includes(normalized))return info('registration');return null;}
@@ -88,7 +163,7 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   else if(active.step==='REVIEW'&&['oui','je confirme','confirmer'].includes(normalized))value='confirm';
   else value=active.options?.find(o=>normalizeText(o.label)===normalized)?.value;
   if(value==='menu')return menu();
-  const method=()=>send('🎉 Excellent choix !\n\nPour faciliter votre inscription, deux possibilités s’offrent à vous :\n\n🌐 Vous inscrire personnellement sur notre site NVA.\n\n💬 Vous inscrire directement ici avec mon assistance.\n\n😊 Quelle méthode préférez-vous ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
+
   if(value==='question'){
    const result=send('😊 Bien sûr ! Je suis votre assistant virtuel.\n\nPosez vos questions sur NVA, sans partager de coordonnées personnelles. Une aide IA peut être utilisée. Écrivez « Menu », « Nos formations » ou « M’inscrire » pour quitter ce mode.\n\n💬 Quelle est votre question ?','FREE');
     result.text += '\n\nPour choisir une relance commerciale facultative après 48 h sans message, écrivez « relances » (English: “follow ups”).';
@@ -109,8 +184,8 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    if(value==='yes')return method();
   }
   if(active.step==='METHOD'){
-   if(value==='online')return send('Complétez le formulaire officiel puis choisissez votre formation et une session disponible :\nhttps://www.newvisionacademy.org/register','DONE',[['menu','Menu principal']]);
-   if(value==='admin')return send('Acceptez-vous la collecte temporaire de vos coordonnées pour préparer votre demande ? Rien ne sera transmis à l’équipe avant votre confirmation finale. Annulez à tout moment ; saisie valable 24 h.','CONSENT',[['accept','J’accepte'],['cancel','Annuler']]);
+   if(value==='online')return viaWebsite();
+   if(value==='admin')return viaWhatsApp();
    return method();
   }
   if(active.step==='CONSENT'&&value==='cancel')return send('Collecte annulée.','DONE',[['menu','Menu principal']]);

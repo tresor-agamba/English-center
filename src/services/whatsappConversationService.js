@@ -75,6 +75,12 @@ function createWhatsAppConversationService({
       create: { phoneNumber, userId: linkedUserId, controlState: 'BOT_ACTIVE' },
       update: {},
     });
+    const previousMessage = await tx.whatsAppConversationMessage.findFirst({
+      where: { conversationId: conversation.id },
+      select: { id: true },
+    });
+    const isFirstContact = !previousMessage;
+
     if (!conversation.userId && linkedUserId) {
       await tx.whatsAppConversation.update({ where: { id: conversation.id }, data: { userId: linkedUserId } });
       conversation.userId = linkedUserId;
@@ -112,14 +118,27 @@ function createWhatsAppConversationService({
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
         deferAI: false }),
     });
+    const lastAssistantMessage = await tx.whatsAppConversationMessage.findFirst({
+      where: {conversationId:conversation.id,direction:'OUTBOUND',senderUserId:null,
+        deliveryStatus:{in:['ACCEPTED','SENT','DELIVERED','READ']}},
+      orderBy:{id:'desc'},select:{body:true,idempotencyKey:true,createdAt:true},
+    });
     const result = await engine.handleMessage({
       text: body,
       phoneNumber,
       interactionId: message.type === 'interactive' ? require('./whatsappInteractive').interactionId(message) || 'unrecognized-interaction' : null,
       messageId: providerMessageId,
       state: stateForConversation(conversation),
+      isFirstContact,
+      lastAssistantMessage,
       publicAppUrl,
       allowCommercialFollowUpConsent,
+    });
+
+    require('./loggerService').info('NVA_ASSISTANT_ROUTE', {
+      correlation: require('node:crypto').createHash('sha256').update(providerMessageId).digest('hex').slice(0,20),
+      route: result.intent, deferred: result.deferredQuestionAI === true,
+      promptVersion: result.deferredQuestionAI ? require('../config/nvaAssistantPrompt').PROMPT_VERSION : undefined,
     });
 
     let controlState = conversation.controlState;

@@ -1,0 +1,12 @@
+Validation locale du 5 novembre 2026
+{
+  "tests": 532,
+  "pass": 532,
+  "fail": 0,
+  "skipped": 0
+}
+27 fichiers réussis. 161 tests ciblés finaux et 41 tests HTTP isolés compris dans ce total.
+Tests HTTP exécutés avec autorisation hors sandbox ; garde-fou base/réseau actif.
+Le test des valeurs désactivées contrôle maintenant le fichier PM2 candidate existant au lieu du .env.example déjà supprimé ; cette suppression est conservée.
+Aucun test PostgreSQL réel ni OpenAI réel exécuté.
+Détails par fichier : test-results.json

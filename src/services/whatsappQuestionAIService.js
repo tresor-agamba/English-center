@@ -1,17 +1,41 @@
 // Grounded conversational replies; no DB driver, tools, identity or logs here.
-const {INSTRUCTIONS,detectLanguage,renderPlan,OPENINGS,QUESTIONS}=require('./whatsappAdvisorPolicy');
+const {detectLanguage}=require('./whatsappAdvisorPolicy');
+const {INSTRUCTIONS,PROMPT_VERSION,DECISION_INSTRUCTIONS}=require('../config/nvaAssistantPrompt');
+const logger=require('./loggerService');
 const {publishedPrice,officialEnglishCourse}=require('./whatsappCommercialPolicy');
 function redact(value){return String(value||'').slice(0,1800)
  .replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email]')
  .replace(/https?:\/\/\S+/gi,'[link]').replace(/\+?\d[\d ().-]{6,}\d/g,'[contact]')
  .replace(/\b(?:sk-[\w-]+|Bearer\s+\S+)\b/gi,'[secret]')
  .replace(/(?:je m'appelle|mon nom est|my name is)\s+[^,.!?\n]+/gi,'[name]');}
-const fallback=(q,preferred)=>detectLanguage(q,preferred)==='en'?'I cannot verify that information right now. Please try again or type “conseiller” to reach NVA.':'Je ne peux pas vérifier cette information actuellement. Réessayez ou écrivez « conseiller » pour joindre NVA.';
+const fallback=(q,preferred)=>detectLanguage(q,preferred)==='en'?'My assistant service is temporarily unavailable. Please try again shortly or type “conseiller” to reach NVA.':'Mon assistance est momentanément indisponible. Réessayez dans un instant ou écrivez « conseiller » pour joindre NVA.';
 function config(env){
  const bounded=(k,d,min,max)=>{const n=Number(env[k]??d);return Number.isInteger(n)&&n>=min&&n<=max?n:null;};
- const options={timeout:bounded('NVA_AI_TIMEOUT_MS',4000,250,10000),tokens:bounded('NVA_AI_MAX_OUTPUT_TOKENS',256,64,1024),cap:bounded('NVA_AI_DAILY_CALL_LIMIT',50,1,1000)};
+ const options={timeout:bounded('NVA_AI_TIMEOUT_MS',4000,250,10000),tokens:bounded('NVA_AI_MAX_OUTPUT_TOKENS',768,64,4096),cap:bounded('NVA_AI_DAILY_CALL_LIMIT',50,1,1000)};
  return env.NVA_AI_ENABLED==='true'&&env.OPENAI_API_KEY&&/^[\w.-]{1,100}$/.test(env.OPENAI_MODEL||'')&&Object.values(options).every(Boolean)?options:null;
 }
+
+function formatWeekDays(days, language = 'fr') {
+ const translations = {
+  MONDAY: ['lundi', 'Monday'],
+  TUESDAY: ['mardi', 'Tuesday'],
+  WEDNESDAY: ['mercredi', 'Wednesday'],
+  THURSDAY: ['jeudi', 'Thursday'],
+  FRIDAY: ['vendredi', 'Friday'],
+  SATURDAY: ['samedi', 'Saturday'],
+  SUNDAY: ['dimanche', 'Sunday']
+ };
+
+ return (Array.isArray(days) ? days : [])
+  .map(day => {
+   const key = String(day).trim().toUpperCase();
+   const translated = translations[key];
+   return translated ? translated[language === 'en' ? 1 : 0] : null;
+  })
+  .filter(Boolean)
+  .join(', ');
+}
+
 function buildFacts(courses,sessions,now=new Date()){
  const facts=[];const add=(id,fr,en)=>facts.push({id,fr,en});
  add('clarify','Pour quelle formation souhaitez-vous ces informations ?','Which course would you like information about?');
@@ -24,7 +48,9 @@ function buildFacts(courses,sessions,now=new Date()){
   add(prefix+'course',title+' est une formation publiée au catalogue NVA.',title+' is published in the NVA course catalogue.');
   add(prefix+'price',price?title+' : '+price+(c.structureType==='LEVEL_BASED'?' par niveau.':'.'):'Le tarif actuel de '+title+' n’est pas publié. Un conseiller peut le vérifier.',price?title+': '+price+(c.structureType==='LEVEL_BASED'?' per level.':'.'):'The current price for '+title+' is not published. Please ask an adviser.');
   if(general){
-   add(prefix+'duration','Pour l’anglais général : 3 niveaux, 16 séances de 90 minutes par niveau (48 séances au total).','General English: 3 levels, 16 sessions of 90 minutes per level (48 sessions in total).');
+   add(prefix+'structure','Trois niveaux de 16 séances de 90 minutes chacun, à raison de deux séances par semaine.','Three levels of 16 lessons of 90 minutes each, with two lessons per week.');
+   add(prefix+'usual_schedule','Horaires habituels : vendredi et samedi, 10h00–11h30, 16h00–17h30 ou 18h00–19h30, heure de Kinshasa. Ce ne sont pas des dates de lancement ni une garantie de place.','Usual timetable: Friday and Saturday, 10:00–11:30, 16:00–17:30 or 18:00–19:30, Kinshasa time. These are not launch dates or a guarantee of availability.');
+   add(prefix+'duration','La formation complète d’anglais général dure environ 24 semaines (environ 6 mois), si les trois niveaux se suivent sans interruption. Chaque niveau dure environ 8 semaines, avec 2 séances de 1 h 30 par semaine.','The complete General English program takes approximately 24 weeks (about 6 months), if the three levels run consecutively without breaks. Each level takes approximately 8 weeks, with two 90-minute lessons per week.');
    if(price==='60 USD'){
     add(prefix+'total','L’anglais général coûte 60 USD par niveau, soit 180 USD pour les trois niveaux.','General English costs USD 60 per level, USD 180 for all three levels.');
     if(c.accessPolicy==='LEGACY_STAGED'){
@@ -39,44 +65,55 @@ function buildFacts(courses,sessions,now=new Date()){
   const available=sessions.filter(s=>s.course?.id===c.id).slice(0,3);
   if(!available.length)add(prefix+'sessions','Aucune session ouverte confirmée pour '+title+' dans les informations consultées.','No confirmed open session for '+title+' is available in the current information.');
   for(const s of available){
+   if(!s.startDate)continue;
    const date=new Date(s.startDate);if(!Number.isFinite(+date))continue;
    const groups=(s.registrationGroups||[]).filter(g=>g.isActive&&!g.isFull).slice(0,4);
    const slots=groups.length?groups:!s.registrationGroups?.length?[s]:[];
-   const times=slots.filter(g=>/^\d{2}:\d{2}$/.test(g.startTime||'')&&/^\d{2}:\d{2}$/.test(g.endTime||''))
-    .map(g=>(g.weekDays||[]).filter(d=>/^[A-Za-zÀ-ÿ]{2,12}$/.test(d)).join(', ')+' '+g.startTime+'–'+g.endTime).join('; ');
-   const details=title+' — '+date.toISOString().slice(0,10)+(s.levelNumber?' — '+s.levelNumber:'')+(times?' — '+times:'')+' ('+(/^[A-Za-z_\/+-]{1,50}$/.test(s.timezone||'')?s.timezone:'Africa/Kinshasa')+')';
-   add(prefix+'session'+s.id,details+'. Disponibilité à revérifier lors de l’inscription.',details+'. Availability must be checked again during registration.');
+   const validSlots=slots.filter(g=>/^\d{2}:\d{2}$/.test(g.startTime||'')&&/^\d{2}:\d{2}$/.test(g.endTime||''));
+   const formatTimes=language=>validSlots.map(g=>{
+    const days=formatWeekDays(g.weekDays,language);
+    return (days?days+' : ':'')+g.startTime+'–'+g.endTime;
+   }).join('; ');
+   const timezone=/^[A-Za-z_\/+-]{1,50}$/.test(s.timezone||'')?s.timezone:'Africa/Kinshasa';
+   const base=title+' — '+date.toISOString().slice(0,10)+(s.levelNumber?' — '+s.levelNumber:'');
+   const fr=base+(formatTimes('fr')?' — '+formatTimes('fr'):'')+' ('+timezone+'). Disponibilité à revérifier lors de l’inscription.';
+   const en=base+(formatTimes('en')?' — '+formatTimes('en'):'')+' ('+timezone+'). Availability must be checked again during registration.';
+   add(prefix+'session'+s.id,fr,en);
   }
  }
  return facts;
 }
-function createQuestionAIService({env=process.env,fetchImpl=globalThis.fetch}={}){
- async function answer({question,history=[],facts,reserve,preferredLanguage}){
-  const outputLanguage=detectLanguage(question,preferredLanguage);
-  const cfg=config(env);if(!cfg||!facts?.length||facts.length>80||Buffer.byteLength(JSON.stringify(facts))>24000)return null;
-  // One committed reservation per attempt, including timeout/failure. No retries.
-  if(!await reserve(cfg.cap))return null;
+function createQuestionAIService({env=process.env,fetchImpl=globalThis.fetch,log=logger}={}){
+ async function answer({question,history=[],facts,reserve,preferredLanguage,correlation,structured=false}){
+  const cfg=config(env), started=Date.now();
+  const record=(reason,extra={})=>log.info('NVA_ASSISTANT_GENERATION',{correlation:/^[a-f0-9]{20}$/.test(correlation||'')?correlation:undefined,reason,source:reason==='completed'?'openai':'fallback',model:env.OPENAI_MODEL,promptVersion:PROMPT_VERSION,latencyMs:Date.now()-started,...extra});
+  if(!cfg||!facts?.length||facts.length>80||Buffer.byteLength(JSON.stringify(facts))>24000){record('configuration_or_facts');return null;}
+  if(!await reserve(cfg.cap)){record('daily_limit');return null;}
   const controller=new AbortController();let timer;
-  const timeout=new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();resolve(null);},cfg.timeout);});
+  const timeout=new Promise(resolve=>{timer=setTimeout(()=>{controller.abort();record('timeout');resolve(null);},cfg.timeout);});
   try{return await Promise.race([timeout,(async()=>{
    const response=await fetchImpl('https://api.openai.com/v1/responses',{method:'POST',redirect:'error',signal:controller.signal,
     headers:{Authorization:'Bearer '+env.OPENAI_API_KEY,'Content-Type':'application/json'},
-    body:JSON.stringify({model:env.OPENAI_MODEL,store:false,max_output_tokens:cfg.tokens,
-     instructions:INSTRUCTIONS,
-     input:JSON.stringify({preferredLanguage:outputLanguage,question:redact(question),history:history.slice(-6).map(h=>({role:h.role==='assistant'?'assistant':'user',content:redact(h.content).slice(0,600)})),facts,dialogue:{openings:OPENINGS,questions:QUESTIONS}}),
-     text:{format:{type:'json_schema',name:'nva_commercial_plan',strict:true,schema:{type:'object',additionalProperties:false,properties:{language:{type:'string',enum:['fr','en']},opening:{type:'string',enum:Object.keys(OPENINGS)},followUp:{type:'string',enum:Object.keys(QUESTIONS)},factIds:{type:'array',items:{type:'string',enum:facts.map(f=>f.id)},maxItems:3}},required:['language','factIds','opening','followUp']}}}})});
-   if(!response.ok)return null;const payload=await response.json();if(payload.status!=='completed')return null;
-   const text=(payload.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('');
-   const result=JSON.parse(text);if(!['fr','en'].includes(result.language)||!Array.isArray(result.factIds)||result.factIds.length>3)return null;
-   if(result.factIds.some(id=>!facts.some(f=>f.id===id)))return null;
-   const selected=[...new Set(result.factIds)].map(id=>facts.find(f=>f.id===id));
-   // Legacy prose/extra properties never reach the prospect. If the plan cannot
-   // be validated, fall back exclusively to its verified official fact IDs.
-   const keys=Object.keys(result),validPlan=keys.length===4&&keys.every(k=>['language','factIds','opening','followUp'].includes(k));
-   const rendered=validPlan?renderPlan(result,selected,outputLanguage,history):null;
-   return rendered||renderPlan({opening:'none',followUp:'none'},selected,outputLanguage,history);
-  })()]);}catch{return null;}finally{clearTimeout(timer);}
+    body:JSON.stringify({model:env.OPENAI_MODEL,store:false,max_output_tokens:cfg.tokens,instructions:INSTRUCTIONS+(structured?DECISION_INSTRUCTIONS:''),
+     ...(structured?{text:{format:{type:'json_schema',name:'nva_assistant_decision',strict:true,schema:{type:'object',additionalProperties:false,properties:{reply:{type:'string'},intent:{type:'string',enum:require('./whatsappRegistrationTransition').ACTIONS}},required:['reply','intent']}}}}:{}),
+     input:[{role:'developer',content:JSON.stringify({preferredLanguage:detectLanguage(question,preferredLanguage),officialFacts:facts})},
+      ...history.slice(-12).map(h=>({role:h.role==='assistant'?'assistant':'user',content:redact(h.content).slice(0,1200)})),
+      {role:'user',content:redact(question)}]})});
+   if(!response.ok){record('http_error',{httpStatus:response.status});return null;}
+   const payload=await response.json();
+   if(payload.status!=='completed'){record('incomplete');return null;}
+   const reply=(payload.output||[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('').trim();
+   if(structured){
+    let decision;try{decision=require('./whatsappRegistrationTransition').validateDecision(JSON.parse(reply));}catch{}
+    if(!decision){record('invalid_decision');return null;}
+    record('completed',{decision:decision.intent,inputUnits:payload.usage?.input_tokens,outputUnits:payload.usage?.output_tokens});
+    return decision;
+   }
+   if(!reply||reply.length>12000||/^[{[]/.test(reply)){record('empty_or_oversized');return null;}
+   record('completed',{inputUnits:payload.usage?.input_tokens,outputUnits:payload.usage?.output_tokens});
+   return reply;
+  })()]);}catch{record(controller.signal.aborted?'aborted':'network_or_response_error');return null;}finally{clearTimeout(timer);}
  }
- return {answer};
+ return {answer,decide:options=>answer({...options,structured:true})};
 }
 module.exports={createQuestionAIService,buildFacts,redact,fallback,config};

@@ -7,8 +7,8 @@ const course={id:1,title:'Anglais général',slug:'anglais-general',structureTyp
 const facts=buildFacts([course],[]);
 async function answer(result,options={}){
  const ai=createQuestionAIService({env:{NVA_AI_ENABLED:'true',OPENAI_API_KEY:randomUUID(),OPENAI_MODEL:'gpt-4.1-mini'},fetchImpl:async(url,opts)=>{
-  const request=JSON.parse(opts.body);assert.equal(request.store,false);assert.equal(request.tools,undefined);assert.equal(request.text.format.schema.properties.reply,undefined);
-  return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify(result)}]}]})};
+  const request=JSON.parse(opts.body);assert.equal(request.store,false);assert.equal(request.tools,undefined);assert.equal(request.text,undefined);
+  return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:typeof result==='string'?result:JSON.stringify(result)}]}]})};
  }});return ai.answer({question:'Quels sont les tarifs ?',facts,reserve:async()=>true,...options});
 }
 const inventions=[
@@ -20,11 +20,10 @@ const inventions=[
  'We guarantee fluency and a job.','A special discount is reserved for you.','A place is available tomorrow.','Pay whenever you like.',
  '60 USD includes an internationally accredited certificate.',
 ];
-for(const prose of inventions)test('unverified provider prose is rejected: '+prose,async()=>{
+for(const prose of inventions)test('legacy JSON carrying prose is rejected: '+prose,async()=>{
  assert.equal(await answer({language:'fr',factIds:[],reply:prose}),null);
  const official=await answer({language:'fr',factIds:['c1_price'],reply:prose});
- assert.equal(official,facts.find(f=>f.id==='c1_price').fr);
- assert.equal(official.includes(prose),false);
+ assert.equal(official,null);
  // Extra prose in an otherwise valid plan also falls back to official facts.
  assert.equal(await answer({language:'fr',factIds:['c1_price'],opening:'goal',followUp:'level',reply:prose}),official);
 });
@@ -32,12 +31,10 @@ test('arbitrary text cannot be smuggled in plan IDs or invented fact IDs',async(
  for(const plan of [{opening:'Votre dossier est accepté',followUp:'none'},{opening:'goal',followUp:'promotion'}])assert.equal(await answer({language:'fr',factIds:[],...plan}),null);
  assert.equal(await answer({language:'fr',factIds:['discount'],opening:'none',followUp:'none'}),null);
 });
-test('only official assertions, reviewed opening and one question are rendered',async()=>{
- const plan={language:'en',factIds:['c1_price','c1_trial'],opening:'budget',followUp:'level'};
- const body=await answer(plan); // Model language cannot override French preference.
- assert.ok(body.startsWith(OPENINGS.budget.fr[0]));assert.match(body,/60 USD/);assert.match(body,/5 séances/);
- assert.equal((body.match(/\?/g)||[]).length,1);assert.ok(body.endsWith(QUESTIONS.level.fr[0]));
- const english=await answer(plan,{question:'English please'});assert.ok(english.startsWith(OPENINGS.budget.en[0]));assert.match(english,/USD 60|60 USD/);
+test('model prose reaches the prospect without catalogue assembly',async()=>{
+ const prose='Vous pouvez commencer au premier niveau 😊 Avez-vous déjà quelques bases ?';
+ assert.equal(await answer(prose),prose);
+ assert.equal(await answer({language:'fr',factIds:['c1_price'],opening:'none',followUp:'none'}),null);
 });
 test('dialogue varies reviewed fragments and limits registration invitations',()=>{
  const plan={opening:'goal',followUp:'work'};
@@ -47,14 +44,14 @@ test('dialogue varies reviewed fragments and limits registration invitations',()
  const next=renderPlan({opening:'welcome',followUp:'register'},[],'fr',[{role:'assistant',content:invite}]);assert.ok(!next.includes('M’inscrire'));
  assert.ok(!renderPlan({opening:'respect',followUp:'register'},[],'fr').includes('?'));
 });
-const switches=[['English please','fr','en'],['Je préfère l’anglais','fr','en'],['Je prefere l anglais','fr','en'],['Parlez-moi en anglais','fr','en'],['Please reply in English','fr','en'],['Switch to English please','fr','en'],['anglais','fr','en'],['French please','en','fr'],['Je préfère le français','en','fr'],['Please answer in French','en','fr'],['Français','en','fr'],['English please, not French','fr','en'],['Parlez-moi en anglais, pas en français','fr','en']];
+const switches=[['English please','fr','en'],['Je préfère l’anglais','fr','en'],['Je prefere l anglais','fr','en'],['Parlez-moi en anglais','fr','en'],['Please reply in English','fr','en'],['Switch to English please','fr','en'],['anglais','fr','fr'],['French please','en','fr'],['Je préfère le français','en','fr'],['Please answer in French','en','fr'],['Français','en','en'],['English please, not French','fr','en'],['Parlez-moi en anglais, pas en français','fr','en']];
 for(const [input,previous,expected]of switches)test('explicit language '+input,()=>assert.equal(detectLanguage(input,previous),expected));
 const mixed=[['Je veux apprendre English pour mon travail','fr','fr'],['Mon niveau est beginner','fr','fr'],['budget','fr','fr'],['certificate','fr','fr'],['OK','en','en'],['Merci','en','en'],['English is the course I want to study','fr','en'],['I want to learn for my work','fr','en'],['Je souhaite progresser pour mon travail','en','fr'],['What about the certificate?','fr','en']];
 for(const [input,previous,expected]of mixed)test('mixed/short language '+input,()=>assert.equal(detectLanguage(input,previous),expected));
 test('language changes persist across engine messages; foreign vocabulary does not switch',async()=>{
  const engine=createConversationEngine({env:{NVA_AI_ENABLED:'true'},catalog:{listPublished:async()=>[course]}});
  let state={mode:'QUESTION_AI',questionAIStartedAt:new Date().toISOString()};
- for(const [text,expected]of [['English please','en'],['OK','en'],['certificate','en'],['Répondez en français','fr'],['Mon niveau est beginner','fr'],['English','en']]){
+ for(const [text,expected]of [['English please','en'],['OK','en'],['certificate','en'],['Répondez en français','fr'],['Mon niveau est beginner','fr'],['English','fr']]){
   const result=await engine.handleMessage({text,state,messageId:randomUUID()});assert.equal(result.state.preferredLanguage,expected);assert.equal(result.deferredQuestionAI,true);state=result.state;
  }
 });

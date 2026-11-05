@@ -80,7 +80,7 @@ test('Meta V3 persists explicit consent and sends one scoped template after 48h 
     assert.equal(data.templateName, 'nva_followup_fr'); assert.deepEqual(data.templateParameters, []);
     followupCalls++; return { providerMessageId: 'wamid.v3.followup' };
   } });
-  for (const text of ['menu', '3', 'Je veux apprendre anglais pratique', 'relances', 'OUI RELANCES']) { await s.receive(text); await w.runOnce(); }
+  for (const text of ['menu', 'Je veux apprendre anglais pratique', 'relances', 'OUI RELANCES']) { await s.receive(text); await w.runOnce(); }
   assert.equal(s.rows('whatsAppCommercialConsentEvent')[0].noticeVersion, 'lead-follow-up-48h-v3');
   const row = s.rows('whatsAppProspectFollowUp')[0]; assert.ok(row);
   // The contract mock does not implement PostgreSQL defaults.
@@ -98,11 +98,12 @@ test('worker and CLI are disabled by default without constructing DB or transpor
 });
 
 test('documented activation defaults remain disabled and legacy flags are normalized', () => {
-  const sample = require('node:fs').readFileSync(require('node:path').join(__dirname,'../.env.example'),'utf8');
+  // Validate the existing deployment artifact; .env.example was removed from this checkout.
+  const sample = require('../deploy/whatsapp-chatbot/ecosystem.nva-v2.candidate.cjs').apps[0].env_production;
   for (const key of ['WHATSAPP_ENABLED','WHATSAPP_WORKERS_ENABLED','META_WHATSAPP_INBOX_ENABLED',
     'META_INBOX_PRODUCTION_AUTHORIZED','META_INBOX_WORKER_ENABLED','META_INBOX_WORKER_PRODUCTION_AUTHORIZED',
     'META_INBOX_SEND_ENABLED','META_INBOX_SEND_PRODUCTION_AUTHORIZED']) {
-    assert.match(sample,new RegExp('^'+key+'=false\\r?$','m'));
+    assert.ok(sample[key] === undefined || sample[key] === 'false', key);
   }
   for(const key of ['WHATSAPP_ENABLED','WHATSAPP_WORKERS_ENABLED']) {
     assert.throws(()=>readMetaInboxWorkerConfig({...environment(),[key]:' TRUE '}),{code:'META_WORKER_LEGACY_CONFLICT'});
@@ -121,11 +122,11 @@ test('production requires separate processing and sending authorizations, dedica
 test('Bonjour persists menu then delivers an interactive Cloud API payload with a mocked transport', async () => {
   const s = setup(); await s.receive('Bonjour'); const w = s.makeWorker(); const r = await w.runOnce();
   assert.equal(r.processed, 1); assert.equal(r.accepted, 1); assert.equal(s.sent.length, 1);
-  assert.equal(s.sent[0].type, 'interactive'); assert.match(s.sent[0].interactive.body.text, /100 % en ligne/);
+  assert.equal(s.sent[0].type, 'interactive'); assert.match(s.sent[0].interactive.body.text, /formations en ligne/);
   assert.equal(s.rows('metaWebhookEvent')[0].state, 'PROCESSED'); assert.equal(s.rows('whatsAppConversationMessage').find(m => m.direction === 'OUTBOUND').deliveryStatus, 'ACCEPTED');
 });
 for (const [input, pattern] of [['formations', /trois niveaux/], ['tarifs', /60 USD par niveau/], ['horaires', /vendredi et samedi/], ['inscription', /inscription/]]) {
-  test('actual worker engine handles ' + input, async () => { const s = setup(); await s.receive(input); const r = await s.makeWorker().runOnce(); assert.equal(r.accepted, 1); assert.match(s.sent[0].interactive.body.text, pattern); });
+  test('actual worker engine handles ' + input, async () => { const s = setup(); const worker=s.makeWorker(); await s.receive('bonjour'); await worker.runOnce(); await s.receive(input); const r = await worker.runOnce(); assert.equal(r.accepted, 1); assert.match(s.sent.at(-1).interactive.body.text, pattern); });
 }
 test('processing-only mode commits reply but cannot send; later worker can deliver it', async () => {
   const s = setup({ META_INBOX_SEND_ENABLED: 'false' }); await s.receive('bonjour'); await s.makeWorker().runOnce(); assert.equal(s.sent.length, 0);
@@ -238,11 +239,11 @@ test('Meta worker completes QUESTION_AI after commit and sends through the exist
  s.db.whatsAppChatbotAiBudget={upsert:async()=>{},updateMany:async()=>({count:1})};
  const create=s.db.whatsAppConversationMessage.create;let next=0;
  s.db.whatsAppConversationMessage.create=args=>create({...args,data:{...args.data,id:++next}});
- const original=global.fetch;let apiCalls=0,observed;
+ const original=global.fetch;let apiCalls=0,observed,decision='NONE';
  global.fetch=async(url,options)=>{
   assert.equal(url,'https://api.openai.com/v1/responses');apiCalls++;
-  const input=JSON.parse(JSON.parse(options.body).input);observed={state:s.rows('metaWebhookEvent').at(-1).state,ids:input.facts.map(f=>f.id)};
-  return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({language:'fr',factIds:['c1_payment']})}]}]})};
+  const input=JSON.parse(JSON.parse(options.body).input[0].content);observed={state:s.rows('metaWebhookEvent').at(-1).state,ids:input.officialFacts.map(f=>f.id)};
+  return {ok:true,json:async()=>({status:'completed',output:[{type:'message',content:[{type:'output_text',text:JSON.stringify({intent:decision,reply:'Vous pouvez verser 30 USD pour continuer à la 6e séance, puis le solde de 30 USD avant la fin du niveau.'})}]}]})};
  };
  const worker=s.makeWorker();
  try{
@@ -251,5 +252,10 @@ test('Meta worker completes QUESTION_AI after commit and sends through the exist
   await s.receive('',{type:'interactive',interactive:{button_reply:{id:option.wireId,title:'Poser une question'}}});await worker.runOnce();assert.equal(apiCalls,0);
   await s.receive('Je peux payer en deux fois ?');await worker.runOnce();assert.equal(apiCalls,1);assert.equal(observed.state,'PROCESSED');assert.ok(observed.ids.includes('c1_payment'));assert.match(s.sent.at(-1).text.body,/6e séance/);
   await s.receive('Menu');await worker.runOnce();assert.equal(apiCalls,1);assert.notEqual(s.rows('whatsAppConversation')[0].engineState.mode,'QUESTION_AI');
+  decision='START_REGISTRATION';await s.receive('Je suis intéressé');await worker.runOnce();assert.equal(apiCalls,2);
+  assert.equal(s.rows('whatsAppConversation')[0].engineState.admission.step,'METHOD');assert.equal(s.sent.at(-1).type,'interactive');
+  assert.ok(s.sent.at(-1).interactive.action.buttons.some(b=>b.reply.title==='Via WhatsApp'));
+  await s.receive('Via WhatsApp');await worker.runOnce();assert.equal(apiCalls,2);assert.equal(s.rows('whatsAppConversation')[0].engineState.admission.step,'CONSENT');
+  assert.equal(s.rows('whatsAppAdmissionRequest').length,0);assert.equal(s.rows('enrollment').length,0);
  }finally{global.fetch=original;await worker.close();}
 });

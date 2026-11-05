@@ -32,6 +32,7 @@ function memoryClient() {
       findUnique: async ({ where }) => state.conversations.find((item) => item.id === where.id) || null,
     },
     whatsAppConversationMessage: {
+      findFirst: async ({where}) => state.messages.find(row=>Object.entries(where).every(([k,v])=>row[k]===v)) || null,
       updateMany: async ({ where, data }) => {
         const rows = state.messages.filter(item => Object.entries(where).every(([key, value]) => item[key] === value));
         rows.forEach(row => Object.assign(row, data));
@@ -127,9 +128,12 @@ test('persiste la clarification et réutilise le contexte depuis une nouvelle in
   assert.match(state.messages.at(-1).body, /137\s?USD/);
   await restarted.processInboundMessage(incoming('wamid.schedule', 'Et les horaires ?'));
   assert.match(state.messages.at(-1).body, /18:00–19:30/);
+  const transaction=client.$transaction;
+  client.$transaction=work=>transaction(tx=>work({...tx,whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}}));
   await restarted.processInboundMessage(incoming('wamid.registration', 'inscription'));
-  assert.match(state.messages.at(-1).body, /register\?session=101/);
-  assert.equal(state.conversations[0].engineState.step, 'REGISTRATION');
+  assert.match(state.messages.at(-1).body, /Via le site/);
+  assert.equal(state.conversations[0].engineState.admission.step, 'METHOD');
+  assert.equal(state.conversations[0].engineState.selectedCourseId,11);
   const before = state.messages.length;
   const duplicate = await restarted.processInboundMessage(incoming('wamid.registration', 'inscription'));
   assert.equal(duplicate.duplicate, true); assert.equal(state.messages.length, before);
@@ -280,6 +284,7 @@ test('scenario reply payload and stable inbound click survive persistence and na
 test('historical ingress commits QUESTION_AI fallback before post-commit completion',async t=>{
  const {client,state}=memoryClient();let inside=false,calls=0;const transaction=client.$transaction;
  state.conversations.push({id:1,phoneNumber:'+243821234567',controlState:'BOT_ACTIVE',engineState:{mode:'QUESTION_AI',questionAIStartedAt:'2026-10-26T00:00:00Z'}});
+ state.messages.push({id:0,conversationId:1,direction:'INBOUND',body:'bonjour',providerMessageId:'historical'});
  client.$transaction=async work=>{inside=true;try{return await transaction(tx=>work({...tx,whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})}}))}finally{inside=false}};
  const completion=require('../src/services/whatsappQuestionAICompletionService');
  t.mock.method(completion,'createQuestionAICompletionService',()=>({completeReply:async key=>{assert.equal(inside,false);assert.equal(key,'wa-reply:wamid.defer:0');assert.equal(state.messages.find(m=>m.direction==='OUTBOUND').failureCode,'QUESTION_AI_PENDING');calls++;}}));

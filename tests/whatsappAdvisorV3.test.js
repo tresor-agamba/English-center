@@ -134,10 +134,10 @@ test('natural FR/EN replies use Responses without tools and reject invented pric
   for (const [language, question, reply] of [['fr', 'Je veux apprendre pour mon travail', 'Pour votre travail, quelles situations souhaitez-vous mieux gérer en anglais ?'], ['en', 'I want to learn for work', 'Which situations at work would you like to handle more confidently in English?']]) {
     const ai = createQuestionAIService({ env: { NVA_AI_ENABLED: 'true', OPENAI_API_KEY: randomUUID(), OPENAI_MODEL: 'mock' }, fetchImpl: async (url, options) => {
       const request = JSON.parse(options.body); assert.equal(request.store, false); assert.equal(request.tools, undefined);
-      assert.match(request.instructions, /without pressure/);
-      return { ok: true, json: async () => ({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify({ language, factIds: [], opening: 'none', followUp: 'work' }) }] }] }) };
+      assert.match(request.instructions, /sans insistance/);
+      return { ok: true, json: async () => ({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: reply }] }] }) };
     } });
-    assert.equal(await ai.answer({ question, facts: buildFacts([course], []), reserve: async () => true }), require('../src/services/whatsappAdvisorPolicy').QUESTIONS.work[language][0]);
+    assert.equal(await ai.answer({ question, facts: buildFacts([course], []), reserve: async () => true }), reply);
   }
   assert.equal(validateReply('Promotion : 10 USD !', [], 'fr'), null);
   assert.equal(validateReply('Pay https://fake.invalid', [], 'en'), null);
