@@ -3,12 +3,12 @@ const {analyzeMessage,normalize,answers,isRefusal}=require('./whatsappCommercial
 const {resolveCourse,commercialAnswer}=require('./whatsappCommercialPolicy');
 const COURSE_TOPICS=new Set(['PRICING','PAYMENT_TERMS','FREE_TRIAL','TRAINING_DURATION','CERTIFICATION','CERTIFICATE_COST']);
 const DYNAMIC=new Set(['SESSION_START_DATE','AVAILABLE_SESSIONS','TRAINING_SCHEDULE']);
-const question=text=>/[?？]/.test(text)||/^(?:et |combien|quel|quand|comment|pourquoi|est ce|vous |je peux|puis je|les cinq|les 5|ca dure)/.test(normalize(text));
+const question=text=>/[?？]/.test(text)||/^(?:et |qui |que |qu |combien|quel|quand|comment|pourquoi|est ce|vous |je veux savoir|je voudrais savoir|je peux|puis je|les cinq|les 5|ca dure)/.test(normalize(text));
 const collecting=active=>active&&!['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step);
 function identityInput(text,active){return active?.step==='NAME'&&!isRefusal(text)&&!question(text)&&/^\p{L}[\p{L}'’ -]+\s\p{L}[\p{L}'’ -]*$/u.test(String(text||'').trim())&&!/\b(?:menu|annuler|abandonner|conseiller|humain|inscrire|site|whatsapp|merci|pas|non)\b/.test(normalize(text));}
 async function respond({text,state,active,send,menu,catalog,registration,now,schedules,info,registrationNavigation}){
- if(active?.step==='EMAIL'&&String(text).includes('@')||identityInput(text,active))return null;
  const a=analyzeMessage(text,{registrationMethod:active?.step==='METHOD'});let intents=a.intents;
+ if(a.ambiguity==='REGISTRATION_METHOD'&&collecting(active))return {text:'Pouvez-vous préciser votre question sur les méthodes d’inscription ? Votre dossier est en cours.',actions:[],state};
  if(a.ambiguity==='REGISTRATION_METHOD')return send('Pour éviter de choisir à votre place, quelle méthode souhaitez-vous utiliser ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
  // Only a course-only clarification may resume an old topic. A new question wins.
  if(active?.pendingIntents?.length && a.intents.every(i=>['UNKNOWN','ENGLISH_TRAINING','TRAINING_INFORMATION'].includes(i))){
@@ -25,11 +25,12 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
  if(intents.includes('MAIN_MENU'))return menu();
  if(intents.includes('GREETING')&&!collecting(active))return menu();
  const wantsMethod=intents.includes('REGISTRATION')&&!collecting(active);
- const method=()=>{const r=registrationNavigation.method();r.state.admission.declined=false;return r;};
+ const method=async()=>{const r=await registrationNavigation.method();r.state.admission.declined=false;return r;};
+ if(collecting(active)&&intents.some(i=>i.startsWith('REGISTRATION')))return {text:'Votre dossier est déjà en cours. Nous pouvons reprendre votre inscription.',actions:[],state};
  if(intents.includes('REGISTRATION_WEBSITE'))return registrationNavigation.viaWebsite();
  if(intents.includes('REGISTRATION_WHATSAPP'))return registrationNavigation.viaWhatsApp();
- if(collecting(active)&&!question(text))return null;
- if(intents.includes('TRAINING_LIST')||intents.includes('TRAINING_INFORMATION')||intents.includes('ENGLISH_TRAINING'))return info('catalog');
+ if(collecting(active)&&intents.includes('UNKNOWN')){if(question(text))return {text:/comment (?:vous |tu )?(?:allez|vas)/.test(normalize(text))?'Merci, je vais bien ! Je suis disponible pour vous aider.':'Pouvez-vous préciser votre question ?',actions:[],state};return null;}
+ if(!intents.some(i=>DYNAMIC.has(i)||answers[i])&&(intents.includes('TRAINING_LIST')||intents.includes('TRAINING_INFORMATION')||intents.includes('ENGLISH_TRAINING'))){if(collecting(active))return {text:prospect.TRAINING,actions:[],state};return info('catalog');}
  const supported=intents.filter(i=>answers[i]||DYNAMIC.has(i));
  if(!supported.length){if(wantsMethod)return method();return null;}
  const courses=await catalog.listPublished();let course;
@@ -42,15 +43,14 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
  }
  let dynamic=[],availability; if(supported.some(i=>DYNAMIC.has(i))){availability=await prospect.readAvailability(registration);dynamic=availability.courses;}
  if(course)dynamic=dynamic.filter(c=>c.id===course.id);
- const body=supported.map(i=>{
+ const body=[...new Set(supported.filter(i=>!(supported.includes('PRICING')&&['CERTIFICATE_COST','CERTIFICATION'].includes(i)&&require('./whatsappCommercialPolicy').officialEnglishCourse(course)&&require('./whatsappCommercialPolicy').publishedPrice(course,now())==='60 USD')).map(i=>{
   if(i==='TRAINING_SCHEDULE')return prospect.scheduleInformation({...availability,courses:dynamic},schedules);
   if(DYNAMIC.has(i)&&availability.error)return 'Impossible de vérifier l’état des inscriptions actuellement. Réessayez ou demandez un conseiller.';
   if(DYNAMIC.has(i))return dynamic.length?dynamic.map(c=>{const s=c.session;const date=s?.startDate?new Date(s.startDate).toLocaleDateString('fr-FR',{timeZone:s.timezone||'Africa/Kinshasa'}):'date non publiée';return c.title+' — début : '+date+'\n'+schedules([c]);}).join('\n\n'):'Aucune session ouverte actuellement. Vous pouvez demander un conseiller.';
   return COURSE_TOPICS.has(i)?commercialAnswer(i,course,now()):answers[i];
- }).filter(Boolean).join('\n\n');
+ }).filter(Boolean))].join('\n\n');
  if(collecting(active))return {text:body+'\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours ou écrire « menu ».',actions:[],state};
- const r=wantsMethod?method():send(body,'FREE',availability&&(availability.error||!dynamic.length)?[['advisor','Parler à un conseiller'],['question','Autre question'],['menu','Menu']]:active?.declined?[['question','Autre question'],['menu','Menu']]:[['registration','M’inscrire'],['question','Autre question'],['menu','Menu']]);
- if(wantsMethod){r.text=body+'\n\n'+r.text;if(r.interactive&&r.text.length<=1024)r.interactive.body.text=body+'\n\n'+r.interactive.body.text;else r.interactive=null;}
+ const r=await info('answer',body);
  if(course){r.state.selectedCourseId=course.id;r.state.selectedCourseSlug=course.slug||null;}
  return r;
 }

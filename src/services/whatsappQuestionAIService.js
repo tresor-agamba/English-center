@@ -10,7 +10,7 @@ function redact(value){return String(value||'').slice(0,1800)
  .replace(/https?:\/\/\S+/gi,'[link]').replace(/\+?\d[\d ().-]{6,}\d/g,'[contact]')
  .replace(/\b(?:sk-[\w-]+|Bearer\s+\S+)\b/gi,'[secret]')
  .replace(/(?:je m'appelle|mon nom est|my name is)\s+[^,.!?\n]+/gi,'[name]');}
-const fallback=(q,preferred)=>detectLanguage(q,preferred)==='en'?'I cannot verify that information right now. Please try again or type “conseiller” to reach NVA.':'Je ne peux pas vérifier cette information actuellement. Réessayez ou écrivez « conseiller » pour joindre NVA.';
+const fallback=(q,preferred)=>require('./whatsappMessagePresentation').formatText(detectLanguage(q,preferred)==='en'?'I cannot verify that information right now. Please try again or type “conseiller” to reach NVA.':'Je ne peux pas vérifier cette information actuellement. Réessayez ou écrivez « conseiller » pour joindre NVA.');
 function config(env){
  const bounded=(k,d,min,max)=>{const n=Number(env[k]??d);return Number.isInteger(n)&&n>=min&&n<=max?n:null;};
  const options={timeout:bounded('NVA_AI_TIMEOUT_MS',4000,250,10000),tokens:bounded('NVA_AI_MAX_OUTPUT_TOKENS',256,64,1024),cap:bounded('NVA_AI_DAILY_CALL_LIMIT',50,1,1000)};
@@ -30,7 +30,7 @@ function buildFacts(courses,sessions,now=new Date()){
  add('website','Site officiel NVA : https://www.newvisionacademy.org','Official NVA website: https://www.newvisionacademy.org');
  if(courses.length&&courses.every(c=>c.trainingMode==='ONLINE'))add('online','Ces formations NVA sont 100 % en ligne.','These NVA courses are entirely online.');
  add('payment_methods','Les moyens de paiement doivent être confirmés par un conseiller NVA ; aucun paiement n’est effectué dans ce chat.','Please confirm payment methods with an NVA adviser; this chat does not process payments.');
- add('status','Une demande reste en attente de vérification e-mail et de décision administrative. Le chatbot ne confirme pas une inscription.','A request remains subject to email verification and an administrative decision. The chatbot cannot confirm enrollment.');
+ add('status','Une demande reste en attente de vérification et de décision administrative. Le chatbot ne confirme pas une inscription.','A request remains subject to verification and an administrative decision. The chatbot cannot confirm enrollment.');
  for(const c of courses.slice(0,6)){
   const title=redact(c.title).slice(0,100),prefix='c'+c.id+'_',price=publishedPrice(c,now);
   const general=officialEnglishCourse(c)&&/\b(?:general|général|generale|générale)\b/i.test((c.title||'')+' '+(c.slug||''));

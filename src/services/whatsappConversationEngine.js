@@ -45,7 +45,6 @@ function detectIntent(value) {
   if (topics.length > 1) return 'AMBIGUOUS';
   if (topics.length === 1) return topics[0];
   if (hasAny(text, ['formation', 'formations', 'cours', 'catalogue', 'programme'])) return 'CATALOG';
-  if (hasAny(text, ['bonjour', 'bonsoir', 'salut', 'hello', 'coucou'])) return 'GREETING';
   if (hasAny(text, ['trop cher', 'cher', 'chere', 'pas les moyens', 'je travaille', 'indisponible', 'hesite', 'doute'])) return 'OBJECTION';
   if (hasAny(text, ['je cherche', 'je souhaite', 'je veux apprendre', 'mon objectif', 'mon niveau', 'pour mon travail', 'pour mes etudes', 'ameliorer mon anglais'])) return 'QUALIFICATION';
   return 'UNKNOWN';
@@ -243,20 +242,27 @@ function createConversationEngine({
     }
 
     try {
+      // Only a complete social turn bypasses factual/registration routing.
+      if (!interactionId && intent === 'GREETING' && admissions) {
+        const greeting = await admissions.resolve({text, intent, state, phoneNumber, messageId:id, isFirstContact, publicAppUrl});
+        if (greeting) return {...greeting, intent, duplicate:false, state:withMessageId(greeting.state,id)};
+      }
       const registrationAction = !interactionId && intent !== 'REFUSAL'
         ? require('./whatsappRegistrationTransition').resolveRegistrationTransition({text,state,lastAssistantMessage,now:now()}) : null;
       if (registrationAction && admissions) {
-        const result = await admissions.resolve({text,intent:'REGISTRATION',state,phoneNumber,messageId:id,registrationAction});
+        const result = await admissions.resolve({text,intent:'REGISTRATION',state,phoneNumber,messageId:id,registrationAction,publicAppUrl});
         if (result) return {...result,intent:'ADMISSIONS',duplicate:false,state:withMessageId(result.state,id)};
         return {intent:'ADMISSIONS_UNAVAILABLE',duplicate:false,text:state.preferredLanguage==='en'
           ? 'Guided registration is currently closed. Visit https://www.newvisionacademy.org/register or type “conseiller”.'
           : 'Le parcours guidé est actuellement désactivé. Consultez https://www.newvisionacademy.org/register ou écrivez « conseiller ».',actions:[],state:withMessageId(state,id)};
       }
+      // A textual acceptance must be backed by the latest delivered invitation.
+      if(!interactionId&&!registrationAction&&state.admission?.step==='INVITE'&&/^(oui|yes|ok|d accord)$/.test(normalizeText(text)))state={...state,admission:null,pendingRegistrationOffer:null,mode:'QUESTION_AI',questionAIStartedAt:state.questionAIStartedAt||now().toISOString()};
       // The state is committed together with the durable outbound message.
-      // Existing contacts are grandfathered; never replay an introduction on upgrade.
+      // Unrecognized first contacts receive the legacy introduction; explicit requests keep their routing.
       const collecting = state.admission && !['MENU', 'DONE', 'FREE', 'INVITE'].includes(state.admission.step);
-      if (admissions && isFirstContact !== false && !interactionId && !state.welcomeSentAt && !state.processedMessageIds.length && !state.lastIntent && !state.admission && !state.mode && !state.pendingQuestion && !state.selectedCourseId && !state.selectedCourseSlug) {
-        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id, isFirstContact });
+      if (admissions && !['PRICE','SCHEDULE','TRIAL','REGISTRATION','CATALOG','AMBIGUOUS'].includes(intent) && isFirstContact !== false && !interactionId && !state.welcomeSentAt && !state.processedMessageIds.length && !state.lastIntent && !state.admission && !state.mode && !state.pendingQuestion && !state.selectedCourseId && !state.selectedCourseSlug) {
+        const welcome = await admissions.resolve({ text: 'menu', intent: 'MENU', state, phoneNumber, messageId: id, isFirstContact, publicAppUrl });
         if (welcome) return { ...welcome, intent: 'WELCOME', duplicate: false, state: withMessageId({ ...welcome.state, welcomeSentAt: now().toISOString() }, id) };
       }
       const commandText = normalizeText(text);
@@ -271,6 +277,16 @@ function createConversationEngine({
       // Documented control commands remain deterministic; course names and
       // enrollment words in free text are not navigation commands.
       const navigationCommand = /^(menu|main menu|menu principal|retour au menu|retour au menu principal|accueil|annuler|cancel|relances|follow ups|marketing consent)$/.test(commandText);
+      // Public facts use the same canonical path as consultation buttons, even with AI enabled.
+      if(admissions&&!interactionId&&state.admission?.step==='INVITE'&&/^(non merci|pas maintenant|pas pour l instant|je prefere reflechir)$/.test(require('./whatsappCommercialIntents').normalize(text))){
+        const refusal=await admissions.resolve({text:'Non merci',intent,state,phoneNumber,messageId:id,isFirstContact,publicAppUrl});
+        if(refusal)return {...refusal,intent:'ADMISSIONS',duplicate:false,state:withMessageId(refusal.state,id)};
+      }
+      const publicIntents=require('./whatsappCommercialIntents').detectIntents(text);
+      if(admissions&&!interactionId&&!offeredNumber&&!offeredLabel&&!publicIntents.some(i=>i.startsWith('REGISTRATION'))&&publicIntents.some(i=>['PRICING','FREE_TRIAL','PAYMENT_METHODS','PAYMENT_TERMS','TRAINING_SCHEDULE','TEACHING_METHOD','TRAINING_LIST'].includes(i))){
+        const answer=await admissions.resolve({text,intent,state,phoneNumber,messageId:id,isFirstContact,publicAppUrl});
+        if(answer)return {...answer,intent:'ADMISSIONS',duplicate:false,state:withMessageId(answer.state,id)};
+      }
       if (admissions && env.NVA_AI_ENABLED === 'true' && !interactionId && !collecting && !offeredNumber && !offeredLabel && !explicitConfirmation && !navigationCommand) {
         const courses = await catalog.listPublished();
         const resolved = require('./whatsappCommercialPolicy').resolveCourse(text, courses, state);
@@ -281,11 +297,11 @@ function createConversationEngine({
           text: require('./whatsappQuestionAIService').fallback(text, state.preferredLanguage),
           // A free turn consumes the previous menu. An old '1' cannot later
           // replay its enrollment choice, nor can a stale button be reused.
-          state: withMessageId({ ...state, pendingRegistrationOffer: null, admission: null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
+          state: withMessageId({ ...state, pendingRegistrationOffer: null, admission: state.admission?.declined?{...state.admission,step:'FREE',options:[],consultationOptions:[]}:null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
       }
       // Legacy AI-off social handling; ordinary AI turns were routed above.
       if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
-        const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id, isFirstContact }) : null;
+        const social = admissions ? await admissions.resolve({ text, intent, state, phoneNumber, messageId: id, isFirstContact, publicAppUrl }) : null;
         if (social) return { ...social, intent, duplicate: false, state: withMessageId(social.state, id) };
         return { intent, text: intent === 'THANKS' ? 'Avec plaisir ! 😊' : '👋 Bonjour ! Comment puis-je vous aider aujourd’hui ?', actions: [], state: withMessageId({ ...state, lastIntent: intent }, id) };
       }
@@ -313,7 +329,7 @@ function createConversationEngine({
             deferredQuestionAI: true, actions: [], state: withMessageId(state, id) };
         }
       }
-      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id, isFirstContact }) : null;
+      const admission = admissions ? await admissions.resolve({ text, interactionId, intent, state, phoneNumber, messageId: id, isFirstContact, publicAppUrl }) : null;
       if (admission) return { ...admission, intent: 'ADMISSIONS', duplicate: false, state: withMessageId(admission.state, id) };
       const scenario = scenarios ? await scenarios.resolve({ text, interactionId, intent, state, prospect: allowCommercialFollowUpConsent }) : null;
       if (scenario?.catalogIntent) {
@@ -459,7 +475,17 @@ function createConversationEngine({
     }
   }
 
-  return { handleMessage };
+  return { handleMessage:async input=>{
+    const reply=await handleMessage(input);
+    // A greeting preceding a request keeps the request's routing and actions.
+    const greeting=normalizeText(input?.text).match(/^(bonjour|bonsoir|salut)\b/);
+    if(greeting && reply.intent!=='GREETING' && reply.text && !reply.duplicate) {
+      const lead={bonjour:'👋 Bonjour !',bonsoir:'🌙 Bonsoir !',salut:'👋 Salut !'}[greeting[1]];
+      reply.text=lead+'\n'+reply.text;
+      if(reply.interactive?.body)reply.interactive.body.text=lead+'\n'+reply.interactive.body.text;
+    }
+    return require('./whatsappMessagePresentation').formatReply(reply);
+  } };
 }
 
 module.exports = {

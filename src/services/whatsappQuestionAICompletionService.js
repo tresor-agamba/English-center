@@ -36,11 +36,11 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
    const settings=await database.whatsAppChatbotSettings.findUnique({where:{id:1}});
    const started=new Date(message.conversation?.engineState?.questionAIStartedAt);
    const eligible=config(env)&&active(message.conversation)&&settings?.enabled!==false&&settings?.admissionsEnabled===true&&latest?.providerMessageId===expected&&latest?.messageType==='TEXT'&&Number.isFinite(+started);
-   let answer=null;
+   let answer=null,answerFacts=[];
    if(!eligible)logger.info('NVA_AI_RESULT',{reason:config(env)?'INELIGIBLE':'CONFIG_INVALID',called:false,responded:false});
    if(eligible&&!recovering){
     const history=await database.whatsAppConversationMessage.findMany({where:{conversationId:message.conversationId,createdAt:{gte:started},id:{lt:latest.id},senderUserId:null,messageType:'TEXT'},orderBy:{id:'desc'},take:6,select:{direction:true,body:true}});
-    const facts=await factsFor(message.conversation.engineState,latest.body);
+    const facts=await factsFor(message.conversation.engineState,latest.body);answerFacts=facts;
     answer=await ai.answer({question:latest.body,preferredLanguage:message.conversation.engineState.preferredLanguage,history:history.reverse().map(r=>({role:r.direction==='INBOUND'?'user':'assistant',content:r.body})),facts,reserve:async cap=>{
      const day=now().toISOString().slice(0,10);
      try{
@@ -84,9 +84,24 @@ function createQuestionAICompletionService({database,env=process.env,now=()=>new
      registrationReply=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({intent:'AI_REGISTRATION',state:current.engineState,text:'',messageId:expected});
      body=registrationReply?.text||fallback(latest?.body,current.engineState.preferredLanguage);
     }
+    if(valid&&typeof body==='string'&&answer&&!recovering&&!registrationReply){
+     const intents=require('./whatsappCommercialIntents').detectIntents(latest.body);
+     const informative=answerFacts.some(f=>[f.fr,f.en].some(fragment=>fragment&&body.includes(fragment)));
+     if(informative&&!intents.includes('REFUSAL')){
+      const {OPENINGS,QUESTIONS}=require('./whatsappAdvisorPolicy');
+      // Remove only reviewed framing; approved official facts remain intact.
+      let content=body;
+      for(const entries of Object.values(OPENINGS))for(const language of ['fr','en'])for(const fragment of entries[language])if(fragment&&content.startsWith(fragment+'\n\n'))content=content.slice(fragment.length+2);
+      for(const entries of Object.values(QUESTIONS))for(const language of ['fr','en'])for(const fragment of entries[language])if(fragment&&content.endsWith('\n\n'+fragment))content=content.slice(0,-fragment.length-2);
+      registrationReply=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({state:current.engineState,text:'',messageId:expected,informationBody:content});
+      if(registrationReply){body=registrationReply.text;if(registrationReply.state.admission?.step==='INVITE')registrationReply.state.pendingRegistrationOffer={replyKey:idempotencyKey,expiresAt:registrationReply.state.admission.expiresAt};}
+     }
+    }
     if(valid&&typeof body==='string'&&answer&&!recovering&&require('./whatsappRegistrationTransition').legacyInvitation({body,createdAt:now()},now())){
      offerState={...current.engineState,pendingRegistrationOffer:{replyKey:idempotencyKey,expiresAt:new Date(+now()+86400000).toISOString()}};
     }
+    body=require('./whatsappMessagePresentation').formatText(body);
+    if(registrationReply)registrationReply=require('./whatsappMessagePresentation').formatReply(registrationReply);
     const changed=await tx.whatsAppConversationMessage.updateMany({where:owned,data:valid?{body,failureCode:null,aiClaimToken:null,...(registrationReply?.interactive?{messageType:'INTERACTIVE',interactivePayload:registrationReply.interactive}:{})}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED',aiClaimToken:null}});
     if(changed.count&&registrationReply)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:registrationReply.state}});
     if(changed.count&&offerState&&!registrationReply)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:offerState}});

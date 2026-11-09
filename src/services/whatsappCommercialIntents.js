@@ -17,7 +17,7 @@ function registrationChannels(v){
 function isRefusal(v){const t=normalize(v);const channels=registrationChannels(t);if(channels.positive.length===1&&channels.negative.length&& !/\b(?:decline|refuse) (?:votre |toute |l |une )?(?:proposition|offre|inscription)\b/.test(t))return false;return /\b(non merci|pas maintenant|pas pour l instant|pas interesse|pas interessee|ne m interesse pas|prefere attendre|vais reflechir|veux reflechir|besoin de reflechir|je refuse|je decline|nous declinons|je rejette)\b/.test(t)||/\b(?:ne |n )?(?:veux|souhaite|desire|choisis|choisit|prends|confirme|accepte)\b.{0,25}\bpas\b/.test(t)||/\b(?:veux|souhaite)\b.{0,20}\bplus\b/.test(t);}
 const THRESHOLD=0.75;
 function analyzeMessage(value,context={}){
- const t=corrected(value),scores={};let ambiguity=null;const add=(id,s=0.95)=>{scores[id]=Math.max(scores[id]||0,s);};
+ const t=corrected(value).replace(/\bhorraires?\b/g,'horaires'),scores={};let ambiguity=null;const add=(id,s=0.95)=>{scores[id]=Math.max(scores[id]||0,s);};
  const result=intents=>({intents,confidence:intents[0]==='UNKNOWN'?0:Math.min(...intents.map(id=>scores[id]||1)),needsClarification:intents[0]==='UNKNOWN',ambiguity,evidence:scores,normalized:t});
  if(!t)return result(['UNKNOWN']);
  if(/^(?:je veux |je souhaite )?(annuler|abandonner|annule|abandonne)(?: ma (?:demande|inscription))?$/.test(t)){add('CANCEL_REQUEST');return result(['CANCEL_REQUEST']);}
@@ -46,11 +46,11 @@ function analyzeMessage(value,context={}){
  const coursePrice=/\b(?:prix|tarif\w*|cout\w*|coute\w*)\b.{0,35}\b(?:formation|cours|parcours|niveau)\b/.test(t);
  if(money&&(!certificateCost||coursePrice))add('PRICING');
  const trial=/\b(gratuit\w*|essai\w*|essayer|offert\w*)\b/.test(t)||/\b(?:cinq|5)\b.{0,25}\b(?:seances|cours|premieres)\b/.test(t)||/\btester\b.{0,30}\b(?:sans|argent|avant)\b/.test(t);
- if(payment&&!certificateCost)add('PAYMENT_TERMS');
+ if(payment&&!certificateCost)add(/\b(?:comment|moyens?|mode|modes)\b/.test(t)?'PAYMENT_METHODS':'PAYMENT_TERMS');
  if(trial&&(!payment||/\b(?:et|aussi|profiter)\b/.test(t)))add('FREE_TRIAL');
  const duration=/\b(duree|dure|durent)\b/.test(t)||/\b(?:combien|nombre)\b.{0,30}\b(?:temps|heures|minutes|seances|niveaux)\b/.test(t)||/\b(?:seize|16|quarante huit|48)\b.{0,20}\b(?:lecons|seances)\b/.test(t)||/\b(?:heure et demie|1h30|1 h 30)\b/.test(t);
  if(duration&&!trial&&!money||/\b(duree|dure|durent)\b/.test(t))add('TRAINING_DURATION');
- const schedule=/\b(horaire\w*|creneau\w*|planning)\b/.test(t)||/\bemploi du temps\b/.test(t)||/\b(?:quels|quelles)\b.{0,15}\b(?:jours|heures)\b/.test(t)||/\b(?:matin|soir|dix huit heures|18h|10h)\b/.test(t)&&/\b(?:cours|choisir|disponible|possible|seance)\b/.test(t);
+ const schedule=/\ba quelle heure\b/.test(t)||/\b(horaire\w*|creneau\w*|planning)\b/.test(t)||/\bemploi du temps\b/.test(t)||/\b(?:quels|quelles)\b.{0,15}\b(?:jours|heures)\b/.test(t)||/\b(?:matin|soir|dix huit heures|18h|10h)\b/.test(t)&&/\b(?:cours|choisir|disponible|possible|seance)\b/.test(t);
  if(schedule)add('TRAINING_SCHEDULE');
  const start=/\b(?:debut|demarrage|rentree|commencement|prochaine session)\b/.test(t)||/\b(?:commence\w*|demarre\w*|debute\w*)\b/.test(t)&&!registration&&!/\b(?:adulte|debutant|pedagogie|ordinateur)\b/.test(t)||/\b(?:premier cours|premiere seance)\b/.test(t)&&/\b(date|quand|jour)\b/.test(t);
  if(start)add('SESSION_START_DATE');
@@ -73,12 +73,13 @@ function analyzeMessage(value,context={}){
 const detectIntents=(v,c)=>analyzeMessage(v,c).intents;
 const shared=require('./whatsappProspectInformation');
 const answers={
+ PAYMENT_METHODS:'💳 Pour connaître les moyens de paiement officiels de NVA, écrivez “conseiller”. Aucun paiement ne se fait dans ce chat.',
  PAYMENT_TERMS:shared.PAYMENT_TERMS,
  FREE_TRIAL:shared.FREE_TRIAL,
  TRAINING_DURATION:'Chaque niveau d’anglais comprend 16 séances de 1 h 30, soit 24 heures. Les trois niveaux comprennent 48 séances, soit 72 heures.',
  PRICING:shared.PRICING,
  CERTIFICATE_COST:'Le certificat NVA coûte 20 USD supplémentaires. Le parcours de trois niveaux avec certificat revient à 200 USD.',
  CERTIFICATION:'Le certificat est délivré par New Vision Academy après l’achèvement des trois niveaux, sous réserve des conditions administratives applicables. Aucune reconnaissance internationale, accréditation externe ou équivalence à un diplôme officiel n’est établie ici.',
- ONLINE_LEARNING:'NVA est un centre de formation 100 % en ligne.',TEACHING_METHOD:'NVA propose des formations pratiques en ligne. Un conseiller peut préciser les méthodes pédagogiques de la formation choisie.',THANKS:'Avec plaisir ! Je reste disponible pour vos questions.',GOODBYE:'À bientôt chez New Vision Academy !',REGISTRATION_STATUS:'Je ne peux pas confirmer une inscription à partir de ce message. Un conseiller peut vérifier votre demande en toute sécurité.',
+ ONLINE_LEARNING:'NVA est un centre de formation 100 % en ligne.',TEACHING_METHOD:shared.TRAINING,THANKS:'Avec plaisir ! Je reste disponible pour vos questions.',GOODBYE:'À bientôt chez New Vision Academy !',REGISTRATION_STATUS:'Je ne peux pas confirmer une inscription à partir de ce message. Un conseiller peut vérifier votre demande en toute sécurité.',
 };
 module.exports={normalize,detectIntents,analyzeMessage,isRefusal,registrationChannels,answers,distance,THRESHOLD};

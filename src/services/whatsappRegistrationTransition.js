@@ -16,7 +16,7 @@ function legacyInvitation(message,now){
 }
 function resolveRegistrationTransition({text,state={},lastAssistantMessage,now=new Date()}){
  if(isCollecting(state))return null;
- const t=normalize(text);
+ const t=normalize(text).replace(/^(?:bonjour|bonsoir|salut|hello|hi|coucou|hey)(?: nva)?\s+/, '');
  if(isRefusal(text)||/^(non|no|nope)$/.test(t))return null;
  const informational = require('./whatsappRegistrationActionPolicy').vetoRegistration(text) && !/^(comment (?:faire pour|je peux|puis je) m inscrire)/.test(t);
  if(informational)return null;

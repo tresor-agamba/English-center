@@ -20,7 +20,7 @@ function buildTemplatePayload({ phoneNumber, templateName, templateLanguage, tem
 function buildTextPayload({ phoneNumber, text, idempotencyKey }) {
   const to = providerPhoneNumber(phoneNumber);
   if (!to || typeof text !== 'string' || !text.trim() || text.length > 4096) throw Object.assign(new Error('Paramètres WhatsApp invalides.'), { retryable: false, code: 'INVALID_PARAMETERS' });
-  return { messaging_product: 'whatsapp', to, type: 'text', text: { body: text, preview_url: false }, ...correlation(idempotencyKey) };
+  return { messaging_product: 'whatsapp', to, type: 'text', text: { body: require('./whatsappMessagePresentation').formatText(text,4096), preview_url: false }, ...correlation(idempotencyKey) };
 }
 async function sendPayload(payload, options = {}) {
   const config = options.config || getWhatsAppConfig(process.env, { requireValid: true });
@@ -70,7 +70,8 @@ async function sendPayload(payload, options = {}) {
 function buildInteractivePayload({ phoneNumber, interactive, idempotencyKey }) {
   const to = providerPhoneNumber(phoneNumber);
   if (!to) throw localFailure('INVALID_PARAMETERS');
-  return { messaging_product: 'whatsapp', to, type: 'interactive', interactive: require('./whatsappInteractive').validateInteractive(interactive), ...correlation(idempotencyKey) };
+  interactive = require('./whatsappInteractive').validateInteractive(interactive);
+  return { messaging_product: 'whatsapp', to, type: 'interactive', interactive: require('./whatsappInteractive').validateInteractive({...interactive,body:{...interactive?.body,text:require('./whatsappMessagePresentation').formatText(interactive?.body?.text,1024)}}), ...correlation(idempotencyKey) };
 }
 async function sendInteractiveMessage(data, options = {}) { return sendPayload(buildInteractivePayload(data), options); }
 async function sendConversationMessage(data, options = {}) { return data.interactive ? sendInteractiveMessage(data, options) : sendTextMessage(data, options); }

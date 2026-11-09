@@ -907,6 +907,7 @@ model WhatsAppConversationMessage {
   deliveryStatus     WhatsAppOutboundDeliveryStatus?      @map("delivery_status")
   attempts           Int                                  @default(0)
   failureCode        String?                              @map("failure_code") @db.VarChar(100)
+  aiClaimToken       String?                              @map("ai_claim_token") @db.Uuid
   senderUserId       Int?                                 @map("sender_user_id")
   createdAt          DateTime                             @default(now()) @map("created_at")
   updatedAt          DateTime                             @updatedAt @map("updated_at")
@@ -2568,7 +2569,7 @@ model WhatsAppAdmissionRequest {
  conversationId Int
  fullName String @db.VarChar(120)
  phoneNumber String @db.VarChar(20)
- email String @db.VarChar(254)
+ email String? @db.VarChar(254)
  requestedLevel String @db.VarChar(24)
  source String @default("WHATSAPP") @db.VarChar(16)
  status String @default("PENDING") @db.VarChar(20)

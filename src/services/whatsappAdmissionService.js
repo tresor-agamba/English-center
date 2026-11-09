@@ -19,18 +19,18 @@ async function createPending(tx,input,data,now,confirmationDraft){
  // NOT hold INSERT on decision columns, so let PostgreSQL supply PENDING/nulls.
  if(typeof tx.$executeRaw!=='function'){
   if(process.env.NODE_ENV!=='test')throw fail('Transaction PostgreSQL requise.',503);
-  return tx.whatsAppAdmissionRequest.create({data:{...data,conversationId:input.conversationId,sourceMessageId:input.sourceMessageId,consentVersion:input.consentVersion,consentAt:now,confirmationDraft}});
+  return tx.whatsAppAdmissionRequest.create({data:{...data,email:null,conversationId:input.conversationId,sourceMessageId:input.sourceMessageId,consentVersion:input.consentVersion,consentAt:now,confirmationDraft}});
  }
  try{
   const [created]=await tx.$queryRaw`INSERT INTO "WhatsAppAdmissionRequest"
    ("conversationId","fullName","phoneNumber",email,"requestedLevel","sourceMessageId","consentVersion","consentAt","confirmationDraft","createdAt","updatedAt")
-   VALUES (${input.conversationId},${data.fullName},${data.phoneNumber},${data.email},${data.requestedLevel},${input.sourceMessageId},${input.consentVersion},
+   VALUES (${input.conversationId},${data.fullName},${data.phoneNumber},${data.email??null},${data.requestedLevel},${input.sourceMessageId},${input.consentVersion},
     (${now}::timestamptz AT TIME ZONE 'UTC'),${confirmationDraft},(${now}::timestamptz AT TIME ZONE 'UTC'),(${now}::timestamptz AT TIME ZONE 'UTC')) RETURNING id`;
   return tx.whatsAppAdmissionRequest.findUnique({where:{id:created.id}});
  }catch(e){if(e.code==='P2010'&&e.meta?.code==='23505')throw Object.assign(Error('Conflit de demande concurrente.'),{code:'P2002'});throw e;}
 }
 async function recordConfirmed(tx,input,now=new Date()){
- const data=identity(input.data);if(input.consentVersion!=='admissions-v1'||typeof input.sourceMessageId!=='string'||!input.sourceMessageId||input.sourceMessageId.length>256)throw fail('Confirmation invalide.');
+ const data=identity(input.data,{requireEmail:false});if(input.consentVersion!=='admissions-v1'||typeof input.sourceMessageId!=='string'||!input.sourceMessageId||input.sourceMessageId.length>256)throw fail('Confirmation invalide.');
  const duplicate=await tx.whatsAppAdmissionRequest.findUnique({where:{sourceMessageId:input.sourceMessageId}});if(duplicate)return duplicate;
  let preference={};
  if(input.data.courseId){

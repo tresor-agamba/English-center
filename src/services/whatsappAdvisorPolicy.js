@@ -4,7 +4,7 @@ const OPENINGS = Object.freeze({
   welcome: {fr:['Avec plaisir, je suis là pour vous aider.','Bienvenue ! Prenons le temps de trouver ce qui vous convient.'],en:['Of course, I am here to help.','Welcome! Let’s take the time to understand what suits you.']},
   goal: {fr:['Merci de partager votre objectif. Nous pouvons avancer à votre rythme.','Votre projet mérite une réponse adaptée. Regardons cela ensemble.'],en:['Thank you for sharing your goal. We can take this at your pace.','Your plans deserve a thoughtful answer. Let’s explore them together.']},
   budget: {fr:['Je comprends que le budget compte dans votre décision.','Prenons le temps de regarder les conditions publiées pour votre budget.'],en:['I understand that budget matters in your decision.','Let’s take a moment to look at the published terms for your budget.']},
-  schedule: {fr:['Vos disponibilités comptent ; regardons les horaires confirmés.','Regardons ce qui pourrait convenir à votre emploi du temps.'],en:['Your availability matters; let’s look at the confirmed schedules.','Let’s see what might suit your schedule.']},
+  schedule: {fr:['Vos disponibilités comptent ; regardons les horaires publiés.','Regardons ce qui pourrait convenir à votre emploi du temps.'],en:['Your availability matters; let’s look at the published schedules.','Let’s see what might suit your schedule.']},
   patience: {fr:['Prenez votre temps, je reste à votre écoute.','Nous pouvons examiner vos questions tranquillement.'],en:['Take your time, I am here to listen.','We can work through your questions at your pace.']},
   respect: {fr:['Je respecte votre choix. Vous pourrez revenir vers NVA si vous le souhaitez.','Merci pour votre réponse. Prenez le temps dont vous avez besoin.'],en:['I respect your choice. You can come back to NVA whenever you wish.','Thank you for your answer. Take the time you need.']}
 });
@@ -55,7 +55,7 @@ function variant(choices,history){
 }
 function renderPlan(plan,selectedFacts,language,history=[]){
   if(!Object.hasOwn(OPENINGS,plan.opening)||!Object.hasOwn(QUESTIONS,plan.followUp))return null;
-  const body=selectedFacts.map(f=>f[language]).join('\n\n');
+  const body=[...new Set(selectedFacts.map(f=>f[language]))].join('\n\n');
   const question=body.includes('?')||plan.opening==='respect'?'':variant(QUESTIONS[plan.followUp][language],history);
   const next=plan.followUp==='register'&&history.slice(-4).some(h=>h.role==='assistant'&&QUESTIONS.register[language].some(q=>String(h.content).includes(q)))?'':question;
   const result=[variant(OPENINGS[plan.opening][language],history),body,next].filter(Boolean).join('\n\n');
