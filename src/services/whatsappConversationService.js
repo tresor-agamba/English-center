@@ -119,6 +119,12 @@ function createWhatsAppConversationService({
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
         deferAI: false }),
     });
+    // Inspect the latest bot reply, including unsent replies: an older delivered
+    // invitation must not supersede a newer pending or cancelled response.
+    const lastAssistantMessage = await tx.whatsAppConversationMessage.findFirst({
+      where:{conversationId:conversation.id,direction:'OUTBOUND',senderUserId:null},
+      orderBy:{id:'desc'},select:{body:true,idempotencyKey:true,createdAt:true,deliveryStatus:true},
+    });
     const result = await engine.handleMessage({
       text: body,
       phoneNumber,
@@ -126,6 +132,7 @@ function createWhatsAppConversationService({
       messageId: providerMessageId,
       state: stateForConversation(conversation),
       isFirstContact,
+      lastAssistantMessage,
       publicAppUrl,
       allowCommercialFollowUpConsent,
     });

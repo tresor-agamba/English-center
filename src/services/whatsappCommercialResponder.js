@@ -5,7 +5,7 @@ const DYNAMIC=new Set(['SESSION_START_DATE','AVAILABLE_SESSIONS','TRAINING_SCHED
 const question=text=>/[?？]/.test(text)||/^(?:et |combien|quel|quand|comment|pourquoi|est ce|vous |je peux|puis je|les cinq|les 5|ca dure)/.test(normalize(text));
 const collecting=active=>active&&!['MENU','DONE','FREE','INVITE','METHOD'].includes(active.step);
 function identityInput(text,active){return active?.step==='NAME'&&!isRefusal(text)&&!question(text)&&/^\p{L}[\p{L}'’ -]+\s\p{L}[\p{L}'’ -]*$/u.test(String(text||'').trim())&&!/\b(?:menu|annuler|abandonner|conseiller|humain|inscrire|site|whatsapp|merci|pas|non)\b/.test(normalize(text));}
-async function respond({text,state,active,send,menu,catalog,registration,now,schedules,info}){
+async function respond({text,state,active,send,menu,catalog,registration,now,schedules,info,registrationNavigation}){
  if(active?.step==='EMAIL'&&String(text).includes('@')||identityInput(text,active))return null;
  const a=analyzeMessage(text,{registrationMethod:active?.step==='METHOD'});let intents=a.intents;
  if(a.ambiguity==='REGISTRATION_METHOD')return send('Pour éviter de choisir à votre place, quelle méthode souhaitez-vous utiliser ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
@@ -24,9 +24,9 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
  if(intents.includes('MAIN_MENU'))return menu();
  if(intents.includes('GREETING')&&!collecting(active))return menu();
  const wantsMethod=intents.includes('REGISTRATION')&&!collecting(active);
- const method=()=>{const r=send('🎉 Excellent choix !\n\nPour faciliter votre inscription, deux possibilités s’offrent à vous :\n\n🌐 Vous inscrire personnellement sur notre site NVA.\n\n💬 Vous inscrire directement ici avec mon assistance.\n\n😊 Quelle méthode préférez-vous ?','METHOD',[['online','Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);r.state.admission.declined=false;return r;};
- if(intents.includes('REGISTRATION_WEBSITE'))return send('Inscrivez-vous sur https://www.newvisionacademy.org/register depuis le site officiel https://www.newvisionacademy.org. Je reste disponible pour vous accompagner.','METHOD',[['admin','Via WhatsApp'],['menu','Menu']]);
- if(intents.includes('REGISTRATION_WHATSAPP'))return send('Acceptez-vous la collecte temporaire de vos coordonnées pour préparer votre demande ? Rien ne sera transmis avant votre confirmation finale.','CONSENT',[['accept','J’accepte'],['cancel','Annuler']]);
+ const method=()=>{const r=registrationNavigation.method();r.state.admission.declined=false;return r;};
+ if(intents.includes('REGISTRATION_WEBSITE'))return registrationNavigation.viaWebsite();
+ if(intents.includes('REGISTRATION_WHATSAPP'))return registrationNavigation.viaWhatsApp();
  if(collecting(active)&&!question(text))return null;
  if(intents.includes('TRAINING_LIST')||intents.includes('TRAINING_INFORMATION'))return info('catalog');
  const supported=intents.filter(i=>answers[i]||DYNAMIC.has(i));

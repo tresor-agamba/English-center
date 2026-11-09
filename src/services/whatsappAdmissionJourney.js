@@ -35,7 +35,7 @@ function schedules(courses){return courses.slice(0,8).map(c=>{const session=c.se
  const lines=slots.map(g=>(g.weekDays||[]).map(frenchDay).join(' et ')+' : '+g.startTime+' – '+g.endTime);return '• '+c.title+'\n'+(lines.join('\n')||'Aucun créneau disponible confirmé.');}).join('\n\n')||'Aucune session ouverte aux inscriptions.';}
 function createAdmissionJourney({database,catalog,registration,now=()=>new Date(),token=()=>randomUUID(),conversationTtlMs=86400000}={}){
  if(!Number.isFinite(conversationTtlMs)||conversationTtlMs<60000||conversationTtlMs>604800000)throw new TypeError('Durée de conversation invalide.');
- async function resolve({text,interactionId,state,phoneNumber,messageId,intent,isFirstContact}){
+ async function resolve({text,interactionId,state,phoneNumber,messageId,intent,isFirstContact,registrationAction=null}){
   if(!database?.whatsAppChatbotSettings)return null;const settings=await database.whatsAppChatbotSettings.findUnique({where:{id:1}});
   if(!settings?.admissionsEnabled||settings.enabled===false)return null;
   if(interactionId&&!interactionId.startsWith('adm:'))return null;
@@ -50,6 +50,15 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   };
   const allCourses=()=>catalog.listPublished();
   const method=()=>send(state.preferredLanguage==='en'?'🎉 Choose registration on our official website or guided registration here on WhatsApp. 😊':'🎉 Pour votre inscription, choisissez le site officiel ou mon assistance sur WhatsApp. 😊','METHOD',[['online',state.preferredLanguage==='en'?'Via website':'Via le site'],['admin','Via WhatsApp'],['menu','Menu']]);
+  const viaWebsite=()=>send('Complétez le formulaire officiel puis choisissez votre formation et une session disponible :\nhttps://www.newvisionacademy.org/register','DONE',[['menu','Menu principal']]);
+  const viaWhatsApp=()=>send('Acceptez-vous la collecte temporaire de vos coordonnées pour préparer votre demande ? Rien ne sera transmis à l’équipe avant votre confirmation finale. Annulez à tout moment ; saisie valable 24 h.','CONSENT',[['accept','J’accepte'],['cancel','Annuler']]);
+  if(registrationAction){
+   if(!['CHOOSE_METHOD','WEBSITE','WHATSAPP'].includes(registrationAction))throw invalid('Transition d’inscription invalide.');
+   if(require('./whatsappRegistrationTransition').isCollecting(state))return null;
+   state={...state,mode:null,questionAIStartedAt:null,pendingRegistrationOffer:null};
+   const result={CHOOSE_METHOD:method,WEBSITE:viaWebsite,WHATSAPP:viaWhatsApp}[registrationAction]();
+   result.state.admission.declined=false;return result;
+  }
   if(intent==='AI_REGISTRATION')return method();
   const openSessions=async()=>registration.listSessionsForPublicRegistration
    ? registration.listSessionsForPublicRegistration()
@@ -83,7 +92,7 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
   if(['annuler','abandonner'].includes(normalized))return send('Votre saisie a été annulée. Aucune nouvelle demande n’a été transmise.','DONE',[['menu','Menu principal']]);
   if(/^(menu|accueil|menu principal|retour au menu(?: principal)?)$/.test(normalized))return menu();
   if(!interactionId){
-   const commercial=await require('./whatsappCommercialResponder').respond({text,state,active,send,menu,catalog,registration,now,schedules,info});
+   const commercial=await require('./whatsappCommercialResponder').respond({text,state,active,send,menu,catalog,registration,now,schedules,info,registrationNavigation:{method,viaWebsite,viaWhatsApp}});
    if(commercial)return commercial;
   }
   if(!active){if(interactionId?.startsWith('adm:'))return send('Ce choix a expiré. Revenez au menu.','DONE',[['menu','Menu principal']]);if(['bonjour','bonsoir','salut','hello'].includes(normalized))return menu();if(['formations','formation','cours'].includes(normalized))return info('catalog');if(['prix','tarifs','tarif'].includes(normalized))return info('price');if(['horaires','horaire'].includes(normalized))return info('schedule');if(['inscription','inscriptions'].includes(normalized))return info('registration');return null;}
@@ -115,8 +124,8 @@ function createAdmissionJourney({database,catalog,registration,now=()=>new Date(
    if(value==='yes')return method();
   }
   if(active.step==='METHOD'){
-   if(value==='online')return send('Complétez le formulaire officiel puis choisissez votre formation et une session disponible :\nhttps://www.newvisionacademy.org/register','DONE',[['menu','Menu principal']]);
-   if(value==='admin')return send('Acceptez-vous la collecte temporaire de vos coordonnées pour préparer votre demande ? Rien ne sera transmis à l’équipe avant votre confirmation finale. Annulez à tout moment ; saisie valable 24 h.','CONSENT',[['accept','J’accepte'],['cancel','Annuler']]);
+   if(value==='online')return viaWebsite();
+   if(value==='admin')return viaWhatsApp();
    return method();
   }
   if(active.step==='CONSENT'&&value==='cancel')return send('Collecte annulée.','DONE',[['menu','Menu principal']]);

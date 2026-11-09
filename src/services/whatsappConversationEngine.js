@@ -54,6 +54,7 @@ function detectIntent(value) {
 function makeInitialState(value = {}) {
   const source = value && typeof value === 'object' ? value : {};
   return {
+    pendingRegistrationOffer: source.pendingRegistrationOffer && typeof source.pendingRegistrationOffer.replyKey === 'string' && typeof source.pendingRegistrationOffer.expiresAt === 'string' ? {...source.pendingRegistrationOffer} : null,
     automationPaused: source.automationPaused === true,
     welcomeSentAt: typeof source.welcomeSentAt === 'string' ? source.welcomeSentAt : null,
     admission: source.admission && typeof source.admission === 'object' ? source.admission : null,
@@ -190,7 +191,7 @@ function createConversationEngine({
   admissions = null,
   env = process.env,
 } = {}) {
-  async function handleMessage({ text, interactionId = null, phoneNumber = null, messageId, state: rawState, isFirstContact, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
+  async function handleMessage({ lastAssistantMessage = null, text, interactionId = null, phoneNumber = null, messageId, state: rawState, isFirstContact, publicAppUrl = '', allowCommercialFollowUpConsent = true } = {}) {
     let state = makeInitialState(rawState);
     const id = messageId == null ? '' : String(messageId);
     if (id && state.processedMessageIds.includes(id)) return { intent: 'DUPLICATE', duplicate: true, text: null, actions: [], state };
@@ -242,6 +243,15 @@ function createConversationEngine({
     }
 
     try {
+      const registrationAction = !interactionId && intent !== 'REFUSAL'
+        ? require('./whatsappRegistrationTransition').resolveRegistrationTransition({text,state,lastAssistantMessage,now:now()}) : null;
+      if (registrationAction && admissions) {
+        const result = await admissions.resolve({text,intent:'REGISTRATION',state,phoneNumber,messageId:id,registrationAction});
+        if (result) return {...result,intent:'ADMISSIONS',duplicate:false,state:withMessageId(result.state,id)};
+        return {intent:'ADMISSIONS_UNAVAILABLE',duplicate:false,text:state.preferredLanguage==='en'
+          ? 'Guided registration is currently closed. Visit https://www.newvisionacademy.org/register or type “conseiller”.'
+          : 'Le parcours guidé est actuellement désactivé. Consultez https://www.newvisionacademy.org/register ou écrivez « conseiller ».',actions:[],state:withMessageId(state,id)};
+      }
       // The state is committed together with the durable outbound message.
       // Existing contacts are grandfathered; never replay an introduction on upgrade.
       const collecting = state.admission && !['MENU', 'DONE', 'FREE', 'INVITE'].includes(state.admission.step);
@@ -271,7 +281,7 @@ function createConversationEngine({
           text: require('./whatsappQuestionAIService').fallback(text, state.preferredLanguage),
           // A free turn consumes the previous menu. An old '1' cannot later
           // replay its enrollment choice, nor can a stale button be reused.
-          state: withMessageId({ ...state, admission: null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
+          state: withMessageId({ ...state, pendingRegistrationOffer: null, admission: null, scenarioMenu: null, mode: 'QUESTION_AI', questionAIStartedAt: state.questionAIStartedAt || now().toISOString(), welcomeSentAt: state.welcomeSentAt || now().toISOString() }, id) };
       }
       // Legacy AI-off social handling; ordinary AI turns were routed above.
       if (!interactionId && ['GREETING', 'THANKS'].includes(intent) && (admissions || state.mode === 'QUESTION_AI' || intent === 'THANKS')) {
