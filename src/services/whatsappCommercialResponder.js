@@ -1,3 +1,4 @@
+const prospect=require('./whatsappProspectInformation');
 const {analyzeMessage,normalize,answers,isRefusal}=require('./whatsappCommercialIntents');
 const {resolveCourse,commercialAnswer}=require('./whatsappCommercialPolicy');
 const COURSE_TOPICS=new Set(['PRICING','PAYMENT_TERMS','FREE_TRIAL','TRAINING_DURATION','CERTIFICATION','CERTIFICATE_COST']);
@@ -28,7 +29,7 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
  if(intents.includes('REGISTRATION_WEBSITE'))return registrationNavigation.viaWebsite();
  if(intents.includes('REGISTRATION_WHATSAPP'))return registrationNavigation.viaWhatsApp();
  if(collecting(active)&&!question(text))return null;
- if(intents.includes('TRAINING_LIST')||intents.includes('TRAINING_INFORMATION'))return info('catalog');
+ if(intents.includes('TRAINING_LIST')||intents.includes('TRAINING_INFORMATION')||intents.includes('ENGLISH_TRAINING'))return info('catalog');
  const supported=intents.filter(i=>answers[i]||DYNAMIC.has(i));
  if(!supported.length){if(wantsMethod)return method();return null;}
  const courses=await catalog.listPublished();let course;
@@ -39,14 +40,16 @@ async function respond({text,state,active,send,menu,catalog,registration,now,sch
    const r=send(body,'FREE',[['question','Préciser ma question'],['menu','Menu']]);r.state.admission.pendingIntents=supported;r.state.admission.pendingRegistration=wantsMethod;return r;
   }
  }
- let dynamic=[];if(supported.some(i=>DYNAMIC.has(i)))dynamic=await registration.listCoursesForPublicRegistration();
+ let dynamic=[],availability; if(supported.some(i=>DYNAMIC.has(i))){availability=await prospect.readAvailability(registration);dynamic=availability.courses;}
  if(course)dynamic=dynamic.filter(c=>c.id===course.id);
  const body=supported.map(i=>{
+  if(i==='TRAINING_SCHEDULE')return prospect.scheduleInformation({...availability,courses:dynamic},schedules);
+  if(DYNAMIC.has(i)&&availability.error)return 'Impossible de vérifier l’état des inscriptions actuellement. Réessayez ou demandez un conseiller.';
   if(DYNAMIC.has(i))return dynamic.length?dynamic.map(c=>{const s=c.session;const date=s?.startDate?new Date(s.startDate).toLocaleDateString('fr-FR',{timeZone:s.timezone||'Africa/Kinshasa'}):'date non publiée';return c.title+' — début : '+date+'\n'+schedules([c]);}).join('\n\n'):'Aucune session ouverte actuellement. Vous pouvez demander un conseiller.';
   return COURSE_TOPICS.has(i)?commercialAnswer(i,course,now()):answers[i];
  }).filter(Boolean).join('\n\n');
  if(collecting(active))return {text:body+'\n\nVotre saisie est conservée. Vous pouvez poursuivre l’étape en cours ou écrire « menu ».',actions:[],state};
- const r=wantsMethod?method():send(body,'FREE',active?.declined?[['question','Autre question'],['menu','Menu']]:[['registration','M’inscrire'],['question','Autre question'],['menu','Menu']]);
+ const r=wantsMethod?method():send(body,'FREE',availability&&(availability.error||!dynamic.length)?[['advisor','Parler à un conseiller'],['question','Autre question'],['menu','Menu']]:active?.declined?[['question','Autre question'],['menu','Menu']]:[['registration','M’inscrire'],['question','Autre question'],['menu','Menu']]);
  if(wantsMethod){r.text=body+'\n\n'+r.text;if(r.interactive&&r.text.length<=1024)r.interactive.body.text=body+'\n\n'+r.interactive.body.text;else r.interactive=null;}
  if(course){r.state.selectedCourseId=course.id;r.state.selectedCourseSlug=course.slug||null;}
  return r;

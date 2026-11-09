@@ -71,11 +71,12 @@ function analyzeMessage(value,context={}){
  return result(intents.length?intents.sort((a,b)=>order.indexOf(a)-order.indexOf(b)):['UNKNOWN']);
 }
 const detectIntents=(v,c)=>analyzeMessage(v,c).intents;
+const shared=require('./whatsappProspectInformation');
 const answers={
- PAYMENT_TERMS:'Pour l’anglais NVA : après les cinq séances gratuites, payez au minimum 30 USD (50 % des 60 USD du niveau) pour continuer. Les 30 USD restants doivent être intégralement payés AVANT la fin des 16 séances du niveau.',
- FREE_TRIAL:'Les cinq premières séances du niveau 1 d’anglais sont gratuites et incluses dans ses 16 séances. Elles ne sont pas supplémentaires : il reste ensuite 11 séances.',
+ PAYMENT_TERMS:shared.PAYMENT_TERMS,
+ FREE_TRIAL:shared.FREE_TRIAL,
  TRAINING_DURATION:'Chaque niveau d’anglais comprend 16 séances de 1 h 30, soit 24 heures. Les trois niveaux comprennent 48 séances, soit 72 heures.',
- PRICING:'La formation d’anglais coûte 60 USD par niveau, soit 180 USD pour trois niveaux. Le certificat NVA coûte 20 USD supplémentaires : le parcours complet avec certificat revient à 200 USD.',
+ PRICING:shared.PRICING,
  CERTIFICATE_COST:'Le certificat NVA coûte 20 USD supplémentaires. Le parcours de trois niveaux avec certificat revient à 200 USD.',
  CERTIFICATION:'Le certificat est délivré par New Vision Academy après l’achèvement des trois niveaux, sous réserve des conditions administratives applicables. Aucune reconnaissance internationale, accréditation externe ou équivalence à un diplôme officiel n’est établie ici.',
  ONLINE_LEARNING:'NVA est un centre de formation 100 % en ligne.',TEACHING_METHOD:'NVA propose des formations pratiques en ligne. Un conseiller peut préciser les méthodes pédagogiques de la formation choisie.',THANKS:'Avec plaisir ! Je reste disponible pour vos questions.',GOODBYE:'À bientôt chez New Vision Academy !',REGISTRATION_STATUS:'Je ne peux pas confirmer une inscription à partir de ce message. Un conseiller peut vérifier votre demande en toute sécurité.',
