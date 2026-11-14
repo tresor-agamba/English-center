@@ -75,12 +75,13 @@ function createWhatsAppConversationService({
       create: { phoneNumber, userId: linkedUserId, controlState: 'BOT_ACTIVE' },
       update: {},
     });
+    // Inspect durable history under the recipient lock, before inserting this
+    // inbound. An empty/repaired engineState does not make an old prospect new.
     const previousMessage = await tx.whatsAppConversationMessage.findFirst({
       where: { conversationId: conversation.id },
       select: { id: true },
     });
     const isFirstContact = !previousMessage;
-
     if (!conversation.userId && linkedUserId) {
       await tx.whatsAppConversation.update({ where: { id: conversation.id }, data: { userId: linkedUserId } });
       conversation.userId = linkedUserId;
@@ -118,10 +119,17 @@ function createWhatsAppConversationService({
       chatbot: require('./whatsappChatbotService').createChatbotService({ database: tx,
         deferAI: false }),
     });
+    // Inspect the latest bot reply, including unsent replies: an older delivered
+    // invitation must not supersede a newer pending or cancelled response.
     const lastAssistantMessage = await tx.whatsAppConversationMessage.findFirst({
-      where: {conversationId:conversation.id,direction:'OUTBOUND',senderUserId:null,
-        deliveryStatus:{in:['ACCEPTED','SENT','DELIVERED','READ']}},
-      orderBy:{id:'desc'},select:{body:true,idempotencyKey:true,createdAt:true},
+      where:{conversationId:conversation.id,direction:'OUTBOUND',senderUserId:null},
+      orderBy:{id:'desc'},select:{body:true,idempotencyKey:true,createdAt:true,deliveryStatus:true},
+    });
+    const lastQuestionMessage = await tx.whatsAppConversationMessage.findFirst({
+      where:{conversationId:conversation.id,direction:'OUTBOUND',senderUserId:null,
+        deliveryStatus:{in:['ACCEPTED','SENT','DELIVERED','READ']},
+        OR:[{body:{contains:'?'}},{body:{contains:'？'}}]},
+      orderBy:{id:'desc'},select:{body:true,idempotencyKey:true,createdAt:true,deliveryStatus:true},
     });
     const result = await engine.handleMessage({
       text: body,
@@ -131,14 +139,9 @@ function createWhatsAppConversationService({
       state: stateForConversation(conversation),
       isFirstContact,
       lastAssistantMessage,
+      lastQuestionMessage,
       publicAppUrl,
       allowCommercialFollowUpConsent,
-    });
-
-    require('./loggerService').info('NVA_ASSISTANT_ROUTE', {
-      correlation: require('node:crypto').createHash('sha256').update(providerMessageId).digest('hex').slice(0,20),
-      route: result.intent, deferred: result.deferredQuestionAI === true,
-      promptVersion: result.deferredQuestionAI ? require('../config/nvaAssistantPrompt').PROMPT_VERSION : undefined,
     });
 
     let controlState = conversation.controlState;
