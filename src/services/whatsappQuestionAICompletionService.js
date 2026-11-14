@@ -1,84 +1,136 @@
 // Claims a durable reply after inbound commit. OpenAI is always outside SQL locks.
 const {lockRecipients}=require('./whatsappSubmissionCoordinator');
 const {createQuestionAIService,buildFacts,fallback,config}=require('./whatsappQuestionAIService');
+const logger=require('./loggerService');
+const {vetoRegistration}=require('./whatsappRegistrationActionPolicy');
+const {randomUUID}=require('node:crypto');
 function createQuestionAICompletionService({database,env=process.env,now=()=>new Date(),
  ai=createQuestionAIService({env}),catalog=require('./publicCourseService'),registration=require('./registrationService')}={}){
  const active=c=>c?.controlState==='BOT_ACTIVE'&&c.engineState?.mode==='QUESTION_AI'&&!c.engineState?.optedOut&&!c.engineState?.automationPaused;
  async function factsFor(state,question){
-  const courses=await catalog.listPublished(database);
-  const selected=courses;
-  const sessions=await registration.listSessionsForPublicRegistration(database);
-  require('./loggerService').info('NVA_ASSISTANT_FACTS',{catalogCount:selected.length,sessionCount:sessions.length});
-  return buildFacts(selected,sessions,now());
+  let courses;
+  try{courses=await catalog.listPublished(database);}
+  catch{logger.info('NVA_AI_FACTS',{branch:'PARTIAL_FACTS',reason:'CATALOG_UNAVAILABLE'});return [];}
+  const resolution=require('./whatsappCommercialPolicy').resolveCourse(question,courses,state);
+  // Keep the selected course first without hiding other courses in multi-part questions.
+  const selected=resolution.course?[resolution.course,...courses.filter(c=>c.id!==resolution.course.id)]:courses;
+  let sessions=[],sessionsUnavailable=false;
+  try{sessions=await registration.listSessionsForPublicRegistration(database);}
+  catch{sessionsUnavailable=true;logger.info('NVA_AI_FACTS',{branch:'PARTIAL_FACTS',reason:'SESSIONS_UNAVAILABLE'});}
+  let center={};
+  if(database.centerSettings?.findUnique){
+   try{center=await require('./centerSettingsService').getCenterSettings({create:false,client:database});}
+   catch{logger.info('NVA_AI_FACTS',{branch:'PARTIAL_FACTS',reason:'PUBLIC_SETTINGS_UNAVAILABLE'});}
+  }
+  const publicInfo={primaryPhone:center.primaryPhone,email:center.email,website:center.website,
+   publicWhatsAppNumber:require('../config/publicWhatsAppConfig').getPublicWhatsAppNumber(env),sessionsUnavailable};
+  const facts=buildFacts(selected,sessions,now(),publicInfo).slice(0,80);
+  while(Buffer.byteLength(JSON.stringify(facts))>24000)facts.pop();
+  return facts;
  }
  async function completeReply(idempotencyKey){
   const message=await database.whatsAppConversationMessage.findUnique({where:{idempotencyKey},include:{conversation:true}});
   if(!message||message.direction!=='OUTBOUND'||message.deliveryStatus!=='QUEUED'||!['QUESTION_AI_PENDING','QUESTION_AI_PROCESSING'].includes(message.failureCode))return {skipped:true};
   if(!active(message.conversation)){
-   await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:message.failureCode},data:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED'}});
-   return {cancelled:true};
+   // Cancel only the snapshot observed here, never a subsequently acquired claim.
+   const cancelled=await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:message.failureCode,aiClaimToken:message.aiClaimToken??null,updatedAt:message.updatedAt},data:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED',aiClaimToken:null}});
+   return cancelled.count?{cancelled:true}:{superseded:true};
   }
-  if(message.failureCode==='QUESTION_AI_PROCESSING'){
-   if(message.updatedAt&&+now()-+message.updatedAt>120000){
-    await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING',updatedAt:message.updatedAt},data:{failureCode:null}});
-    return {fallback:true}; // Prewritten safe body; never retry a crashed API owner.
-   }return {busy:true};
-  }
-  const claimed=await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PENDING'},data:{failureCode:'QUESTION_AI_PROCESSING'}});
+  const recovering=message.failureCode==='QUESTION_AI_PROCESSING';
+  if(recovering&&(!message.updatedAt||+now()-+message.updatedAt<=120000))return {busy:true};
+  // Recovery reuses the final context transaction; it never reserves or calls AI.
+  const claimToken=randomUUID();
+  const claimed=await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:message.failureCode,aiClaimToken:message.aiClaimToken??null,...(recovering?{updatedAt:message.updatedAt}:{})},data:{failureCode:'QUESTION_AI_PROCESSING',aiClaimToken:claimToken}});
   if(!claimed.count)return {busy:true};
+  const owned={id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING',aiClaimToken:claimToken};
+  logger.info('NVA_AI_ATTEMPT',{phase:'claimed'});
   try{
    const expected=idempotencyKey.startsWith('wa-reply:')?idempotencyKey.slice(9,-2):'';
    const latest=await database.whatsAppConversationMessage.findFirst({where:{conversationId:message.conversationId,direction:'INBOUND'},orderBy:{id:'desc'}});
    const settings=await database.whatsAppChatbotSettings.findUnique({where:{id:1}});
-   const started=new Date(+now()-7*24*60*60*1000);
+   const started=new Date(message.conversation?.engineState?.questionAIStartedAt);
    const eligible=config(env)&&active(message.conversation)&&settings?.enabled!==false&&settings?.admissionsEnabled===true&&latest?.providerMessageId===expected&&latest?.messageType==='TEXT'&&Number.isFinite(+started);
-   let answer=null,decision=null;
-   if(!eligible)require('./loggerService').warn('NVA_ASSISTANT_NOT_ELIGIBLE',{reason:!config(env)?'configuration':settings?.enabled===false||settings?.admissionsEnabled!==true?'settings_disabled':'message_or_context'});
-   if(eligible){
-    const history=await database.whatsAppConversationMessage.findMany({where:{conversationId:message.conversationId,createdAt:{gte:started},id:{lt:latest.id},senderUserId:null,messageType:'TEXT',OR:[{direction:'INBOUND'},{direction:'OUTBOUND',deliveryStatus:{in:['ACCEPTED','SENT','DELIVERED','READ']}}]},orderBy:{id:'desc'},take:12,select:{direction:true,body:true}});
+   let answer=null;
+   let verifiedFacts=[];
+   if(!eligible)logger.info('NVA_AI_RESULT',{reason:config(env)?'INELIGIBLE':'CONFIG_INVALID',called:false,responded:false});
+   if(eligible&&!recovering){
+    const history=await database.whatsAppConversationMessage.findMany({where:{conversationId:message.conversationId,createdAt:{gte:started},id:{lt:latest.id},senderUserId:null,messageType:'TEXT'},orderBy:{id:'desc'},take:6,select:{direction:true,body:true}});
     const facts=await factsFor(message.conversation.engineState,latest.body);
-    const generated=await (ai.decide?ai.decide.bind(ai):ai.answer.bind(ai))({correlation:require('node:crypto').createHash('sha256').update(expected).digest('hex').slice(0,20),question:latest.body,preferredLanguage:message.conversation.engineState.preferredLanguage,history:history.reverse().map(r=>({role:r.direction==='INBOUND'?'user':'assistant',content:r.body})),facts,reserve:async cap=>{
+    verifiedFacts=facts;
+    answer=await ai.answer({questionContext:message.conversation.engineState.questionContext,question:latest.body,preferredLanguage:message.conversation.engineState.preferredLanguage,history:history.reverse().map(r=>({role:r.direction==='INBOUND'?'user':'assistant',content:r.body})),facts,reserve:async cap=>{
      const day=now().toISOString().slice(0,10);
-     await database.whatsAppChatbotAiBudget.upsert({where:{day},create:{day,calls:0},update:{}});
+     try{
+      await database.whatsAppChatbotAiBudget.upsert({where:{day},create:{day,calls:0},update:{}});
+     }catch(error){
+      // Prisma can emulate an empty-update upsert with SELECT then INSERT.
+      // A concurrent owner may have created this day already. Only that unique
+      // conflict is harmless; the conditional increment below still owns the cap.
+      if(error?.code!=='P2002')throw error;
+     }
      const reserved=await database.whatsAppChatbotAiBudget.updateMany({where:{day,calls:{lt:cap}},data:{calls:{increment:1}}});return reserved.count===1;
     }});
-    if(ai.decide){
-     decision=require('./whatsappRegistrationTransition').validateDecision(generated);
-     answer=decision?.reply||null;
-    }else answer=typeof generated==='string'?generated:null;
     // A price/session changed during HTTP must not publish the old snapshot.
-    if(answer&&JSON.stringify(await factsFor(message.conversation.engineState,latest.body))!==JSON.stringify(facts))answer=null;
+    verifiedFacts=await factsFor(message.conversation.engineState,latest.body);
+    if(answer&&JSON.stringify(verifiedFacts)!==JSON.stringify(facts)){
+     logger.info('NVA_AI_RESULT',{reason:'FACTS_CHANGED',called:true,responded:true});answer=null;
+    }
+    if(answer?.action==='REGISTER'&&(vetoRegistration(latest.body)||require('./whatsappQuestionContext').polarity(latest.body)||(!/inscri|register|enrol|commencer|debuter|demarrer|start|begin/i.test(latest.body)))){
+     logger.info('NVA_AI_ACTION_REJECTED',{reason:'REGISTRATION_VETO'});
+     answer=null;
+    }
    }
-   return await database.$transaction(async tx=>{
+   if(!verifiedFacts.length)verifiedFacts=await factsFor(message.conversation.engineState,latest?.body||'');
+   let completionEvent;
+   const result=await database.$transaction(async tx=>{
     await lockRecipients(tx,[message.conversation.phoneNumber]);
+    // Conditional UPDATE both proves ownership and holds the row lock until
+    // commit. Recovery cannot replace the token between this check, REGISTER
+    // effects and publication. A snapshot read outside this transaction is unsafe.
+    const ownership=await tx.whatsAppConversationMessage.updateMany({where:owned,data:{aiClaimToken:claimToken}});
+    if(!ownership.count){
+     completionEvent={outcome:'superseded',reason:'OWNERSHIP_LOST'};
+     return {completed:false,cancelled:false,superseded:true};
+    }
     const current=await tx.whatsAppConversation.findUnique({where:{id:message.conversationId}});
     const inbound=await tx.whatsAppConversationMessage.findFirst({where:{conversationId:message.conversationId,direction:'INBOUND'},orderBy:{id:'desc'}});
     const settingsNow=await tx.whatsAppChatbotSettings.findUnique({where:{id:1}});
     const valid=active(current)&&inbound?.id===latest?.id&&inbound?.providerMessageId===expected&&current.engineState.questionAIStartedAt===message.conversation.engineState.questionAIStartedAt&&settingsNow?.enabled!==false;
-    const publishAI=Boolean(config(env)&&settingsNow?.admissionsEnabled===true&&answer);
-    let body=publishAI?answer:fallback(latest?.body,current?.engineState?.preferredLanguage);
-    let nextState=null,interactive=null;
-    if(valid&&config(env)&&answer&&decision&&settingsNow?.admissionsEnabled===true&&!require('./whatsappRegistrationTransition').isCollecting(current.engineState)){
-     const action={START_REGISTRATION:'CHOOSE_METHOD',REGISTRATION_WEBSITE:'WEBSITE',REGISTRATION_WHATSAPP:'WHATSAPP'}[decision.intent];
-     if(action){
-      const result=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({
-       state:current.engineState,text:latest.body,registrationAction:action});
-      if(result){body=result.text;nextState=result.state;interactive=result.interactive;}
-     }else if(decision.intent==='OFFER_REGISTRATION'){
-      nextState={...current.engineState,pendingRegistrationOffer:{replyKey:idempotencyKey,expiresAt:new Date(+now()+86400000).toISOString()}};
-     }
+    const context=require('./whatsappQuestionContext');
+    const scoped=context.contextualReply(latest?.body,current?.engineState?.questionContext,current?.engineState?.preferredLanguage);
+    // Facts were read outside the transaction, including for abandoned claims.
+    const fallbackFacts=verifiedFacts;
+    const usefulFallback=context.safeFallback(latest?.body,current?.engineState?.preferredLanguage,fallbackFacts,current?.engineState?.questionContext);
+    let body=scoped||(recovering?(usefulFallback||message.body):(config(env)&&settingsNow?.admissionsEnabled===true&&answer?answer:usefulFallback||fallback(latest?.body,current?.engineState?.preferredLanguage)));
+    if(!answer)logger.info('NVA_AI_FALLBACK',{reason:usefulFallback?'CONTEXT_OR_VERIFIED_FACTS':'NO_SAFE_CONTEXT'});
+    let registrationReply=null;
+    let offerState=null;
+    if(valid&&body?.action==='REGISTER'){
+     registrationReply=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({intent:'AI_REGISTRATION',state:current.engineState,text:'',messageId:expected});
+     body=registrationReply?.text||fallback(latest?.body,current.engineState.preferredLanguage);
     }
-    const changed=await tx.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:valid?{body,failureCode:null,...(interactive?{messageType:'INTERACTIVE',interactivePayload:interactive}:{})}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED'}});
-    if(changed.count===1&&valid&&nextState)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:nextState}});
-    require('./loggerService').info('NVA_ASSISTANT_COMPLETION',{correlation:require('node:crypto').createHash('sha256').update(expected).digest('hex').slice(0,20),
-     source:!valid?'cancelled':interactive?'backend':publishAI?'openai':'fallback',decision:decision?.intent||'NONE',transition:nextState?.admission?.step||null,cancelled:!valid});
-    return {completed:changed.count===1,cancelled:!valid};
+    if(valid&&typeof body==='string'&&!scoped&&!recovering&&!registrationReply&&require('./whatsappRegistrationTransition').isCollecting(current.engineState)){
+     registrationReply=await require('./whatsappAdmissionJourney').createAdmissionJourney({database:tx,catalog,registration,now}).resolve({state:current.engineState,text:'',messageId:expected,informationBody:body});
+     if(registrationReply)body=registrationReply.text;
+    }
+    if(valid&&typeof body==='string'&&answer&&!recovering&&require('./whatsappRegistrationTransition').legacyInvitation({body,createdAt:now()},now())){
+     offerState={...current.engineState,pendingRegistrationOffer:{replyKey:idempotencyKey,expiresAt:new Date(+now()+86400000).toISOString()}};
+    }
+    body=require('./whatsappMessagePresentation').formatText(body);
+    if(registrationReply)registrationReply=require('./whatsappMessagePresentation').formatReply(registrationReply);
+    const changed=await tx.whatsAppConversationMessage.updateMany({where:owned,data:valid?{body,failureCode:null,aiClaimToken:null,...(registrationReply?.interactive?{messageType:'INTERACTIVE',interactivePayload:registrationReply.interactive}:{})}:{deliveryStatus:'CANCELLED',failureCode:'AI_CONTEXT_CHANGED',aiClaimToken:null}});
+    if(changed.count&&registrationReply)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:registrationReply.state}});
+    if(changed.count&&offerState&&!registrationReply)await tx.whatsAppConversation.update({where:{id:current.id},data:{engineState:offerState}});
+    completionEvent={outcome:!changed.count?'superseded':!valid?'cancelled':registrationReply?'registration':answer?'answered':'fallback_ready',reason:!valid?'CONTEXT_CHANGED':recovering?'ABANDONED':answer?'ACCEPTED':'UNAVAILABLE'};
+    return {completed:changed.count===1,cancelled:!valid,...(recovering&&valid&&changed.count?{fallback:true}:{})};
    },{isolationLevel:'Serializable',timeout:5000});
+   // A successful SQL callback is not proof that the transaction committed.
+   try{logger.info('NVA_AI_COMPLETION',completionEvent);}catch{ /* Diagnostics cannot change a committed decision. */ }
+   return result;
   }catch{
-   require('./loggerService').warn('NVA_ASSISTANT_COMPLETION_FAILED',{reason:'database_or_context'});
+   logger.warn('NVA_AI_COMPLETION_FAILED',{reason:'API_OR_CONTEXT_UNAVAILABLE'});
    // DB/context failure is not a verified reply. No transaction or API retry.
-   await database.whatsAppConversationMessage.updateMany({where:{id:message.id,deliveryStatus:'QUEUED',attempts:0,failureCode:'QUESTION_AI_PROCESSING'},data:{deliveryStatus:'CANCELLED',failureCode:'AI_COMPLETION_FAILED'}});
-   return {cancelled:true};
+   const cancelled=await database.whatsAppConversationMessage.updateMany({where:owned,data:{deliveryStatus:'CANCELLED',failureCode:'AI_COMPLETION_FAILED',aiClaimToken:null}});
+   return cancelled.count?{cancelled:true}:{completed:false,cancelled:false,superseded:true};
   }
  }
  return {completeReply};

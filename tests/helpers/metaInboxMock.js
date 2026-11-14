@@ -8,7 +8,7 @@ function match(row, where = {}) {
     if (key === 'AND') return v.every(w => match(row, w));
     const actual = row[key] ?? null;
     if (v && typeof v === 'object' && !(v instanceof Date) && !(v instanceof Uint8Array)) return Object.entries(v).every(([op, arg]) =>
-      op === 'in' ? arg.includes(actual) : op === 'notIn' ? !arg.includes(actual) : op === 'lte' ? actual !== null && actual <= arg
+      op === 'contains' ? typeof actual==='string'&&actual.includes(arg) : op === 'in' ? arg.includes(actual) : op === 'notIn' ? !arg.includes(actual) : op === 'lte' ? actual !== null && actual <= arg
         : op === 'lt' ? actual !== null && actual < arg : op === 'gt' ? actual !== null && actual > arg
           : op === 'gte' ? actual !== null && actual >= arg : op === 'not' ? !equal(actual, arg) : op==='startsWith'?typeof actual==='string'&&actual.startsWith(arg):op==='endsWith'?typeof actual==='string'&&actual.endsWith(arg):false);
     return equal(actual, v);
@@ -39,7 +39,7 @@ function createMetaInboxMock(endpoint, { allowReadCommitted = false } = {}) {
       findUnique: async input => find(input)[0] || null, count: async input => find(input).length,
       create: async ({ data }) => {
         if (createFailure?.name === name && --createFailure.remaining === 0) { createFailure = null; throw new Error('PRIVATE_STORAGE_DETAILS'); }
-        const row = { id: randomUUID(), ...(name === 'metaWebhookEvent' ? { enqueueOrder: ++order } : {}), ...structuredClone(data) };
+        const row = { id: randomUUID(), ...(name === 'whatsAppConversationMessage' ? { aiClaimToken: null } : {}), ...(name === 'metaWebhookEvent' ? { enqueueOrder: ++order } : {}), ...structuredClone(data) };
         rows[name].push(row); return structuredClone(row);
       },
       update: async ({ where, data }) => {
@@ -76,7 +76,7 @@ function createMetaInboxMock(endpoint, { allowReadCommitted = false } = {}) {
     });
     queue = result.catch(() => {}); return result;
   };
-  return { db, rows: name => rows[name], seed: (name, row) => rows[name].push(structuredClone(row)),
+  return { db, rows: name => rows[name], seed: (name, row) => rows[name].push({ ...(name === 'whatsAppConversationMessage' ? { aiClaimToken: null } : {}), ...structuredClone(row) }),
     advance: ms => { now = new Date(+now + ms); }, time: () => new Date(now),
     failCreate: (name, remaining = 1) => { createFailure = { name, remaining }; }, failCommit: code => { commitFailure = Object.assign(new Error('PRIVATE_COMMIT_DETAILS'), { code }); },
     failBegin: code => { beginFailure = Object.assign(new Error('PRIVATE_DETAILS'), { code }); } };

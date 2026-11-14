@@ -7,69 +7,39 @@ const course={id:11,title:'Anglais général',slug:'anglais-general',shortDescri
 const group={id:31,name:'Matin',capacity:10,isActive:true,isFull:false,weekDays:['Friday','Saturday'],startTime:'10:00',endTime:'11:30',_count:{enrollments:0}};
 const session={id:10,name:'Prochaine session',course,levelNumber:1,status:'OPEN',startDate:new Date('2100-01-01'),registrationDeadline:new Date('2099-12-30'),capacity:10,registrationGroups:[group],_count:{enrollments:0}};
 function engine({courses=[course],enabled=true,admissionContent={}}={}){const catalog={listPublished:async()=>courses},reg={listCoursesForPublicRegistration:async()=>courses.map(c=>({...c,session}))};return createConversationEngine({admissions:journey.createAdmissionJourney({database:{whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:enabled,admissionContent})}},catalog,registration:reg}),catalog,registration:reg,whatsappConfig:()=>({})});}
-async function input(e,text,state){return e.handleMessage({text,state,phoneNumber:'+243812345678',messageId:randomUUID()});}
+async function input(e,text,state){if(!state&&!/^(bonjour|bonsoir|salut|hello|hi|menu|accueil|👋)/i.test(text))state={welcomeSentAt:"2026-10-28T00:00:00Z",processedMessageIds:["existing"]};return e.handleMessage({text,state,phoneNumber:'+243812345678',messageId:randomUUID()});}
 async function click(e,r,id){const wire=r.state.admission.options.find(o=>o.id===id)?.wireId;assert.ok(wire,'Missing option '+id);return e.handleMessage({text:'',interactionId:wire,state:JSON.parse(JSON.stringify(r.state)),phoneNumber:'+243812345678',messageId:randomUUID()});}
-async function collect(e){let r=await input(e,'bonjour');r=await click(e,r,'registration');r=await click(e,r,'admin');r=await click(e,r,'accept');r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');r=await input(e,'marie@example.test',r.state);r=await click(e,r,'level-BEGINNER');r=await click(e,r,'course-11');r=await click(e,r,'session-10');r=await click(e,r,'group-31');return r;}
+async function collect(e){let r=await input(e,'bonjour');r=await click(e,r,'registration');r=await click(e,r,'admin');r=await click(e,r,'accept');r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');r=await click(e,r,'level-BEGINNER');r=await click(e,r,'course-11');r=await click(e,r,'session-10');r=await click(e,r,'group-31');return r;}
 
-<<<<<<< HEAD
-test('greetings reuse the exact official menu on first and repeated contacts',async()=>{
- const e=engine({admissionContent:{welcome:'Bienvenue dans notre académie.'}});
- const official=await input(e,'Menu');
- const done=await input(e,'annuler',official.state);
- for(const state of [undefined,official.state,done.state]){
-  for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA','Menu']){
-   const r=await input(e,text,state);
-   assert.equal(r.text,state ? (await input(e,'Bonjour',official.state)).text : official.text);
-   assert.equal(r.interactive.body.text,state ? (await input(e,'Bonjour',official.state)).interactive.body.text : official.interactive.body.text);
-   assert.deepEqual(r.state.admission.options.map(o=>[o.id,o.label]),official.state.admission.options.map(o=>[o.id,o.label]));
-   assert.deepEqual(r.actions,[]);
-   const duplicate=await e.handleMessage({text,state:r.state,messageId:r.state.processedMessageIds.at(-1)});
-   assert.equal(duplicate.duplicate,true);assert.equal(duplicate.text,null);assert.deepEqual(duplicate.actions,[]);
-  }
-=======
-test('known greetings do not repeat the initial presentation and preserve deduplication',async()=>{
- const e=engine();
- for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA']){
-  const r=await input(e,text,{processedMessageIds:['previous']});
-  assert.doesNotMatch(r.text,/100 % en ligne|5 séances|Qui sommes-nous/);
+test('sole greetings reuse the three canonical menu actions for new and returning contacts',async()=>{
+ const e=engine(),official=await input(e,'Bonjour');
+ for(const state of [undefined,official.state])for(const text of ['Bonjour','Salut','Hello','Bonjour !','Hello NVA']){
+  const r=await input(e,text,state);
+  assert.deepEqual(r.state.admission.options.map(o=>o.id),['catalog','registration','question']);
+  assert.match(r.interactive.body.text,/👋 Bonjour et bienvenue/);
+  assert.deepEqual(r.actions,[]);
   const duplicate=await e.handleMessage({text,state:r.state,messageId:r.state.processedMessageIds.at(-1)});
-  assert.equal(duplicate.duplicate,true);
->>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
+  assert.equal(duplicate.duplicate,true);assert.equal(duplicate.text,null);
  }
 });
 
 test('unrecognized first contact reuses menu without swallowing existing topic or conversation',async()=>{
  const e=engine(),official=await input(e,'menu');
  const first=await input(e,'👋');assert.equal(first.text,official.text);assert.equal(first.interactive.body.text,official.interactive.body.text);
- assert.equal((await input(e,'tarifs')).state.admission.step,'FREE');
+ assert.equal((await input(e,'tarifs')).state.admission.step,'INVITE');
  const returning=await input(e,'message incompris',{processedMessageIds:['previous'],lastIntent:'CATALOG'});
  assert.notEqual(returning.text,official.text);
 });
-<<<<<<< HEAD
-test('welcome has three stable buttons and official five-trial promotion',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello','menu','accueil']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,3);assert.match(r.text,/100 % en ligne/);assert.match(r.text,/assistant virtuel NVA/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
-=======
-test('first welcome has exactly two stable buttons without unsolicited catalogue',async()=>{
- const e=engine();
- const a=await e.handleMessage({text:'bonjour',messageId:'welcome-a',isFirstContact:true});
- const b=await e.handleMessage({text:'bonjour',messageId:'welcome-b',isFirstContact:true});
- assert.equal(a.interactive.action.buttons.length,2);
- assert.deepEqual(a.interactive.action.buttons,b.interactive.action.buttons);
- assert.doesNotMatch(a.text,/60 USD|16 séances|5 séances/);
-});
->>>>>>> 16b7d4b (corrigée de reponses whatsapp IA)
-test('catalog uses real descriptions and contextual commercial buttons',async()=>{const e=engine();const r=await click(e,await input(e,'menu'),'catalog');assert.match(r.text,/Anglais général/);assert.match(r.text,/Pratique et interactif/);assert.deepEqual(r.state.admission.options.map(o=>o.id),['trial','price','schedule']);const price=await click(e,r,'price');assert.match(price.text,/60 USD/);assert.equal(price.state.admission.step,'FREE');assert.notEqual((await input(e,'oui')).state.admission?.step,'METHOD');});
-test('English prices follow the official commercial rules',async()=>{const r=await input(engine(),'tarifs');for(const value of ['60 USD','180 USD','20 USD','200 USD'])assert.ok(r.text.includes(value));assert.equal(r.state.admission.step,'FREE');});
+test('greetings have three stable button actions and unique anti-replay tokens',async()=>{const e=engine();for(const word of ['bonjour','bonsoir','salut','hello']){const r=await input(e,word);assert.equal(r.interactive.type,'button');assert.equal(r.state.admission.options.length,3);assert.match(r.text,/formation d’anglais en ligne|online training academy/);assert.match(r.text,/New Vision Academy/);}const a=await input(e,'menu'),b=await input(e,'menu');assert.deepEqual(a.state.admission.options.map(o=>o.id),b.state.admission.options.map(o=>o.id));assert.notEqual(a.state.admission.options[0].wireId,b.state.admission.options[0].wireId);});
+test('catalog uses real descriptions and contextual commercial buttons',async()=>{const e=engine();const r=await input(e,'formations');assert.match(r.text,/Anglais général/);assert.match(r.text,/exercices pratiques/);assert.deepEqual(r.state.admission.options.map(o=>o.id),['admin','online','price','schedule','trial']);const price=await click(e,r,'price');assert.match(price.text,/60 USD/);assert.equal(price.state.admission.step,'INVITE');assert.notEqual((await input(e,'oui')).state.admission?.step,'METHOD');});
+test('English prices follow the official commercial rules',async()=>{const r=await input(engine(),'tarifs');for(const value of ['60 USD','180 USD','20 USD','200 USD'])assert.ok(r.text.includes(value));assert.equal(r.state.admission.step,'INVITE');});
 
 test('days are French and only official available slots are offered',async()=>{const r=await input(engine(),'horaires');assert.match(r.text,/vendredi et samedi/);assert.match(r.text,/10:00 – 11:30/);assert.doesNotMatch(r.text,/Friday|Saturday|16:00|18:00/);});
-test('welcome never promises a trial for a full-payment catalogue',async()=>{
- const e=engine({courses:[{...course,accessPolicy:'FULL_PAYMENT'}]});
- const r=await e.handleMessage({text:'bonjour',messageId:'welcome-full',isFirstContact:true});
- assert.doesNotMatch(r.text,/5 séances/);assert.equal(r.interactive.action.buttons.length,2);
-});
+test('greeting welcome is independent of catalog reads',async()=>{const r=await input(engine({courses:[]}), 'bonjour');assert.match(r.text,/5 premières séances/);assert.equal(r.state.admission.options.length,3);});
 
-test('online registration points to the exact HTTPS application route',async()=>{const e=engine();let r=await input(e,'inscription');r=await input(e,'oui',r.state);assert.deepEqual(r.state.admission.options.map(o=>o.id),['online','admin','menu']);r=await click(e,r,'online');assert.match(r.text,/https:\/\/www.newvisionacademy.org\/register/);});
+test('online registration points to the exact HTTPS application route',async()=>{const e=engine();let r=await input(e,'Je veux m’inscrire');assert.deepEqual(r.state.admission.options.map(o=>o.id),['online','admin','menu']);r=await click(e,r,'online');assert.match(r.text,/https:\/\/www.newvisionacademy.org\/register/);});
 test('collection requires consent, validates fields and records nothing before final confirmation',async()=>{const e=engine();let r=await collect(e);assert.equal(r.state.admission.step,'REVIEW');assert.deepEqual(r.actions,[]);const done=await click(e,r,'confirm');assert.equal(done.actions[0].type,'ADMISSION_REQUEST');assert.equal(done.actions[0].data.phoneNumber,'+243812345678');assert.equal(done.actions[0].consentVersion,'admissions-v1');assert.deepEqual(done.state.admission.draft,{});});
-test('invalid identity rejected; greetings during collection do not repeat promotion; email agent is not handoff',async()=>{const e=engine();let r=await collect(e);r=await click(e,r,'modify');r=await click(e,r,'edit-name');r=await input(e,'bonjour',r.state);assert.equal(r.state.admission.step,'NAME');assert.doesNotMatch(r.text,/OFFRE|5 séances|Bienvenue/);r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');r=await input(e,'invalid',r.state);assert.equal(r.state.admission.step,'EMAIL');r=await input(e,'agent@example.test',r.state);assert.equal(r.state.admission.step,'LEVEL');assert.equal(r.state.automationPaused,false);});
+test('greetings preserve name collection and phone proceeds to level without email',async()=>{const e=engine();let r=await collect(e);r=await click(e,r,'modify');assert.ok(!r.state.admission.options.some(o=>o.id==='edit-email'));r=await click(e,r,'edit-name');r=await input(e,'bonjour',r.state);assert.equal(r.state.admission.step,'NAME');assert.doesNotMatch(r.text,/OFFRE|5 séances|Bienvenue/);r=await input(e,'Marie Kalala',r.state);r=await click(e,r,'phone-confirm');assert.equal(r.state.admission.step,'LEVEL');assert.doesNotMatch(r.text,/e-mail/i);});
 test('abandon, menu, stale clicks, duplicate messages, handoff and STOP preserve safety',async()=>{const e=engine();const review=await collect(e);const cancelled=await input(e,'annuler',review.state);assert.deepEqual(cancelled.state.admission.draft,{});assert.deepEqual(cancelled.actions,[]);const stop=await input(e,'STOP',review.state);assert.equal(stop.actions[0].type,'OPT_OUT');assert.equal(stop.state.admission,null);const handoff=await input(e,'conseiller',review.state);assert.equal(handoff.actions[0].type,'HUMAN_HANDOFF');assert.equal((await input(e,'bonjour',handoff.state)).text,null);const duplicate=await e.handleMessage({text:'bonjour',state:review.state,messageId:review.state.processedMessageIds.at(-1)});assert.equal(duplicate.duplicate,true);});
 test('content cannot hardcode a contradictory price, schedule or trial count',()=>{assert.doesNotThrow(()=>journey.validateContent(journey.DEFAULTS));for(const patch of [{price:'Tarif : 60 USD'},{schedule:'Friday 10:00'},{promotion:'5 séances gratuites'}])assert.throws(()=>journey.validateContent({...journey.DEFAULTS,...patch}),{statusCode:400});});
 function copy(v){if(v==null||typeof v!=='object'||typeof v.toFixed==='function')return v;if(v instanceof Date)return new Date(v);if(Array.isArray(v))return v.map(copy);return Object.fromEntries(Object.entries(v).map(([k,x])=>[k,copy(x)]));}
@@ -88,8 +58,9 @@ function database(){
 const data={fullName:'Marie Kalala',phoneNumber:'+243812345678',email:'marie@example.test',requestedLevel:'BEGINNER'};
 const conversion={...data,sessionId:'10',groupId:'31',academicLevel:'LEVEL_1',confirm:'on',passwordHash:'synthetic-hash'};
 async function confirmed(d){return recordConfirmed(d.db,{conversationId:7,data,sourceMessageId:'wamid.confirm',consentVersion:'admissions-v1'});}
-// Unit fixtures explicitly represent an already verified mailbox; SQL tests exercise the challenge.
-function service(d){for(const row of d.state().requests)if(!d.state().events.some(e=>e.requestId===row.id&&e.action==='EMAIL_VERIFIED'))d.state().events.push({requestId:row.id,action:'EMAIL_VERIFIED',createdAt:new Date(),metadata:{binding:require('../src/services/whatsappAdmissionVerification').binding(row)}});return createAdmissionService({database:d.db,business:{...registration,completeRegistrationSideEffects:async()=>{}}});}
+// Administrative fixtures explicitly enrich the request with a verified mailbox;
+// the WhatsApp intake itself never collects it. SQL tests exercise the challenge.
+function service(d){for(const row of d.state().requests){row.email=data.email;if(!d.state().events.some(e=>e.requestId===row.id&&e.action==='EMAIL_VERIFIED'))d.state().events.push({requestId:row.id,action:'EMAIL_VERIFIED',createdAt:new Date(),metadata:{binding:require('../src/services/whatsappAdmissionVerification').binding(row)}});}return createAdmissionService({database:d.db,business:{...registration,completeRegistrationSideEffects:async()=>{}}});}
 test('confirmed request creates one internal notification per admin and deduplicates retries',async()=>{const d=database();await confirmed(d);await confirmed(d);assert.equal(d.state().requests.length,1);assert.equal(d.state().events.length,1);assert.equal(d.state().notifications.length,1);assert.equal(d.state().enrollments.length,0);});
 test('unverified mailbox cannot create a WhatsApp student account',async()=>{const d=database();await confirmed(d);const unverified=createAdmissionService({database:d.db,business:registration});await assert.rejects(unverified.convert(1,1,conversion),{statusCode:409});assert.equal(d.state().users.length,1);assert.equal(d.state().enrollments.length,0);});
 test('refusal requires a reason and only the assigned administrator can change the request',async()=>{const d=database();await confirmed(d);await assert.rejects(service(d).update(1,1,{action:'cancel'}),{statusCode:400});await service(d).update(1,1,{action:'claim'});d.state().users.push({id:4,role:'ADMIN',isActive:true,mustChangePassword:false});await assert.rejects(service(d).update(1,4,{action:'cancel',reason:'Non autorisé'}),{statusCode:409});assert.equal(d.state().requests[0].status,'PROCESSING');});
@@ -130,21 +101,21 @@ test('existing custom scenarios and their unchanged IDs remain usable after the 
  const database={whatsAppChatbotSettings:{findUnique:async()=>({enabled:true,admissionsEnabled:true})},whatsAppScenario:{findMany:async()=>[row]}};
  const catalog={listPublished:async()=>[]},reg={listCoursesForPublicRegistration:async()=>[]};const e=createConversationEngine({catalog,registration:reg,admissions:journey.createAdmissionJourney({database,catalog,registration:reg}),scenarios:createScenarioService({database})});
  const done={admission:{step:'DONE',draft:{},options:[],expiresAt:'2100-01-01'}};const start=await input(e,'personnalise',done);assert.equal(start.intent,'SCENARIO');const id=start.interactive.action.buttons[0].reply.id;
- const result=await e.handleMessage({interactionId:id,state:start.state});assert.equal(result.text,'Réponse existante');assert.equal(row.definition.nodes[0].options[0].id,option);
+ const result=await e.handleMessage({interactionId:id,state:start.state});assert.equal(result.text,'ℹ️ Réponse existante');assert.equal(row.definition.nodes[0].options[0].id,option);
 });
 
 test('certification answer is conditional and does not claim external recognition',async()=>{const r=await input(engine(),'Votre certificat est-il international ?');assert.ok(r.text.includes('New Vision Academy'));assert.ok(r.text.includes('trois niveaux'));assert.ok(r.text.includes('Aucune reconnaissance internationale'));assert.ok(r.interactive.body.text.length<=1024);});
 
-test('certification conditions remain visible in long catalog interactive and numeric fallback',async()=>{const r=await input(engine({courses:[{...course,title:'Anglais '.repeat(80),shortDescription:'Cours '.repeat(120)}]}),'formations');assert.match(r.interactive.body.text,/conditions de certification définies par l’académie/);assert.match(r.text,/Répondez par numéro/);assert.ok(r.interactive.body.text.length<=1024);assert.throws(()=>journey.validateContent({...journey.DEFAULTS,certificationNotice:'x'.repeat(261)}),{statusCode:400});});
+test('certification conditions remain visible in long catalog interactive and numeric fallback',async()=>{const r=await input(engine({courses:[{...course,title:'Anglais '.repeat(80),shortDescription:'Cours '.repeat(120)}]}),'formations');assert.match(r.interactive.body.text,/conditions de certification/);assert.match(r.text,/Répondez par numéro/);assert.ok(r.interactive.body.text.length<=1024);assert.throws(()=>journey.validateContent({...journey.DEFAULTS,certificationNotice:'x'.repeat(261)}),{statusCode:400});});
 
 test('certification and duration questions receive both answers',async()=>{const r=await input(engine(),'Le certificat et la duree ?');assert.ok(r.text.includes('48'));assert.ok(r.text.includes('72'));assert.ok(r.text.includes('conditions administratives'));});
 
 test('mandatory complete-training rule survives saved custom content and long catalogs',async()=>{
  const e=engine({courses:[{...course,title:'Anglais '.repeat(80),shortDescription:'Cours '.repeat(120)}],admissionContent:{catalog:'Présentation personnalisée',certificationNotice:'Selon les conditions de l’académie.'}});
- const r=await input(e,'formations');assert.match(r.interactive.body.text,/Niveau 1 → Niveau 2 → Niveau 3/);assert.match(r.interactive.body.text,/48 séances/);assert.match(r.interactive.body.text,/Aucun certificat à la fin d’un seul niveau/);assert.match(r.interactive.body.text,/Selon les conditions de l’académie/);assert.ok(r.interactive.body.text.length<=1024);assert.deepEqual(r.actions,[]);
+ const r=await input(e,'formations');assert.match(r.interactive.body.text,/trois niveaux/);assert.match(r.interactive.body.text,/Certificat NVA après les trois niveaux, sous réserve des conditions de certification/);assert.equal((r.interactive.body.text.match(/Certificat NVA/g)||[]).length,1);assert.ok(r.interactive.body.text.length<=1024);assert.deepEqual(r.actions,[]);
 });
 
-test('payment balance is required before the end of the level',async()=>{const r=await input(engine(),'Je peux payer la moitie ?');assert.ok(r.text.includes('30 USD'));assert.ok(r.text.includes('AVANT la fin des 16'));assert.deepEqual(r.actions,[]);});
+test('payment balance is required before the end of the level',async()=>{const r=await input(engine(),'Je peux payer la moitie ?');assert.ok(r.text.includes('30 USD'));assert.ok(r.text.includes('avant la fin du niveau'));assert.deepEqual(r.actions,[]);});
 
 test('confirmed session preference is validated and preserved in the admission audit',async()=>{
  const d=database();d.db.course={findUnique:async()=>course};
@@ -154,4 +125,27 @@ test('confirmed session preference is validated and preserved in the admission a
  const blocked=database();blocked.db.course={findUnique:async()=>course};blocked.db.trainingSession.findUnique=async()=>({...session,status:'CLOSED'});
  await assert.rejects(recordConfirmed(blocked.db,{conversationId:7,data:{...data,courseId:11,requestedSessionId:10},sourceMessageId:'wamid.closed',consentVersion:'admissions-v1'}));
  assert.equal(blocked.state().requests.length,0);
+});
+
+test('new WhatsApp registration is confirmed and transmitted without email',async()=>{
+ const e=engine();let r=await input(e,'menu');
+ const move=async id=>{r=await click(e,r,id);assert.doesNotMatch(r.interactive?.body.text||r.text,/e-mail|@/i);};
+ await move('registration');await move('admin');await move('accept');
+ r=await input(e,'Marie Kalala',r.state);await move('phone-confirm');assert.equal(r.state.admission.step,'LEVEL');
+ await move('level-BEGINNER');await move('course-11');await move('session-10');await move('group-31');
+ assert.equal(r.state.admission.step,'REVIEW');assert.ok(!('email' in r.state.admission.draft));
+ await move('confirm');const action=r.actions[0];assert.equal(action.type,'ADMISSION_REQUEST');assert.ok(!('email' in action.data));
+ const d=database();d.db.course={findUnique:async()=>course};
+ const row=await d.db.$transaction(tx=>recordConfirmed(tx,{...action,conversationId:7}));
+ assert.equal(row.email,null);assert.equal(row.status,'PENDING');assert.equal(d.state().notifications.length,1);assert.equal(d.state().enrollments.length,0);
+ // Retrying the confirmed message still creates one request and notification.
+ await recordConfirmed(d.db,{...action,conversationId:7});assert.equal(d.state().requests.length,1);assert.equal(d.state().notifications.length,1);
+});
+test('legacy EMAIL dossier resumes at level without losing collected data',async()=>{
+ const e=engine(),draft={fullName:'Marie Kalala',phoneNumber:'+243812345678',consentToCollect:true,courseId:11,courseTitle:course.title,email:'ancienne@exemple.test'};
+ let r=await input(e,'Horraire',{welcomeSentAt:'2026-01-01',processedMessageIds:['legacy'],admission:{step:'EMAIL',draft,options:[],expiresAt:'2100-01-01'}});
+ assert.equal(r.state.admission.step,'LEVEL');assert.deepEqual(r.state.admission.draft,draft);assert.match(r.text,/niveau actuel/);assert.doesNotMatch(r.interactive?.body.text||r.text,/e-mail|ancienne@/i);
+ for(const id of ['level-BEGINNER','course-11','session-10','group-31','confirm']){r=await click(e,r,id);assert.doesNotMatch(r.interactive?.body.text||r.text,/e-mail|ancienne@/i);}
+ assert.ok(!('email' in r.actions[0].data));assert.equal(r.actions[0].data.fullName,draft.fullName);assert.equal(r.actions[0].data.phoneNumber,draft.phoneNumber);
+ const d=database();d.db.course={findUnique:async()=>course};const row=await recordConfirmed(d.db,{...r.actions[0],conversationId:7});assert.equal(row.email,null);assert.equal(row.status,'PENDING');
 });
