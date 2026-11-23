@@ -14,5 +14,7 @@ router.post('/:id/cancel', asyncHandler(controller.cancel));
 router.post('/:id/toggle-status', asyncHandler(controller.toggleStatus));
 router.post('/:id/groups', asyncHandler(controller.createGroup));
 router.post('/:id/groups/:groupId/toggle', asyncHandler(controller.toggleGroup));
+router.post('/:id/whatsapp-group', asyncHandler(controller.saveWhatsAppGroup));
+router.post('/:id/whatsapp-invitations', asyncHandler(controller.sendWhatsAppInvitations));
 
 module.exports = router;

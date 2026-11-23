@@ -3,7 +3,7 @@ const logger = require('../services/loggerService');
 const POLL_INTERVAL_MS = 10_000;
 function createWhatsAppDeliveryPoller({ configProvider = getWhatsAppConfig, environment = () => process.env.NODE_ENV,
   loadProcessors = () => [require('../services/whatsappDeliveryService'), require('../services/whatsappConversationDeliveryService'),
-    require('../services/whatsappProspectFollowUpService')], schedule = setInterval, cancel = clearInterval,
+    require('../services/whatsappProspectFollowUpService'), require('../services/whatsappSessionGroupService')], schedule = setInterval, cancel = clearInterval,
   onError = error => logger.error('WHATSAPP_DELIVERY_POLL_FAILED', { error }) } = {}) {
   let timer = null, running = false;
   function allowed() {

@@ -17,10 +17,11 @@ function findById(id) {
     include: {
       course: true,
       enrollments: {
-        include: { user: true, registrationGroup: true },
+        include: { user: { include: { whatsappPreference: true } }, registrationGroup: true, whatsAppSessionInvitation: { include: { attemptsHistory: { orderBy: { attemptNumber: 'asc' } } } }, payments: true },
         orderBy: { enrolledAt: 'desc' },
       },
       registrationGroups: { include: { teacher: true, _count: { select: { enrollments: { where: { status: { in: ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED'] } } } } } }, orderBy: { startTime: 'asc' } },
+      whatsAppGroup: { include: { invitations: true } },
     },
   });
 }

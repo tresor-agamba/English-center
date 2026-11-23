@@ -1,5 +1,8 @@
 const sessionService = require('../services/trainingSessionService');
 const trialAccessService = require('../services/trialAccessService');
+const whatsappSessionGroups = require('../services/whatsappSessionGroupService');
+const { getWhatsAppConfig } = require('../config/whatsappConfig');
+const { normalizePhoneNumber, isValidWhatsAppPhoneNumber } = require('../utils/phoneNumber');
 
 const statuses = ['DRAFT', 'OPEN', 'FULL', 'ONGOING', 'COMPLETED', 'CANCELLED'];
 const weekDays = {
@@ -121,8 +124,21 @@ async function create(req, res) {
 async function show(req, res) {
   const session = await getSession(req.params.id);
   const access = await Promise.all(session.enrollments.map((item) => trialAccessService.calculateTrialAccess(item.id)));
-  session.enrollments = session.enrollments.map((item, index) => ({ ...item, access: access[index] }));
-  res.render('admin/sessions/show', { title: session.name, session });
+  let waConfigValid = true;
+  let waConfig;
+  try { waConfig = getWhatsAppConfig(process.env, { requireValid: true }); }
+  catch { waConfig = getWhatsAppConfig(); waConfigValid = false; }
+  const templateConfigured = /^[a-z0-9_]{1,512}$/.test(process.env.WHATSAPP_SESSION_INVITE_TEMPLATE || '')
+    && /^[a-z]{2,3}(?:_[A-Z]{2})?$/.test(process.env.WHATSAPP_SESSION_INVITE_LANGUAGE || 'fr');
+  session.enrollments = session.enrollments.map((item, index) => {
+    const preference = item.user.whatsappPreference;
+    const phoneNumber = normalizePhoneNumber(preference?.phoneNumber || item.user.whatsappNumber || item.user.phoneNumber, waConfig.defaultCountryCode);
+    const consented = Boolean(preference?.isEnabled && preference?.hasOptedIn);
+    return { ...item, access: access[index], invitePhone: phoneNumber, inviteEligible: Boolean(session.whatsAppGroup?.status === 'ACTIVE' && consented && isValidWhatsAppPhoneNumber(phoneNumber) && waConfig.enabled && waConfig.workersEnabled && waConfigValid && templateConfigured), inviteReason: !consented ? 'Consentement absent' : !isValidWhatsAppPhoneNumber(phoneNumber) ? 'Numéro WhatsApp invalide' : !waConfig.enabled ? 'WhatsApp désactivé' : !waConfig.workersEnabled ? 'Worker WhatsApp désactivé' : !waConfigValid ? 'Configuration WhatsApp incomplète' : !templateConfigured ? 'Modèle approuvé non configuré' : null };
+  });
+  const whatsappInvitationSummary = req.session.whatsappInvitationSummary || null;
+  delete req.session.whatsappInvitationSummary;
+  res.render('admin/sessions/show', { title: session.name, session, waTemplateConfigured: templateConfigured, waEnabled: waConfig.enabled, waWorkersEnabled: waConfig.workersEnabled, waConfigValid, whatsappInvitationSummary });
 }
 
 async function editForm(req, res) {
@@ -183,4 +199,18 @@ async function toggleGroup(req, res) {
   return res.redirect(`/admin/sessions/${session.id}`);
 }
 
-module.exports = { index, newForm, create, show, editForm, update, cancel, toggleStatus, createGroup, toggleGroup, parseForm, weekDays };
+async function saveWhatsAppGroup(req, res) {
+  const session = await getSession(req.params.id);
+  await whatsappSessionGroups.saveGroup(session.id, { name: req.body.name, invitationLink: req.body.invitationLink, status: req.body.status || 'ACTIVE' });
+  return res.redirect(`/admin/sessions/${session.id}#whatsapp-group`);
+}
+
+async function sendWhatsAppInvitations(req, res) {
+  const session = await getSession(req.params.id);
+  const enrollmentIds = Array.isArray(req.body.enrollmentIds) ? req.body.enrollmentIds : [req.body.enrollmentIds].filter(Boolean);
+  const results = await whatsappSessionGroups.sendSelected(session.id, enrollmentIds);
+  req.session.whatsappInvitationSummary = { queued: results.filter(result => result.queued).length, failed: results.filter(result => result.failed).length, skipped: results.filter(result => result.skipped).length };
+  return res.redirect(`/admin/sessions/${session.id}#whatsapp-group`);
+}
+
+module.exports = { index, newForm, create, show, editForm, update, cancel, toggleStatus, createGroup, toggleGroup, saveWhatsAppGroup, sendWhatsAppInvitations, parseForm, weekDays };

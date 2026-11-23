@@ -44,6 +44,46 @@
   <form method="post" action="/admin/sessions/<%= session.id %>/groups" class="session-form"><%- csrfField() %><h3>Ajouter un groupe</h3><label>Nom<input name="name" placeholder="Groupe A" required></label><fieldset><legend>Jours</legend><label><input type="checkbox" name="weekDays" value="FRIDAY" checked> Vendredi</label><label><input type="checkbox" name="weekDays" value="SATURDAY" checked> Samedi</label></fieldset><div class="form-grid"><label>Début<input name="startTime" type="time" required></label><label>Fin<input name="endTime" type="time" required></label><label>Capacité<input name="capacity" type="number" min="1" required></label></div><button class="button" type="submit">Ajouter le groupe</button></form>
 </section>
 
+<section class="section-block" id="whatsapp-group">
+  <h2>Groupe WhatsApp de la session</h2>
+  <% if (whatsappInvitationSummary) { %><p role="status">Résultat : <%= whatsappInvitationSummary.queued %> invitation(s) ajoutée(s) à la file, <%= whatsappInvitationSummary.failed %> échec(s), <%= whatsappInvitationSummary.skipped %> ignorée(s). Le worker mettra à jour les états dans le tableau.</p><% } %>
+  <% const waGroup = session.whatsAppGroup; %>
+  <form method="post" action="/admin/sessions/<%= session.id %>/whatsapp-group" class="session-form"><%- csrfField() %>
+    <label>Nom du groupe<input name="name" maxlength="160" required value="<%= waGroup?.name || '' %>" placeholder="NVA — <%= session.name %>"></label>
+    <label>Lien d’invitation<input name="invitationLink" type="url" required maxlength="512" pattern="https://chat\.whatsapp\.com/.+" value="<%= waGroup?.invitationLink || '' %>" placeholder="https://chat.whatsapp.com/…"></label>
+    <label>Statut<select name="status"><% ['ACTIVE','INACTIVE','ARCHIVED'].forEach(status => { %><option value="<%= status %>" <%= (waGroup?.status || 'ACTIVE') === status ? 'selected' : '' %>><%= status %></option><% }) %></select></label>
+    <button class="button" type="submit"><%= waGroup ? 'Enregistrer le groupe' : 'Associer le groupe' %></button>
+  </form>
+  <% if (waGroup?.status === 'ACTIVE') { %>
+    <p>Le groupe est actif. L’API ne confirme pas l’adhésion des étudiants. Un modèle WhatsApp approuvé doit être configuré pour envoyer le lien.</p>
+    <% if (!waEnabled || !waTemplateConfigured || !waWorkersEnabled || !waConfigValid) { %><p class="form-error"><%= !waEnabled ? 'Envoi WhatsApp désactivé dans la configuration serveur.' : !waWorkersEnabled ? 'Worker WhatsApp désactivé : les invitations confirmées resteront en attente.' : !waConfigValid ? 'Configuration WhatsApp incomplète.' : 'Le modèle approuvé des invitations de session n’est pas configuré.' %></p><% } %>
+    <% const eligibleStudents = session.enrollments.filter(item => item.inviteEligible && ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED'].includes(item.status)); %>
+    <p><%= eligibleStudents.length %> étudiant(s) actuellement admissible(s) à une invitation pour cette session.</p>
+    <form method="post" action="/admin/sessions/<%= session.id %>/whatsapp-invitations" data-whatsapp-send-form><%- csrfField() %>
+      <div class="table-wrapper"><table><thead><tr><th>Choisir</th><th>Étudiant</th><th>WhatsApp</th><th>Inscription</th><th>Paiement</th><th>Consentement WhatsApp</th><th>Invitation / dernier résultat</th></tr></thead><tbody>
+        <% session.enrollments.filter(item => ['TRIAL_ACTIVE','PLACEMENT_TEST_REQUIRED','PAYMENT_REQUIRED','CONFIRMED'].includes(item.status)).forEach(enrollment => { const invite = enrollment.whatsAppSessionInvitation; const safeRetryResult = ['429','WHATSAPP_CONSENT_REQUIRED','INVALID_WHATSAPP_NUMBER','APPROVED_TEMPLATE_NOT_CONFIGURED','WHATSAPP_DISABLED'].includes(invite?.lastResult); const retryBlocked = invite && (invite.attempts >= 3 || (invite.attempts > 0 && !safeRetryResult)); %>
+          <tr><td><input type="checkbox" name="enrollmentIds" value="<%= enrollment.id %>" aria-label="Sélectionner <%= enrollment.user.firstName %> <%= enrollment.user.lastName %>" <%= !enrollment.inviteEligible || (invite && (['ACCEPTED','DELIVERED','JOINED','UNCERTAIN','PROCESSING'].includes(invite.status) || retryBlocked)) ? 'disabled' : '' %>></td>
+          <td><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></td><td><%= enrollment.invitePhone || '—' %></td><td><%= enrollment.status %></td>
+          <td><%= enrollment.payments.map(payment => payment.status).join(', ') || 'Aucun paiement enregistré' %></td>
+          <td><%= enrollment.user.whatsappPreference?.isEnabled && enrollment.user.whatsappPreference?.hasOptedIn ? 'Oui' : 'Non' %></td>
+          <td><%= invite?.status || 'En attente' %><% if (invite?.lastAttemptAt) { %><br><%= invite.lastAttemptAt.toLocaleString('fr-FR') %><% } %><% if (invite?.lastResult) { %><br><%= invite.lastResult %><% } %><% if (invite?.attemptsHistory?.length) { %><details><summary>Historique (<%= invite.attemptsHistory.length %>)</summary><ol><% invite.attemptsHistory.forEach(attempt => { %><li><%= attempt.status %> — <%= attempt.resultCode || 'envoi accepté' %> — <%= attempt.startedAt.toLocaleString('fr-FR') %></li><% }) %></ol></details><% } %></td></tr>
+          <% if (!enrollment.inviteEligible) { %><tr><td colspan="7"><small><%= enrollment.inviteReason %></small></td></tr><% } %>
+        <% }) %>
+      </tbody></table></div>
+      <button class="button" type="submit">Envoyer les invitations sélectionnées</button>
+    </form>
+    <script>document.querySelector('[data-whatsapp-send-form]')?.addEventListener('submit', event => { const count = event.currentTarget.querySelectorAll('input[name="enrollmentIds"]:checked').length; if (!count || !confirm(`Envoyer le lien du groupe WhatsApp à ${count} étudiant(s) ? Seuls les étudiants ayant donné leur consentement seront contactés.`)) event.preventDefault(); });</script>
+  <% } else if (waGroup) { %>
+    <p>Association <%= waGroup.status.toLowerCase() %>. Activez-la pour préparer les invitations.</p>
+    <h3>Derniers états d’invitation</h3>
+    <div class="table-wrapper"><table><thead><tr><th>Étudiant</th><th>Inscription</th><th>Invitation</th><th>Dernière tentative</th><th>Résultat</th></tr></thead><tbody>
+      <% session.enrollments.filter(item => item.whatsAppSessionInvitation).forEach(enrollment => { const invite = enrollment.whatsAppSessionInvitation; %>
+        <tr><td><%= enrollment.user.firstName %> <%= enrollment.user.lastName %></td><td><%= enrollment.status %></td><td><%= invite.status %></td><td><%= invite.lastAttemptAt?.toLocaleString('fr-FR') || '—' %></td><td><%= invite.lastResult || '—' %><% if (invite.attemptsHistory?.length) { %><details><summary>Historique (<%= invite.attemptsHistory.length %>)</summary><ol><% invite.attemptsHistory.forEach(attempt => { %><li><%= attempt.status %> — <%= attempt.resultCode || 'envoi accepté' %> — <%= attempt.startedAt.toLocaleString('fr-FR') %></li><% }) %></ol></details><% } %></td></tr>
+      <% }) %>
+    </tbody></table></div>
+  <% } %>
+</section>
+
 <section class="section-block">
   <h2>Étudiants inscrits</h2>
   <% if (!session.enrollments.length) { %>

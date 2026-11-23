@@ -191,6 +191,30 @@ enum TrainingSessionStatus {
   CANCELLED
 }
 
+enum WhatsAppSessionGroupStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum WhatsAppSessionInvitationStatus {
+  PENDING
+  PROCESSING
+  ACCEPTED
+  DELIVERED
+  FAILED
+  UNCERTAIN
+  JOINED
+}
+
+enum WhatsAppSessionInvitationAttemptStatus {
+  PROCESSING
+  ACCEPTED
+  DELIVERED
+  FAILED
+  UNCERTAIN
+}
+
 enum EnrollmentStatus {
   TRIAL_ACTIVE
   PLACEMENT_TEST_REQUIRED
@@ -1048,10 +1072,62 @@ model TrainingSession {
   assessments          Assessment[]
   liveOralSessions     LiveOralSession[]
   registrationGroups   RegistrationGroup[]
+  whatsAppGroup        WhatsAppSessionGroup?
 
   @@index([courseId])
   @@index([status])
   @@map("training_sessions")
+}
+
+model WhatsAppSessionGroup {
+  id                Int @id @default(autoincrement())
+  trainingSessionId Int @unique @map("training_session_id")
+  name              String @db.VarChar(160)
+  invitationLink    String @map("invitation_link") @db.VarChar(512)
+  status            WhatsAppSessionGroupStatus @default(ACTIVE)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  trainingSession   TrainingSession @relation(fields: [trainingSessionId], references: [id], onDelete: Cascade)
+  invitations       WhatsAppSessionInvitation[]
+  @@index([status])
+  @@map("whatsapp_session_groups")
+}
+
+model WhatsAppSessionInvitation {
+  attemptsHistory       WhatsAppSessionInvitationAttempt[]
+  id                    Int @id @default(autoincrement())
+  groupId               Int @map("group_id")
+  enrollmentId          Int @unique @map("enrollment_id")
+  status                WhatsAppSessionInvitationStatus @default(PENDING)
+  attempts              Int @default(0)
+  lastAttemptAt         DateTime? @map("last_attempt_at") @db.Timestamptz(3)
+  providerMessageId     String? @unique @map("provider_message_id") @db.VarChar(512)
+  idempotencyKey        String? @unique @map("idempotency_key") @db.VarChar(128)
+  sendRequestedAt       DateTime? @map("send_requested_at") @db.Timestamptz(3)
+  lastResult            String? @map("last_result") @db.VarChar(100)
+  joinedAt              DateTime? @map("joined_at") @db.Timestamptz(3)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  group                 WhatsAppSessionGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  enrollment            Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  @@index([groupId, status])
+  @@map("whatsapp_session_invitations")
+}
+
+model WhatsAppSessionInvitationAttempt {
+  id             Int @id @default(autoincrement())
+  invitationId   Int @map("invitation_id")
+  attemptNumber  Int @map("attempt_number")
+  status         WhatsAppSessionInvitationAttemptStatus
+  idempotencyKey String? @unique @map("idempotency_key") @db.VarChar(128)
+  providerMessageId String? @unique @map("provider_message_id") @db.VarChar(512)
+  resultCode     String? @map("result_code") @db.VarChar(100)
+  startedAt      DateTime @default(now()) @map("started_at") @db.Timestamptz(3)
+  completedAt    DateTime? @map("completed_at") @db.Timestamptz(3)
+  invitation     WhatsAppSessionInvitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@unique([invitationId, attemptNumber], map: "whatsapp_invite_attempt_number_key")
+  @@index([invitationId, startedAt], map: "whatsapp_invite_attempt_history_idx")
+  @@map("whatsapp_session_invitation_attempts")
 }
 
 model RegistrationGroup {
@@ -1736,6 +1812,7 @@ model LessonResource {
 }
 
 model Enrollment {
+  whatsAppSessionInvitation WhatsAppSessionInvitation?
   whatsappAdmissionRequests WhatsAppAdmissionRequest[]
   id                       Int                    @id @default(autoincrement())
   userId                   Int                    @map("user_id")

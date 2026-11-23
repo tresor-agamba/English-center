@@ -8,6 +8,7 @@ const whatsappPreferences = require('./whatsappPreferenceService');
 const whatsappProspectFollowUps = require('./whatsappProspectFollowUpService');
 const placement = require('./placementTestService');
 const { isPublicCourse } = require('./coursePublicationPolicy');
+const whatsappSessionGroups = require('./whatsappSessionGroupService');
 
 const OCCUPYING_STATUSES = OCCUPYING_ENROLLMENT_STATUSES;
 const MAX_TRANSACTION_ATTEMPTS = 8;
@@ -391,6 +392,7 @@ async function completeRegistrationSideEffects(result, data) {
       await whatsappProspectFollowUps.cancelForPhoneNumbers([data.phoneNumber, data.whatsappNumber], 'ENROLLED').catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
       await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
       if (data.whatsappConsent) await whatsappPreferences.recordWhatsAppOptIn(result.user.id, data.phoneNumber, 'REGISTRATION_FORM').catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
+      await whatsappSessionGroups.prepareForEnrollment(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { code: error?.code || 'WHATSAPP_SESSION_INVITE_PREPARATION_FAILED' }));
 }
 
 async function createRegistration(data) {
@@ -475,6 +477,7 @@ async function enrollExistingStudent(data) {
     try {
       const result = await runExistingStudentTransaction(data);
       await enrollmentReminders.synchronizeEnrollmentReminders(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { error: error }));
+      if (!result.reused || result.reactivated) await whatsappSessionGroups.prepareForEnrollment(result.enrollment.id).catch((error) => logger.warn('REGISTRATION_SIDE_EFFECT_FAILED', { code: error?.code || 'WHATSAPP_SESSION_INVITE_PREPARATION_FAILED' }));
       return result;
     } catch (error) {
       if (error instanceof RegistrationError) throw error;

@@ -4,6 +4,7 @@ const conversations = require('./whatsappConversationService');
 const conversationDeliveries = require('./whatsappConversationDeliveryService');
 const prospectFollowUps = require('./whatsappProspectFollowUpService');
 const notificationDeliveries = require('./whatsappDeliveryService');
+const sessionGroupInvitations = require('./whatsappSessionGroupService');
 const logger = require('./loggerService');
 const knownStatuses = ['sent', 'delivered', 'read', 'failed'];
 const safeProviderCode = value => /^(?:0|[1-9]\d{0,9})$/.test(String(value)) ? String(value) : 'UNSPECIFIED';
@@ -77,7 +78,7 @@ async function applyStatus(item, { detailed = false } = {}) {
   let result = { outcome: 'invalid' };
   if (knownStatuses.includes(item?.status) && nonempty(item?.id)) {
     result = { outcome: 'uncorrelated' };
-    for (const service of [conversationDeliveries, prospectFollowUps, notificationDeliveries]) {
+    for (const service of [conversationDeliveries, prospectFollowUps, notificationDeliveries, sessionGroupInvitations]) {
       const observed = await service.applyStatus(item, { detailed: true });
       // A legacy/injected boolean true proves handling, not that a row changed.
       result = observed === true ? { outcome: 'ignored', reason: 'LEGACY_HANDLED' }
